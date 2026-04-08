@@ -1,0 +1,16 @@
+@mixin glass {
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+@mixin desktop {
+  @media (min-width: 768px) {
+    @content;
+  }
+}
+
+@mixin mobile {
+  @media (max-width: 767px) {
+    @content;
+  }
+}

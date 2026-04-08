@@ -1,12 +1,24 @@
 export default defineNuxtConfig({
   compatibilityDate: '2026-04-08',
   devtools: { enabled: true },
+  devServer: {
+    host: '0.0.0.0', // слушать все интерфейсы
+    port: 3000,
+  },
   modules: ['@pinia/nuxt', '@vueuse/nuxt'],
   pinia: {
     storesDirs: ['./stores/**'],
   },
   css: ['~/assets/styles/reset.scss', '~/assets/styles/global.scss'],
   vite: {
+    optimizeDeps: {
+      include: [
+        '@vue-flow/core',
+        '@vue-flow/background',
+        '@vue-flow/controls',
+        '@vue-flow/minimap',
+      ],
+    },
     css: {
       preprocessorOptions: {
         scss: {
