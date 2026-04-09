@@ -1,29 +1,97 @@
 <template>
   <header class="header">
     <div class="logo">CARBON CORE</div>
+
     <div class="user-stats">
       <div class="stat">
-        <Zap :size="18" /> <span>Lv.{{ userStore.level }}</span>
+        <Zap :size="18" />
+        <span>Lv.{{ userStore.level }}</span>
+      </div>
+      <div class="stat league-stat" :class="leagueClass">
+        <component :is="leagueIcon" :size="18" />
+        <span>{{ userStore.league }}</span>
       </div>
       <div class="stat">
-        <Coins :size="18" /> <span>{{ userStore.gold }}</span>
+        <Coins :size="18" />
+        <span>{{ userStore.gold }}</span>
       </div>
-      <div class="stat hp">
-        <Heart :size="18" /> <span>{{ userStore.hp }}/100</span>
-      </div>
-      <button class="settings-btn" @click="$emit('open-settings')">
+
+      <button class="action-btn" @click="openTaskForm" title="Добавить задачу">
+        <Plus :size="20" />
+      </button>
+
+      <button
+        class="settings-btn"
+        @click="$emit('open-settings')"
+        title="Настройки"
+      >
         <Settings :size="20" />
       </button>
     </div>
+
+    <Teleport to="body">
+      <TaskForm
+        v-if="showTaskForm"
+        @close="showTaskForm = false"
+        @save="handleTaskSave"
+      />
+    </Teleport>
   </header>
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { useUserStore } from '~/stores/user.store'
-import { Zap, Coins, Heart, Settings } from 'lucide-vue-next'
+import { useTasksStore } from '~/stores/tasks.store'
+import { useNotification } from '~/composables/useNotification'
+import {
+  Zap,
+  Coins,
+  Settings,
+  Plus,
+  Medal,
+  Award,
+  Gem,
+  Crown,
+} from 'lucide-vue-next'
+import TaskForm from '~/components/task/TaskForm.vue'
 
 const userStore = useUserStore()
+const tasksStore = useTasksStore()
+const { addNotification } = useNotification()
+const showTaskForm = ref(false)
+
 defineEmits<{ (e: 'open-settings'): void }>()
+
+const leagueIcon = computed(() => {
+  const league = userStore.league
+  if (league === 'Бронза') return Medal
+  if (league === 'Серебро') return Award
+  if (league === 'Золото') return Gem
+  return Crown
+})
+
+const leagueClass = computed(() => userStore.league.toLowerCase())
+
+function openTaskForm() {
+  showTaskForm.value = true
+}
+
+function handleTaskSave(taskData: any) {
+  const result = tasksStore.addTask(taskData)
+  if (result) {
+    addNotification({
+      type: 'success',
+      message: `«${result.title}» добавлено`,
+    })
+    showTaskForm.value = false
+  } else {
+    addNotification({
+      type: 'warning',
+      message: 'Лимит задач на этот период исчерпан',
+    })
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -56,11 +124,28 @@ defineEmits<{ (e: 'open-settings'): void }>()
   .stat {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     font-size: 0.9rem;
     color: var(--accent);
+    white-space: nowrap;
   }
 
+  .league-stat {
+    &.бронза {
+      color: #cd7f32;
+    }
+    &.серебро {
+      color: #c0c0c0;
+    }
+    &.золото {
+      color: #ffd700;
+    }
+    &.платина {
+      color: #e5e4e2;
+    }
+  }
+
+  .action-btn,
   .settings-btn {
     display: flex;
     align-items: center;
@@ -69,6 +154,9 @@ defineEmits<{ (e: 'open-settings'): void }>()
     border-radius: 50%;
     transition: background var(--transition-standard);
     color: var(--dim);
+    background: transparent;
+    border: none;
+    cursor: pointer;
 
     &:hover {
       background: var(--surface);

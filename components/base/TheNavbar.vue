@@ -2,11 +2,11 @@
   <nav
     class="navbar"
     :class="{
-      'is-expanded': !isMobile && uiStore.showLabels,
+      'is-expanded': uiStore.showLabels,
       'is-mobile': isMobile,
     }"
-    @mouseenter="!isMobile && uiStore.setSidebarHovered(true)"
-    @mouseleave="!isMobile && uiStore.setSidebarHovered(false)"
+    @mouseenter="uiStore.setSidebarHovered(true)"
+    @mouseleave="uiStore.setSidebarHovered(false)"
   >
     <div class="nav-items">
       <button
@@ -18,9 +18,7 @@
       >
         <component :is="item.icon" :size="24" />
         <Transition name="fade">
-          <span class="label" v-if="!isMobile && uiStore.showLabels">{{
-            item.label
-          }}</span>
+          <span class="label" v-if="uiStore.showLabels">{{ item.label }}</span>
         </Transition>
       </button>
     </div>
@@ -41,12 +39,12 @@ import { useUIStore } from '~/stores/ui.store'
 const uiStore = useUIStore()
 
 const navItems = [
-  { id: 'board', label: 'Доска', icon: LayoutGrid },
-  { id: 'quests', label: 'Квесты', icon: CheckSquare },
-  { id: 'shop', label: 'Магазин', icon: ShoppingBag },
-  { id: 'analytics', label: 'Аналитика', icon: BarChart2 },
-  { id: 'settings', label: 'Настройки', icon: Settings },
-] as const
+  { id: 'board' as const, label: 'Доска', icon: LayoutGrid },
+  { id: 'tasks' as const, label: 'Задачи', icon: CheckSquare },
+  { id: 'shop' as const, label: 'Магазин', icon: ShoppingBag },
+  { id: 'analytics' as const, label: 'Аналитика', icon: BarChart2 },
+  { id: 'settings' as const, label: 'Настройки', icon: Settings },
+]
 
 const isMobile = ref(false)
 const checkMobile = () => {
@@ -71,9 +69,7 @@ onUnmounted(() => {
   border: 1px solid var(--border);
   @include glass;
   color: var(--accent);
-  transition:
-    width 0.3s cubic-bezier(0.2, 0, 0, 1),
-    border-radius 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.2, 0, 0, 1), border-radius 0.3s ease;
   overflow: hidden;
   z-index: 100;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
@@ -98,9 +94,7 @@ onUnmounted(() => {
     height: 100%;
     border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0;
     box-shadow: none;
-    transition:
-      width 0.25s ease,
-      border-radius 0.25s ease;
+    transition: width 0.25s ease, border-radius 0.25s ease;
   }
 
   // Расширенное состояние (показываем подписи)

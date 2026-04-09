@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-export type NavSection = 'board' | 'quests' | 'shop' | 'analytics' | 'settings'
+export type NavSection = 'board' | 'tasks' | 'shop' | 'analytics' | 'settings'
 
 export const useUIStore = defineStore(
   'ui',

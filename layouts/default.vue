@@ -2,12 +2,13 @@
   <div class="layout">
     <TheHeader />
     <div class="layout-content">
-      <TheNavbar />
+      <TheNavbar class="navbar" />
       <main class="main">
         <slot />
       </main>
     </div>
     <TheFooter />
+    <ToastContainer />
   </div>
 </template>
 
@@ -15,6 +16,7 @@
 import TheHeader from '~/components/base/TheHeader.vue'
 import TheNavbar from '~/components/base/TheNavbar.vue'
 import TheFooter from '~/components/base/TheFooter.vue'
+import ToastContainer from '~/components/base/ToastContainer.vue'
 </script>
 
 <style scoped lang="scss">
@@ -35,12 +37,16 @@ import TheFooter from '~/components/base/TheFooter.vue'
   }
 }
 
+.navbar {
+  @include desktop {
+    width: 80px;
+  }
+}
+
 .main {
   flex: 1;
-  display: flex;
-  flex-direction: column;
   padding: 16px;
-  overflow: hidden; // чтобы доска не выходила за пределы
+  overflow-y: auto;
   @include desktop {
     padding: 24px;
   }
