@@ -1,57 +1,88 @@
 <template>
-  <div class="modal-overlay" @click.self="emit('close')">
-    <GlassCard class="modal">
-      <h3>{{ editing ? 'Редактировать' : 'Новая задача' }}</h3>
-      <form @submit.prevent="handleSubmit">
-        <div class="form-group">
-          <label>Название</label>
-          <input v-model="form.title" required />
-        </div>
-        <div class="form-group">
-          <label>Описание (опционально)</label>
-          <input v-model="form.description" />
-        </div>
-        <div class="form-group" v-if="!hideType">
-          <label>Тип</label>
-          <select v-model="form.type">
-            <option value="HABIT">Привычка</option>
-            <option value="TASK_DAY">Задача на день</option>
-            <option value="TASK_WEEK">Задача на неделю</option>
-            <option value="TASK_MONTH">Задача на месяц</option>
-            <option value="TASK_YEAR">Задача на год</option>
-          </select>
-        </div>
-        <div class="form-group" v-if="form.type !== 'HABIT'">
-          <label>Срок (дата)</label>
-          <input type="date" v-model="form.targetDate" />
-        </div>
-        <div class="form-group">
-          <label>Теги</label>
-          <div class="tags-select">
-            <label
-              v-for="tag in tagsStore.tags"
-              :key="tag.id"
-              class="tag-option"
-            >
-              <input type="checkbox" :value="tag.id" v-model="form.tagIds" />
-              {{ tag.name }}
-            </label>
-          </div>
-        </div>
-        <div class="form-actions">
-          <button type="button" @click="emit('close')">Отмена</button>
-          <button type="submit" class="primary">
-            {{ editing ? 'Сохранить' : 'Создать' }}
+  <Teleport to="body">
+    <div class="modal-overlay" @click.self="emit('close')">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>{{ editing ? 'Редактирование' : 'Новая задача' }}</h3>
+          <button class="close-btn" @click="emit('close')">
+            <X :size="20" />
           </button>
         </div>
-      </form>
-    </GlassCard>
-  </div>
+
+        <form @submit.prevent="handleSubmit">
+          <div class="form-group">
+            <label>Название</label>
+            <input
+              v-model="form.title"
+              type="text"
+              placeholder="Например: Прочитать 20 страниц"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Описание</label>
+            <input
+              v-model="form.description"
+              type="text"
+              placeholder="Дополнительные детали (необязательно)"
+            />
+          </div>
+
+          <div class="form-row" v-if="!hideType">
+            <div class="form-group">
+              <label>Тип</label>
+              <div class="select-wrapper">
+                <select v-model="form.type">
+                  <option value="HABIT">Привычка</option>
+                  <option value="TASK_DAY">На день</option>
+                  <option value="TASK_WEEK">На неделю</option>
+                  <option value="TASK_MONTH">На месяц</option>
+                  <option value="TASK_YEAR">На год</option>
+                </select>
+                <ChevronDown :size="16" class="select-icon" />
+              </div>
+            </div>
+
+            <div class="form-group" v-if="form.type !== 'HABIT'">
+              <label>Срок</label>
+              <input type="date" v-model="form.targetDate" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Теги</label>
+            <div class="tags-cloud">
+              <button
+                v-for="tag in tagsStore.tags"
+                :key="tag.id"
+                type="button"
+                class="tag-btn"
+                :class="{ active: form.tagIds.includes(tag.id) }"
+                @click="toggleTag(tag.id)"
+              >
+                {{ tag.name }}
+              </button>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" @click="emit('close')">
+              Отмена
+            </button>
+            <button type="submit" class="btn-primary">
+              {{ editing ? 'Сохранить' : 'Создать задачу' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
-import GlassCard from '~/components/base/GlassCard.vue'
+import { X, ChevronDown } from 'lucide-vue-next'
 import { useTagsStore } from '~/stores/tags.store'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useNotification } from '~/composables/useNotification'
@@ -95,6 +126,15 @@ watch(
   { immediate: true }
 )
 
+function toggleTag(tagId: string) {
+  const index = form.tagIds.indexOf(tagId)
+  if (index === -1) {
+    form.tagIds.push(tagId)
+  } else {
+    form.tagIds.splice(index, 1)
+  }
+}
+
 function handleSubmit() {
   if (editing.value) {
     emit('save', { ...form })
@@ -109,7 +149,7 @@ function handleSubmit() {
     } else {
       addNotification({
         type: 'warning',
-        message: `Достигнут лимит задач на выбранный период.`,
+        message: 'Лимит задач на этот период исчерпан',
       })
     }
   }
@@ -120,73 +160,202 @@ function handleSubmit() {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 16px;
 }
+
 .modal {
   width: 100%;
-  max-width: 500px;
+  max-width: 480px;
   max-height: 90vh;
   overflow-y: auto;
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  @include glass;
   color: var(--accent);
+
+  // Кастомный скроллбар
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+  }
 }
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 0;
+
+  h3 {
+    font-weight: 600;
+    font-size: 1.3rem;
+    letter-spacing: -0.01em;
+  }
+
+  .close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: var(--dim);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-standard);
+
+    &:hover {
+      background: var(--surface);
+      color: var(--accent);
+    }
+  }
+}
+
+form {
+  padding: 20px 24px 24px;
+}
+
 .form-group {
   margin-bottom: 20px;
+
   label {
     display: block;
-    margin-bottom: 6px;
-    font-size: 0.9rem;
-    color: var(--dim);
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--accent);
   }
+
   input,
   select {
     width: 100%;
-    padding: 10px 12px;
+    padding: 12px 16px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--border-radius-md);
     color: var(--accent);
+    font-size: 1rem;
+    transition: border-color var(--transition-standard);
+
+    &::placeholder {
+      color: var(--dim);
+      opacity: 0.6;
+    }
+
     &:focus {
       border-color: var(--accent);
       outline: none;
     }
   }
-  .tags-select {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    .tag-option {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 500px) {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+.select-wrapper {
+  position: relative;
+
+  select {
+    appearance: none;
+    padding-right: 40px;
+    cursor: pointer;
+  }
+
+  .select-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--dim);
+    pointer-events: none;
+  }
+}
+
+.tags-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  .tag-btn {
+    padding: 8px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius-sm);
+    color: var(--dim);
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all var(--transition-standard);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--border);
+      color: var(--accent);
+    }
+
+    &.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
     }
   }
 }
+
 .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  margin-top: 28px;
+
   button {
-    padding: 10px 20px;
-    border-radius: var(--border-radius-sm);
-    background: var(--surface);
-    color: var(--accent);
+    padding: 12px 24px;
+    border-radius: var(--border-radius-md);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all var(--transition-standard);
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--dim);
+
     &:hover {
-      background: var(--border);
+      background: var(--surface);
+      color: var(--accent);
     }
-    &.primary {
-      background: var(--accent);
-      color: var(--bg);
-      font-weight: 500;
-      &:hover {
-        opacity: 0.9;
-      }
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+
+    &:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
   }
 }

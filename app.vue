@@ -5,21 +5,16 @@
 </template>
 
 <script setup lang="ts">
-import { useUserStore } from '~/stores/user.store'
-import { useQuestsStore } from '~/stores/quests.store'
-import { useHealth } from '~/composables/useHealth'
+import { useTasksStore } from '~/stores/tasks.store'
 
-const userStore = useUserStore()
-const questsStore = useQuestsStore()
+const tasksStore = useTasksStore()
 
 onMounted(() => {
-  questsStore.resetDailyQuests()
-  const { checkAndApplyPenalty } = useHealth()
-  checkAndApplyPenalty()
-  scheduleNextPenaltyCheck()
+  tasksStore.resetDailyTasks()
+  scheduleNextReset()
 })
 
-function scheduleNextPenaltyCheck() {
+function scheduleNextReset() {
   const now = new Date()
   const next4AM = new Date(now)
   next4AM.setDate(now.getDate() + 1)
@@ -27,9 +22,8 @@ function scheduleNextPenaltyCheck() {
   const msUntil4AM = next4AM.getTime() - now.getTime()
 
   setTimeout(() => {
-    const { applyPenaltyIfNeeded } = useHealth()
-    applyPenaltyIfNeeded()
-    scheduleNextPenaltyCheck()
+    tasksStore.resetDailyTasks()
+    scheduleNextReset()
   }, msUntil4AM)
 }
 </script>
