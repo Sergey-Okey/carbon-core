@@ -19,16 +19,12 @@ export const useTasksStore = defineStore(
     function addTask(
       taskData: Omit<Task, 'id' | 'createdAt' | 'done'>
     ): Task | null {
-      // Проверка лимита для горизонтов
       if (taskData.type.startsWith('TASK_')) {
         const activeCount = tasks.value.filter(
           (t) => t.type === taskData.type && !t.done
         ).length
-        if (activeCount >= 3) {
-          return null // Лимит превышен
-        }
+        if (activeCount >= 3) return null
       }
-
       const newTask: Task = {
         id: uuidv4(),
         ...taskData,
@@ -42,7 +38,6 @@ export const useTasksStore = defineStore(
     function completeTask(id: string) {
       const task = tasks.value.find((t) => t.id === id)
       if (!task) return
-
       const userStore = useUserStore()
       const branchesStore = useBranchesStore()
       const tagsStore = useTagsStore()
@@ -62,7 +57,6 @@ export const useTasksStore = defineStore(
       if (!task.done) {
         task.done = true
         task.completedAt = Date.now()
-
         const tags = tagsStore.getTagsByIds(task.tagIds)
         const baseXP = task.type === 'PURCHASE' ? 500 : 100
         tags.forEach((tag) => {
@@ -83,9 +77,7 @@ export const useTasksStore = defineStore(
 
     function updateTask(id: string, updates: Partial<Task>) {
       const task = tasks.value.find((t) => t.id === id)
-      if (task) {
-        Object.assign(task, { ...updates, updatedAt: Date.now() })
-      }
+      if (task) Object.assign(task, { ...updates, updatedAt: Date.now() })
     }
 
     function resetDailyTasks() {
@@ -94,9 +86,7 @@ export const useTasksStore = defineStore(
       tasks.value.forEach((task) => {
         if (task.type === 'TASK_DAY') {
           if (task.targetDate && task.targetDate < today) {
-            if (!task.done) {
-              userStore.reduceLeaguePoints(50)
-            }
+            if (!task.done) userStore.reduceLeaguePoints(50)
             task.done = false
             task.targetDate = today
           } else if (!task.targetDate) {
@@ -114,10 +104,17 @@ export const useTasksStore = defineStore(
       return tasks.value.filter((t) => t.type === 'HABIT')
     }
 
-    function initDemoTasks() {
-      if (tasks.value.length === 0) {
+    // ✅ Демо-инициализация только после восстановления
+    async function initDemoTasksAfterHydration() {
+      const DEMO_KEY = 'carbon-tasks-demo-initialized'
+      // Ждём, пока $persistedState станет доступен (если есть)
+      const store = useTasksStore()
+      if (store.$persistedState) {
+        await store.$persistedState.isReady
+      }
+      // Теперь состояние восстановлено
+      if (tasks.value.length === 0 && !localStorage.getItem(DEMO_KEY)) {
         const tagsStore = useTagsStore()
-        // Ждём инициализации тегов (при первом обращении к сторе он сам заполнится)
         const finTag = tagsStore.tags.find((t) => t.branchId === 'FIN')?.id
         const bodyTag = tagsStore.tags.find((t) => t.branchId === 'BODY')?.id
         const mindTag = tagsStore.tags.find((t) => t.branchId === 'MIND')?.id
@@ -142,16 +139,15 @@ export const useTasksStore = defineStore(
             tagIds: [mindTag],
             targetDate: getTodayDateString(),
           })
-          addTask({
-            title: 'Пить воду',
-            type: 'HABIT',
-            tagIds: [bodyTag],
-          })
+          addTask({ title: 'Пить воду', type: 'HABIT', tagIds: [bodyTag] })
         }
+        localStorage.setItem(DEMO_KEY, 'true')
       }
     }
 
-    initDemoTasks()
+    if (import.meta.client) {
+      initDemoTasksAfterHydration()
+    }
 
     return {
       tasks,
@@ -164,7 +160,5 @@ export const useTasksStore = defineStore(
       getHabits,
     }
   },
-  {
-    persist: { key: 'carbon-tasks', storage: localStorage },
-  }
+  { persist: { key: 'carbon-tasks', storage: localStorage } }
 )
