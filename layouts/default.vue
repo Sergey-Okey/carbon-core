@@ -7,7 +7,6 @@
         <slot />
       </main>
     </div>
-    <TheFooter />
     <ToastContainer />
   </div>
 </template>
@@ -15,7 +14,6 @@
 <script setup lang="ts">
 import TheHeader from '~/components/base/TheHeader.vue'
 import TheNavbar from '~/components/base/TheNavbar.vue'
-import TheFooter from '~/components/base/TheFooter.vue'
 import ToastContainer from '~/components/base/ToastContainer.vue'
 </script>
 
@@ -23,32 +21,59 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
 .layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--bg);
   color: var(--accent);
+  overflow: hidden;
+  transition: background 0.3s ease;
 }
 
 .layout-content {
   display: flex;
   flex: 1;
-  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+
+  @include mobile {
+    flex-direction: column;
+  }
+
   @include desktop {
     flex-direction: row;
+    padding: 4px 0;
   }
 }
 
 .navbar {
-  @include desktop {
-    width: 80px;
-  }
+  flex-shrink: 0;
+  align-self: center;
 }
 
 .main {
   flex: 1;
-  padding: 16px;
   overflow-y: auto;
+  padding: 16px;
+  scroll-behavior: smooth;
+
   @include desktop {
-    padding: 24px;
+    padding: 20px 24px;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+
+    &:hover {
+      background: var(--dim);
+    }
   }
 }
 </style>

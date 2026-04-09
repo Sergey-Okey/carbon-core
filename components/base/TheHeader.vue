@@ -1,32 +1,51 @@
 <template>
   <header class="header">
-    <div class="logo">CARBON CORE</div>
+    <div class="logo">
+      <span class="logo-text">CARBON CORE</span>
+      <span class="logo-icon">CC</span>
+    </div>
 
     <div class="user-stats">
-      <div class="stat">
+      <!-- Уровень с прогресс-баром -->
+      <div class="stat level-stat">
         <Zap :size="18" />
-        <span>Lv.{{ userStore.level }}</span>
+        <div class="level-info">
+          <span class="value">{{ userStore.level }}</span>
+          <span class="label">ур.</span>
+        </div>
+        <ProgressBar
+          class="xp-bar"
+          :value="userStore.currentXP"
+          :max="userStore.neededXPForNextLevel"
+          height="4px"
+        />
       </div>
+
+      <!-- Лига -->
       <div class="stat league-stat" :class="leagueClass">
         <component :is="leagueIcon" :size="18" />
-        <span>{{ userStore.league }}</span>
+        <span class="value">{{ userStore.league }}</span>
       </div>
-      <div class="stat">
+
+      <!-- Золото -->
+      <div class="stat gold-stat">
         <Coins :size="18" />
-        <span>{{ userStore.gold }}</span>
+        <span class="value">{{ userStore.gold }}</span>
       </div>
 
-      <button class="action-btn" @click="openTaskForm" title="Добавить задачу">
-        <Plus :size="20" />
-      </button>
-
-      <button
-        class="settings-btn"
-        @click="$emit('open-settings')"
-        title="Настройки"
-      >
-        <Settings :size="20" />
-      </button>
+      <!-- Кнопки действий -->
+      <div class="actions">
+        <button
+          class="action-btn"
+          @click="openTaskForm"
+          title="Добавить задачу"
+        >
+          <Plus :size="20" />
+        </button>
+        <button class="action-btn" @click="openSettings" title="Настройки">
+          <Settings :size="20" />
+        </button>
+      </div>
     </div>
 
     <Teleport to="body">
@@ -47,13 +66,14 @@ import { useNotification } from '~/composables/useNotification'
 import {
   Zap,
   Coins,
-  Settings,
   Plus,
+  Settings,
   Medal,
   Award,
   Gem,
   Crown,
 } from 'lucide-vue-next'
+import ProgressBar from './ProgressBar.vue'
 import TaskForm from '~/components/task/TaskForm.vue'
 
 const userStore = useUserStore()
@@ -61,7 +81,7 @@ const tasksStore = useTasksStore()
 const { addNotification } = useNotification()
 const showTaskForm = ref(false)
 
-defineEmits<{ (e: 'open-settings'): void }>()
+const emit = defineEmits<{ (e: 'open-settings'): void }>()
 
 const leagueIcon = computed(() => {
   const league = userStore.league
@@ -75,6 +95,10 @@ const leagueClass = computed(() => userStore.league.toLowerCase())
 
 function openTaskForm() {
   showTaskForm.value = true
+}
+
+function openSettings() {
+  emit('open-settings')
 }
 
 function handleTaskSave(taskData: any) {
@@ -102,32 +126,91 @@ function handleTaskSave(taskData: any) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
+  padding: 12px 24px;
   @include glass;
-  border-bottom: 1px solid var(--border);
-  border-radius: 0 0 24px 24px;
-  margin-bottom: 4px;
+  border: 1px solid var(--border);
+  margin: 12px 12px 4px;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  @include mobile {
+    margin: 8px;
+    padding: 12px 16px;
+    border-radius: 20px;
+  }
 
   .logo {
     font-weight: 700;
-    font-size: 1.4rem;
-    letter-spacing: 1px;
+    font-size: 1.3rem;
+    letter-spacing: -0.02em;
     color: var(--accent);
+
+    .logo-text {
+      display: inline;
+    }
+    .logo-icon {
+      display: none;
+    }
+
+    @include mobile {
+      .logo-text {
+        display: none;
+      }
+      .logo-icon {
+        display: inline;
+        font-size: 1.2rem;
+        font-weight: 700;
+      }
+    }
   }
 
   .user-stats {
     display: flex;
-    gap: 16px;
     align-items: center;
+    gap: 20px;
+
+    @include mobile {
+      gap: 12px;
+    }
   }
 
   .stat {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.9rem;
+    gap: 8px;
     color: var(--accent);
     white-space: nowrap;
+
+    .value {
+      font-weight: 600;
+    }
+
+    .label {
+      color: var(--dim);
+      font-weight: 400;
+      margin-left: 2px;
+    }
+  }
+
+  .level-stat {
+    min-width: 140px;
+
+    .level-info {
+      display: flex;
+      align-items: baseline;
+    }
+
+    .xp-bar {
+      width: 80px;
+      margin-left: 8px;
+    }
+
+    @include mobile {
+      min-width: auto;
+      .xp-bar {
+        display: none;
+      }
+    }
   }
 
   .league-stat {
@@ -143,17 +226,32 @@ function handleTaskSave(taskData: any) {
     &.платина {
       color: #e5e4e2;
     }
+
+    @include mobile {
+      display: none;
+    }
   }
 
-  .action-btn,
-  .settings-btn {
+  .gold-stat {
+    @include mobile {
+      display: none;
+    }
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .action-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4px;
-    border-radius: 50%;
-    transition: background var(--transition-standard);
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
     color: var(--dim);
+    transition: all var(--transition-standard);
     background: transparent;
     border: none;
     cursor: pointer;

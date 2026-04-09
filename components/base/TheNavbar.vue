@@ -2,11 +2,11 @@
   <nav
     class="navbar"
     :class="{
-      'is-expanded': uiStore.showLabels,
+      'is-expanded': showLabels,
       'is-mobile': isMobile,
     }"
-    @mouseenter="uiStore.setSidebarHovered(true)"
-    @mouseleave="uiStore.setSidebarHovered(false)"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
   >
     <div class="nav-items">
       <button
@@ -15,10 +15,11 @@
         class="nav-item"
         :class="{ active: uiStore.activeNav === item.id }"
         @click="uiStore.setActiveNav(item.id)"
+        :title="!showLabels ? item.label : ''"
       >
-        <component :is="item.icon" :size="24" />
-        <Transition name="fade">
-          <span class="label" v-if="uiStore.showLabels">{{ item.label }}</span>
+        <component :is="item.icon" :size="20" />
+        <Transition name="label-fade">
+          <span v-if="showLabels" class="label">{{ item.label }}</span>
         </Transition>
       </button>
     </div>
@@ -26,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import {
   LayoutGrid,
   CheckSquare,
@@ -58,67 +59,86 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
 })
+
+const showLabels = computed(() => {
+  return !isMobile.value && uiStore.showLabels
+})
+
+let hoverTimer: ReturnType<typeof setTimeout> | null = null
+function onMouseEnter() {
+  if (isMobile.value) return
+  if (hoverTimer) clearTimeout(hoverTimer)
+  uiStore.setSidebarHovered(true)
+}
+function onMouseLeave() {
+  if (isMobile.value) return
+  if (hoverTimer) clearTimeout(hoverTimer)
+  hoverTimer = setTimeout(() => {
+    uiStore.setSidebarHovered(false)
+  }, 200)
+}
 </script>
 
 <style scoped lang="scss">
 .navbar {
-  --navbar-collapsed-width: 72px;
-  --navbar-expanded-width: 200px;
+  --navbar-collapsed-width: 64px;
+  --navbar-expanded-width: 180px;
+  --navbar-margin: 12px;
 
-  // Стеклянный эффект
-  border: 1px solid var(--border);
   @include glass;
   color: var(--accent);
-  transition: width 0.3s cubic-bezier(0.2, 0, 0, 1), border-radius 0.3s ease;
-  overflow: hidden;
+  border: 1px solid var(--border);
   z-index: 100;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
-  margin-top: auto;
-  margin-bottom: auto;
-  // Мобильная версия (фиксированная нижняя панель)
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(12px);
+  will-change: width;
+  transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);
+
+  // Мобильная версия: компактный островок внизу
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  height: 72px;
-  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+  bottom: var(--navbar-margin);
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  height: auto;
+  padding: 6px 12px;
+  border-radius: 32px;
+  display: inline-flex;
 
   @include desktop {
     position: relative;
     top: 0;
-    bottom: auto;
+    bottom: 0;
     left: 0;
     right: auto;
+    transform: none;
     width: var(--navbar-collapsed-width);
-    height: 100%;
-    border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0;
-    box-shadow: none;
-    transition: width 0.25s ease, border-radius 0.25s ease;
+    height: fit-content;
+    margin: auto var(--navbar-margin); // центрирование по вертикали
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
   }
 
-  // Расширенное состояние (показываем подписи)
   &.is-expanded {
     @include desktop {
       width: var(--navbar-expanded-width);
-      border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0;
     }
   }
 
   .nav-items {
     display: flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
-    height: 100%; // Исправлено: было 100vh
-    padding: 8px 0;
+    gap: 4px;
 
     @include desktop {
       flex-direction: column;
-      justify-content: center; // Центрируем по вертикали
-      gap: 8px;
-      padding: 16px 0;
-      align-items: stretch;
+      gap: 2px;
+      width: 100%;
     }
   }
 
@@ -127,7 +147,7 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     gap: 12px;
-    padding: 12px;
+    padding: 10px 12px;
     border-radius: var(--border-radius-md);
     color: var(--dim);
     transition: all var(--transition-standard);
@@ -135,11 +155,14 @@ onUnmounted(() => {
     background: transparent;
     border: none;
     cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
 
     @include desktop {
       justify-content: flex-start;
-      padding: 12px 16px;
-      margin: 0 8px;
+      padding: 10px 14px;
+      margin: 0 6px;
+      width: calc(100% - 12px);
     }
 
     &:hover {
@@ -160,17 +183,17 @@ onUnmounted(() => {
     .label {
       font-size: 0.9rem;
       font-weight: 500;
+      opacity: 1;
     }
   }
 }
 
-// Анимация появления/исчезновения текста
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
+.label-fade-enter-active,
+.label-fade-leave-active {
+  transition: opacity 0.25s ease;
 }
-.fade-enter-from,
-.fade-leave-to {
+.label-fade-enter-from,
+.label-fade-leave-to {
   opacity: 0;
 }
 </style>
