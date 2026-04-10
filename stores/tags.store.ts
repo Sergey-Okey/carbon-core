@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type { Tag } from '~/types/tag.types'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -21,13 +21,31 @@ export const useTagsStore = defineStore(
   () => {
     const tags = ref<InternalTag[]>([])
 
+    // 🔥 Восстановление системных тегов при старте (после гидратации)
     async function initTagsAfterHydration() {
-      const DEMO_KEY = 'carbon-tags-demo-initialized'
       const store = useTagsStore()
-      if (store.$persistedState) await store.$persistedState.isReady
-      if (tags.value.length === 0 && !localStorage.getItem(DEMO_KEY)) {
-        tags.value = DEFAULT_TAGS.map((tag) => ({ ...tag, id: uuidv4() }))
-        localStorage.setItem(DEMO_KEY, 'true')
+      if (store.$persistedState) {
+        await store.$persistedState.isReady
+      }
+      ensureSystemTags()
+    }
+
+    // Гарантирует наличие всех системных тегов
+    function ensureSystemTags() {
+      const systemNames = DEFAULT_TAGS.map((t) => t.name)
+      const existingNames = tags.value.map((t) => t.name)
+      const missing = systemNames.filter(
+        (name) => !existingNames.includes(name)
+      )
+
+      if (missing.length > 0) {
+        const restored = DEFAULT_TAGS.filter((t) =>
+          missing.includes(t.name)
+        ).map((t) => ({
+          ...t,
+          id: uuidv4(),
+        }))
+        tags.value.push(...restored)
       }
     }
 
@@ -53,11 +71,25 @@ export const useTagsStore = defineStore(
       return true
     }
 
-    if (import.meta.client) {
-      initTagsAfterHydration()
-    }
+    // Автоматическое восстановление при любых изменениях (на случай удаления через другие вкладки)
+    watch(
+      tags,
+      () => {
+        ensureSystemTags()
+      },
+      { deep: true }
+    )
 
-    return { tags, getTagById, getTagsByIds, addTag, deleteTag }
+    return {
+      tags,
+      initTagsAfterHydration,
+      getTagById,
+      getTagsByIds,
+      addTag,
+      deleteTag,
+    }
   },
-  { persist: { key: 'carbon-tags', storage: localStorage } }
+  {
+    persist: { key: 'carbon-tags', storage: localStorage },
+  }
 )

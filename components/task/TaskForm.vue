@@ -46,22 +46,43 @@
 
             <div class="form-group" v-if="form.type !== 'HABIT'">
               <label>Срок</label>
-              <input type="date" v-model="form.targetDate" />
+              <div class="date-wrapper">
+                <input type="date" v-model="form.targetDate" />
+                <Calendar :size="16" class="date-icon" />
+              </div>
             </div>
           </div>
 
           <div class="form-group">
             <label>Теги</label>
             <div class="tags-cloud">
+              <template v-for="tag in tagsStore.tags" :key="tag.id">
+                <div class="tag-wrapper">
+                  <button
+                    type="button"
+                    class="tag-btn"
+                    :class="{ active: form.tagIds.includes(tag.id) }"
+                    @click="toggleTag(tag.id)"
+                  >
+                    {{ tag.name }}
+                  </button>
+                  <button
+                    v-if="!tag.isSystem"
+                    class="tag-delete"
+                    @click.stop="deleteTag(tag.id)"
+                    title="Удалить тег"
+                  >
+                    <X :size="14" />
+                  </button>
+                </div>
+              </template>
               <button
-                v-for="tag in tagsStore.tags"
-                :key="tag.id"
                 type="button"
-                class="tag-btn"
-                :class="{ active: form.tagIds.includes(tag.id) }"
-                @click="toggleTag(tag.id)"
+                class="tag-btn add-tag-btn"
+                @click="openAddTagModal"
+                title="Добавить тег"
               >
-                {{ tag.name }}
+                <Plus :size="16" /> Добавить
               </button>
             </div>
           </div>
@@ -77,12 +98,63 @@
         </form>
       </div>
     </div>
+
+    <!-- Модалка добавления тега -->
+    <Teleport to="body">
+      <div
+        v-if="showAddTagModal"
+        class="modal-overlay"
+        @click.self="closeAddTagModal"
+      >
+        <div class="modal tag-modal">
+          <div class="modal-header">
+            <h4>Новый тег</h4>
+            <button class="close-btn" @click="closeAddTagModal">
+              <X :size="18" />
+            </button>
+          </div>
+          <form @submit.prevent="createTag">
+            <div class="form-group">
+              <label>Название</label>
+              <input
+                v-model="newTagName"
+                type="text"
+                placeholder="#важно"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Ветка</label>
+              <div class="select-wrapper">
+                <select v-model="newTagBranchId" required>
+                  <option value="FIN">Финансы</option>
+                  <option value="BODY">Тело</option>
+                  <option value="MIND">Интеллект</option>
+                  <option value="LDR">Лидерство</option>
+                </select>
+                <ChevronDown :size="16" class="select-icon" />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button
+                type="button"
+                class="btn-secondary"
+                @click="closeAddTagModal"
+              >
+                Отмена
+              </button>
+              <button type="submit" class="btn-primary">Создать</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Teleport>
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
-import { X, ChevronDown } from 'lucide-vue-next'
+import { reactive, watch, ref, computed } from 'vue'
+import { X, ChevronDown, Calendar, Plus } from 'lucide-vue-next'
 import { useTagsStore } from '~/stores/tags.store'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useNotification } from '~/composables/useNotification'
@@ -154,6 +226,50 @@ function handleSubmit() {
     }
   }
 }
+
+// Логика добавления/удаления тегов
+const showAddTagModal = ref(false)
+const newTagName = ref('')
+const newTagBranchId = ref<'FIN' | 'BODY' | 'MIND' | 'LDR'>('FIN')
+
+function openAddTagModal() {
+  newTagName.value = ''
+  newTagBranchId.value = 'FIN'
+  showAddTagModal.value = true
+}
+
+function closeAddTagModal() {
+  showAddTagModal.value = false
+}
+
+function createTag() {
+  if (!newTagName.value.trim()) return
+  let name = newTagName.value.trim()
+  if (!name.startsWith('#')) name = '#' + name
+
+  const existing = tagsStore.tags.find(
+    (t) => t.name.toLowerCase() === name.toLowerCase()
+  )
+  if (existing) {
+    addNotification({ type: 'warning', message: 'Такой тег уже существует' })
+    return
+  }
+
+  tagsStore.addTag({ name, branchId: newTagBranchId.value, order: 999 })
+  addNotification({ type: 'success', message: `Тег «${name}» добавлен` })
+  closeAddTagModal()
+}
+
+function deleteTag(tagId: string) {
+  const success = tagsStore.deleteTag(tagId)
+  if (success) {
+    addNotification({ type: 'success', message: 'Тег удалён' })
+    const index = form.tagIds.indexOf(tagId)
+    if (index !== -1) form.tagIds.splice(index, 1)
+  } else {
+    addNotification({ type: 'error', message: 'Нельзя удалить системный тег' })
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -165,6 +281,8 @@ function handleSubmit() {
   justify-content: center;
   z-index: 1000;
   padding: 16px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
 }
 
 .modal {
@@ -178,7 +296,6 @@ function handleSubmit() {
   @include glass;
   color: var(--accent);
 
-  // Кастомный скроллбар
   &::-webkit-scrollbar {
     width: 4px;
   }
@@ -191,16 +308,26 @@ function handleSubmit() {
   }
 }
 
+.tag-modal {
+  max-width: 380px;
+}
+
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px 0;
 
-  h3 {
+  h3,
+  h4 {
     font-weight: 600;
-    font-size: 1.3rem;
     letter-spacing: -0.01em;
+  }
+  h3 {
+    font-size: 1.3rem;
+  }
+  h4 {
+    font-size: 1.1rem;
   }
 
   .close-btn {
@@ -237,7 +364,7 @@ form {
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    color: var(--accent);
+    color: var(--dim);
   }
 
   input,
@@ -293,10 +420,44 @@ form {
   }
 }
 
+.date-wrapper {
+  position: relative;
+
+  input[type='date'] {
+    appearance: none;
+    padding-right: 40px;
+    cursor: pointer;
+
+    &::-webkit-calendar-picker-indicator {
+      opacity: 0;
+      position: absolute;
+      right: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+  }
+
+  .date-icon {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--dim);
+    pointer-events: none;
+  }
+}
+
 .tags-cloud {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+
+  .tag-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
 
   .tag-btn {
     padding: 8px 14px;
@@ -318,6 +479,44 @@ form {
       background: var(--accent);
       border-color: var(--accent);
       color: var(--bg);
+    }
+  }
+
+  .tag-delete {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0;
+
+    &:hover {
+      background: var(--error);
+      color: white;
+      border-color: var(--error);
+    }
+  }
+
+  .add-tag-btn {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--dim);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    &:hover {
+      background: var(--surface);
+      border-style: solid;
     }
   }
 }
