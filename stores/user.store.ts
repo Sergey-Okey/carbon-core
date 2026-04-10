@@ -10,8 +10,15 @@ export const useUserStore = defineStore(
   'user',
   () => {
     const totalXP = ref<number>(0)
-    const gold = ref<number>(100)
-    const leaguePoints = ref<number>(0) // очки лиги
+    const coins = ref<number>(100) // ← переименовано
+    const leaguePoints = ref<number>(0)
+
+    const profile = ref({
+      name: '',
+      bio: '',
+      email: '',
+      avatar: '',
+    })
 
     const level = computed(() => calculateLevel(totalXP.value))
     const currentXP = computed(() =>
@@ -34,29 +41,36 @@ export const useUserStore = defineStore(
 
     function addXP(amount: number) {
       totalXP.value += amount
-      leaguePoints.value += amount * 0.5 // половина опыта идёт в прогресс лиги
+      leaguePoints.value += amount * 0.5
     }
 
-    function addGold(amount: number) {
-      gold.value += amount
+    function addCoins(amount: number) {
+      // ← переименовано
+      coins.value += amount
     }
 
     function reduceLeaguePoints(amount: number) {
       leaguePoints.value = Math.max(0, leaguePoints.value - amount)
     }
 
+    function updateProfile(newProfile: Partial<typeof profile.value>) {
+      profile.value = { ...profile.value, ...newProfile }
+    }
+
     return {
       totalXP,
-      gold,
+      coins,
       leaguePoints,
+      profile,
       level,
       currentXP,
       neededXPForNextLevel,
       levelProgressPercent,
       league,
       addXP,
-      addGold,
+      addCoins,
       reduceLeaguePoints,
+      updateProfile,
     }
   },
   {

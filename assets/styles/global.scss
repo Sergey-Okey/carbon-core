@@ -25,3 +25,7 @@
 .fade-leave-to {
   opacity: 0;
 }
+.no-animations * {
+  transition: none !important;
+  animation: none !important;
+}

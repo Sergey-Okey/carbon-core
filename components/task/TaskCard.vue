@@ -62,7 +62,7 @@ const emit = defineEmits<{
 
 const tagsStore = useTagsStore()
 const tasksStore = useTasksStore()
-const { addNotification } = useNotification()
+const { addNotification, removeNotification } = useNotification()
 
 const taskTags = computed(() => tagsStore.getTagsByIds(props.task.tagIds))
 
@@ -92,27 +92,58 @@ const isOverdue = computed(() => {
 
 function handleToggle() {
   tasksStore.completeTask(props.task.id)
-  if (props.task.type === 'HABIT') {
-    addNotification({
-      type: 'success',
-      message: `Привычка «${props.task.title}» выполнена`,
-    })
-  } else {
-    addNotification({
-      type: 'success',
-      message: `Задача «${props.task.title}» выполнена`,
-    })
-  }
+  addNotification({
+    type: 'success',
+    message:
+      props.task.type === 'HABIT'
+        ? `Привычка «${props.task.title}» выполнена`
+        : `Задача «${props.task.title}» выполнена`,
+  })
   emit('toggle', props.task.id)
 }
 
+let pendingDeleteTimer: ReturnType<typeof setTimeout> | null = null
+let notificationId: string | null = null
+
 function handleDelete() {
+  const deletedTask = { ...props.task }
+
   tasksStore.deleteTask(props.task.id)
-  addNotification({
-    type: 'info',
-    message: `«${props.task.title}» удалено`,
-  })
   emit('delete', props.task.id)
+
+  const notif = {
+    type: 'info' as const,
+    message: `«${props.task.title}» удалено`,
+    duration: 5000,
+    action: {
+      label: 'Отменить',
+      handler: () => {
+        if (pendingDeleteTimer) {
+          clearTimeout(pendingDeleteTimer)
+          pendingDeleteTimer = null
+        }
+        tasksStore.addTask({
+          ...deletedTask,
+          id: deletedTask.id,
+          createdAt: deletedTask.createdAt,
+        })
+        addNotification({
+          type: 'success',
+          message: `«${deletedTask.title}» восстановлено`,
+        })
+        if (notificationId) {
+          removeNotification(notificationId)
+        }
+      },
+    },
+  }
+  addNotification(notif)
+  notificationId = notif.id
+
+  pendingDeleteTimer = setTimeout(() => {
+    pendingDeleteTimer = null
+    notificationId = null
+  }, 5000)
 }
 </script>
 
@@ -123,7 +154,7 @@ function handleDelete() {
 
   &.completed {
     filter: grayscale(1);
-    opacity: 0.4;
+    opacity: 0.5;
   }
 
   &.overdue {
@@ -157,11 +188,12 @@ function handleDelete() {
     border-radius: 12px;
     background: var(--border);
     text-transform: uppercase;
+    color: var(--accent);
     &.HABIT {
-      background: rgba(0, 255, 136, 0.1);
+      background: rgba(0, 255, 136, 0.15);
     }
     &.PURCHASE {
-      background: rgba(255, 215, 0, 0.1);
+      background: rgba(255, 215, 0, 0.15);
     }
   }
 

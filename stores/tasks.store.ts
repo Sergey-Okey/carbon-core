@@ -17,7 +17,7 @@ export const useTasksStore = defineStore(
     }
 
     function addTask(
-      taskData: Omit<Task, 'id' | 'createdAt' | 'done'>
+      taskData: Omit<Task, 'id' | 'createdAt' | 'done'> & { id?: string }
     ): Task | null {
       if (taskData.type.startsWith('TASK_')) {
         const activeCount = tasks.value.filter(
@@ -26,10 +26,10 @@ export const useTasksStore = defineStore(
         if (activeCount >= 3) return null
       }
       const newTask: Task = {
-        id: uuidv4(),
+        id: taskData.id || uuidv4(),
         ...taskData,
         done: false,
-        createdAt: Date.now(),
+        createdAt: taskData.createdAt || Date.now(),
       }
       tasks.value.push(newTask)
       return newTask
@@ -104,15 +104,8 @@ export const useTasksStore = defineStore(
       return tasks.value.filter((t) => t.type === 'HABIT')
     }
 
-    // ✅ Демо-инициализация только после восстановления
-    async function initDemoTasksAfterHydration() {
+    function initDemoTasks() {
       const DEMO_KEY = 'carbon-tasks-demo-initialized'
-      // Ждём, пока $persistedState станет доступен (если есть)
-      const store = useTasksStore()
-      if (store.$persistedState) {
-        await store.$persistedState.isReady
-      }
-      // Теперь состояние восстановлено
       if (tasks.value.length === 0 && !localStorage.getItem(DEMO_KEY)) {
         const tagsStore = useTagsStore()
         const finTag = tagsStore.tags.find((t) => t.branchId === 'FIN')?.id
@@ -146,7 +139,14 @@ export const useTasksStore = defineStore(
     }
 
     if (import.meta.client) {
-      initDemoTasksAfterHydration()
+      const store = useTasksStore()
+      if (store.$persistedState) {
+        store.$persistedState.isReady.then(() => {
+          initDemoTasks()
+        })
+      } else {
+        initDemoTasks()
+      }
     }
 
     return {
@@ -160,5 +160,7 @@ export const useTasksStore = defineStore(
       getHabits,
     }
   },
-  { persist: { key: 'carbon-tasks', storage: localStorage } }
+  {
+    persist: { key: 'carbon-tasks', storage: localStorage },
+  }
 )

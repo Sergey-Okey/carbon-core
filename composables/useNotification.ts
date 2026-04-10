@@ -2,11 +2,17 @@ import { ref } from 'vue'
 
 export type NotificationType = 'info' | 'success' | 'warning' | 'error'
 
+export interface NotificationAction {
+  label: string
+  handler: () => void
+}
+
 export interface Notification {
   id: string
   type: NotificationType
   message: string
   duration?: number
+  action?: NotificationAction
 }
 
 const notifications = ref<Notification[]>([])

@@ -1,7 +1,13 @@
 <template>
   <div class="task-list">
     <div class="list-header">
-      <h3>{{ title }}</h3>
+      <div class="title-wrapper">
+        <h3>{{ title }}</h3>
+        <div v-if="taskType !== 'HABITS'" class="info-badge" :title="ruleHint">
+          <Info :size="14" />
+          <span class="tooltip">{{ ruleHint }}</span>
+        </div>
+      </div>
       <button class="add-btn" @click="handleAddClick">
         <Plus :size="20" />
       </button>
@@ -15,7 +21,9 @@
         @delete="tasksStore.deleteTask"
         @edit="handleEdit"
       />
-      <p v-if="tasks.length === 0" class="empty">Нет активных задач</p>
+      <p v-if="tasks.length === 0" class="empty">
+        {{ emptyMessage }}
+      </p>
     </div>
     <Teleport to="body">
       <TaskForm
@@ -35,7 +43,7 @@ import { useTasksStore } from '~/stores/tasks.store'
 import { useNotification } from '~/composables/useNotification'
 import TaskCard from './TaskCard.vue'
 import TaskForm from './TaskForm.vue'
-import { Plus } from 'lucide-vue-next'
+import { Plus, Info } from 'lucide-vue-next'
 import type { Task, TaskType } from '~/types/task.types'
 
 const props = defineProps<{
@@ -56,6 +64,22 @@ const tasks = computed(() => {
   return tasksStore.getTasksByType(props.taskType)
 })
 
+const ruleHint = computed(() => {
+  const map: Record<string, string> = {
+    TASK_DAY:
+      'Не более 3 активных задач на день. Выполненные — можно добавлять новые.',
+    TASK_WEEK: 'Не более 3 активных задач на неделю.',
+    TASK_MONTH: 'Не более 3 активных задач на месяц.',
+    TASK_YEAR: 'Не более 3 активных задач на год.',
+  }
+  return map[props.taskType as string] || ''
+})
+
+const emptyMessage = computed(() => {
+  if (props.taskType === 'HABITS') return 'Нет привычек. Добавьте первую.'
+  return 'Нет активных задач. Можно добавить до 3.'
+})
+
 function handleAddClick() {
   if (props.taskType === 'HABITS') {
     showForm.value = true
@@ -67,7 +91,7 @@ function handleAddClick() {
   if (activeCount >= 3) {
     addNotification({
       type: 'warning',
-      message: `Достигнут лимит: 3 задачи на ${props.title.toLowerCase()}. Сосредоточьтесь на главном.`,
+      message: `Достигнут лимит: 3 активные задачи на ${props.title.toLowerCase()}. Завершите что-то, чтобы добавить новое.`,
       duration: 5000,
     })
     return
@@ -121,12 +145,54 @@ function handleSave(taskData: any) {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
-    h3 {
-      font-weight: 600;
-      font-size: 1.1rem;
-      color: var(--accent);
+  }
+
+  .title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  h3 {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  .info-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dim);
+    cursor: help;
+
+    &:hover .tooltip {
+      opacity: 1;
+      visibility: visible;
     }
   }
+
+  .tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    color: var(--accent);
+    padding: 6px 10px;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    z-index: 10;
+  }
+
   .add-btn {
     @include glass;
     width: 32px;
@@ -140,15 +206,18 @@ function handleSave(taskData: any) {
       background: var(--surface);
     }
   }
+
   .tasks {
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
+
   .empty {
     text-align: center;
     color: var(--dim);
     padding: 16px;
+    font-size: 0.9rem;
   }
 }
 </style>

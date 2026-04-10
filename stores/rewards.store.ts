@@ -30,7 +30,7 @@ export const useRewardsStore = defineStore(
             price: 1500,
             purchased: false,
             completed: false,
-            effect: { xp: 300, gold: 200 },
+            effect: { xp: 300, coins: 200 },
           },
         ]
         localStorage.setItem(DEMO_KEY, 'true')
@@ -41,9 +41,9 @@ export const useRewardsStore = defineStore(
       const userStore = useUserStore()
       const reward = rewards.value.find((r) => r.id === id)
       if (!reward || reward.purchased) return
-      if (userStore.gold < reward.price) return
+      if (userStore.coins < reward.price) return // ← изменено
 
-      userStore.addGold(-reward.price)
+      userStore.addCoins(-reward.price) // ← изменено
       reward.purchased = true
       reward.purchasedAt = Date.now()
     }
@@ -58,7 +58,7 @@ export const useRewardsStore = defineStore(
 
       if (reward.effect) {
         if (reward.effect.xp) userStore.addXP(reward.effect.xp)
-        if (reward.effect.gold) userStore.addGold(reward.effect.gold)
+        if (reward.effect.coins) userStore.addCoins(reward.effect.coins) // ← изменено
         if (reward.effect.leaguePoints)
           userStore.leaguePoints += reward.effect.leaguePoints
       }

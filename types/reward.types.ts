@@ -5,8 +5,11 @@ export interface Reward {
   price: number
   purchased: boolean
   purchasedAt?: number
+  completed: boolean
+  completedAt?: number
   effect?: {
-    hp?: number
     xp?: number
+    coins?: number
+    leaguePoints?: number
   }
 }

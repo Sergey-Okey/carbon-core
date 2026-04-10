@@ -3,7 +3,7 @@
     <div class="modal-overlay" @click.self="emit('close')">
       <div class="modal">
         <div class="modal-header">
-          <h3>{{ editing ? 'Редактирование' : 'Новая задача' }}</h3>
+          <h3>{{ modalTitle }}</h3>
           <button class="close-btn" @click="emit('close')">
             <X :size="20" />
           </button>
@@ -15,7 +15,7 @@
             <input
               v-model="form.title"
               type="text"
-              placeholder="Например: Прочитать 20 страниц"
+              :placeholder="titlePlaceholder"
               required
             />
           </div>
@@ -92,7 +92,7 @@
               Отмена
             </button>
             <button type="submit" class="btn-primary">
-              {{ editing ? 'Сохранить' : 'Создать задачу' }}
+              {{ editing ? 'Сохранить' : submitButtonText }}
             </button>
           </div>
         </form>
@@ -184,6 +184,22 @@ const form = reactive({
   tagIds: [] as string[],
 })
 
+// Динамические тексты в зависимости от типа
+const modalTitle = computed(() => {
+  if (editing.value) return 'Редактирование'
+  return form.type === 'HABIT' ? 'Новая привычка' : 'Новая задача'
+})
+
+const submitButtonText = computed(() => {
+  return form.type === 'HABIT' ? 'Добавить привычку' : 'Создать задачу'
+})
+
+const titlePlaceholder = computed(() => {
+  return form.type === 'HABIT'
+    ? 'Например: Пить воду'
+    : 'Например: Прочитать 20 страниц'
+})
+
 watch(
   () => props.task,
   (newTask) => {
@@ -193,6 +209,17 @@ watch(
       form.type = newTask.type
       form.targetDate = newTask.targetDate || ''
       form.tagIds = [...newTask.tagIds]
+    }
+  },
+  { immediate: true }
+)
+
+// Если задан defaultType, синхронизируем его, но только при создании
+watch(
+  () => props.defaultType,
+  (newType) => {
+    if (!editing.value && newType) {
+      form.type = newType
     }
   },
   { immediate: true }
@@ -215,7 +242,10 @@ function handleSubmit() {
     if (result) {
       addNotification({
         type: 'success',
-        message: `«${result.title}» добавлено`,
+        message:
+          form.type === 'HABIT'
+            ? `Привычка «${result.title}» добавлена`
+            : `«${result.title}» добавлено`,
       })
       emit('close')
     } else {
@@ -554,7 +584,7 @@ form {
     &:hover {
       opacity: 0.9;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      box-shadow: var(--shadow-sm);
     }
   }
 }

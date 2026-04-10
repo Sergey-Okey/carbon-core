@@ -1,5 +1,5 @@
 <template>
-  <div class="toast-container" ref="containerRef">
+  <div class="toast-container">
     <TransitionGroup name="toast">
       <div
         v-for="notif in notifications"
@@ -7,36 +7,25 @@
         class="toast"
         :class="notif.type"
         @click="removeNotification(notif.id)"
-        @pointerdown="startSwipe($event, notif.id)"
       >
         <span class="indicator"></span>
         <span class="message">{{ notif.message }}</span>
+        <button
+          v-if="notif.action"
+          class="toast-action"
+          @click.stop="notif.action.handler"
+        >
+          {{ notif.action.label }}
+        </button>
       </div>
     </TransitionGroup>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useSwipe } from '@vueuse/core'
 import { useNotification } from '~/composables/useNotification'
 
 const { notifications, removeNotification } = useNotification()
-const containerRef = ref<HTMLElement>()
-
-function startSwipe(event: PointerEvent, id: string) {
-  const target = event.currentTarget as HTMLElement
-  if (!target) return
-
-  const { isSwiping } = useSwipe(target, {
-    threshold: 30,
-    onSwipeEnd() {
-      if (isSwiping.value) {
-        removeNotification(id)
-      }
-    },
-  })
-}
 </script>
 
 <style scoped lang="scss">
@@ -47,8 +36,6 @@ function startSwipe(event: PointerEvent, id: string) {
   flex-direction: column;
   gap: 10px;
   pointer-events: none;
-
-  // Отступ сверху равен высоте хедера + отступы
   top: calc(80px + 16px);
   right: 20px;
   left: auto;
@@ -69,17 +56,17 @@ function startSwipe(event: PointerEvent, id: string) {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 18px;
+  padding: 10px 16px;
   border-radius: var(--border-radius-lg);
   @include glass;
   border: 1px solid var(--border);
   color: var(--accent);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
-  cursor: grab;
+  cursor: pointer;
   transition: all 0.2s ease;
   width: fit-content;
   backdrop-filter: blur(12px);
-  touch-action: pan-y; // улучшает свайп
+  touch-action: pan-y;
 
   &:active {
     cursor: grabbing;
@@ -120,9 +107,25 @@ function startSwipe(event: PointerEvent, id: string) {
     line-height: 1.4;
     font-weight: 450;
   }
+
+  .toast-action {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 4px 10px;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 4px;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
 }
 
-// Анимации
 .toast-enter-active,
 .toast-leave-active {
   transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);

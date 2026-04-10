@@ -5,7 +5,7 @@
     <div class="price"><Coins :size="16" /> {{ reward.price }}</div>
     <button
       class="buy-btn"
-      :disabled="reward.purchased || userStore.gold < reward.price"
+      :disabled="reward.purchased || userStore.coins < reward.price"
       @click="purchase"
     >
       {{ reward.purchased ? 'Куплено' : 'Купить' }}
