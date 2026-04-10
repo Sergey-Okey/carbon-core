@@ -1,5 +1,5 @@
 <template>
-  <div class="onboarding" :class="{ exiting: isExiting }">
+  <div class="onboarding">
     <!-- Анимированный фон -->
     <div class="background-layer">
       <div class="floating-shape shape1"></div>
@@ -8,10 +8,7 @@
       <div class="gradient-overlay"></div>
     </div>
 
-    <!-- Эффект вспышки -->
-    <div v-if="showFlash" class="flash-overlay"></div>
-
-    <div class="onboarding-modal" ref="modalRef">
+    <div class="onboarding-modal">
       <!-- Прогресс-бар -->
       <div class="progress-track">
         <div
@@ -24,7 +21,7 @@
         <section :key="currentSection" class="section-content">
           <!-- 1. Приветствие -->
           <div v-if="currentSection === 1" class="welcome-section">
-            <div class="logo-wrapper" ref="logoWrapper">
+            <div class="logo-wrapper">
               <div class="logo-glow"></div>
               <span class="big-logo">COF</span>
             </div>
@@ -36,7 +33,7 @@
               едином минималистичном пространстве.
             </p>
             <div class="hint">
-              <span class="hint-icon">→</span> листайте вправо, чтобы узнать
+              <span class="hint-icon">✨</span> листайте вправо, чтобы узнать
               больше
             </div>
           </div>
@@ -44,8 +41,7 @@
           <!-- 2. Философия -->
           <div v-else-if="currentSection === 2" class="content-block">
             <div class="section-icon">
-              <div class="icon-ring"></div>
-              <Sparkles :size="28" class="icon-svg" />
+              <Sparkles :size="36" class="icon" />
             </div>
             <h2>Меньше, но лучше</h2>
             <p class="description">
@@ -61,16 +57,15 @@
           <!-- 3. Доска веток -->
           <div v-else-if="currentSection === 3" class="content-block">
             <div class="section-icon">
-              <div class="icon-ring"></div>
-              <LayoutGrid :size="28" class="icon-svg" />
+              <LayoutGrid :size="36" class="icon" />
             </div>
             <h2>Визуализация роста</h2>
             <p class="description">
               Четыре столпа вашего развития: <strong>Финансы</strong>,
               <strong>Тело</strong>, <strong>Интеллект</strong> и
               <strong>Лидерство</strong>. Каждый имеет собственную шкалу
-              прогресса и контрольные точки. Выполняя задачи, вы продвигаетесь
-              по веткам и видите, как меняется ваша жизнь.
+              прогресса и контрольные точки (милестоуны). Выполняя задачи, вы
+              продвигаетесь по веткам и видите, как меняется ваша жизнь.
             </p>
             <div class="mockup-branches">
               <div class="mockup-item">FIN</div>
@@ -83,8 +78,7 @@
           <!-- 4. Задачи и привычки -->
           <div v-else-if="currentSection === 4" class="content-block">
             <div class="section-icon">
-              <div class="icon-ring"></div>
-              <CheckSquare :size="28" class="icon-svg" />
+              <CheckSquare :size="36" class="icon" />
             </div>
             <h2>Гибкая система задач</h2>
             <p class="description">
@@ -104,8 +98,7 @@
           <!-- 5. Лиги и монеты -->
           <div v-else-if="currentSection === 5" class="content-block">
             <div class="section-icon">
-              <div class="icon-ring"></div>
-              <Trophy :size="28" class="icon-svg" />
+              <Trophy :size="36" class="icon" />
             </div>
             <h2>Игровая мотивация</h2>
             <p class="description">
@@ -126,8 +119,7 @@
           <!-- 6. Профиль и данные -->
           <div v-else-if="currentSection === 6" class="content-block">
             <div class="section-icon">
-              <div class="icon-ring"></div>
-              <User :size="28" class="icon-svg" />
+              <User :size="36" class="icon" />
             </div>
             <h2>Ваше пространство</h2>
             <p class="description">
@@ -139,7 +131,7 @@
 
           <!-- 7. Финальный экран -->
           <div v-else-if="currentSection === 7" class="welcome-section final">
-            <div class="logo-wrapper" ref="finalLogoWrapper">
+            <div class="logo-wrapper">
               <div class="logo-glow"></div>
               <span class="big-logo">COF</span>
             </div>
@@ -148,7 +140,7 @@
               Теперь система настроена. Создайте первую задачу и наблюдайте, как
               ваш мир становится структурированнее и осознаннее.
             </p>
-            <button class="cta-button" @click="startJourney">
+            <button class="cta-button" @click="finishOnboarding">
               Начать использовать Core of Life
             </button>
           </div>
@@ -184,6 +176,11 @@
         </button>
       </div>
     </div>
+
+    <!-- Эффект вспышки при завершении -->
+    <Transition name="flash">
+      <div v-if="isFinishing" class="flash-overlay"></div>
+    </Transition>
   </div>
 </template>
 
@@ -205,12 +202,7 @@ const router = useRouter()
 
 const totalSections = 7
 const currentSection = ref(1)
-const isExiting = ref(false)
-const showFlash = ref(false)
-
-const modalRef = ref<HTMLElement | null>(null)
-const logoWrapper = ref<HTMLElement | null>(null)
-const finalLogoWrapper = ref<HTMLElement | null>(null)
+const isFinishing = ref(false)
 
 function nextSection() {
   if (currentSection.value < totalSections) {
@@ -222,54 +214,12 @@ function prevSection() {
     currentSection.value--
   }
 }
-
-function startJourney() {
-  // Анимация вспышки и ухода логотипа
-  showFlash.value = true
-  isExiting.value = true
-
-  // Находим логотип для анимации
-  const logoEl = finalLogoWrapper.value?.querySelector(
-    '.big-logo'
-  ) as HTMLElement
-  if (logoEl) {
-    const rect = logoEl.getBoundingClientRect()
-    // Создаём клон для полёта
-    const clone = logoEl.cloneNode(true) as HTMLElement
-    clone.style.position = 'fixed'
-    clone.style.left = rect.left + 'px'
-    clone.style.top = rect.top + 'px'
-    clone.style.fontSize = '5rem'
-    clone.style.fontWeight = '800'
-    clone.style.color = 'var(--accent)'
-    clone.style.textShadow = '0 0 20px rgba(255,255,255,0.3)'
-    clone.style.transition = 'all 0.8s cubic-bezier(0.2, 0.9, 0.4, 1)'
-    clone.style.zIndex = '10000'
-    document.body.appendChild(clone)
-
-    // Целевая позиция — левый верхний угол (где хедер)
-    const targetX = 24
-    const targetY = 24
-
-    requestAnimationFrame(() => {
-      clone.style.left = targetX + 'px'
-      clone.style.top = targetY + 'px'
-      clone.style.fontSize = '1.2rem'
-      clone.style.opacity = '0.8'
-    })
-
-    setTimeout(() => {
-      clone.remove()
-      onboardingStore.markAsSeen()
-      router.push('/')
-    }, 800)
-  } else {
-    // Если логотип не найден, просто завершаем
-    setTimeout(() => {
-      onboardingStore.markAsSeen()
-      router.push('/')
-    }, 600)
-  }
+async function finishOnboarding() {
+  isFinishing.value = true
+  // Даём время на анимацию вспышки
+  await new Promise((resolve) => setTimeout(resolve, 600))
+  onboardingStore.markAsSeen()
+  router.push('/')
 }
 </script>
 
@@ -282,33 +232,6 @@ function startJourney() {
   justify-content: center;
   background: #0a0a0a;
   z-index: 9999;
-  transition: opacity 0.6s;
-  &.exiting {
-    opacity: 0;
-    pointer-events: none;
-  }
-}
-
-.flash-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--accent);
-  opacity: 0;
-  z-index: 10001;
-  pointer-events: none;
-  animation: flash 0.8s ease-out forwards;
-}
-
-@keyframes flash {
-  0% {
-    opacity: 0;
-  }
-  30% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 0;
-  }
 }
 
 .background-layer {
@@ -394,10 +317,6 @@ function startJourney() {
   z-index: 10;
   backdrop-filter: blur(20px);
   background: rgba(18, 18, 18, 0.6);
-  transition: opacity 0.4s;
-  .exiting & {
-    opacity: 0;
-  }
 }
 
 .progress-track {
@@ -503,19 +422,21 @@ h1 {
   display: flex;
   justify-content: center;
   margin-bottom: 24px;
-  position: relative;
-  .icon-ring {
-    position: absolute;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    animation: spin 10s linear infinite;
-  }
-  .icon-svg {
-    position: relative;
-    z-index: 2;
+
+  .icon {
     color: var(--accent);
+    filter: drop-shadow(0 0 8px var(--accent));
+    animation: float-icon 6s infinite ease-in-out;
+  }
+}
+
+@keyframes float-icon {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
   }
 }
 
@@ -683,6 +604,44 @@ h2 {
   }
 }
 
+// Эффект вспышки при завершении
+.flash-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--accent);
+  opacity: 0.9;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.flash-enter-active {
+  animation: flash-in 0.6s ease-out forwards;
+}
+.flash-leave-active {
+  animation: flash-out 0.4s ease-in forwards;
+}
+
+@keyframes flash-in {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.9;
+  }
+}
+@keyframes flash-out {
+  0% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+// Анимации
 @keyframes float {
   0% {
     transform: translate(0, 0) rotate(0deg);
@@ -710,14 +669,6 @@ h2 {
     transform: translateX(5px);
   }
 }
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 .fade-slide-enter-active,
 .fade-slide-leave-active {
@@ -734,6 +685,7 @@ h2 {
   transform: translateX(-30px);
 }
 
+// Адаптивность
 @media (max-width: 600px) {
   .onboarding-modal {
     padding: 30px 20px 20px;
