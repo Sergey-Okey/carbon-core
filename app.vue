@@ -7,17 +7,25 @@
 <script setup lang="ts">
 import { useTasksStore } from '~/stores/tasks.store'
 import { useSettingsStore } from '~/stores/settings.store'
+import { useOnboardingStore } from '~/stores/onboarding.store'
 
 const tasksStore = useTasksStore()
 const settingsStore = useSettingsStore()
+const onboardingStore = useOnboardingStore()
 
-// Ждём готовности persistedState и применяем тему ДО рендера
 await settingsStore.ready
+
+// Редирект на онбординг для новых пользователей
+if (!onboardingStore.hasSeenOnboarding && import.meta.client) {
+  const route = useRoute()
+  if (route.path !== '/onboarding') {
+    await navigateTo('/onboarding')
+  }
+}
 
 onMounted(() => {
   tasksStore.resetDailyTasks()
   scheduleNextReset()
-
   window.addEventListener('beforeunload', autoBackupOnUnload)
 })
 

@@ -1,11 +1,14 @@
 <template>
   <header class="header">
     <div class="logo">
-      <span class="logo-text">CARBON CORE</span>
-      <span class="logo-icon">CC</span>
+      <span class="logo-text">CORE OF LIFE</span>
+      <span class="logo-icon">COF</span>
     </div>
 
     <div class="actions">
+      <button class="action-btn" @click="openOnboarding" title="Обучение">
+        <HelpCircle :size="20" />
+      </button>
       <button class="action-btn" @click="openTaskForm" title="Добавить задачу">
         <Plus :size="20" />
       </button>
@@ -17,6 +20,7 @@
       </button>
     </div>
 
+    <!-- Модалки -->
     <Teleport to="body">
       <TaskForm
         v-if="showTaskForm"
@@ -24,7 +28,6 @@
         @save="handleTaskSave"
       />
     </Teleport>
-
     <Teleport to="body">
       <ProfileModal v-if="showProfileModal" @close="showProfileModal = false" />
     </Teleport>
