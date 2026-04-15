@@ -1,59 +1,53 @@
 <template>
-  <div class="branch-node">
-    <div class="drag-handle">
-      <Move :size="16" />
-    </div>
+  <div
+    class="branch-node"
+    :class="{ completed: milestone.achieved, active: isActive }"
+    @click="$emit('click')"
+  >
     <div class="node-content">
-      <div class="header">
-        <component :is="iconComponent" :size="20" />
-        <span class="title">{{ branch.displayName }}</span>
-        <button class="delete-btn" @click.stop="deleteBranch">
-          <Trash2 :size="16" />
-        </button>
+      <div class="icon-wrapper">
+        <component :is="iconComponent" :size="24" />
       </div>
-      <ProgressBar
-        :value="branch.totalXP"
-        :max="nextMilestoneXP"
-        :show-percent="true"
-      />
-      <div class="milestones">
-        <div
-          v-for="ms in branch.milestones"
-          :key="ms.id"
-          class="milestone"
-          :class="{ achieved: ms.achieved }"
-          :style="{ left: (ms.requiredXP / maxMilestoneXP) * 100 + '%' }"
-          :title="ms.name"
-        >
-          <div class="dot"></div>
-          <span class="milestone-label">{{ ms.name }}</span>
-        </div>
+      <span class="title">{{ milestone.name }}</span>
+      <div class="progress-ring">
+        <svg viewBox="0 0 36 36" class="circular-chart">
+          <path
+            class="circle-bg"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+          <path
+            class="circle"
+            :stroke-dasharray="`${progress}, 100`"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+        </svg>
+      </div>
+      <div v-if="milestone.sourceTaskIds.length" class="task-badge">
+        {{ milestone.sourceTaskIds.length }}
       </div>
     </div>
-    <Handle type="source" :position="Position.Bottom" class="handle-bottom" />
-    <Handle type="target" :position="Position.Top" class="handle-top" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Handle, Position } from '@vue-flow/core'
-import {
-  Move,
-  Trash2,
-  TrendingUp,
-  Dumbbell,
-  Brain,
-  Users,
-  Target,
-} from 'lucide-vue-next'
-import ProgressBar from '~/components/base/ProgressBar.vue'
-import { useBranchesStore } from '~/stores/branches.store'
-import type { Branch } from '~/types/branch.types'
+import { TrendingUp, Dumbbell, Brain, Users, Target } from 'lucide-vue-next'
+import type { Milestone } from '~/types/branch.types'
 
-const props = defineProps<{ data: { branch: Branch } }>()
-const branch = props.data.branch
-const branchesStore = useBranchesStore()
+const props = defineProps<{
+  data: {
+    branchId: string
+    milestone: Milestone
+    currentXP: number
+    icon: string
+    branchName: string
+  }
+}>()
+
+defineEmits(['click'])
+
+const milestone = props.data.milestone
+const currentXP = props.data.currentXP
 
 const iconComponent = computed(() => {
   const map: Record<string, any> = {
@@ -62,138 +56,117 @@ const iconComponent = computed(() => {
     brain: Brain,
     users: Users,
   }
-  return map[branch.icon] || Target
+  return map[props.data.icon] || Target
 })
 
-const nextMilestoneXP = computed(() => {
-  const next = branch.milestones.find((m) => !m.achieved)
-  return next
-    ? next.requiredXP
-    : branch.milestones[branch.milestones.length - 1]?.requiredXP || 1000
+const progress = computed(() => {
+  if (milestone.achieved) return 100
+  return Math.min(100, (currentXP / milestone.requiredXP) * 100)
 })
 
-const maxMilestoneXP = computed(() => {
-  return Math.max(...branch.milestones.map((m) => m.requiredXP), 1)
-})
-
-function deleteBranch() {
-  branchesStore.deleteBranch(branch.id)
-}
+const isActive = computed(() => !milestone.achieved && currentXP > 0)
 </script>
 
 <style scoped lang="scss">
 .branch-node {
   @include glass;
-  border-radius: var(--border-radius-md);
-  width: 280px;
-  padding: 14px;
-  color: var(--accent);
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  border: 2px solid var(--border);
   position: relative;
-  transition: box-shadow 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
 
-  &:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  &.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--accent);
+    animation: pulse-glow 2s infinite;
   }
 
-  .drag-handle {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    color: var(--dim);
-    cursor: grab;
-    opacity: 0.6;
-    transition: opacity 0.2s;
-    &:hover {
-      opacity: 1;
-    }
-    &:active {
-      cursor: grabbing;
+  &.completed {
+    border-color: var(--success);
+    background: rgba(76, 175, 127, 0.1);
+    .icon-wrapper {
+      color: var(--success);
     }
   }
 
   .node-content {
-    margin-left: 24px;
-  }
-
-  .header {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 14px;
-
-    .title {
-      font-weight: 600;
-      font-size: 1rem;
-      flex: 1;
-    }
-
-    .delete-btn {
-      padding: 4px;
-      border-radius: 4px;
-      color: var(--dim);
-      &:hover {
-        color: var(--error);
-        background: var(--surface);
-      }
-    }
+    gap: 4px;
   }
 
-  .milestones {
-    position: relative;
-    height: 32px;
-    margin-top: 14px;
-
-    .milestone {
-      position: absolute;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-
-      .dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: var(--border);
-        border: 2px solid var(--dim);
-        transition: all var(--transition-standard);
-      }
-
-      &.achieved .dot {
-        background: var(--accent);
-        border-color: var(--accent);
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-      }
-
-      .milestone-label {
-        position: absolute;
-        top: 18px;
-        white-space: nowrap;
-        font-size: 0.65rem;
-        color: var(--dim);
-        opacity: 0;
-        transition: opacity 0.2s;
-        pointer-events: none;
-      }
-
-      &:hover .milestone-label {
-        opacity: 1;
-      }
-    }
+  .icon-wrapper {
+    color: var(--accent);
   }
 
-  .handle-bottom,
-  .handle-top {
-    width: 12px;
-    height: 12px;
-    background: var(--accent);
-    border: 2px solid var(--bg);
-    border-radius: 50%;
-    transition: transform 0.2s;
-    &:hover {
-      transform: scale(1.3);
-    }
+  .title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--accent);
+    max-width: 80px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .progress-ring {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    width: 110px;
+    height: 110px;
+  }
+
+  .circular-chart {
+    width: 100%;
+    height: 100%;
+  }
+
+  .circle-bg {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 2.5;
+  }
+
+  .circle {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.3s ease;
+  }
+
+  .task-badge {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    color: var(--accent);
+  }
+}
+
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 10px var(--accent);
+  }
+  50% {
+    box-shadow: 0 0 25px var(--accent);
+  }
+  100% {
+    box-shadow: 0 0 10px var(--accent);
   }
 }
 </style>

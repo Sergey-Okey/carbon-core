@@ -1,6 +1,5 @@
 <template>
   <div class="branch-flow-wrapper">
-    <!-- Мобильное предупреждение -->
     <div v-if="isMobile" class="mobile-warning">
       <div class="warning-card">
         <AlertTriangle :size="48" />
@@ -21,168 +20,182 @@
       :pan-on-drag="true"
       :zoom-on-scroll="true"
       :fit-view-on-init="true"
+      :nodes-draggable="true"
+      :edges-updatable="false"
       @nodes-change="onNodesChange"
-      @edges-change="onEdgesChange"
-      @connect="onConnect"
-      @edge-update="onEdgeUpdate"
     >
-      <!-- Фон с точками -->
       <Background :variant="BackgroundVariant.Dots" :gap="20" :size="1.5" />
 
-      <!-- Стандартные контролы (зум, фит) -->
-      <Controls position="bottom-right" />
+      <BoardControls
+        @fit-view="fitView"
+        @zoom-in="zoomIn"
+        @zoom-out="zoomOut"
+        @rebuild="handleRebuild"
+      />
 
-      <!-- Миникарта -->
-      <MiniMap position="top-right" :pannable="true" :zoomable="true" />
-
-      <!-- Кастомные кнопки управления -->
-      <Panel position="top-left" class="custom-controls">
-        <button @click="fitView" title="Сбросить вид (Fit View)">
-          <Maximize :size="18" />
-        </button>
-        <button @click="zoomIn" title="Приблизить">
-          <ZoomIn :size="18" />
-        </button>
-        <button @click="zoomOut" title="Отдалить">
-          <ZoomOut :size="18" />
-        </button>
-        <button @click="addNewBranch" title="Добавить ветку">
-          <Plus :size="18" />
-        </button>
-      </Panel>
-
-      <!-- Кастомный узел -->
       <template #node-branch="nodeProps">
-        <BranchNode :data="nodeProps.data" />
+        <BranchNode
+          :data="nodeProps.data"
+          @click="openMilestoneModal(nodeProps.data)"
+        />
       </template>
     </VueFlow>
+
+    <Teleport to="body">
+      <MilestoneModal
+        v-if="selectedMilestone"
+        :milestone="selectedMilestone"
+        :branch="selectedBranch"
+        @close="selectedMilestone = null"
+      />
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import {
   VueFlow,
   ConnectionMode,
   useVueFlow,
-  Panel,
   type Node,
   type Edge,
-  type Connection,
 } from '@vue-flow/core'
 import { Background, BackgroundVariant } from '@vue-flow/background'
-import { Controls } from '@vue-flow/controls'
-import { MiniMap } from '@vue-flow/minimap'
-import { AlertTriangle, Maximize, ZoomIn, ZoomOut, Plus } from 'lucide-vue-next'
+import { AlertTriangle } from 'lucide-vue-next'
 import { useBranchesStore } from '~/stores/branches.store'
+import { useBranchAutomation } from '~/composables/useBranchAutomation'
+import BoardControls from './BoardControls.vue'
 import BranchNode from './BranchNode.vue'
-import type { Branch } from '~/types/branch.types'
+import MilestoneModal from './MilestoneModal.vue'
+import type { Branch, Milestone } from '~/types/branch.types'
 
-// Стили Vue Flow (обязательно)
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
-import '@vue-flow/controls/dist/style.css'
-import '@vue-flow/minimap/dist/style.css'
 
 const branchesStore = useBranchesStore()
 const { fitView, zoomIn: vfZoomIn, zoomOut: vfZoomOut } = useVueFlow()
+const { rebuildBoard } = useBranchAutomation()
 
-// Типы узлов
 const nodeTypes = { branch: BranchNode }
-
-// Локальные реактивные данные для Vue Flow
 const nodes = ref<Node[]>([])
 const edges = ref<Edge[]>([])
 
-// Мобильное обнаружение
 const isMobile = ref(false)
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 768
 }
-onMounted(() => {
+if (import.meta.client) {
   checkMobile()
   window.addEventListener('resize', checkMobile)
-})
-onUnmounted(() => {
-  window.removeEventListener('resize', checkMobile)
-})
-
-// Преобразование веток -> узлы
-function branchesToNodes(branches: Branch[]): Node[] {
-  return branches.map((branch) => ({
-    id: branch.id,
-    type: 'branch',
-    position: branch.position || { x: 0, y: 0 },
-    data: { branch },
-    dragHandle: '.drag-handle',
-  }))
 }
 
-// Синхронизация store -> flow (узлы и связи)
+const selectedMilestone = ref<Milestone | null>(null)
+const selectedBranch = ref<Branch | null>(null)
+
+// Преобразование данных стора в формат Vue Flow
+function buildGraph() {
+  const newNodes: Node[] = []
+  const newEdges: Edge[] = []
+
+  branchesStore.branches.forEach((branch) => {
+    let prevX = branch.position.x
+    let prevY = branch.position.y
+    branch.milestones.forEach((milestone, index) => {
+      const nodeId = `${branch.id}-${milestone.id}`
+      // Вычисляем позицию: цепочка слева направо с отступом
+      const x = prevX + (index === 0 ? 0 : 180)
+      const y = prevY
+      newNodes.push({
+        id: nodeId,
+        type: 'branch',
+        position: { x, y },
+        data: {
+          branchId: branch.id,
+          milestone,
+          currentXP: branch.totalXP,
+          icon: branch.icon,
+          branchName: branch.displayName,
+        },
+      })
+      prevX = x
+      prevY = y
+    })
+  })
+
+  // Добавляем рёбра из стора
+  branchesStore.edges.forEach((edge) => {
+    newEdges.push({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      type: edge.type || 'smoothstep',
+      animated: edge.animated,
+      label: edge.label,
+      style: edge.style,
+    })
+  })
+
+  // Добавляем линейные связи внутри веток
+  branchesStore.branches.forEach((branch) => {
+    const milestoneIds = branch.milestones.map((m) => m.id)
+    for (let i = 0; i < milestoneIds.length - 1; i++) {
+      const source = `${branch.id}-${milestoneIds[i]}`
+      const target = `${branch.id}-${milestoneIds[i + 1]}`
+      const exists = newEdges.some(
+        (e) => e.source === source && e.target === target
+      )
+      if (!exists) {
+        newEdges.push({
+          id: `${source}-${target}`,
+          source,
+          target,
+          type: 'smoothstep',
+          animated: true,
+          style: { stroke: 'var(--accent)', strokeWidth: 2 },
+        })
+      }
+    }
+  })
+
+  nodes.value = newNodes
+  edges.value = newEdges
+}
+
+// Автоматическое перестроение при изменении стора
 watch(
   () => [branchesStore.branches, branchesStore.edges],
   () => {
-    nodes.value = branchesToNodes(branchesStore.branches)
-    edges.value = branchesStore.edges
+    buildGraph()
   },
   { immediate: true, deep: true }
 )
 
-// Сохранение позиций узлов обратно в store
 function onNodesChange(changes: any[]) {
   for (const change of changes) {
     if (change.type === 'position' && change.position) {
-      branchesStore.updateBranchPosition(change.id, change.position)
+      const [branchId] = change.id.split('-')
+      branchesStore.updateBranchPosition(branchId, change.position)
     }
   }
 }
 
-// Сохранение изменений связей
-function onEdgesChange(changes: any[]) {
-  // В простом случае просто заменяем edges в store
-  // Для оптимизации можно обрабатывать изменения точечно
-  edges.value = [...edges.value] // триггер реактивности
-  branchesStore.edges = edges.value
+async function handleRebuild() {
+  await rebuildBoard()
+  buildGraph()
 }
 
-function onConnect(connection: Connection) {
-  const newEdge: Edge = {
-    id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
-    source: connection.source!,
-    target: connection.target!,
-    type: 'smoothstep',
-    animated: true,
-    style: { stroke: 'var(--accent)', strokeWidth: 2 },
-  }
-  branchesStore.addEdge(newEdge)
+function openMilestoneModal(data: any) {
+  selectedMilestone.value = data.milestone
+  selectedBranch.value =
+    branchesStore.branches.find((b) => b.id === data.branchId) || null
 }
 
-function onEdgeUpdate({ edge, connection }: any) {
-  edge.source = connection.source
-  edge.target = connection.target
-  // Обновляем в store
-  branchesStore.updateEdge(edge.id, edge)
-}
-
-// Кастомные действия
 function zoomIn() {
   vfZoomIn()
 }
 function zoomOut() {
   vfZoomOut()
-}
-function addNewBranch() {
-  // Создаём новую ветку с дефолтными значениями
-  const newBranch: Omit<Branch, 'id'> = {
-    displayName: 'Новая ветка',
-    icon: 'target',
-    totalXP: 0,
-    milestones: [],
-    position: { x: 200, y: 200 },
-    scale: 1,
-    order: branchesStore.branches.length,
-  }
-  branchesStore.addBranch(newBranch)
 }
 </script>
 
@@ -222,7 +235,6 @@ function addNewBranch() {
   }
 }
 
-// Стилизация Vue Flow под Carbon Core
 :deep(.vue-flow) {
   background: var(--bg);
 }
@@ -234,54 +246,17 @@ function addNewBranch() {
   }
 }
 
-:deep(.vue-flow__controls) {
-  @include glass;
-  border-radius: var(--border-radius-md);
-  button {
-    background: transparent;
-    border-bottom: 1px solid var(--border);
-    color: var(--accent);
-    &:hover {
-      background: var(--surface);
-    }
-  }
-}
-
-:deep(.vue-flow__minimap) {
-  @include glass;
-  border-radius: var(--border-radius-md);
-  overflow: hidden;
-}
-
 :deep(.vue-flow__edge-path) {
   stroke: var(--accent);
   stroke-width: 2;
+  transition: stroke 0.3s;
 }
 
-// Кастомные кнопки управления
-.custom-controls {
-  display: flex;
-  gap: 8px;
-  @include glass;
-  padding: 6px;
-  border-radius: var(--border-radius-md);
+:deep(.vue-flow__controls) {
+  display: none;
+}
 
-  button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    border-radius: var(--border-radius-sm);
-    color: var(--accent);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition: background var(--transition-standard);
-
-    &:hover {
-      background: var(--surface);
-    }
-  }
+:deep(.vue-flow__minimap) {
+  display: none;
 }
 </style>

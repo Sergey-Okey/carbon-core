@@ -21,7 +21,6 @@ export const useTagsStore = defineStore(
   () => {
     const tags = ref<InternalTag[]>([])
 
-    // 🔥 Восстановление системных тегов при старте (после гидратации)
     async function initTagsAfterHydration() {
       const store = useTagsStore()
       if (store.$persistedState) {
@@ -30,7 +29,6 @@ export const useTagsStore = defineStore(
       ensureSystemTags()
     }
 
-    // Гарантирует наличие всех системных тегов
     function ensureSystemTags() {
       const systemNames = DEFAULT_TAGS.map((t) => t.name)
       const existingNames = tags.value.map((t) => t.name)
@@ -71,7 +69,7 @@ export const useTagsStore = defineStore(
       return true
     }
 
-    // Автоматическое восстановление при любых изменениях (на случай удаления через другие вкладки)
+    // Автоматическое восстановление при любых изменениях
     watch(
       tags,
       () => {
@@ -79,6 +77,11 @@ export const useTagsStore = defineStore(
       },
       { deep: true }
     )
+
+    // Вызов инициализации на клиенте
+    if (import.meta.client) {
+      initTagsAfterHydration()
+    }
 
     return {
       tags,

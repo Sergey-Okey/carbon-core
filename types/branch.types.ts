@@ -1,14 +1,14 @@
-export type BranchId = 'FIN' | 'BODY' | 'MIND' | 'LDR' | string
+export type BranchId = string
 
 export interface Milestone {
   id: string
   name: string
+  description?: string
   requiredXP: number
   achieved: boolean
-  reward?: {
-    gold?: number
-    hpBonus?: number
-  }
+  sourceTaskIds: string[] // ID задач, которые привели к этапу
+  icon?: string
+  position?: { x: number; y: number }
 }
 
 export interface Branch {
@@ -20,4 +20,18 @@ export interface Branch {
   position: { x: number; y: number }
   scale?: number
   order: number
+  isSystem?: boolean // защита от удаления
+  createdAt?: number
+}
+
+export interface BranchEdge {
+  id: string
+  source: string // ID узла (branchId-milestoneId)
+  target: string
+  sourceHandle?: string
+  targetHandle?: string
+  type?: string
+  animated?: boolean
+  label?: string
+  style?: Record<string, any>
 }

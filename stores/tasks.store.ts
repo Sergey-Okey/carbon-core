@@ -6,6 +6,7 @@ import { useUserStore } from './user.store'
 import { useBranchesStore } from './branches.store'
 import { useTagsStore } from './tags.store'
 import { useRewardsStore } from './rewards.store'
+import { useBranchAutomation } from '~/composables/useBranchAutomation'
 
 export const useTasksStore = defineStore(
   'tasks',
@@ -35,9 +36,10 @@ export const useTasksStore = defineStore(
       return newTask
     }
 
-    function completeTask(id: string) {
+    async function completeTask(id: string) {
       const task = tasks.value.find((t) => t.id === id)
       if (!task) return
+
       const userStore = useUserStore()
       const branchesStore = useBranchesStore()
       const tagsStore = useTagsStore()
@@ -48,19 +50,16 @@ export const useTasksStore = defineStore(
         const tags = tagsStore.getTagsByIds(task.tagIds)
         const xpPerTag = 50
         tags.forEach((tag) => {
-          branchesStore.addXPToBranch(tag.branchId, xpPerTag)
+          branchesStore.addXPToBranch(tag.branchId, xpPerTag, task.id)
         })
         userStore.addXP(xpPerTag * tags.length)
-        return
-      }
-
-      if (!task.done) {
+      } else if (!task.done) {
         task.done = true
         task.completedAt = Date.now()
         const tags = tagsStore.getTagsByIds(task.tagIds)
         const baseXP = task.type === 'PURCHASE' ? 500 : 100
         tags.forEach((tag) => {
-          branchesStore.addXPToBranch(tag.branchId, baseXP)
+          branchesStore.addXPToBranch(tag.branchId, baseXP, task.id)
         })
         userStore.addXP(baseXP * tags.length)
 
@@ -68,6 +67,9 @@ export const useTasksStore = defineStore(
           rewardsStore.confirmPurchase(task.purchaseRewardId)
         }
       }
+
+      const { rebuildBoard } = useBranchAutomation()
+      await rebuildBoard()
     }
 
     function deleteTask(id: string) {
