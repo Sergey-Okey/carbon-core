@@ -1,37 +1,22 @@
-export type BranchId = string
+export type BranchId = 'FIN' | 'BODY' | 'MIND' | 'LDR' | (string & {})
 
 export interface Milestone {
   id: string
   name: string
   description?: string
   requiredXP: number
-  achieved: boolean
-  sourceTaskIds: string[] // ID задач, которые привели к этапу
-  icon?: string
-  position?: { x: number; y: number }
+  currentXP: number
+  status: 'pending' | 'active' | 'completed'
+  taskIds: string[]
+  position: { x: number; y: number }
 }
 
 export interface Branch {
   id: BranchId
   displayName: string
   icon: string
-  totalXP: number
+  description?: string
+  taskIds: string[]
   milestones: Milestone[]
-  position: { x: number; y: number }
-  scale?: number
   order: number
-  isSystem?: boolean // защита от удаления
-  createdAt?: number
-}
-
-export interface BranchEdge {
-  id: string
-  source: string // ID узла (branchId-milestoneId)
-  target: string
-  sourceHandle?: string
-  targetHandle?: string
-  type?: string
-  animated?: boolean
-  label?: string
-  style?: Record<string, any>
 }

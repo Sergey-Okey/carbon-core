@@ -6,7 +6,6 @@ import { useUserStore } from './user.store'
 import { useBranchesStore } from './branches.store'
 import { useTagsStore } from './tags.store'
 import { useRewardsStore } from './rewards.store'
-import { useBranchAutomation } from '~/composables/useBranchAutomation'
 
 export const useTasksStore = defineStore(
   'tasks',
@@ -36,7 +35,7 @@ export const useTasksStore = defineStore(
       return newTask
     }
 
-    async function completeTask(id: string) {
+    function completeTask(id: string) {
       const task = tasks.value.find((t) => t.id === id)
       if (!task) return
 
@@ -50,16 +49,20 @@ export const useTasksStore = defineStore(
         const tags = tagsStore.getTagsByIds(task.tagIds)
         const xpPerTag = 50
         tags.forEach((tag) => {
-          branchesStore.addXPToBranch(tag.branchId, xpPerTag, task.id)
+          branchesStore.addXPToBranch(tag.branchId, xpPerTag)
         })
         userStore.addXP(xpPerTag * tags.length)
-      } else if (!task.done) {
+        return
+      }
+
+      if (!task.done) {
         task.done = true
         task.completedAt = Date.now()
+
         const tags = tagsStore.getTagsByIds(task.tagIds)
         const baseXP = task.type === 'PURCHASE' ? 500 : 100
         tags.forEach((tag) => {
-          branchesStore.addXPToBranch(tag.branchId, baseXP, task.id)
+          branchesStore.addXPToBranch(tag.branchId, baseXP)
         })
         userStore.addXP(baseXP * tags.length)
 
@@ -67,9 +70,6 @@ export const useTasksStore = defineStore(
           rewardsStore.confirmPurchase(task.purchaseRewardId)
         }
       }
-
-      const { rebuildBoard } = useBranchAutomation()
-      await rebuildBoard()
     }
 
     function deleteTask(id: string) {
@@ -134,7 +134,11 @@ export const useTasksStore = defineStore(
             tagIds: [mindTag],
             targetDate: getTodayDateString(),
           })
-          addTask({ title: 'Пить воду', type: 'HABIT', tagIds: [bodyTag] })
+          addTask({
+            title: 'Пить воду',
+            type: 'HABIT',
+            tagIds: [bodyTag],
+          })
         }
         localStorage.setItem(DEMO_KEY, 'true')
       }

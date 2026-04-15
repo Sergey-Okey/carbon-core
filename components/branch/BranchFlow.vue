@@ -23,59 +23,112 @@
       :nodes-draggable="true"
       :edges-updatable="false"
       @nodes-change="onNodesChange"
+      @edges-change="onEdgesChange"
+      @connect="onConnect"
+      @edge-update="onEdgeUpdate"
+      @pane-context-menu="onPaneContextMenu"
+      @node-context-menu="onNodeContextMenu"
+      @edge-context-menu="onEdgeContextMenu"
     >
       <Background :variant="BackgroundVariant.Dots" :gap="20" :size="1.5" />
 
-      <BoardControls
-        @fit-view="fitView"
-        @zoom-in="zoomIn"
-        @zoom-out="zoomOut"
-        @rebuild="handleRebuild"
-      />
+      <Panel position="top-left" class="custom-controls">
+        <button @click="fitView" title="Сбросить вид">
+          <Maximize :size="18" />
+        </button>
+        <button @click="zoomIn" title="Приблизить">
+          <ZoomIn :size="18" />
+        </button>
+        <button @click="zoomOut" title="Отдалить">
+          <ZoomOut :size="18" />
+        </button>
+        <div class="divider"></div>
+        <button @click="autoLayout" title="Авто-расположение">
+          <Layout :size="18" />
+        </button>
+        <button @click="openAddBranchModal" title="Добавить ветку">
+          <Plus :size="18" />
+        </button>
+      </Panel>
 
       <template #node-branch="nodeProps">
         <BranchNode
           :data="nodeProps.data"
-          @click="openMilestoneModal(nodeProps.data)"
+          @edit="openEditor(nodeProps.data.milestone)"
         />
       </template>
     </VueFlow>
 
     <Teleport to="body">
-      <MilestoneModal
-        v-if="selectedMilestone"
-        :milestone="selectedMilestone"
-        :branch="selectedBranch"
-        @close="selectedMilestone = null"
-      />
+      <div
+        v-if="contextMenu.visible"
+        class="context-menu"
+        :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }"
+      >
+        <template v-if="contextMenu.type === 'pane'">
+          <button @click="addMilestoneHere">Добавить узел</button>
+          <button @click="openAddBranchModal">Добавить ветку</button>
+        </template>
+        <template v-else-if="contextMenu.type === 'node'">
+          <button @click="editSelectedNode">Редактировать</button>
+          <button @click="deleteSelectedNode">Удалить</button>
+        </template>
+        <template v-else-if="contextMenu.type === 'edge'">
+          <button @click="deleteSelectedEdge">Удалить связь</button>
+        </template>
+      </div>
     </Teleport>
+
+    <NodeEditorModal
+      v-if="editingMilestone"
+      :milestone="editingMilestone"
+      @close="editingMilestone = null"
+      @save="handleSaveMilestone"
+    />
+
+    <BranchModal
+      v-if="branchModal.visible"
+      :branch="branchModal.branch"
+      @close="branchModal.visible = false"
+      @save="handleSaveBranch"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import {
   VueFlow,
   ConnectionMode,
   useVueFlow,
+  Panel,
   type Node,
   type Edge,
+  type Connection,
 } from '@vue-flow/core'
 import { Background, BackgroundVariant } from '@vue-flow/background'
-import { AlertTriangle } from 'lucide-vue-next'
+import {
+  AlertTriangle,
+  Maximize,
+  ZoomIn,
+  ZoomOut,
+  Plus,
+  Layout,
+} from 'lucide-vue-next'
 import { useBranchesStore } from '~/stores/branches.store'
-import { useBranchAutomation } from '~/composables/useBranchAutomation'
-import BoardControls from './BoardControls.vue'
+import { useAutoLayout } from '~/composables/useAutoLayout'
 import BranchNode from './BranchNode.vue'
-import MilestoneModal from './MilestoneModal.vue'
-import type { Branch, Milestone } from '~/types/branch.types'
+import NodeEditorModal from './NodeEditorModal.vue'
+import BranchModal from './BranchModal.vue'
+import type { Milestone, Branch } from '~/types/branch.types'
+import { useEventListener } from '@vueuse/core'
 
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 
 const branchesStore = useBranchesStore()
 const { fitView, zoomIn: vfZoomIn, zoomOut: vfZoomOut } = useVueFlow()
-const { rebuildBoard } = useBranchAutomation()
+const { applyGridLayout } = useAutoLayout()
 
 const nodeTypes = { branch: BranchNode }
 const nodes = ref<Node[]>([])
@@ -85,88 +138,126 @@ const isMobile = ref(false)
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 768
 }
-if (import.meta.client) {
+onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
+})
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
+})
+
+const contextMenu = ref<{
+  visible: boolean
+  x: number
+  y: number
+  type: 'pane' | 'node' | 'edge'
+  nodeId?: string
+  edgeId?: string
+}>({ visible: false, x: 0, y: 0, type: 'pane' })
+
+function onPaneContextMenu(event: MouseEvent) {
+  event.preventDefault()
+  contextMenu.value = {
+    visible: true,
+    x: event.clientX,
+    y: event.clientY,
+    type: 'pane',
+  }
+}
+function onNodeContextMenu(event: MouseEvent, node: Node) {
+  event.preventDefault()
+  contextMenu.value = {
+    visible: true,
+    x: event.clientX,
+    y: event.clientY,
+    type: 'node',
+    nodeId: node.id,
+  }
+}
+function onEdgeContextMenu(event: MouseEvent, edge: Edge) {
+  event.preventDefault()
+  contextMenu.value = {
+    visible: true,
+    x: event.clientX,
+    y: event.clientY,
+    type: 'edge',
+    edgeId: edge.id,
+  }
 }
 
-const selectedMilestone = ref<Milestone | null>(null)
-const selectedBranch = ref<Branch | null>(null)
+useEventListener(document, 'click', () => {
+  contextMenu.value.visible = false
+})
 
-// Преобразование данных стора в формат Vue Flow
-function buildGraph() {
-  const newNodes: Node[] = []
-  const newEdges: Edge[] = []
+const editingMilestone = ref<Milestone | null>(null)
+function openEditor(milestone: Milestone) {
+  editingMilestone.value = milestone
+}
+function handleSaveMilestone(updates: Partial<Milestone>) {
+  if (editingMilestone.value) {
+    branchesStore.updateMilestone(editingMilestone.value.id, updates)
+    editingMilestone.value = null
+  }
+}
 
-  branchesStore.branches.forEach((branch) => {
-    let prevX = branch.position.x
-    let prevY = branch.position.y
-    branch.milestones.forEach((milestone, index) => {
-      const nodeId = `${branch.id}-${milestone.id}`
-      // Вычисляем позицию: цепочка слева направо с отступом
-      const x = prevX + (index === 0 ? 0 : 180)
-      const y = prevY
-      newNodes.push({
-        id: nodeId,
-        type: 'branch',
-        position: { x, y },
-        data: {
-          branchId: branch.id,
-          milestone,
-          currentXP: branch.totalXP,
-          icon: branch.icon,
-          branchName: branch.displayName,
-        },
-      })
-      prevX = x
-      prevY = y
-    })
-  })
+const branchModal = ref<{ visible: boolean; branch: Branch | null }>({
+  visible: false,
+  branch: null,
+})
+function openAddBranchModal() {
+  branchModal.value = { visible: true, branch: null }
+}
+function handleSaveBranch(data: {
+  name: string
+  icon: string
+  description: string
+  taskIds: string[]
+}) {
+  if (branchModal.value.branch) {
+    branchesStore.updateBranch(branchModal.value.branch.id, data)
+  } else {
+    branchesStore.addBranch(
+      data.name,
+      data.icon,
+      data.description,
+      data.taskIds
+    )
+  }
+  branchModal.value.visible = false
+}
 
-  // Добавляем рёбра из стора
-  branchesStore.edges.forEach((edge) => {
-    newEdges.push({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      type: edge.type || 'smoothstep',
-      animated: edge.animated,
-      label: edge.label,
-      style: edge.style,
-    })
-  })
-
-  // Добавляем линейные связи внутри веток
-  branchesStore.branches.forEach((branch) => {
-    const milestoneIds = branch.milestones.map((m) => m.id)
-    for (let i = 0; i < milestoneIds.length - 1; i++) {
-      const source = `${branch.id}-${milestoneIds[i]}`
-      const target = `${branch.id}-${milestoneIds[i + 1]}`
-      const exists = newEdges.some(
-        (e) => e.source === source && e.target === target
-      )
-      if (!exists) {
-        newEdges.push({
-          id: `${source}-${target}`,
-          source,
-          target,
-          type: 'smoothstep',
-          animated: true,
-          style: { stroke: 'var(--accent)', strokeWidth: 2 },
-        })
-      }
+function handleKeyDown(event: KeyboardEvent) {
+  if (event.key === 'Delete') {
+    if (contextMenu.value.nodeId) {
+      deleteSelectedNode()
+    } else if (contextMenu.value.edgeId) {
+      deleteSelectedEdge()
     }
-  })
-
-  nodes.value = newNodes
-  edges.value = newEdges
+  }
 }
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown)
+})
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
+})
 
-// Автоматическое перестроение при изменении стора
 watch(
   () => [branchesStore.branches, branchesStore.edges],
   () => {
-    buildGraph()
+    const newNodes: Node[] = []
+    branchesStore.branches.forEach((branch) => {
+      branch.milestones.forEach((milestone) => {
+        newNodes.push({
+          id: milestone.id,
+          type: 'branch',
+          position: milestone.position,
+          data: { milestone, branchIcon: branch.icon },
+        })
+      })
+    })
+    nodes.value = newNodes
+    edges.value = branchesStore.edges
   },
   { immediate: true, deep: true }
 )
@@ -174,21 +265,26 @@ watch(
 function onNodesChange(changes: any[]) {
   for (const change of changes) {
     if (change.type === 'position' && change.position) {
-      const [branchId] = change.id.split('-')
-      branchesStore.updateBranchPosition(branchId, change.position)
+      const milestoneId = change.id
+      branchesStore.updateMilestone(milestoneId, { position: change.position })
     }
   }
 }
-
-async function handleRebuild() {
-  await rebuildBoard()
-  buildGraph()
+function onEdgesChange() {}
+function onConnect(connection: Connection) {
+  const newEdge: Edge = {
+    id: `${connection.source}-${connection.target}`,
+    source: connection.source!,
+    target: connection.target!,
+    type: 'smoothstep',
+    animated: false,
+    style: { stroke: 'var(--accent)', strokeWidth: 1 },
+  }
+  branchesStore.addEdge(newEdge)
 }
-
-function openMilestoneModal(data: any) {
-  selectedMilestone.value = data.milestone
-  selectedBranch.value =
-    branchesStore.branches.find((b) => b.id === data.branchId) || null
+function onEdgeUpdate({ edge, connection }: any) {
+  edge.source = connection.source
+  edge.target = connection.target
 }
 
 function zoomIn() {
@@ -196,6 +292,42 @@ function zoomIn() {
 }
 function zoomOut() {
   vfZoomOut()
+}
+
+function autoLayout() {
+  const allMilestones = branchesStore.branches.flatMap((b) => b.milestones)
+  const positions = applyGridLayout(allMilestones)
+  allMilestones.forEach((m, i) => {
+    branchesStore.updateMilestone(m.id, { position: positions[i] })
+  })
+}
+
+function addMilestoneHere() {
+  const firstBranch = branchesStore.branches[0]
+  if (firstBranch) {
+    branchesStore.addMilestone(firstBranch.id, 'Новый этап')
+  }
+}
+
+function editSelectedNode() {
+  if (contextMenu.value.nodeId) {
+    const milestone = branchesStore.branches
+      .flatMap((b) => b.milestones)
+      .find((m) => m.id === contextMenu.value.nodeId)
+    if (milestone) openEditor(milestone)
+  }
+}
+function deleteSelectedNode() {
+  if (contextMenu.value.nodeId) {
+    branchesStore.deleteMilestone(contextMenu.value.nodeId)
+    contextMenu.value.visible = false
+  }
+}
+function deleteSelectedEdge() {
+  if (contextMenu.value.edgeId) {
+    branchesStore.removeEdge(contextMenu.value.edgeId)
+    contextMenu.value.visible = false
+  }
 }
 </script>
 
@@ -208,7 +340,6 @@ function zoomOut() {
   overflow: hidden;
   border: 1px solid var(--border);
   background: var(--bg);
-
   @include desktop {
     height: calc(100vh - 120px);
   }
@@ -238,25 +369,71 @@ function zoomOut() {
 :deep(.vue-flow) {
   background: var(--bg);
 }
-
 :deep(.vue-flow__background) {
   background-color: var(--bg);
   .vue-flow__background-pattern {
     stroke: var(--border);
   }
 }
-
 :deep(.vue-flow__edge-path) {
   stroke: var(--accent);
-  stroke-width: 2;
-  transition: stroke 0.3s;
+  stroke-width: 1;
+  &.completed {
+    stroke: var(--success);
+  }
 }
 
-:deep(.vue-flow__controls) {
-  display: none;
+.custom-controls {
+  display: flex;
+  gap: 8px;
+  @include glass;
+  padding: 6px;
+  border-radius: var(--border-radius-md);
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: var(--border-radius-sm);
+    color: var(--accent);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background var(--transition-standard);
+    &:hover {
+      background: var(--surface);
+    }
+  }
+  .divider {
+    width: 1px;
+    height: 34px;
+    background: var(--border);
+    margin: 0 4px;
+  }
 }
 
-:deep(.vue-flow__minimap) {
-  display: none;
+.context-menu {
+  position: fixed;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 4px;
+  z-index: 1000;
+  button {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    border-radius: var(--border-radius-sm);
+    &:hover {
+      background: var(--border);
+    }
+  }
 }
 </style>
