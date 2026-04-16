@@ -2,9 +2,11 @@
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
+  <SpeedInsights />
 </template>
 
 <script setup lang="ts">
+import { SpeedInsights } from '@vercel/speed-insights/vue'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useSettingsStore } from '~/stores/settings.store'
 import { useOnboardingStore } from '~/stores/onboarding.store'
