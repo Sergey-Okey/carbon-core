@@ -20,7 +20,6 @@
       </button>
     </div>
 
-    <!-- Модалки -->
     <Teleport to="body">
       <TaskForm
         v-if="showTaskForm"
@@ -28,6 +27,7 @@
         @save="handleTaskSave"
       />
     </Teleport>
+
     <Teleport to="body">
       <ProfileModal v-if="showProfileModal" @close="showProfileModal = false" />
     </Teleport>
@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Plus, UserCircle } from 'lucide-vue-next'
+import { Plus, UserCircle, HelpCircle } from 'lucide-vue-next'
 import { useUserStore } from '~/stores/user.store'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useNotification } from '~/composables/useNotification'
@@ -52,11 +52,12 @@ const showProfileModal = ref(false)
 function openTaskForm() {
   showTaskForm.value = true
 }
-
 function openProfile() {
   showProfileModal.value = true
 }
-
+function openOnboarding() {
+  navigateTo('/onboarding')
+}
 function handleTaskSave(taskData: any) {
   const result = tasksStore.addTask(taskData)
   if (result) {
