@@ -59,11 +59,13 @@
       </template>
     </VueFlow>
 
+    <!-- Кастомное контекстное меню -->
     <Teleport to="body">
       <div
         v-if="contextMenu.visible"
         class="context-menu"
         :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }"
+        @click.stop
       >
         <template v-if="contextMenu.type === 'pane'">
           <button @click="addMilestoneHere">Добавить узел</button>
@@ -146,6 +148,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
 })
 
+// Контекстное меню
 const contextMenu = ref<{
   visible: boolean
   x: number
@@ -164,33 +167,39 @@ function onPaneContextMenu(event: MouseEvent) {
     type: 'pane',
   }
 }
-function onNodeContextMenu(event: MouseEvent, node: Node) {
-  if (!event || !node) return
-  event.preventDefault()
+function onNodeContextMenu(event: any, node: Node) {
+  if (event && typeof event.preventDefault === 'function') {
+    event.preventDefault()
+  }
   contextMenu.value = {
     visible: true,
-    x: event.clientX,
-    y: event.clientY,
+    x: event?.clientX || 0,
+    y: event?.clientY || 0,
     type: 'node',
     nodeId: node.id,
   }
 }
-function onEdgeContextMenu(event: MouseEvent, edge: Edge) {
-  if (!event || !edge) return
-  event.preventDefault()
+function onEdgeContextMenu(event: any, edge: Edge) {
+  if (event && typeof event.preventDefault === 'function') {
+    event.preventDefault()
+  }
   contextMenu.value = {
     visible: true,
-    x: event.clientX,
-    y: event.clientY,
+    x: event?.clientX || 0,
+    y: event?.clientY || 0,
     type: 'edge',
     edgeId: edge.id,
   }
 }
 
-useEventListener(document, 'click', () => {
+// Закрытие меню при клике вне его
+useEventListener(document, 'click', (event) => {
+  const menu = document.querySelector('.context-menu')
+  if (menu && menu.contains(event.target as Node)) return
   contextMenu.value.visible = false
 })
 
+// Редактирование узла
 const editingMilestone = ref<Milestone | null>(null)
 function openEditor(milestone: Milestone) {
   editingMilestone.value = milestone
@@ -202,6 +211,7 @@ function handleSaveMilestone(updates: Partial<Milestone>) {
   }
 }
 
+// Модалка ветки
 const branchModal = ref<{ visible: boolean; branch: Branch | null }>({
   visible: false,
   branch: null,
@@ -228,6 +238,7 @@ function handleSaveBranch(data: {
   branchModal.value.visible = false
 }
 
+// Удаление по клавише Delete
 function handleKeyDown(event: KeyboardEvent) {
   if (event.key === 'Delete') {
     if (contextMenu.value.nodeId) {
@@ -244,7 +255,7 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown)
 })
 
-// Синхронизация с хранилищем, фильтруем битые рёбра
+// Синхронизация с хранилищем
 watch(
   () => [branchesStore.branches, branchesStore.edges],
   () => {
@@ -261,12 +272,11 @@ watch(
     })
     nodes.value = newNodes
 
-    // Фильтруем рёбра: оставляем только те, у которых source и target существуют
+    // Фильтруем битые рёбра
     const existingNodeIds = new Set(newNodes.map((n) => n.id))
-    const validEdges = branchesStore.edges.filter(
+    edges.value = branchesStore.edges.filter(
       (e) => existingNodeIds.has(e.source) && existingNodeIds.has(e.target)
     )
-    edges.value = validEdges
   },
   { immediate: true, deep: true }
 )
@@ -323,7 +333,10 @@ function editSelectedNode() {
     const milestone = branchesStore.branches
       .flatMap((b) => b.milestones)
       .find((m) => m.id === contextMenu.value.nodeId)
-    if (milestone) openEditor(milestone)
+    if (milestone) {
+      contextMenu.value.visible = false
+      openEditor(milestone)
+    }
   }
 }
 function deleteSelectedNode() {
