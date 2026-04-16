@@ -99,7 +99,7 @@
               class="btn-danger"
               @click="deleteBranch"
             >
-              Удалить ветку
+              Удалить
             </button>
             <button type="submit" class="btn-primary">
               {{ branch ? 'Сохранить' : 'Создать' }}

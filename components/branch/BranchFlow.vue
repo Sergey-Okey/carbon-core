@@ -165,6 +165,7 @@ function onPaneContextMenu(event: MouseEvent) {
   }
 }
 function onNodeContextMenu(event: MouseEvent, node: Node) {
+  if (!event || !node) return
   event.preventDefault()
   contextMenu.value = {
     visible: true,
@@ -175,6 +176,7 @@ function onNodeContextMenu(event: MouseEvent, node: Node) {
   }
 }
 function onEdgeContextMenu(event: MouseEvent, edge: Edge) {
+  if (!event || !edge) return
   event.preventDefault()
   contextMenu.value = {
     visible: true,
@@ -242,6 +244,7 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown)
 })
 
+// Синхронизация с хранилищем, фильтруем битые рёбра
 watch(
   () => [branchesStore.branches, branchesStore.edges],
   () => {
@@ -257,7 +260,13 @@ watch(
       })
     })
     nodes.value = newNodes
-    edges.value = branchesStore.edges
+
+    // Фильтруем рёбра: оставляем только те, у которых source и target существуют
+    const existingNodeIds = new Set(newNodes.map((n) => n.id))
+    const validEdges = branchesStore.edges.filter(
+      (e) => existingNodeIds.has(e.source) && existingNodeIds.has(e.target)
+    )
+    edges.value = validEdges
   },
   { immediate: true, deep: true }
 )
@@ -273,7 +282,7 @@ function onNodesChange(changes: any[]) {
 function onEdgesChange() {}
 function onConnect(connection: Connection) {
   const newEdge: Edge = {
-    id: `${connection.source}-${connection.target}`,
+    id: `${connection.source}-${connection.target}-${Date.now()}`,
     source: connection.source!,
     target: connection.target!,
     type: 'smoothstep',

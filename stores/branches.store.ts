@@ -88,6 +88,16 @@ export const useBranchesStore = defineStore(
 
     const edges = ref<Edge[]>([])
 
+    // Очистка битых рёбер после восстановления из localStorage
+    function cleanupEdges() {
+      const existingNodeIds = new Set(
+        branches.value.flatMap((b) => b.milestones.map((m) => m.id))
+      )
+      edges.value = edges.value.filter(
+        (e) => existingNodeIds.has(e.source) && existingNodeIds.has(e.target)
+      )
+    }
+
     function addXPToBranch(branchId: BranchId, xp: number) {
       const branch = branches.value.find((b) => b.id === branchId)
       if (!branch) return
@@ -269,6 +279,18 @@ export const useBranchesStore = defineStore(
           if (updates.displayName) firstMilestone.name = updates.displayName
           if (updates.taskIds) firstMilestone.taskIds = updates.taskIds
         }
+      }
+    }
+
+    // Вызываем очистку после восстановления из persist
+    if (import.meta.client) {
+      const store = useBranchesStore()
+      if (store.$persistedState) {
+        store.$persistedState.isReady.then(() => {
+          cleanupEdges()
+        })
+      } else {
+        cleanupEdges()
       }
     }
 
