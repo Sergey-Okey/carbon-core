@@ -1,6 +1,7 @@
 ﻿# Nuxt
 .nuxt
 .output
+node_modules/
 
 # Logs
 logs
@@ -22,3 +23,17 @@ yarn-error.log*
 
 # Editor
 .vscode
+
+# Dependencies (дублируем для надёжности)
+node_modules/
+
+# Build outputs (если есть)
+dist
+build
+
+# Nuxt specific
+.swc
+.cache
+
+# Turbo (если используется)
+.turbo
