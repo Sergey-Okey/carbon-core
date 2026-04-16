@@ -5,6 +5,7 @@
     :class="{
       completed: milestone.status === 'completed',
       expanded: isExpanded,
+      'is-branch': data.type === 'branch',
     }"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
@@ -64,34 +65,53 @@ import {
   Target,
   PenSquare,
   ChevronDown,
+  Briefcase,
+  Heart,
+  BookOpen,
+  Globe,
+  Award,
+  Coffee,
+  Music,
+  Camera,
+  Code,
 } from 'lucide-vue-next'
 import GlassCard from '~/components/base/GlassCard.vue'
 import ProgressBar from '~/components/base/ProgressBar.vue'
 import { useTasksStore } from '~/stores/tasks.store'
-import type { Milestone } from '~/types/branch.types'
+import type { Milestone, BranchNodeData } from '~/types/branch.types'
 
 const props = defineProps<{
-  data: { milestone: Milestone; branchIcon: string }
+  data: BranchNodeData
+  selected?: boolean
 }>()
 const emit = defineEmits<{ (e: 'edit', milestone: Milestone): void }>()
 
-const milestone = props.data.milestone
+const milestone = props.data.milestone!
 const tasksStore = useTasksStore()
 
 const isExpanded = ref(false)
 const isPinned = ref(false)
 const hovered = ref(false)
 
-const actualExpanded = computed(() => isExpanded.value)
-
 const iconComponent = computed(() => {
+  const iconName = milestone.icon || props.data.branchIcon || 'target'
   const map: Record<string, any> = {
     'trending-up': TrendingUp,
     dumbbell: Dumbbell,
     brain: Brain,
     users: Users,
+    target: Target,
+    briefcase: Briefcase,
+    heart: Heart,
+    'book-open': BookOpen,
+    globe: Globe,
+    award: Award,
+    coffee: Coffee,
+    music: Music,
+    camera: Camera,
+    code: Code,
   }
-  return map[props.data.branchIcon] || Target
+  return map[iconName] || Target
 })
 
 const linkedTasks = computed(() => {
@@ -102,21 +122,17 @@ function togglePinned() {
   isPinned.value = !isPinned.value
   updateExpanded()
 }
-
 function handleMouseEnter() {
   hovered.value = true
   updateExpanded()
 }
-
 function handleMouseLeave() {
   hovered.value = false
   updateExpanded()
 }
-
 function updateExpanded() {
   isExpanded.value = hovered.value || isPinned.value
 }
-
 function handleClickOutside(event: MouseEvent) {
   const node = document.getElementById(`node-${milestone.id}`)
   if (node && !node.contains(event.target as Node)) {
@@ -129,7 +145,6 @@ function handleClickOutside(event: MouseEvent) {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })
-
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
@@ -138,17 +153,28 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .branch-node {
   width: 220px;
+  max-width: 100%;
   padding: 12px;
   position: relative;
   transition: border-color 0.2s;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 
   &.completed {
     border-color: var(--success);
   }
 
+  // Визуальное отличие ветки (первый узел)
+  &.is-branch {
+    border-width: 2px;
+    background: linear-gradient(145deg, var(--surface), var(--bg));
+    box-shadow: var(--shadow-sm);
+  }
+
   .node-main {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
 
   .node-header {
@@ -210,6 +236,14 @@ onUnmounted(() => {
     font-weight: 600;
     margin-bottom: 8px;
     color: var(--accent);
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.3;
+    max-height: 3.9rem;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
   }
 
   .progress {
@@ -250,10 +284,14 @@ onUnmounted(() => {
     padding-top: 12px;
     border-top: 1px solid var(--border);
     font-size: 0.85rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 
     p {
       margin-bottom: 8px;
       color: var(--accent);
+      white-space: normal;
+      word-break: break-word;
     }
     .placeholder {
       color: var(--dim);
@@ -270,11 +308,14 @@ onUnmounted(() => {
       ul {
         list-style: none;
         padding-left: 12px;
+        margin: 0;
       }
       li {
         color: var(--accent);
         font-size: 0.8rem;
         margin-bottom: 2px;
+        white-space: normal;
+        word-break: break-word;
         &::before {
           content: '•';
           color: var(--accent);

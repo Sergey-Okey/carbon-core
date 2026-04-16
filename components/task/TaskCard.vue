@@ -52,6 +52,7 @@ import { CheckCircle, Circle, Trash2, Edit, Calendar } from 'lucide-vue-next'
 import { useTagsStore } from '~/stores/tags.store'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useNotification } from '~/composables/useNotification'
+import { useConfirm } from '~/composables/useConfirm'
 
 const props = defineProps<{ task: Task }>()
 const emit = defineEmits<{
@@ -62,7 +63,8 @@ const emit = defineEmits<{
 
 const tagsStore = useTagsStore()
 const tasksStore = useTasksStore()
-const { addNotification, removeNotification } = useNotification()
+const { addNotification } = useNotification()
+const { confirm } = useConfirm()
 
 const taskTags = computed(() => tagsStore.getTagsByIds(props.task.tagIds))
 
@@ -102,48 +104,16 @@ function handleToggle() {
   emit('toggle', props.task.id)
 }
 
-let pendingDeleteTimer: ReturnType<typeof setTimeout> | null = null
-let notificationId: string | null = null
-
-function handleDelete() {
-  const deletedTask = { ...props.task }
+async function handleDelete() {
+  const ok = await confirm(`Удалить задачу «${props.task.title}»?`)
+  if (!ok) return
 
   tasksStore.deleteTask(props.task.id)
-  emit('delete', props.task.id)
-
-  const notif = {
-    type: 'info' as const,
+  addNotification({
+    type: 'info',
     message: `«${props.task.title}» удалено`,
-    duration: 5000,
-    action: {
-      label: 'Отменить',
-      handler: () => {
-        if (pendingDeleteTimer) {
-          clearTimeout(pendingDeleteTimer)
-          pendingDeleteTimer = null
-        }
-        tasksStore.addTask({
-          ...deletedTask,
-          id: deletedTask.id,
-          createdAt: deletedTask.createdAt,
-        })
-        addNotification({
-          type: 'success',
-          message: `«${deletedTask.title}» восстановлено`,
-        })
-        if (notificationId) {
-          removeNotification(notificationId)
-        }
-      },
-    },
-  }
-  addNotification(notif)
-  notificationId = notif.id
-
-  pendingDeleteTimer = setTimeout(() => {
-    pendingDeleteTimer = null
-    notificationId = null
-  }, 5000)
+  })
+  emit('delete', props.task.id)
 }
 </script>
 
@@ -201,12 +171,14 @@ function handleDelete() {
     margin: 8px 0 4px;
     font-size: 1rem;
     color: var(--accent);
+    word-break: break-word;
   }
 
   p {
     font-size: 0.85rem;
     color: var(--dim);
     margin-bottom: 12px;
+    word-break: break-word;
   }
 
   .task-footer {

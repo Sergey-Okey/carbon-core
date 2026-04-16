@@ -1,15 +1,15 @@
 <template>
   <NuxtLayout>
     <NuxtPage />
+    <ConfirmDialog />
   </NuxtLayout>
-  <SpeedInsights />
 </template>
 
 <script setup lang="ts">
-import { SpeedInsights } from '@vercel/speed-insights/vue'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useSettingsStore } from '~/stores/settings.store'
 import { useOnboardingStore } from '~/stores/onboarding.store'
+import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 
 const tasksStore = useTasksStore()
 const settingsStore = useSettingsStore()
@@ -17,7 +17,6 @@ const onboardingStore = useOnboardingStore()
 
 await settingsStore.ready
 
-// Редирект на онбординг для новых пользователей
 if (!onboardingStore.hasSeenOnboarding && import.meta.client) {
   const route = useRoute()
   if (route.path !== '/onboarding') {

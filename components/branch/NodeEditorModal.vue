@@ -25,6 +25,37 @@
           </div>
 
           <div class="form-group">
+            <label>Иконка</label>
+            <div class="icon-section">
+              <button
+                type="button"
+                class="toggle-icons-btn"
+                @click="iconsExpanded = !iconsExpanded"
+              >
+                <div class="selected-icon">
+                  <component :is="iconComponent(form.icon)" :size="20" />
+                  <span>{{ form.icon }}</span>
+                </div>
+                <ChevronDown :size="16" :class="{ rotated: iconsExpanded }" />
+              </button>
+              <Transition name="expand">
+                <div v-if="iconsExpanded" class="icons-grid">
+                  <button
+                    v-for="icon in iconOptions"
+                    :key="icon"
+                    type="button"
+                    class="icon-option"
+                    :class="{ active: form.icon === icon }"
+                    @click="form.icon = icon"
+                  >
+                    <component :is="iconComponent(icon)" :size="20" />
+                  </button>
+                </div>
+              </Transition>
+            </div>
+          </div>
+
+          <div class="form-group">
             <label>Привязанные задачи</label>
             <div class="tasks-section">
               <button
@@ -62,6 +93,9 @@
             <button type="button" class="btn-secondary" @click="emit('close')">
               Отмена
             </button>
+            <button type="button" class="btn-danger" @click="emit('delete')">
+              Удалить
+            </button>
             <button type="submit" class="btn-primary">Сохранить</button>
           </div>
         </form>
@@ -71,8 +105,25 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed } from 'vue'
-import { X, ChevronDown } from 'lucide-vue-next'
+import { reactive, ref, computed, watch } from 'vue'
+import {
+  X,
+  ChevronDown,
+  TrendingUp,
+  Dumbbell,
+  Brain,
+  Users,
+  Target,
+  Briefcase,
+  Heart,
+  BookOpen,
+  Globe,
+  Award,
+  Coffee,
+  Music,
+  Camera,
+  Code,
+} from 'lucide-vue-next'
 import { useTasksStore } from '~/stores/tasks.store'
 import type { Milestone } from '~/types/branch.types'
 
@@ -80,25 +131,79 @@ const props = defineProps<{ milestone: Milestone }>()
 const emit = defineEmits<{
   (e: 'close'): void
   (e: 'save', updates: Partial<Milestone>): void
+  (e: 'delete'): void
 }>()
 
 const tasksStore = useTasksStore()
+const iconsExpanded = ref(false)
 const tasksExpanded = ref(false)
+
+const iconOptions = [
+  'trending-up',
+  'dumbbell',
+  'brain',
+  'users',
+  'target',
+  'briefcase',
+  'heart',
+  'book-open',
+  'globe',
+  'award',
+  'coffee',
+  'music',
+  'camera',
+  'code',
+]
+
+const iconComponent = (name: string) => {
+  const map: Record<string, any> = {
+    'trending-up': TrendingUp,
+    dumbbell: Dumbbell,
+    brain: Brain,
+    users: Users,
+    target: Target,
+    briefcase: Briefcase,
+    heart: Heart,
+    'book-open': BookOpen,
+    globe: Globe,
+    award: Award,
+    coffee: Coffee,
+    music: Music,
+    camera: Camera,
+    code: Code,
+  }
+  return map[name] || Target
+}
 
 const activeTasks = computed(() => {
   return tasksStore.tasks.filter((t) => !t.done || t.type === 'HABIT')
 })
 
 const form = reactive({
-  name: props.milestone.name,
-  description: props.milestone.description || '',
-  taskIds: [...props.milestone.taskIds],
+  name: '',
+  description: '',
+  icon: 'target',
+  taskIds: [] as string[],
 })
+
+watch(
+  () => props.milestone,
+  (newVal) => {
+    if (newVal) {
+      form.name = newVal.name
+      form.description = newVal.description || ''
+      form.icon = newVal.icon || 'target'
+      form.taskIds = [...(newVal.taskIds || [])]
+    }
+  },
+  { immediate: true }
+)
 
 function handleSubmit() {
   emit('save', {
     name: form.name,
     description: form.description,
+    icon: form.icon,
     taskIds: form.taskIds,
   })
 }
@@ -179,6 +284,66 @@ form {
   textarea {
     resize: vertical;
     min-height: 60px;
+  }
+}
+.icon-section {
+  .toggle-icons-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius-sm);
+    color: var(--accent);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    &:hover {
+      border-color: var(--accent);
+    }
+    .rotated {
+      transform: rotate(180deg);
+    }
+    .selected-icon {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+  .icons-grid {
+    margin-top: 8px;
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius-sm);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .icon-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: var(--border-radius-sm);
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    &:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    &.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--bg);
+    }
   }
 }
 .tasks-section {
@@ -309,6 +474,16 @@ form {
     color: var(--bg);
     &:hover {
       opacity: 0.9;
+    }
+  }
+  .btn-danger {
+    background: transparent;
+    color: var(--error);
+    border: 1px solid var(--error);
+    margin-right: auto;
+    &:hover {
+      background: var(--error);
+      color: var(--bg);
     }
   }
 }

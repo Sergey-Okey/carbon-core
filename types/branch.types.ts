@@ -4,6 +4,7 @@ export interface Milestone {
   id: string
   name: string
   description?: string
+  icon?: string // иконка этапа (опционально)
   requiredXP: number
   currentXP: number
   status: 'pending' | 'active' | 'completed'
@@ -19,4 +20,11 @@ export interface Branch {
   taskIds: string[]
   milestones: Milestone[]
   order: number
+}
+
+export type BranchNodeData = {
+  type: 'branch' | 'milestone'
+  branchId: string
+  milestone?: Milestone
+  branchIcon?: string
 }

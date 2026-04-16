@@ -1,11 +1,12 @@
 <template>
   <div class="branch-flow-wrapper">
     <div v-if="isMobile" class="mobile-warning">
-      <div class="warning-card">
-        <AlertTriangle :size="48" />
-        <h2>Требуется десктоп</h2>
-        <p>Доска развития доступна только на больших экранах.</p>
-      </div>
+      <AlertTriangle :size="32" />
+      <h3>Доступно только на десктопе</h3>
+      <p>
+        Для работы с доской развития используйте компьютер или планшет в
+        горизонтальной ориентации.
+      </p>
     </div>
 
     <VueFlow
@@ -26,9 +27,9 @@
       @edges-change="onEdgesChange"
       @connect="onConnect"
       @edge-update="onEdgeUpdate"
-      @pane-context-menu="onPaneContextMenu"
-      @node-context-menu="onNodeContextMenu"
-      @edge-context-menu="onEdgeContextMenu"
+      @node-click="onNodeClick"
+      @edge-click="onEdgeClick"
+      @pane-click="onPaneClick"
     >
       <Background :variant="BackgroundVariant.Dots" :gap="20" :size="1.5" />
 
@@ -49,43 +50,40 @@
         <button @click="openAddBranchModal" title="Добавить ветку">
           <Plus :size="18" />
         </button>
+        <button
+          v-if="selectedEdgeId"
+          @click="deleteSelectedEdge"
+          title="Удалить связь"
+        >
+          <Unlink :size="18" />
+        </button>
+        <button @click="addMilestoneToSelectedBranch" title="Добавить этап">
+          <PlusCircle :size="18" />
+        </button>
+        <button
+          v-if="selectedNodeId && isBranchNode(selectedNodeId)"
+          @click="deleteSelectedBranch"
+          title="Удалить ветку"
+        >
+          <Trash2 :size="18" />
+        </button>
       </Panel>
 
       <template #node-branch="nodeProps">
         <BranchNode
           :data="nodeProps.data"
+          :selected="selectedNodeId === nodeProps.id"
           @edit="openEditor(nodeProps.data.milestone)"
         />
       </template>
     </VueFlow>
-
-    <!-- Кастомное контекстное меню -->
-    <Teleport to="body">
-      <div
-        v-if="contextMenu.visible"
-        class="context-menu"
-        :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }"
-        @click.stop
-      >
-        <template v-if="contextMenu.type === 'pane'">
-          <button @click="addMilestoneHere">Добавить узел</button>
-          <button @click="openAddBranchModal">Добавить ветку</button>
-        </template>
-        <template v-else-if="contextMenu.type === 'node'">
-          <button @click="editSelectedNode">Редактировать</button>
-          <button @click="deleteSelectedNode">Удалить</button>
-        </template>
-        <template v-else-if="contextMenu.type === 'edge'">
-          <button @click="deleteSelectedEdge">Удалить связь</button>
-        </template>
-      </div>
-    </Teleport>
 
     <NodeEditorModal
       v-if="editingMilestone"
       :milestone="editingMilestone"
       @close="editingMilestone = null"
       @save="handleSaveMilestone"
+      @delete="handleDeleteMilestone"
     />
 
     <BranchModal
@@ -93,6 +91,7 @@
       :branch="branchModal.branch"
       @close="branchModal.visible = false"
       @save="handleSaveBranch"
+      @delete="handleDeleteBranch"
     />
   </div>
 </template>
@@ -116,24 +115,28 @@ import {
   ZoomOut,
   Plus,
   Layout,
+  Unlink,
+  PlusCircle,
+  Trash2,
 } from 'lucide-vue-next'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useAutoLayout } from '~/composables/useAutoLayout'
+import { useConfirm } from '~/composables/useConfirm'
 import BranchNode from './BranchNode.vue'
 import NodeEditorModal from './NodeEditorModal.vue'
 import BranchModal from './BranchModal.vue'
-import type { Milestone, Branch } from '~/types/branch.types'
-import { useEventListener } from '@vueuse/core'
+import type { Milestone, Branch, BranchNodeData } from '~/types/branch.types'
 
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 
 const branchesStore = useBranchesStore()
 const { fitView, zoomIn: vfZoomIn, zoomOut: vfZoomOut } = useVueFlow()
-const { applyGridLayout } = useAutoLayout()
+const { applyLayout } = useAutoLayout()
+const { confirm } = useConfirm()
 
 const nodeTypes = { branch: BranchNode }
-const nodes = ref<Node[]>([])
+const nodes = ref<Node<BranchNodeData>[]>([])
 const edges = ref<Edge[]>([])
 
 const isMobile = ref(false)
@@ -148,58 +151,32 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
 })
 
-// Контекстное меню
-const contextMenu = ref<{
-  visible: boolean
-  x: number
-  y: number
-  type: 'pane' | 'node' | 'edge'
-  nodeId?: string
-  edgeId?: string
-}>({ visible: false, x: 0, y: 0, type: 'pane' })
+const selectedNodeId = ref<string | null>(null)
+const selectedEdgeId = ref<string | null>(null)
 
-function onPaneContextMenu(event: MouseEvent) {
-  event.preventDefault()
-  contextMenu.value = {
-    visible: true,
-    x: event.clientX,
-    y: event.clientY,
-    type: 'pane',
-  }
+function onNodeClick({ node }: { node: Node }) {
+  selectedNodeId.value = node.id
+  selectedEdgeId.value = null
 }
-function onNodeContextMenu(event: any, node: Node) {
-  if (event && typeof event.preventDefault === 'function') {
-    event.preventDefault()
-  }
-  contextMenu.value = {
-    visible: true,
-    x: event?.clientX || 0,
-    y: event?.clientY || 0,
-    type: 'node',
-    nodeId: node.id,
-  }
+function onEdgeClick({ edge }: { edge: Edge }) {
+  selectedEdgeId.value = edge.id
+  selectedNodeId.value = null
 }
-function onEdgeContextMenu(event: any, edge: Edge) {
-  if (event && typeof event.preventDefault === 'function') {
-    event.preventDefault()
-  }
-  contextMenu.value = {
-    visible: true,
-    x: event?.clientX || 0,
-    y: event?.clientY || 0,
-    type: 'edge',
-    edgeId: edge.id,
-  }
+function onPaneClick() {
+  selectedNodeId.value = null
+  selectedEdgeId.value = null
 }
 
-// Закрытие меню при клике вне его
-useEventListener(document, 'click', (event) => {
-  const menu = document.querySelector('.context-menu')
-  if (menu && menu.contains(event.target as Node)) return
-  contextMenu.value.visible = false
-})
+// Проверка, является ли узел веткой (единственный этап в ветке)
+function isBranchNode(nodeId: string): boolean {
+  const node = nodes.value.find((n) => n.id === nodeId)
+  if (!node) return false
+  const branch = branchesStore.branches.find((b) =>
+    b.milestones.some((m) => m.id === nodeId)
+  )
+  return branch?.milestones.length === 1 && branch.milestones[0].id === nodeId
+}
 
-// Редактирование узла
 const editingMilestone = ref<Milestone | null>(null)
 function openEditor(milestone: Milestone) {
   editingMilestone.value = milestone
@@ -210,8 +187,16 @@ function handleSaveMilestone(updates: Partial<Milestone>) {
     editingMilestone.value = null
   }
 }
+async function handleDeleteMilestone() {
+  const milestone = editingMilestone.value
+  if (!milestone) return
+  const ok = await confirm(`Удалить этап «${milestone.name}»?`)
+  if (ok) {
+    branchesStore.deleteMilestone(milestone.id)
+    editingMilestone.value = null
+  }
+}
 
-// Модалка ветки
 const branchModal = ref<{ visible: boolean; branch: Branch | null }>({
   visible: false,
   branch: null,
@@ -226,7 +211,10 @@ function handleSaveBranch(data: {
   taskIds: string[]
 }) {
   if (branchModal.value.branch) {
-    branchesStore.updateBranch(branchModal.value.branch.id, data)
+    branchesStore.updateBranch(branchModal.value.branch.id, {
+      ...data,
+      displayName: data.name,
+    })
   } else {
     branchesStore.addBranch(
       data.name,
@@ -237,15 +225,55 @@ function handleSaveBranch(data: {
   }
   branchModal.value.visible = false
 }
+async function handleDeleteBranch() {
+  const branch = branchModal.value.branch
+  if (!branch) return
+  const ok = await confirm(`Удалить ветку «${branch.displayName}»?`)
+  if (ok) {
+    branchesStore.deleteBranch(branch.id)
+    branchModal.value.visible = false
+  }
+}
 
-// Удаление по клавише Delete
 function handleKeyDown(event: KeyboardEvent) {
-  if (event.key === 'Delete') {
-    if (contextMenu.value.nodeId) {
-      deleteSelectedNode()
-    } else if (contextMenu.value.edgeId) {
-      deleteSelectedEdge()
+  if (event.key !== 'Delete') return
+
+  if (selectedNodeId.value) {
+    const node = nodes.value.find((n) => n.id === selectedNodeId.value)
+    if (!node) return
+    const milestone = node.data.milestone!
+    const branch = branchesStore.branches.find((b) =>
+      b.milestones.some((m) => m.id === selectedNodeId.value)
+    )
+
+    if (
+      branch &&
+      branch.milestones.length === 1 &&
+      branch.milestones[0].id === selectedNodeId.value
+    ) {
+      // Это единственный узел ветки → удаляем ветку
+      confirm(`Удалить ветку «${branch.displayName}»?`).then((ok) => {
+        if (ok) {
+          branchesStore.deleteBranch(branch.id)
+          selectedNodeId.value = null
+        }
+      })
+    } else {
+      // Обычный этап
+      confirm(`Удалить этап «${milestone.name}»?`).then((ok) => {
+        if (ok) {
+          branchesStore.deleteMilestone(selectedNodeId.value!)
+          selectedNodeId.value = null
+        }
+      })
     }
+  } else if (selectedEdgeId.value) {
+    confirm('Удалить связь?').then((ok) => {
+      if (ok) {
+        branchesStore.removeEdge(selectedEdgeId.value!)
+        selectedEdgeId.value = null
+      }
+    })
   }
 }
 onMounted(() => {
@@ -255,28 +283,58 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown)
 })
 
-// Синхронизация с хранилищем
+async function deleteSelectedEdge() {
+  if (selectedEdgeId.value) {
+    const ok = await confirm('Удалить связь?')
+    if (ok) {
+      branchesStore.removeEdge(selectedEdgeId.value)
+      selectedEdgeId.value = null
+    }
+  }
+}
+
+async function deleteSelectedBranch() {
+  if (!selectedNodeId.value) return
+  const branch = branchesStore.branches.find((b) =>
+    b.milestones.some((m) => m.id === selectedNodeId.value)
+  )
+  if (!branch) return
+  const ok = await confirm(`Удалить ветку «${branch.displayName}»?`)
+  if (ok) {
+    branchesStore.deleteBranch(branch.id)
+    selectedNodeId.value = null
+  }
+}
+
+function syncNodesAndEdges() {
+  const newNodes: Node<BranchNodeData>[] = []
+  branchesStore.branches.forEach((branch) => {
+    branch.milestones.forEach((milestone) => {
+      newNodes.push({
+        id: milestone.id,
+        type: 'branch',
+        position: milestone.position,
+        data: {
+          type: 'milestone',
+          branchId: branch.id,
+          milestone,
+          branchIcon: branch.icon,
+        },
+      })
+    })
+  })
+  nodes.value = newNodes
+
+  const existingNodeIds = new Set(newNodes.map((n) => n.id))
+  edges.value = branchesStore.edges.filter(
+    (e) => existingNodeIds.has(e.source) && existingNodeIds.has(e.target)
+  )
+}
+
 watch(
   () => [branchesStore.branches, branchesStore.edges],
   () => {
-    const newNodes: Node[] = []
-    branchesStore.branches.forEach((branch) => {
-      branch.milestones.forEach((milestone) => {
-        newNodes.push({
-          id: milestone.id,
-          type: 'branch',
-          position: milestone.position,
-          data: { milestone, branchIcon: branch.icon },
-        })
-      })
-    })
-    nodes.value = newNodes
-
-    // Фильтруем битые рёбра
-    const existingNodeIds = new Set(newNodes.map((n) => n.id))
-    edges.value = branchesStore.edges.filter(
-      (e) => existingNodeIds.has(e.source) && existingNodeIds.has(e.target)
-    )
+    syncNodesAndEdges()
   },
   { immediate: true, deep: true }
 )
@@ -302,8 +360,12 @@ function onConnect(connection: Connection) {
   branchesStore.addEdge(newEdge)
 }
 function onEdgeUpdate({ edge, connection }: any) {
-  edge.source = connection.source
-  edge.target = connection.target
+  const updatedEdge = {
+    ...edge,
+    source: connection.source,
+    target: connection.target,
+  }
+  branchesStore.updateEdge(updatedEdge)
 }
 
 function zoomIn() {
@@ -315,40 +377,32 @@ function zoomOut() {
 
 function autoLayout() {
   const allMilestones = branchesStore.branches.flatMap((b) => b.milestones)
-  const positions = applyGridLayout(allMilestones)
-  allMilestones.forEach((m, i) => {
-    branchesStore.updateMilestone(m.id, { position: positions[i] })
+  const currentNodes: Node[] = allMilestones.map((m) => ({
+    id: m.id,
+    type: 'branch',
+    position: m.position,
+    data: { milestone: m },
+  }))
+  const currentEdges: Edge[] = branchesStore.edges
+
+  const layoutedNodes = applyLayout(currentNodes, currentEdges)
+  layoutedNodes.forEach((node) => {
+    branchesStore.updateMilestone(node.id, { position: node.position })
   })
 }
 
-function addMilestoneHere() {
-  const firstBranch = branchesStore.branches[0]
-  if (firstBranch) {
-    branchesStore.addMilestone(firstBranch.id, 'Новый этап')
+function addMilestoneToSelectedBranch() {
+  let targetBranch: Branch | undefined
+  if (selectedNodeId.value) {
+    targetBranch = branchesStore.branches.find((b) =>
+      b.milestones.some((m) => m.id === selectedNodeId.value)
+    )
   }
-}
-
-function editSelectedNode() {
-  if (contextMenu.value.nodeId) {
-    const milestone = branchesStore.branches
-      .flatMap((b) => b.milestones)
-      .find((m) => m.id === contextMenu.value.nodeId)
-    if (milestone) {
-      contextMenu.value.visible = false
-      openEditor(milestone)
-    }
+  if (!targetBranch) {
+    targetBranch = branchesStore.branches[0]
   }
-}
-function deleteSelectedNode() {
-  if (contextMenu.value.nodeId) {
-    branchesStore.deleteMilestone(contextMenu.value.nodeId)
-    contextMenu.value.visible = false
-  }
-}
-function deleteSelectedEdge() {
-  if (contextMenu.value.edgeId) {
-    branchesStore.removeEdge(contextMenu.value.edgeId)
-    contextMenu.value.visible = false
+  if (targetBranch) {
+    branchesStore.addMilestone(targetBranch.id, 'Новый этап', '')
   }
 }
 </script>
@@ -369,22 +423,26 @@ function deleteSelectedEdge() {
 
 .mobile-warning {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  .warning-card {
-    @include glass;
-    padding: 32px;
-    border-radius: var(--border-radius-lg);
-    text-align: center;
+  text-align: center;
+  padding: 32px;
+  color: var(--accent);
+  background: var(--bg);
+  border: none;
+
+  h3 {
+    margin: 16px 0 8px;
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+
+  p {
+    color: var(--dim);
     max-width: 300px;
-    color: var(--accent);
-    h2 {
-      margin: 16px 0 8px;
-    }
-    p {
-      color: var(--dim);
-    }
+    line-height: 1.5;
   }
 }
 
@@ -403,6 +461,16 @@ function deleteSelectedEdge() {
   &.completed {
     stroke: var(--success);
   }
+}
+:deep(.vue-flow__node-branch.selected) {
+  .branch-node {
+    border: 1px solid var(--accent);
+    box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.2);
+  }
+}
+:deep(.vue-flow__edge.selected .vue-flow__edge-path) {
+  stroke: var(--accent);
+  stroke-width: 3;
 }
 
 .custom-controls {
@@ -432,30 +500,6 @@ function deleteSelectedEdge() {
     height: 34px;
     background: var(--border);
     margin: 0 4px;
-  }
-}
-
-.context-menu {
-  position: fixed;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-md);
-  padding: 4px;
-  z-index: 1000;
-  button {
-    display: block;
-    width: 100%;
-    padding: 8px 16px;
-    text-align: left;
-    background: transparent;
-    border: none;
-    color: var(--accent);
-    cursor: pointer;
-    border-radius: var(--border-radius-sm);
-    &:hover {
-      background: var(--border);
-    }
   }
 }
 </style>

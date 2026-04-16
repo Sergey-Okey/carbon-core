@@ -18,6 +18,8 @@ export const useBranchesStore = defineStore(
           {
             id: uuidv4(),
             name: 'Основы финансов',
+            icon: 'trending-up',
+            description: '',
             requiredXP: 500,
             currentXP: 0,
             status: 'pending',
@@ -37,6 +39,8 @@ export const useBranchesStore = defineStore(
           {
             id: uuidv4(),
             name: 'Регулярные тренировки',
+            icon: 'dumbbell',
+            description: '',
             requiredXP: 300,
             currentXP: 0,
             status: 'pending',
@@ -56,6 +60,8 @@ export const useBranchesStore = defineStore(
           {
             id: uuidv4(),
             name: 'Ежедневное чтение',
+            icon: 'brain',
+            description: '',
             requiredXP: 400,
             currentXP: 0,
             status: 'pending',
@@ -75,6 +81,8 @@ export const useBranchesStore = defineStore(
           {
             id: uuidv4(),
             name: 'Первая публичная речь',
+            icon: 'users',
+            description: '',
             requiredXP: 200,
             currentXP: 0,
             status: 'pending',
@@ -88,7 +96,6 @@ export const useBranchesStore = defineStore(
 
     const edges = ref<Edge[]>([])
 
-    // Очистка битых рёбер после восстановления из localStorage
     function cleanupEdges() {
       const existingNodeIds = new Set(
         branches.value.flatMap((b) => b.milestones.map((m) => m.id))
@@ -131,6 +138,8 @@ export const useBranchesStore = defineStore(
           const newMilestone: Milestone = {
             id: uuidv4(),
             name: `Новый этап`,
+            icon: branch.icon,
+            description: '',
             requiredXP: nextXP,
             currentXP: 0,
             status: 'pending',
@@ -182,6 +191,8 @@ export const useBranchesStore = defineStore(
           {
             id: uuidv4(),
             name: displayName,
+            icon,
+            description,
             requiredXP: 500,
             currentXP: 0,
             status: 'pending',
@@ -209,6 +220,7 @@ export const useBranchesStore = defineStore(
     function addMilestone(
       branchId: BranchId,
       name: string,
+      description: string = '',
       position?: { x: number; y: number }
     ) {
       const branch = branches.value.find((b) => b.id === branchId)
@@ -217,6 +229,8 @@ export const useBranchesStore = defineStore(
       const newMilestone: Milestone = {
         id: uuidv4(),
         name,
+        icon: branch.icon,
+        description,
         requiredXP: last ? Math.floor(last.requiredXP * 1.5) : 500,
         currentXP: 0,
         status: 'pending',
@@ -243,7 +257,18 @@ export const useBranchesStore = defineStore(
       for (const branch of branches.value) {
         const milestone = branch.milestones.find((m) => m.id === milestoneId)
         if (milestone) {
-          Object.assign(milestone, updates)
+          if (updates.name !== undefined) milestone.name = updates.name
+          if (updates.description !== undefined)
+            milestone.description = updates.description
+          if (updates.icon !== undefined) milestone.icon = updates.icon
+          if (updates.taskIds !== undefined) milestone.taskIds = updates.taskIds
+          if (updates.requiredXP !== undefined)
+            milestone.requiredXP = updates.requiredXP
+          if (updates.currentXP !== undefined)
+            milestone.currentXP = updates.currentXP
+          if (updates.status !== undefined) milestone.status = updates.status
+          if (updates.position !== undefined)
+            milestone.position = updates.position
           break
         }
       }
@@ -270,28 +295,36 @@ export const useBranchesStore = defineStore(
       edges.value = edges.value.filter((e) => e.id !== edgeId)
     }
 
+    function updateEdge(updatedEdge: Edge) {
+      const index = edges.value.findIndex((e) => e.id === updatedEdge.id)
+      if (index !== -1) {
+        edges.value[index] = updatedEdge
+      }
+    }
+
     function updateBranch(branchId: string, updates: Partial<Branch>) {
       const branch = branches.value.find((b) => b.id === branchId)
       if (branch) {
-        Object.assign(branch, updates)
+        if (updates.displayName !== undefined)
+          branch.displayName = updates.displayName
+        if (updates.icon !== undefined) branch.icon = updates.icon
+        if (updates.description !== undefined)
+          branch.description = updates.description
+        if (updates.taskIds !== undefined) branch.taskIds = updates.taskIds
+
         const firstMilestone = branch.milestones[0]
         if (firstMilestone) {
           if (updates.displayName) firstMilestone.name = updates.displayName
+          if (updates.icon) firstMilestone.icon = updates.icon
+          if (updates.description)
+            firstMilestone.description = updates.description
           if (updates.taskIds) firstMilestone.taskIds = updates.taskIds
         }
       }
     }
 
-    // Вызываем очистку после восстановления из persist
     if (import.meta.client) {
-      const store = useBranchesStore()
-      if (store.$persistedState) {
-        store.$persistedState.isReady.then(() => {
-          cleanupEdges()
-        })
-      } else {
-        cleanupEdges()
-      }
+      Promise.resolve().then(() => cleanupEdges())
     }
 
     return {
@@ -305,6 +338,7 @@ export const useBranchesStore = defineStore(
       deleteMilestone,
       addEdge,
       removeEdge,
+      updateEdge,
       updateBranch,
     }
   },

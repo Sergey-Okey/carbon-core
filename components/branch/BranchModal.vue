@@ -112,7 +112,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed } from 'vue'
+import { reactive, ref, computed, watch } from 'vue'
 import {
   X,
   ChevronDown,
@@ -133,7 +133,7 @@ import {
 } from 'lucide-vue-next'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useBranchesStore } from '~/stores/branches.store'
-import { useNotification } from '~/composables/useNotification'
+import { useConfirm } from '~/composables/useConfirm'
 import type { Branch } from '~/types/branch.types'
 
 const props = defineProps<{ branch?: Branch | null }>()
@@ -147,7 +147,7 @@ const emit = defineEmits<{
 
 const tasksStore = useTasksStore()
 const branchesStore = useBranchesStore()
-const { addNotification } = useNotification()
+const { confirm } = useConfirm()
 const iconsExpanded = ref(false)
 const tasksExpanded = ref(false)
 
@@ -193,28 +193,39 @@ const activeTasks = computed(() => {
 })
 
 const form = reactive({
-  name: props.branch?.displayName || '',
-  icon: props.branch?.icon || 'target',
-  description: props.branch?.description || '',
-  taskIds: props.branch?.taskIds ? [...props.branch.taskIds] : [],
+  name: '',
+  icon: 'target',
+  description: '',
+  taskIds: [] as string[],
 })
+
+watch(
+  () => props.branch,
+  (newBranch) => {
+    if (newBranch) {
+      form.name = newBranch.displayName
+      form.icon = newBranch.icon
+      form.description = newBranch.description || ''
+      form.taskIds = [...(newBranch.taskIds || [])]
+    } else {
+      form.name = ''
+      form.icon = 'target'
+      form.description = ''
+      form.taskIds = []
+    }
+  },
+  { immediate: true }
+)
 
 function handleSubmit() {
   emit('save', { ...form })
 }
 
-function deleteBranch() {
+async function deleteBranch() {
   if (!props.branch) return
-  if (
-    confirm(
-      `Удалить ветку "${props.branch.displayName}"? Все связанные узлы и задачи будут отвязаны.`
-    )
-  ) {
+  const ok = await confirm(`Удалить ветку "${props.branch.displayName}"?`)
+  if (ok) {
     branchesStore.deleteBranch(props.branch.id)
-    addNotification({
-      type: 'info',
-      message: `Ветка "${props.branch.displayName}" удалена`,
-    })
     emit('close')
   }
 }
