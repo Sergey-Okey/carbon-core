@@ -1,14 +1,14 @@
-import { shallowReactive, reactive, effectScope, getCurrentScope, hasInjectionContext, getCurrentInstance, inject, toRef, shallowRef, isReadonly, isRef, isShallow, isReactive, toRaw, defineComponent, createElementBlock, provide, cloneVNode, h, defineAsyncComponent, computed, unref, Suspense, nextTick, mergeProps, ref, Fragment, watch, useSSRContext, withAsyncContext, withCtx, createVNode, onErrorCaptured, onServerPrefetch, resolveDynamicComponent, createApp } from "vue";
-import { $fetch as $fetch$1 } from "C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/ofetch/dist/node.mjs";
+import { shallowReactive, reactive, effectScope, getCurrentScope, hasInjectionContext, getCurrentInstance, inject as inject$1, toRef, shallowRef, isReadonly, isRef, isShallow, isReactive, toRaw, defineComponent, createElementBlock, provide, cloneVNode, h, defineAsyncComponent, computed, unref, Suspense, nextTick, mergeProps, ref, Fragment, watch, useSSRContext, withAsyncContext, withCtx, createVNode, onErrorCaptured, onServerPrefetch, resolveDynamicComponent, createApp } from "vue";
+import { $fetch as $fetch$1 } from "/vercel/sandbox/primary/node_modules/ofetch/dist/node.mjs";
 import { baseURL } from "#internal/nuxt/paths";
-import { createHooks } from "C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/hookable/dist/index.mjs";
-import { getContext, executeAsync } from "C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/unctx/dist/index.mjs";
-import { sanitizeStatusCode, createError as createError$1 } from "C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/h3/dist/index.mjs";
+import { createHooks } from "/vercel/sandbox/primary/node_modules/hookable/dist/index.mjs";
+import { getContext, executeAsync } from "/vercel/sandbox/primary/node_modules/unctx/dist/index.mjs";
+import { sanitizeStatusCode, createError as createError$1 } from "/vercel/sandbox/primary/node_modules/h3/dist/index.mjs";
 import { shouldHydrate, setActivePinia, createPinia, defineStore } from "pinia";
-import { defu } from "C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/defu/dist/defu.mjs";
+import { defu } from "/vercel/sandbox/primary/node_modules/defu/dist/defu.mjs";
 import { START_LOCATION, createMemoryHistory, createRouter, useRoute as useRoute$1, RouterView } from "vue-router";
-import { hasProtocol, joinURL, withQuery, parseURL, encodePath, decodePath, isScriptProtocol } from "C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/ufo/dist/index.mjs";
-import "C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/klona/dist/index.mjs";
+import { hasProtocol, joinURL, withQuery, parseURL, encodePath, decodePath, isScriptProtocol } from "/vercel/sandbox/primary/node_modules/ufo/dist/index.mjs";
+import "/vercel/sandbox/primary/node_modules/klona/dist/index.mjs";
 import { ssrRenderTeleport, ssrInterpolate, ssrRenderComponent, ssrRenderSuspense, ssrRenderVNode } from "vue/server-renderer";
 import { v4 } from "uuid";
 if (!globalThis.$fetch) {
@@ -242,7 +242,7 @@ const useRouter = () => {
 };
 const useRoute = () => {
   if (hasInjectionContext()) {
-    return inject(PageRouteSymbol, useNuxtApp()._route);
+    return inject$1(PageRouteSymbol, useNuxtApp()._route);
   }
   return useNuxtApp()._route;
 };
@@ -416,12 +416,12 @@ const _routes = [
   {
     name: "index",
     path: "/",
-    component: () => import("./_nuxt/index-A0G2byRJ.js")
+    component: () => import("./_nuxt/index-DXqNlm2b.js")
   },
   {
     name: "onboarding",
     path: "/onboarding",
-    component: () => import("./_nuxt/onboarding-DLEXMx50.js")
+    component: () => import("./_nuxt/onboarding-DsaqoGdq.js")
   }
 ];
 const _wrapInTransition = (props, children) => {
@@ -854,7 +854,7 @@ const plugins = [
   components_plugin_z4hgvsiddfKkfXTP6M8M4zG5Cb7sGnDhcryKVM45Di4
 ];
 const layouts = {
-  default: defineAsyncComponent(() => import("./_nuxt/default-BfvXvtJZ.js").then((m) => m.default || m))
+  default: defineAsyncComponent(() => import("./_nuxt/default-Ci_R15NO.js").then((m) => m.default || m))
 };
 const routeRulesMatcher = _routeRulesMatcher;
 const LayoutLoader = defineComponent({
@@ -884,7 +884,7 @@ const __nuxt_component_0 = defineComponent({
   props: nuxtLayoutProps,
   setup(props, context) {
     const nuxtApp = useNuxtApp();
-    const injectedRoute = inject(PageRouteSymbol);
+    const injectedRoute = inject$1(PageRouteSymbol);
     const shouldUseEagerRoute = !injectedRoute || injectedRoute === useRoute();
     const route = shouldUseEagerRoute ? useRoute$1() : injectedRoute;
     const layout = computed(() => {
@@ -980,7 +980,7 @@ const LayoutProvider = defineComponent({
         isCurrent: (route) => name === false || name === (route.meta.layout ?? routeRulesMatcher(route.path).appLayout ?? "default")
       });
     }
-    const injectedRoute = inject(PageRouteSymbol);
+    const injectedRoute = inject$1(PageRouteSymbol);
     const isNotWithinNuxtPage = injectedRoute && injectedRoute === useRoute();
     if (isNotWithinNuxtPage) {
       const vueRouterRoute = useRoute$1();
@@ -1066,9 +1066,9 @@ const __nuxt_component_1 = defineComponent({
   setup(props, { attrs, slots, expose }) {
     const nuxtApp = useNuxtApp();
     const pageRef = ref();
-    inject(PageRouteSymbol, null);
+    inject$1(PageRouteSymbol, null);
     expose({ pageRef });
-    inject(LayoutMetaSymbol, null);
+    inject$1(LayoutMetaSymbol, null);
     nuxtApp.deferHydration();
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
@@ -1830,7 +1830,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     return (_ctx, _push, _parent, _attrs) => {
       ssrRenderTeleport(_push, (_push2) => {
         if (unref(confirmState).state.value.isOpen) {
-          _push2(`<div class="confirm-overlay" data-v-c238f9ed><div class="confirm-modal" data-v-c238f9ed><p class="confirm-message" data-v-c238f9ed>${ssrInterpolate(unref(confirmState).state.value.message)}</p><div class="confirm-actions" data-v-c238f9ed><button class="btn-secondary" data-v-c238f9ed> Отмена </button><button class="btn-danger" data-v-c238f9ed> Удалить </button></div></div></div>`);
+          _push2(`<div class="confirm-overlay" data-v-8a3f3c3e><div class="confirm-modal" data-v-8a3f3c3e><p class="confirm-message" data-v-8a3f3c3e>${ssrInterpolate(unref(confirmState).state.value.message)}</p><div class="confirm-actions" data-v-8a3f3c3e><button class="btn-secondary" data-v-8a3f3c3e> Отмена </button><button class="btn-danger" data-v-8a3f3c3e> Удалить </button></div></div></div>`);
         } else {
           _push2(`<!---->`);
         }
@@ -1851,7 +1851,7 @@ _sfc_main$3.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/ui/ConfirmDialog.vue");
   return _sfc_setup$3 ? _sfc_setup$3(props, ctx) : void 0;
 };
-const ConfirmDialog = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-c238f9ed"]]);
+const ConfirmDialog = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-8a3f3c3e"]]);
 function computeRoute(pathname, pathParams) {
   if (!pathname || !pathParams) {
     return pathname;
@@ -1889,19 +1889,19 @@ function escapeRegExp(string) {
 function injectSpeedInsights(props = {}, confString) {
   return null;
 }
-function getBasePath() {
+function getBasePath$1() {
   try {
     return void 0;
   } catch {
   }
 }
-function getConfigString() {
+function getConfigString$1() {
   try {
     return void 0;
   } catch {
   }
 }
-function createComponent(framework = "vue") {
+function createComponent$1(framework = "vue") {
   return defineComponent({
     props: [
       "dsn",
@@ -1919,9 +1919,9 @@ function createComponent(framework = "vue") {
             // trim out undefined values to avoid overriding config values
             Object.entries(props).filter(([_, v]) => v !== void 0)
           ),
-          basePath: getBasePath()
+          basePath: getBasePath$1()
         },
-        getConfigString()
+        getConfigString$1()
       );
       if (route && configure) {
         const changeRoute = () => {
@@ -1937,7 +1937,47 @@ function createComponent(framework = "vue") {
     }
   });
 }
-var SpeedInsights = createComponent();
+var SpeedInsights = createComponent$1();
+function inject(props = {
+  debug: true
+}, confString) {
+  return;
+}
+function getBasePath() {
+  try {
+    return void 0;
+  } catch {
+  }
+}
+function getConfigString() {
+  try {
+    return void 0;
+  } catch {
+  }
+}
+function createComponent(framework = "vue") {
+  return defineComponent({
+    props: ["dsn", "beforeSend", "debug", "scriptSrc", "endpoint", "mode"],
+    setup(props) {
+      useRoute$1();
+      inject(
+        {
+          // trim out undefined values to avoid overriding config values
+          ...Object.fromEntries(
+            Object.entries(props).filter(([_, v]) => v !== void 0)
+          ),
+          basePath: getBasePath()
+        },
+        getConfigString()
+      );
+    },
+    // Vue component must have a render function, or a template.
+    render() {
+      return null;
+    }
+  });
+}
+var Analytics = createComponent();
 function toValue(r) {
   return typeof r === "function" ? r() : unref(r);
 }
@@ -2065,6 +2105,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         }),
         _: 1
       }, _parent));
+      _push(ssrRenderComponent(unref(Analytics), null, null, _parent));
       _push(ssrRenderComponent(unref(SpeedInsights), null, null, _parent));
       _push(`<!--]-->`);
     };
@@ -2090,8 +2131,8 @@ const _sfc_main$1 = {
     const statusText = _error.statusMessage ?? (is404 ? "Page Not Found" : "Internal Server Error");
     const description = _error.message || _error.toString();
     const stack = void 0;
-    const _Error404 = defineAsyncComponent(() => import("./_nuxt/error-404-CcjCMK4y.js"));
-    const _Error = defineAsyncComponent(() => import("./_nuxt/error-500-CxpWrV_x.js"));
+    const _Error404 = defineAsyncComponent(() => import("./_nuxt/error-404-Dgs2B92H.js"));
+    const _Error = defineAsyncComponent(() => import("./_nuxt/error-500-C4Q07YME.js"));
     const ErrorTemplate = is404 ? _Error404 : _Error;
     return (_ctx, _push, _parent, _attrs) => {
       _push(ssrRenderComponent(unref(ErrorTemplate), mergeProps({ status: unref(status), statusText: unref(statusText), statusCode: unref(status), statusMessage: unref(statusText), description: unref(description), stack: unref(stack) }, _attrs), null, _parent));

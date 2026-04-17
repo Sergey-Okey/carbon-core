@@ -3,6 +3,8 @@
     <NuxtPage />
     <ConfirmDialog />
   </NuxtLayout>
+  <!-- 👇 Компонент Analytics -->
+  <Analytics />
   <!-- 👇 Компонент Speed Insights -->
   <SpeedInsights />
 </template>
@@ -18,6 +20,7 @@ import { useTagsStore } from '~/stores/tags.store'
 import { useUIStore } from '~/stores/ui.store'
 import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 import { SpeedInsights } from '@vercel/speed-insights/vue'
+import { Analytics } from '@vercel/analytics/vue'
 import { watch, onMounted, onUnmounted, ref } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 
