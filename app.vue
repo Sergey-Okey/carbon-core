@@ -9,7 +9,6 @@
 <script setup lang="ts">
 import { useTasksStore } from '~/stores/tasks.store'
 import { useSettingsStore } from '~/stores/settings.store'
-import { useOnboardingStore } from '~/stores/onboarding.store'
 import { useUserStore } from '~/stores/user.store'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useRewardsStore } from '~/stores/rewards.store'
@@ -22,7 +21,6 @@ import { useDebounceFn } from '@vueuse/core'
 
 const tasksStore = useTasksStore()
 const settingsStore = useSettingsStore()
-const onboardingStore = useOnboardingStore()
 const userStore = useUserStore()
 const branchesStore = useBranchesStore()
 const rewardsStore = useRewardsStore()
@@ -36,6 +34,7 @@ const userId = ref<string>('default-user')
 async function loadFromCloud() {
   try {
     const data = await $fetch('/api/sync', { query: { userId: userId.value } })
+
     if (data.user) userStore.$patch({ ...data.user })
     if (data.tasks) tasksStore.$patch({ tasks: data.tasks })
     if (data.branches) branchesStore.$patch({ branches: data.branches })
@@ -43,10 +42,8 @@ async function loadFromCloud() {
     if (data.tags) tagsStore.$patch({ tags: data.tags })
     if (data.ui) uiStore.$patch({ ...data.ui })
     if (data.settings) settingsStore.$patch({ ...data.settings })
-  } catch (e) {
-    console.warn(
-      'Облачная синхронизация недоступна, используются локальные данные'
-    )
+  } catch {
+    console.warn('Облачная синхронизация недоступна')
   }
 }
 
@@ -65,8 +62,8 @@ const syncToCloud = useDebounceFn(async () => {
         settings: { ...settingsStore.$state },
       },
     })
-  } catch (e) {
-    console.warn('Ошибка синхронизации с облаком')
+  } catch {
+    console.warn('Ошибка синхронизации')
   }
 }, 2000)
 
@@ -85,20 +82,11 @@ watch(
 )
 
 onMounted(async () => {
-  // 1. Сначала загружаем все данные из облака / локального хранилища
   await loadFromCloud()
 
-  // 2. Проверяем, нужно ли показать онбординг (теперь hasSeenOnboarding точно актуален)
-  if (!onboardingStore.hasSeenOnboarding) {
-    const route = useRoute()
-    if (route.path !== '/onboarding') {
-      await navigateTo('/onboarding')
-    }
-  }
-
-  // 3. Остальная инициализация
   tasksStore.resetDailyTasks()
   scheduleNextReset()
+
   window.addEventListener('beforeunload', autoBackupOnUnload)
 })
 
@@ -109,14 +97,16 @@ onUnmounted(() => {
 function scheduleNextReset() {
   const now = new Date()
   const next4AM = new Date(now)
+
   next4AM.setDate(now.getDate() + 1)
   next4AM.setHours(4, 0, 0, 0)
-  const msUntil4AM = next4AM.getTime() - now.getTime()
+
+  const ms = next4AM.getTime() - now.getTime()
 
   setTimeout(() => {
     tasksStore.resetDailyTasks()
     scheduleNextReset()
-  }, msUntil4AM)
+  }, ms)
 }
 
 function autoBackupOnUnload() {
@@ -130,6 +120,7 @@ function autoBackupOnUnload() {
       ui: uiStore.$state,
       settings: settingsStore.$state,
     }
+
     localStorage.setItem('carbon-autobackup-latest', JSON.stringify(data))
     settingsStore.recordBackup()
   }
