@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
-    "prisma": "^7.7.0",
+    "prisma": "^6.19.3",
     "sass": "^1.99.0",
     "typescript": "^5.4.2",
     "vue-tsc": "^3.2.6"

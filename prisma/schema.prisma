@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -93,23 +94,23 @@ model Tag {
 }
 
 model UI {
-  id               String @id @default(uuid())
-  activeNav        String
-  sidebarCollapsed Boolean
-  sidebarHovered   Boolean
-  userId           String? @unique
-  user             User?   @relation(fields: [userId], references: [id])
+  id                 String @id @default(uuid())
+  activeNav          String
+  sidebarCollapsed   Boolean
+  sidebarHovered     Boolean
+  userId             String? @unique
+  user               User?   @relation(fields: [userId], references: [id])
 }
 
 model Settings {
-  id                 String @id @default(uuid())
-  theme              String
-  accentColor        String
-  animationsEnabled  Boolean
-  soundEnabled       Boolean
+  id                   String @id @default(uuid())
+  theme                String
+  accentColor          String
+  animationsEnabled    Boolean
+  soundEnabled         Boolean
   notificationsEnabled Boolean
-  autoBackup         Boolean
-  lastBackupDate     DateTime?
-  userId             String? @unique
-  user               User?   @relation(fields: [userId], references: [id])
+  autoBackup           Boolean
+  lastBackupDate       DateTime?
+  userId               String? @unique
+  user                 User?   @relation(fields: [userId], references: [id])
 }

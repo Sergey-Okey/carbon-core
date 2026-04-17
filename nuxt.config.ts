@@ -43,7 +43,7 @@ export default defineNuxtConfig({
     typeCheck: false,
   },
 
-  ssr: false,
+  ssr: true,
 
   app: {
     head: {

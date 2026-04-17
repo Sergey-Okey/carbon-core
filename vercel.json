@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npm run generate",
-  "outputDirectory": "dist",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".output",
   "devCommand": "npm run dev",
   "installCommand": "npm install"
 }
