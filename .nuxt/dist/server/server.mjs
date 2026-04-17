@@ -1,14 +1,14 @@
 import { shallowReactive, reactive, effectScope, getCurrentScope, hasInjectionContext, getCurrentInstance, inject, toRef, shallowRef, isReadonly, isRef, isShallow, isReactive, toRaw, defineComponent, createElementBlock, provide, cloneVNode, h, defineAsyncComponent, computed, unref, Suspense, nextTick, mergeProps, ref, Fragment, watch, useSSRContext, withAsyncContext, withCtx, createVNode, onErrorCaptured, onServerPrefetch, resolveDynamicComponent, createApp } from "vue";
-import { $fetch as $fetch$1 } from "C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/ofetch/dist/node.mjs";
+import { $fetch as $fetch$1 } from "C:/Users/Сергей/Documents/carbon-core/node_modules/ofetch/dist/node.mjs";
 import { baseURL } from "#internal/nuxt/paths";
-import { createHooks } from "C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/hookable/dist/index.mjs";
-import { getContext, executeAsync } from "C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/unctx/dist/index.mjs";
-import { sanitizeStatusCode, createError as createError$1 } from "C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/h3/dist/index.mjs";
+import { createHooks } from "C:/Users/Сергей/Documents/carbon-core/node_modules/hookable/dist/index.mjs";
+import { getContext, executeAsync } from "C:/Users/Сергей/Documents/carbon-core/node_modules/unctx/dist/index.mjs";
+import { sanitizeStatusCode, createError as createError$1 } from "C:/Users/Сергей/Documents/carbon-core/node_modules/h3/dist/index.mjs";
 import { shouldHydrate, setActivePinia, createPinia, defineStore } from "pinia";
-import { defu } from "C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/defu/dist/defu.mjs";
+import { defu } from "C:/Users/Сергей/Documents/carbon-core/node_modules/defu/dist/defu.mjs";
 import { START_LOCATION, createMemoryHistory, createRouter, useRoute as useRoute$1, RouterView } from "vue-router";
-import { hasProtocol, joinURL, withQuery, parseURL, encodePath, decodePath, isScriptProtocol } from "C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/ufo/dist/index.mjs";
-import "C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/klona/dist/index.mjs";
+import { hasProtocol, joinURL, withQuery, parseURL, encodePath, decodePath, isScriptProtocol } from "C:/Users/Сергей/Documents/carbon-core/node_modules/ufo/dist/index.mjs";
+import "C:/Users/Сергей/Documents/carbon-core/node_modules/klona/dist/index.mjs";
 import { ssrRenderTeleport, ssrInterpolate, ssrRenderComponent, ssrRenderSuspense, ssrRenderVNode } from "vue/server-renderer";
 import { v4 } from "uuid";
 if (!globalThis.$fetch) {
@@ -416,12 +416,12 @@ const _routes = [
   {
     name: "index",
     path: "/",
-    component: () => import("./_nuxt/index-A0G2byRJ.js")
+    component: () => import("./_nuxt/index-Dw6AwRjU.js")
   },
   {
     name: "onboarding",
     path: "/onboarding",
-    component: () => import("./_nuxt/onboarding-DLEXMx50.js")
+    component: () => import("./_nuxt/onboarding-okZcfR2R.js")
   }
 ];
 const _wrapInTransition = (props, children) => {
@@ -854,7 +854,7 @@ const plugins = [
   components_plugin_z4hgvsiddfKkfXTP6M8M4zG5Cb7sGnDhcryKVM45Di4
 ];
 const layouts = {
-  default: defineAsyncComponent(() => import("./_nuxt/default-BfvXvtJZ.js").then((m) => m.default || m))
+  default: defineAsyncComponent(() => import("./_nuxt/default-DssVbXEZ.js").then((m) => m.default || m))
 };
 const routeRulesMatcher = _routeRulesMatcher;
 const LayoutLoader = defineComponent({
@@ -2006,7 +2006,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     let __temp, __restore;
     const tasksStore = useTasksStore();
     const settingsStore = useSettingsStore();
-    const onboardingStore = useOnboardingStore();
+    useOnboardingStore();
     const userStore = useUserStore();
     const branchesStore = useBranchesStore();
     const rewardsStore = useRewardsStore();
@@ -2046,7 +2046,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       () => syncToCloud(),
       { deep: true }
     );
-    if (!onboardingStore.hasSeenOnboarding && false) ;
     return (_ctx, _push, _parent, _attrs) => {
       const _component_NuxtLayout = __nuxt_component_0;
       const _component_NuxtPage = __nuxt_component_1;
@@ -2090,8 +2089,8 @@ const _sfc_main$1 = {
     const statusText = _error.statusMessage ?? (is404 ? "Page Not Found" : "Internal Server Error");
     const description = _error.message || _error.toString();
     const stack = void 0;
-    const _Error404 = defineAsyncComponent(() => import("./_nuxt/error-404-CcjCMK4y.js"));
-    const _Error = defineAsyncComponent(() => import("./_nuxt/error-500-CxpWrV_x.js"));
+    const _Error404 = defineAsyncComponent(() => import("./_nuxt/error-404-DEFIjbjX.js"));
+    const _Error = defineAsyncComponent(() => import("./_nuxt/error-500-CLPq8uiD.js"));
     const ErrorTemplate = is404 ? _Error404 : _Error;
     return (_ctx, _push, _parent, _attrs) => {
       _push(ssrRenderComponent(unref(ErrorTemplate), mergeProps({ status: unref(status), statusText: unref(statusText), statusCode: unref(status), statusMessage: unref(statusText), description: unref(description), stack: unref(stack) }, _attrs), null, _parent));
