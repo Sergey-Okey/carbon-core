@@ -3,7 +3,6 @@
     <NuxtPage />
     <ConfirmDialog />
   </NuxtLayout>
-  <!-- 👇 Компонент Speed Insights -->
   <SpeedInsights />
 </template>
 
@@ -85,15 +84,19 @@ watch(
   { deep: true }
 )
 
-if (!onboardingStore.hasSeenOnboarding && import.meta.client) {
-  const route = useRoute()
-  if (route.path !== '/onboarding') {
-    await navigateTo('/onboarding')
-  }
-}
-
 onMounted(async () => {
+  // 1. Сначала загружаем все данные из облака / локального хранилища
   await loadFromCloud()
+
+  // 2. Проверяем, нужно ли показать онбординг (теперь hasSeenOnboarding точно актуален)
+  if (!onboardingStore.hasSeenOnboarding) {
+    const route = useRoute()
+    if (route.path !== '/onboarding') {
+      await navigateTo('/onboarding')
+    }
+  }
+
+  // 3. Остальная инициализация
   tasksStore.resetDailyTasks()
   scheduleNextReset()
   window.addEventListener('beforeunload', autoBackupOnUnload)
