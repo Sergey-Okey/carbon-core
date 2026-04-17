@@ -10,7 +10,7 @@ export const useUserStore = defineStore(
   'user',
   () => {
     const totalXP = ref<number>(0)
-    const coins = ref<number>(100) // ← переименовано
+    const coins = ref<number>(100)
     const leaguePoints = ref<number>(0)
 
     const profile = ref({
@@ -45,7 +45,6 @@ export const useUserStore = defineStore(
     }
 
     function addCoins(amount: number) {
-      // ← переименовано
       coins.value += amount
     }
 
@@ -74,6 +73,8 @@ export const useUserStore = defineStore(
     }
   },
   {
-    persist: { key: 'carbon-user', storage: localStorage },
+    persist: import.meta.client
+      ? { key: 'carbon-user', storage: localStorage }
+      : undefined,
   }
 )

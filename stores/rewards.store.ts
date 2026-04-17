@@ -41,9 +41,9 @@ export const useRewardsStore = defineStore(
       const userStore = useUserStore()
       const reward = rewards.value.find((r) => r.id === id)
       if (!reward || reward.purchased) return
-      if (userStore.coins < reward.price) return // ← изменено
+      if (userStore.coins < reward.price) return
 
-      userStore.addCoins(-reward.price) // ← изменено
+      userStore.addCoins(-reward.price)
       reward.purchased = true
       reward.purchasedAt = Date.now()
     }
@@ -58,7 +58,7 @@ export const useRewardsStore = defineStore(
 
       if (reward.effect) {
         if (reward.effect.xp) userStore.addXP(reward.effect.xp)
-        if (reward.effect.coins) userStore.addCoins(reward.effect.coins) // ← изменено
+        if (reward.effect.coins) userStore.addCoins(reward.effect.coins)
         if (reward.effect.leaguePoints)
           userStore.leaguePoints += reward.effect.leaguePoints
       }
@@ -70,5 +70,9 @@ export const useRewardsStore = defineStore(
 
     return { rewards, purchaseReward, confirmPurchase }
   },
-  { persist: { key: 'carbon-rewards', storage: localStorage } }
+  {
+    persist: import.meta.client
+      ? { key: 'carbon-rewards', storage: localStorage }
+      : undefined,
+  }
 )

@@ -38,7 +38,6 @@ export const useTasksStore = defineStore(
     function completeTask(id: string) {
       const task = tasks.value.find((t) => t.id === id)
       if (!task) return
-
       const userStore = useUserStore()
       const branchesStore = useBranchesStore()
       const tagsStore = useTagsStore()
@@ -58,7 +57,6 @@ export const useTasksStore = defineStore(
       if (!task.done) {
         task.done = true
         task.completedAt = Date.now()
-
         const tags = tagsStore.getTagsByIds(task.tagIds)
         const baseXP = task.type === 'PURCHASE' ? 500 : 100
         tags.forEach((tag) => {
@@ -134,11 +132,7 @@ export const useTasksStore = defineStore(
             tagIds: [mindTag],
             targetDate: getTodayDateString(),
           })
-          addTask({
-            title: 'Пить воду',
-            type: 'HABIT',
-            tagIds: [bodyTag],
-          })
+          addTask({ title: 'Пить воду', type: 'HABIT', tagIds: [bodyTag] })
         }
         localStorage.setItem(DEMO_KEY, 'true')
       }
@@ -167,6 +161,8 @@ export const useTasksStore = defineStore(
     }
   },
   {
-    persist: { key: 'carbon-tasks', storage: localStorage },
+    persist: import.meta.client
+      ? { key: 'carbon-tasks', storage: localStorage }
+      : undefined,
   }
 )

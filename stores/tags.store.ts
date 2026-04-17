@@ -69,7 +69,6 @@ export const useTagsStore = defineStore(
       return true
     }
 
-    // Автоматическое восстановление при любых изменениях
     watch(
       tags,
       () => {
@@ -77,11 +76,6 @@ export const useTagsStore = defineStore(
       },
       { deep: true }
     )
-
-    // Вызов инициализации на клиенте
-    if (import.meta.client) {
-      initTagsAfterHydration()
-    }
 
     return {
       tags,
@@ -93,6 +87,8 @@ export const useTagsStore = defineStore(
     }
   },
   {
-    persist: { key: 'carbon-tags', storage: localStorage },
+    persist: import.meta.client
+      ? { key: 'carbon-tags', storage: localStorage }
+      : undefined,
   }
 )

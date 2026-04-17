@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // url задаётся в prisma.config.ts
 }
 
 model User {
@@ -12,7 +13,7 @@ model User {
   email        String?  @unique
   avatar       String?
   totalXP      Int      @default(0)
-  gold         Int      @default(100)
+  coins        Int      @default(100)
   leaguePoints Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -102,14 +103,14 @@ model UI {
 }
 
 model Settings {
-  id                   String @id @default(uuid())
-  theme                String
-  accentColor          String
-  animationsEnabled    Boolean
-  soundEnabled         Boolean
+  id                 String @id @default(uuid())
+  theme              String
+  accentColor        String
+  animationsEnabled  Boolean
+  soundEnabled       Boolean
   notificationsEnabled Boolean
-  autoBackup           Boolean
-  lastBackupDate       DateTime?
-  userId               String? @unique
-  user                 User?   @relation(fields: [userId], references: [id])
+  autoBackup         Boolean
+  lastBackupDate     DateTime?
+  userId             String? @unique
+  user               User?   @relation(fields: [userId], references: [id])
 }

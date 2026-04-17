@@ -1,0 +1,18 @@
+<svg width="1200" height="1200" viewBox="0 0 1200 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_2_9)">
+<rect width="1200" height="1200" rx="200" fill="#202020"/>
+<rect y="-54.7559" width="1151" height="1151" rx="167" transform="rotate(-11.7425 0 -54.7559)" fill="#434343"/>
+<rect x="93" y="-200.436" width="1151" height="1151" rx="139" transform="rotate(-12.2168 93 -200.436)" fill="#D9D9D9"/>
+<line y1="-4.5" x2="986.894" y2="-4.5" transform="matrix(-0.977141 0.212593 -0.210422 -0.977611 1251.07 466.266)" stroke="#C5C5C5" stroke-width="9"/>
+<line y1="-4.5" x2="986.894" y2="-4.5" transform="matrix(-0.977141 0.212593 -0.210422 -0.977611 1281 605.332)" stroke="#C5C5C5" stroke-width="9"/>
+<line y1="-4.5" x2="986.894" y2="-4.5" transform="matrix(-0.977141 0.212593 -0.210422 -0.977611 1221.13 327.199)" stroke="#C5C5C5" stroke-width="9"/>
+<line y1="-4.5" x2="986.894" y2="-4.5" transform="matrix(-0.977141 0.212593 -0.210422 -0.977611 1191.2 188.133)" stroke="#C5C5C5" stroke-width="9"/>
+<line y1="-4.5" x2="986.894" y2="-4.5" transform="matrix(-0.977141 0.212593 -0.210422 -0.977611 1161.27 49.0657)" stroke="#C5C5C5" stroke-width="9"/>
+<line x1="1161.9" y1="-77.59" x2="167.895" y2="124.217" stroke="#C5C5C5" stroke-width="9"/>
+</g>
+<defs>
+<clipPath id="clip0_2_9">
+<rect width="1200" height="1200" rx="200" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -343,6 +343,8 @@ export const useBranchesStore = defineStore(
     }
   },
   {
-    persist: { key: 'carbon-branches', storage: localStorage },
+    persist: import.meta.client
+      ? { key: 'carbon-branches', storage: localStorage }
+      : undefined,
   }
 )

@@ -1160,7 +1160,7 @@ const useUserStore = defineStore(
     };
   },
   {
-    persist: { key: "carbon-user", storage: localStorage }
+    persist: void 0
   }
 );
 const useBranchesStore = defineStore(
@@ -1462,7 +1462,7 @@ const useBranchesStore = defineStore(
     };
   },
   {
-    persist: { key: "carbon-branches", storage: localStorage }
+    persist: void 0
   }
 );
 const DEFAULT_TAGS = [
@@ -1537,7 +1537,7 @@ const useTagsStore = defineStore(
     };
   },
   {
-    persist: { key: "carbon-tags", storage: localStorage }
+    persist: void 0
   }
 );
 const useRewardsStore = defineStore(
@@ -1568,7 +1568,9 @@ const useRewardsStore = defineStore(
     }
     return { rewards, purchaseReward, confirmPurchase };
   },
-  { persist: { key: "carbon-rewards", storage: localStorage } }
+  {
+    persist: void 0
+  }
 );
 const useTasksStore = defineStore(
   "tasks",
@@ -1665,7 +1667,7 @@ const useTasksStore = defineStore(
     };
   },
   {
-    persist: { key: "carbon-tasks", storage: localStorage }
+    persist: void 0
   }
 );
 const ACCENT_COLORS = [
@@ -1687,6 +1689,7 @@ const useSettingsStore = defineStore(
     const notificationsEnabled = ref(true);
     const autoBackup = ref(true);
     const lastBackupDate = ref(null);
+    const ready = ref(false);
     function setTheme(newTheme) {
       theme.value = newTheme;
     }
@@ -1720,6 +1723,7 @@ const useSettingsStore = defineStore(
       notificationsEnabled,
       autoBackup,
       lastBackupDate,
+      ready,
       setTheme,
       setAccentColor,
       setAnimationsEnabled,
@@ -1730,7 +1734,7 @@ const useSettingsStore = defineStore(
     };
   },
   {
-    persist: { key: "carbon-settings", storage: localStorage }
+    persist: void 0
   }
 );
 const useOnboardingStore = defineStore(
@@ -1746,7 +1750,7 @@ const useOnboardingStore = defineStore(
     };
   },
   {
-    persist: { key: "carbon-onboarding", storage: localStorage }
+    persist: void 0
   }
 );
 const useUIStore = defineStore(
@@ -1777,7 +1781,9 @@ const useUIStore = defineStore(
       setSidebarHovered
     };
   },
-  { persist: { key: "carbon-ui", storage: localStorage } }
+  {
+    persist: void 0
+  }
 );
 const state = ref({
   isOpen: false,

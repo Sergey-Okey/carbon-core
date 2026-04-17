@@ -13,12 +13,15 @@ export const useUIStore = defineStore(
     function setActiveNav(section: NavSection) {
       activeNav.value = section
     }
+
     function toggleSidebar() {
       sidebarCollapsed.value = !sidebarCollapsed.value
     }
+
     function setSidebarHovered(value: boolean) {
       sidebarHovered.value = value
     }
+
     const showLabels = computed(
       () => !sidebarCollapsed.value || sidebarHovered.value
     )
@@ -33,5 +36,9 @@ export const useUIStore = defineStore(
       setSidebarHovered,
     }
   },
-  { persist: { key: 'carbon-ui', storage: localStorage } }
+  {
+    persist: import.meta.client
+      ? { key: 'carbon-ui', storage: localStorage }
+      : undefined,
+  }
 )

@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
 export const useOnboardingStore = defineStore(
   'onboarding',
@@ -15,6 +16,8 @@ export const useOnboardingStore = defineStore(
     }
   },
   {
-    persist: { key: 'carbon-onboarding', storage: localStorage },
+    persist: import.meta.client
+      ? { key: 'carbon-onboarding', storage: localStorage }
+      : undefined,
   }
 )

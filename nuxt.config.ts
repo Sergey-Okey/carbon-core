@@ -47,7 +47,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'Carbon Core',
+      title: 'COF',
       meta: [
         {
           name: 'viewport',
@@ -57,7 +57,11 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#050505' },
       ],
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        {
+          rel: 'icon',
+          type: 'image/svg+xml',
+          href: '/assets/images/favicon.svg',
+        },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         {
           rel: 'preconnect',

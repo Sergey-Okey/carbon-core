@@ -1,4 +1,4 @@
-import prisma from '~/server/utils/prisma'
+import { prisma } from '~/server/utils/prisma'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -8,9 +8,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'userId is required' })
   }
 
-  // Транзакция для атомарного обновления
   await prisma.$transaction(async (tx) => {
-    // User
     await tx.user.upsert({
       where: { id: userId },
       update: {
@@ -18,13 +16,12 @@ export default defineEventHandler(async (event) => {
         email: user.email,
         avatar: user.avatar,
         totalXP: user.totalXP,
-        gold: user.gold,
+        coins: user.coins,
         leaguePoints: user.leaguePoints,
       },
       create: { id: userId, ...user },
     })
 
-    // Tasks
     await tx.task.deleteMany({ where: { userId } })
     if (tasks.length) {
       await tx.task.createMany({
@@ -36,7 +33,6 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Branches & Milestones
     await tx.milestone.deleteMany({ where: { branch: { userId } } })
     await tx.branch.deleteMany({ where: { userId } })
     for (const b of branches) {
@@ -67,7 +63,6 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Rewards
     await tx.reward.deleteMany({ where: { userId } })
     if (rewards.length) {
       await tx.reward.createMany({
@@ -79,7 +74,6 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Tags
     await tx.tag.deleteMany({ where: { userId } })
     if (tags.length) {
       await tx.tag.createMany({
@@ -87,14 +81,12 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // UI
     await tx.uI.upsert({
       where: { userId },
       update: { ...ui },
       create: { ...ui, userId },
     })
 
-    // Settings
     await tx.settings.upsert({
       where: { userId },
       update: { ...settings },

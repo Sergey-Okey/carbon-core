@@ -14,7 +14,6 @@ export const ACCENT_COLORS = [
 export const useSettingsStore = defineStore(
   'settings',
   () => {
-    // Состояние
     const theme = ref<'dark' | 'light'>('dark')
     const accentColor = ref<string>(ACCENT_COLORS[0].value)
     const animationsEnabled = ref<boolean>(true)
@@ -23,78 +22,77 @@ export const useSettingsStore = defineStore(
     const autoBackup = ref<boolean>(true)
     const lastBackupDate = ref<string | null>(null)
 
-    // Приватные методы применения
-    function applyThemeToDOM(themeValue: 'dark' | 'light') {
-      if (!import.meta.client) return
-      document.documentElement.classList.toggle(
-        'light-theme',
-        themeValue === 'light'
-      )
+    const ready = ref(false)
+
+    function applyTheme(newTheme: 'dark' | 'light') {
+      if (import.meta.client) {
+        document.documentElement.classList.toggle(
+          'light-theme',
+          newTheme === 'light'
+        )
+      }
     }
 
-    function applyAccentToDOM(color: string) {
-      if (!import.meta.client) return
-      document.documentElement.style.setProperty('--accent', color)
-      const r = parseInt(color.slice(1, 3), 16)
-      const g = parseInt(color.slice(3, 5), 16)
-      const b = parseInt(color.slice(5, 7), 16)
-      document.documentElement.style.setProperty(
-        '--accent-rgb',
-        `${r}, ${g}, ${b}`
-      )
-    }
-
-    function applyAnimationsToDOM(enabled: boolean) {
-      if (!import.meta.client) return
-      document.documentElement.style.setProperty(
-        '--transition-standard',
-        enabled ? '0.3s cubic-bezier(0.2, 0, 0, 1)' : '0s'
-      )
-    }
-
-    // Публичные действия
     function setTheme(newTheme: 'dark' | 'light') {
       theme.value = newTheme
-      applyThemeToDOM(newTheme)
+      applyTheme(newTheme)
+    }
+
+    function applyAccentColor(color: string) {
+      if (import.meta.client) {
+        document.documentElement.style.setProperty('--accent', color)
+        const r = parseInt(color.slice(1, 3), 16)
+        const g = parseInt(color.slice(3, 5), 16)
+        const b = parseInt(color.slice(5, 7), 16)
+        document.documentElement.style.setProperty(
+          '--accent-rgb',
+          `${r}, ${g}, ${b}`
+        )
+      }
     }
 
     function setAccentColor(color: string) {
       accentColor.value = color
-      applyAccentToDOM(color)
+      applyAccentColor(color)
+    }
+
+    function applyAnimations(enabled: boolean) {
+      if (import.meta.client) {
+        document.documentElement.style.setProperty(
+          '--transition-standard',
+          enabled ? '0.3s cubic-bezier(0.2, 0, 0, 1)' : '0s'
+        )
+      }
     }
 
     function setAnimationsEnabled(val: boolean) {
       animationsEnabled.value = val
-      applyAnimationsToDOM(val)
+      applyAnimations(val)
     }
 
     function setSoundEnabled(val: boolean) {
       soundEnabled.value = val
     }
-
     function setNotificationsEnabled(val: boolean) {
       notificationsEnabled.value = val
     }
-
     function setAutoBackup(val: boolean) {
       autoBackup.value = val
     }
-
     function recordBackup() {
       lastBackupDate.value = new Date().toISOString()
     }
 
-    // Инициализация после гидратации
     async function init() {
       if (!import.meta.client) return
       const store = useSettingsStore()
       if (store.$persistedState) {
         await store.$persistedState.isReady
       }
-      // Применяем настройки из восстановленного состояния
-      applyThemeToDOM(theme.value)
-      applyAccentToDOM(accentColor.value)
-      applyAnimationsToDOM(animationsEnabled.value)
+      applyTheme(theme.value)
+      applyAccentColor(accentColor.value)
+      applyAnimations(animationsEnabled.value)
+      ready.value = true
     }
 
     init()
@@ -107,6 +105,7 @@ export const useSettingsStore = defineStore(
       notificationsEnabled,
       autoBackup,
       lastBackupDate,
+      ready,
       setTheme,
       setAccentColor,
       setAnimationsEnabled,
@@ -117,6 +116,8 @@ export const useSettingsStore = defineStore(
     }
   },
   {
-    persist: { key: 'carbon-settings', storage: localStorage },
+    persist: import.meta.client
+      ? { key: 'carbon-settings', storage: localStorage }
+      : undefined,
   }
 )

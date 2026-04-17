@@ -1,4 +1,4 @@
-import prisma from '~/server/utils/prisma'
+import { prisma } from '~/server/utils/prisma'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -19,7 +19,6 @@ export default defineEventHandler(async (event) => {
   const ui = await prisma.uI.findUnique({ where: { userId } })
   const settings = await prisma.settings.findUnique({ where: { userId } })
 
-  // Преобразование JSON строк обратно в объекты
   const parseJson = (data: any) => {
     if (!data) return data
     return {
