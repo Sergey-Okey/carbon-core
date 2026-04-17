@@ -3,15 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "prisma generate && npx nuxt generate",
+    "build": "prisma generate && nuxt build",
     "dev": "nuxt dev",
-    "generate": "npx nuxt generate",
-    "preview": "npx nuxt preview",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
     "prisma:push": "prisma db push",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@pinia/nuxt": "^0.5.5",
+    "@prisma/client": "^7.7.0",
     "@types/dagre": "^0.7.54",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
@@ -31,9 +33,7 @@
     "vue-chartjs": "^5.3.3"
   },
   "devDependencies": {
-    "@prisma/client": "^7.7.0",
     "@types/node": "^20.11.30",
-    "@types/uuid": "^9.0.8",
     "prisma": "^7.7.0",
     "sass": "^1.99.0",
     "typescript": "^5.4.2",
