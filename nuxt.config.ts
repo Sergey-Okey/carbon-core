@@ -8,7 +8,7 @@ export default defineNuxtConfig({
     port: 3000,
   },
 
-  modules: ['@pinia/nuxt', '@vueuse/nuxt', '@vercel/speed-insights'],
+  modules: ['@pinia/nuxt', '@vueuse/nuxt', '@vercel/speed-insights', '@vercel/analytics'],
 
   css: ['~/assets/styles/reset.scss', '~/assets/styles/global.scss'],
 

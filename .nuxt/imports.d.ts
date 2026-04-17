@@ -52,4 +52,3 @@ export { useTasksStore } from '../stores/tasks.store';
 export { useUIStore, NavSection } from '../stores/ui.store';
 export { useUserStore } from '../stores/user.store';
 export { defineStore, acceptHMRUpdate, usePinia, storeToRefs } from '../node_modules/@pinia/nuxt/dist/runtime/composables';
-export { useNuxtDevTools } from '../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools';
