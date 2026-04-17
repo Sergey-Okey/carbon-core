@@ -27,12 +27,12 @@
     "lucide-vue-next": "^0.344.0",
     "nuxt": "^3.11.0",
     "pinia": "^2.3.1",
+    "prisma": "^7.7.0",
     "uuid": "^9.0.1",
     "vue-chartjs": "^5.3.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
-    "prisma": "^6.19.3",
     "sass": "^1.99.0",
     "typescript": "^5.4.2",
     "vue-tsc": "^3.2.6"
