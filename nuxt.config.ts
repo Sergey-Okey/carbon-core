@@ -11,7 +11,9 @@ export default defineNuxtConfig({
   modules: ['@pinia/nuxt', '@vueuse/nuxt', '@vercel/speed-insights'],
 
   css: ['~/assets/styles/reset.scss', '~/assets/styles/global.scss'],
-
+  nitro: {
+    preset: 'vercel',
+  },
   vite: {
     optimizeDeps: {
       include: [

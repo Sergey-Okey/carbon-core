@@ -3,6 +3,9 @@
     <NuxtPage />
     <ConfirmDialog />
   </NuxtLayout>
+  <!-- 👇 Компонент Speed Insights -->
+  <SpeedInsights />
+  <Analytics />
 </template>
 
 <script setup lang="ts">
@@ -10,6 +13,8 @@ import { useTasksStore } from '~/stores/tasks.store'
 import { useSettingsStore } from '~/stores/settings.store'
 import { useOnboardingStore } from '~/stores/onboarding.store'
 import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
+import { SpeedInsights } from '@vercel/speed-insights/vue'
+import { Analytics } from '@vercel/analytics/vue'
 
 const tasksStore = useTasksStore()
 const settingsStore = useSettingsStore()

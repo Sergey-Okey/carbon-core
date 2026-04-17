@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String?
+  email        String?
+  avatar       String?
+  totalXP      Int      @default(0)
+  gold         Int      @default(100)
+  leaguePoints Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  type        String
+  done        Boolean
+  createdAt   DateTime
+  updatedAt   DateTime?
+  completedAt DateTime?
+  targetDate  String?
+  tagIds      Json
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+}
+
+model Branch {
+  id          String   @id @default(uuid())
+  displayName String
+  icon        String
+  description String?
+  taskIds     Json
+  order       Int
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+}
+
+model Milestone {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  icon        String?
+  requiredXP  Int
+  currentXP   Int
+  status      String
+  taskIds     Json
+  positionX   Float
+  positionY   Float
+  branchId    String
+  branch      Branch   @relation(fields: [branchId], references: [id])
+}
+
+model Reward {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  price       Int
+  purchased   Boolean
+  completed   Boolean
+  purchasedAt DateTime?
+  completedAt DateTime?
+  effect      Json
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+}
+
+model Tag {
+  id       String @id @default(uuid())
+  name     String
+  branchId String
+  order    Int
+  isSystem Boolean
+  userId   String?
+  user     User?  @relation(fields: [userId], references: [id])
+}
+
+model UI {
+  id               String @id @default(uuid())
+  activeNav        String
+  sidebarCollapsed Boolean
+  sidebarHovered   Boolean
+  userId           String? @unique
+  user             User?   @relation(fields: [userId], references: [id])
+}
+
+model Settings {
+  id                 String @id @default(uuid())
+  theme              String
+  accentColor        String
+  animationsEnabled  Boolean
+  soundEnabled       Boolean
+  notificationsEnabled Boolean
+  autoBackup         Boolean
+  lastBackupDate     DateTime?
+  userId             String? @unique
+  user               User?   @relation(fields: [userId], references: [id])
+}
