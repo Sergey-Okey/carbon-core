@@ -5,11 +5,9 @@
   </NuxtLayout>
   <!-- 👇 Компонент Speed Insights -->
   <SpeedInsights />
-  <Analytics />
 </template>
 
 <script setup lang="ts">
-import { Analytics } from '@vercel/analytics/vue'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useSettingsStore } from '~/stores/settings.store'
 import { useOnboardingStore } from '~/stores/onboarding.store'
