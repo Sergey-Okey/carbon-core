@@ -7,7 +7,6 @@
     "build": "nuxt build",
     "start": "node .output/server/index.mjs",
     "preview": "nuxt preview",
-    "postinstall": "npx prisma generate",
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy"
@@ -35,7 +34,6 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
-    "prisma": "^7.7.0",
     "sass": "^1.99.0",
     "typescript": "^5.4.2",
     "vue-tsc": "^3.2.6"
