@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "prisma generate && nuxt build",
+    "build": "npx prisma generate && npx nuxt build",
     "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "prisma:push": "prisma db push",
-    "prisma:migrate": "prisma migrate dev"
+    "generate": "npx nuxt generate",
+    "preview": "npx nuxt preview",
+    "prisma:push": "npx prisma db push",
+    "prisma:migrate": "npx prisma migrate dev"
   },
   "dependencies": {
     "@pinia/nuxt": "^0.5.5",
