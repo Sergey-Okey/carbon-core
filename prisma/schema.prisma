@@ -93,12 +93,12 @@ model Tag {
 }
 
 model UI {
-  id                 String @id @default(uuid())
-  activeNav          String
-  sidebarCollapsed   Boolean
-  sidebarHovered     Boolean
-  userId             String? @unique
-  user               User?   @relation(fields: [userId], references: [id])
+  id               String @id @default(uuid())
+  activeNav        String
+  sidebarCollapsed Boolean
+  sidebarHovered   Boolean
+  userId           String? @unique
+  user             User?   @relation(fields: [userId], references: [id])
 }
 
 model Settings {

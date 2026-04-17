@@ -26,7 +26,7 @@
         "../node_modules/unplugin-vue-router/client"
       ],
       "@nuxt/schema": [
-        "../node_modules/nuxt/node_modules/@nuxt/schema"
+        "../node_modules/@nuxt/schema"
       ],
       "nuxt": [
         "../node_modules/nuxt"
@@ -115,9 +115,6 @@
       "vue-demi": [
         "../node_modules/nuxt/dist/app/compat/vue-demi"
       ],
-      "pinia": [
-        "../node_modules/pinia/dist/pinia"
-      ],
       "#vue-router": [
         "../node_modules/vue-router"
       ],
@@ -128,7 +125,7 @@
         "./imports"
       ],
       "#app-manifest": [
-        "./manifest/meta/7b2e786c-eac8-4a05-b459-fd1e3a4cde63.json"
+        "./manifest/meta/996735ac-13bf-476e-ac63-44eb6d1359bc.json"
       ],
       "#components": [
         "./components"
