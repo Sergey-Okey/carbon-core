@@ -6,7 +6,7 @@
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
-    "preview": "nuxt preview"
+    "preview": "nuxt preview",
     "postinstall": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev"
@@ -28,7 +28,6 @@
     "nuxt": "^3.11.0",
     "pinia": "^2.3.1",
     "pinia-plugin-persistedstate": "^3.2.3",
-    "speed-insights": "github:vercel/speed-insights",
     "uuid": "^9.0.1",
     "vue-chartjs": "^5.3.3"
   },
