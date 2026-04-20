@@ -18,8 +18,8 @@ import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 import { SpeedInsights } from '@vercel/speed-insights/vue'
 import { watch, onMounted, onUnmounted, ref } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
+import { v4 as uuidv4 } from 'uuid'
 
-// stores
 const tasksStore = useTasksStore()
 const settingsStore = useSettingsStore()
 const userStore = useUserStore()
@@ -32,7 +32,7 @@ const userId = useState<string>('user-id', () => {
   if (process.client) {
     let id = localStorage.getItem('user-id')
     if (!id) {
-      id = crypto.randomUUID()
+      id = uuidv4() // Заменили crypto.randomUUID() на uuidv4()
       localStorage.setItem('user-id', id)
     }
     return id
@@ -42,18 +42,34 @@ const userId = useState<string>('user-id', () => {
 
 const ready = ref(false)
 
-await useAsyncData('init', async () => {
-  if (process.client) {
-    await settingsStore.ready
+onMounted(async () => {
+  await settingsStore.ready
 
-    const hasSeen = localStorage.getItem('has-onboarding')
+  try {
+    const data = await $fetch('/api/sync', { query: { userId: userId.value } })
+    if (data.user) userStore.$patch(data.user)
+    if (data.tasks) tasksStore.$patch({ tasks: data.tasks })
+    if (data.branches) branchesStore.$patch({ branches: data.branches })
+    if (data.rewards) rewardsStore.$patch({ rewards: data.rewards })
+    if (data.tags) tagsStore.$patch({ tags: data.tags })
+    if (data.ui) uiStore.$patch(data.ui)
+    if (data.settings) settingsStore.$patch(data.settings)
+  } catch (e) {
+    console.warn(
+      'Облачная синхронизация недоступна, используются локальные данные'
+    )
+  }
 
-    if (!hasSeen) {
-      await navigateTo('/onboarding')
-    }
+  const hasSeenOnboarding = localStorage.getItem('carbon-onboarding')
+  if (!hasSeenOnboarding) {
+    await navigateTo('/onboarding')
   }
 
   ready.value = true
+
+  tasksStore.resetDailyTasks()
+  scheduleNextReset()
+  window.addEventListener('beforeunload', autoBackupOnUnload)
 })
 
 const syncToCloud = useDebounceFn(async () => {
@@ -86,12 +102,6 @@ watch(
   { deep: true }
 )
 
-onMounted(() => {
-  tasksStore.resetDailyTasks()
-  scheduleNextReset()
-  window.addEventListener('beforeunload', autoBackupOnUnload)
-})
-
 onUnmounted(() => {
   window.removeEventListener('beforeunload', autoBackupOnUnload)
 })
@@ -99,10 +109,8 @@ onUnmounted(() => {
 function scheduleNextReset() {
   const now = new Date()
   const next4AM = new Date(now)
-
   next4AM.setDate(now.getDate() + 1)
   next4AM.setHours(4, 0, 0, 0)
-
   const ms = next4AM.getTime() - now.getTime()
 
   setTimeout(() => {
@@ -121,7 +129,6 @@ function autoBackupOnUnload() {
       ui: uiStore.$state,
       settings: settingsStore.$state,
     }
-
     localStorage.setItem('cof-autobackup-latest', JSON.stringify(data))
     settingsStore.recordBackup()
   }

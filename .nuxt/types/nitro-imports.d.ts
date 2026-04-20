@@ -83,7 +83,6 @@ declare global {
   const lazyEventHandler: typeof import('../../node_modules/h3').lazyEventHandler
   const nitroPlugin: typeof import('../../node_modules/nitropack/dist/runtime/internal/plugin').nitroPlugin
   const parseCookies: typeof import('../../node_modules/h3').parseCookies
-  const prisma: typeof import('../../server/utils/prisma').prisma
   const promisifyNodeListener: typeof import('../../node_modules/h3').promisifyNodeListener
   const proxyRequest: typeof import('../../node_modules/h3').proxyRequest
   const readBody: typeof import('../../node_modules/h3').readBody
@@ -146,6 +145,5 @@ export { getRouteRules } from 'nitropack/runtime/internal/route-rules';
 export { useEvent } from 'nitropack/runtime/internal/context';
 export { defineTask, runTask } from 'nitropack/runtime/internal/task';
 export { defineNitroErrorHandler } from 'nitropack/runtime/internal/error/utils';
-export { buildAssetsURL as __buildAssetsURL, publicAssetsURL as __publicAssetsURL } from 'C:/Users/Сергей/Documents/carbon-core/node_modules/@nuxt/nitro-server/dist/runtime/utils/paths';
-export { defineAppConfig } from 'C:/Users/Сергей/Documents/carbon-core/node_modules/@nuxt/nitro-server/dist/runtime/utils/config';
-export { prisma } from 'C:/Users/Сергей/Documents/carbon-core/server/utils/prisma';
+export { buildAssetsURL as __buildAssetsURL, publicAssetsURL as __publicAssetsURL } from 'C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/@nuxt/nitro-server/dist/runtime/utils/paths';
+export { defineAppConfig } from 'C:/Users/smm/Documents/Programing Dev/carbon-core/node_modules/@nuxt/nitro-server/dist/runtime/utils/config';

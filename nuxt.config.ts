@@ -1,24 +1,15 @@
 export default defineNuxtConfig({
   compatibilityDate: '2026-04-08',
-
   devtools: { enabled: true },
-
-  devServer: {
-    host: '0.0.0.0',
-    port: 3000,
-  },
-
+  devServer: { host: '0.0.0.0', port: 3000 },
   modules: [
     '@pinia/nuxt',
     '@vueuse/nuxt',
     '@vercel/speed-insights',
     '@vercel/analytics',
   ],
-
   css: ['~/assets/styles/reset.scss', '~/assets/styles/global.scss'],
-  nitro: {
-    preset: 'vercel',
-  },
+  nitro: { preset: 'vercel' },
   vite: {
     optimizeDeps: {
       include: [
@@ -37,14 +28,8 @@ export default defineNuxtConfig({
       },
     },
   },
-
-  typescript: {
-    strict: true,
-    typeCheck: false,
-  },
-
-  ssr: true,
-
+  typescript: { strict: true, typeCheck: false },
+  ssr: false,
   app: {
     head: {
       title: 'COF',
@@ -57,11 +42,7 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#050505' },
       ],
       link: [
-        {
-          rel: 'icon',
-          type: 'image/svg+xml',
-          href: 'favicon.svg',
-        },
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         {
           rel: 'preconnect',
@@ -70,7 +51,7 @@ export default defineNuxtConfig({
         },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap',
         },
       ],
     },
