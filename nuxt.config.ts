@@ -7,6 +7,7 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@vercel/speed-insights',
     '@vercel/analytics',
+    '@vueuse/motion',
   ],
   css: ['~/assets/styles/reset.scss', '~/assets/styles/global.scss'],
   nitro: { preset: 'vercel' },

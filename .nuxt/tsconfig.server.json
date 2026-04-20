@@ -147,6 +147,7 @@
     "../node_modules/@vueuse/nuxt/node_modules",
     "../node_modules/@vercel/speed-insights/node_modules",
     "../node_modules/@vercel/analytics/node_modules",
+    "../node_modules/@vueuse/motion/node_modules",
     "../node_modules/@nuxt/devtools/node_modules",
     "../node_modules/@nuxt/telemetry/node_modules",
     "../dist"

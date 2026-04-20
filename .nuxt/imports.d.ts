@@ -51,5 +51,6 @@ export { useTagsStore } from '../stores/tags.store';
 export { useTasksStore } from '../stores/tasks.store';
 export { useUIStore, NavSection } from '../stores/ui.store';
 export { useUserStore } from '../stores/user.store';
+export { reactiveStyle, reactiveTransform, useElementStyle, useElementTransform, useMotion, useMotionControls, useMotionProperties, useMotions, useMotionTransitions, useMotionVariants, useSpring, useReducedMotion } from '../node_modules/@vueuse/motion/dist/nuxt/runtime/composables/index';
 export { defineStore, acceptHMRUpdate, usePinia, storeToRefs } from '../node_modules/@pinia/nuxt/dist/runtime/composables';
 export { useNuxtDevTools } from '../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools';
