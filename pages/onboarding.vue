@@ -192,8 +192,8 @@
             :transition="{ duration: 0.5, delay: 0.1 }"
           >
             <h2 class="section-title">
-              Четыре столпа<br />
-              вашего роста
+              Умные ветки<br />
+              вашего прогресса
             </h2>
           </Motion>
           <Motion
