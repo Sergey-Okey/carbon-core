@@ -1,5 +1,5 @@
 <template>
-  <NuxtLayout>
+  <NuxtLayout v-if="ready">
     <NuxtPage />
     <ConfirmDialog />
   </NuxtLayout>
@@ -19,6 +19,7 @@ import { SpeedInsights } from '@vercel/speed-insights/vue'
 import { watch, onMounted, onUnmounted, ref } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 
+// stores
 const tasksStore = useTasksStore()
 const settingsStore = useSettingsStore()
 const userStore = useUserStore()
@@ -27,25 +28,33 @@ const rewardsStore = useRewardsStore()
 const tagsStore = useTagsStore()
 const uiStore = useUIStore()
 
-await settingsStore.ready
-
-const userId = ref<string>('default-user')
-
-async function loadFromCloud() {
-  try {
-    const data = await $fetch('/api/sync', { query: { userId: userId.value } })
-
-    if (data.user) userStore.$patch({ ...data.user })
-    if (data.tasks) tasksStore.$patch({ tasks: data.tasks })
-    if (data.branches) branchesStore.$patch({ branches: data.branches })
-    if (data.rewards) rewardsStore.$patch({ rewards: data.rewards })
-    if (data.tags) tagsStore.$patch({ tags: data.tags })
-    if (data.ui) uiStore.$patch({ ...data.ui })
-    if (data.settings) settingsStore.$patch({ ...data.settings })
-  } catch {
-    console.warn('Облачная синхронизация недоступна')
+const userId = useState<string>('user-id', () => {
+  if (process.client) {
+    let id = localStorage.getItem('user-id')
+    if (!id) {
+      id = crypto.randomUUID()
+      localStorage.setItem('user-id', id)
+    }
+    return id
   }
-}
+  return 'server'
+})
+
+const ready = ref(false)
+
+await useAsyncData('init', async () => {
+  if (process.client) {
+    await settingsStore.ready
+
+    const hasSeen = localStorage.getItem('has-onboarding')
+
+    if (!hasSeen) {
+      await navigateTo('/onboarding')
+    }
+  }
+
+  ready.value = true
+})
 
 const syncToCloud = useDebounceFn(async () => {
   try {
@@ -53,7 +62,6 @@ const syncToCloud = useDebounceFn(async () => {
       method: 'POST',
       body: {
         userId: userId.value,
-        user: { ...userStore.$state },
         tasks: tasksStore.tasks,
         branches: branchesStore.branches,
         rewards: rewardsStore.rewards,
@@ -62,14 +70,11 @@ const syncToCloud = useDebounceFn(async () => {
         settings: { ...settingsStore.$state },
       },
     })
-  } catch {
-    console.warn('Ошибка синхронизации')
-  }
+  } catch {}
 }, 2000)
 
 watch(
   [
-    () => userStore.$state,
     () => tasksStore.tasks,
     () => branchesStore.branches,
     () => rewardsStore.rewards,
@@ -81,12 +86,9 @@ watch(
   { deep: true }
 )
 
-onMounted(async () => {
-  await loadFromCloud()
-
+onMounted(() => {
   tasksStore.resetDailyTasks()
   scheduleNextReset()
-
   window.addEventListener('beforeunload', autoBackupOnUnload)
 })
 
@@ -112,7 +114,6 @@ function scheduleNextReset() {
 function autoBackupOnUnload() {
   if (settingsStore.autoBackup) {
     const data = {
-      user: userStore.$state,
       tasks: tasksStore.tasks,
       branches: branchesStore.branches,
       rewards: rewardsStore.rewards,
@@ -121,7 +122,7 @@ function autoBackupOnUnload() {
       settings: settingsStore.$state,
     }
 
-    localStorage.setItem('carbon-autobackup-latest', JSON.stringify(data))
+    localStorage.setItem('cof-autobackup-latest', JSON.stringify(data))
     settingsStore.recordBackup()
   }
 }
