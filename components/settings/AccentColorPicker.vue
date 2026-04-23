@@ -51,8 +51,8 @@ const settingsStore = useSettingsStore()
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    color: var(--surface);
+    text-shadow: 0 1px 2px color-mix(in srgb, var(--bg) 30%, transparent);
 
     &:hover {
       transform: scale(1.1);
@@ -64,7 +64,9 @@ const settingsStore = useSettingsStore()
     }
 
     svg {
-      filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+      filter: drop-shadow(
+        0 1px 1px color-mix(in srgb, var(--bg) 30%, transparent)
+      );
     }
   }
 }

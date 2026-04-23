@@ -110,13 +110,13 @@ const branchIconComponent = computed(() => {
     text-transform: uppercase;
     color: var(--accent);
     &.DAILY {
-      background: rgba(255, 255, 255, 0.1);
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
     }
     &.HABIT {
-      background: rgba(0, 255, 136, 0.1);
+      background: color-mix(in srgb, var(--success) 10%, transparent);
     }
     &.EPIC {
-      background: rgba(255, 68, 68, 0.1);
+      background: color-mix(in srgb, var(--error) 10%, transparent);
     }
   }
   .quest-footer {

@@ -311,7 +311,7 @@ function deleteTag(tagId: string) {
   justify-content: center;
   z-index: 1000;
   padding: 16px;
-  background: rgba(0, 0, 0, 0.7);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
   backdrop-filter: blur(6px);
 }
 
@@ -531,7 +531,7 @@ form {
 
     &:hover {
       background: var(--error);
-      color: white;
+      color: var(--surface);
       border-color: var(--error);
     }
   }

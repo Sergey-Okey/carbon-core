@@ -61,7 +61,7 @@ const { notifications, removeNotification } = useNotification()
   @include glass;
   border: 1px solid var(--border);
   color: var(--accent);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-lg);
   cursor: pointer;
   transition: all 0.2s ease;
   width: fit-content;
@@ -90,8 +90,8 @@ const { notifications, removeNotification } = useNotification()
     box-shadow: 0 0 10px var(--success);
   }
   &.warning .indicator {
-    background: #f59e0b;
-    box-shadow: 0 0 10px #f59e0b;
+    background: var(--warning);
+    box-shadow: 0 0 10px var(--warning);
   }
   &.error .indicator {
     background: var(--error);

@@ -90,7 +90,7 @@ function onMouseLeave() {
   border: 1px solid var(--border);
   z-index: 100;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
   backdrop-filter: blur(12px);
   will-change: width;
   transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);

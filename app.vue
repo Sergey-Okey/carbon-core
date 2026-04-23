@@ -32,7 +32,7 @@ const userId = useState<string>('user-id', () => {
   if (process.client) {
     let id = localStorage.getItem('user-id')
     if (!id) {
-      id = uuidv4() // Заменили crypto.randomUUID() на uuidv4()
+      id = uuidv4()
       localStorage.setItem('user-id', id)
     }
     return id

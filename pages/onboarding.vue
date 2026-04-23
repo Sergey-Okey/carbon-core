@@ -6,17 +6,18 @@
         v-motion
         class="progress-fill"
         :initial="{ width: '0%' }"
-        :enter="{ width: progress + '%', transition: { duration: 300 } }"
+        :animate="{ width: progress + '%' }"
+        :transition="{ duration: 300 }"
       />
     </div>
 
-    <!-- Параллакс-фон (v-motion) -->
+    <!-- Фон -->
     <div class="background-layer">
       <div
         v-for="(shape, i) in shapes"
         :key="i"
         v-motion
-        :initial="{ opacity: 0, scale: 1 }"
+        :initial="{ opacity: 0, scale: 0.8 }"
         :enter="{
           opacity: 1,
           scale: 1,
@@ -60,124 +61,102 @@
 
     <!-- Скролл-контейнер -->
     <div class="scroll-container" ref="scrollContainer" @scroll="handleScroll">
-      <!-- Секция 1: Hero -->
-      <section id="section-1" class="section hero-section">
+      <!-- Шаг 1: Встреча -->
+      <section id="step-1" class="section hero-section">
         <div class="section-content">
           <div
             v-motion
-            :initial="{ opacity: 0, y: 20 }"
+            :initial="{ opacity: 0, y: 30 }"
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 500, delay: 100 },
+              transition: { duration: 600, delay: 100 },
             }"
           >
             <h1 class="hero-title">
-              <span class="line">Не усложняй.</span>
-              <span class="line">Просто делай.</span>
+              <span class="line">Делайте меньше,</span>
+              <span class="line">достигайте большего</span>
             </h1>
           </div>
           <div
             v-motion
-            :initial="{ opacity: 0, y: 20 }"
+            :initial="{ opacity: 0, y: 30 }"
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 500, delay: 200 },
+              transition: { duration: 600, delay: 200 },
             }"
           >
             <p class="hero-subtitle">
-              COF — это не очередной список дел. Это твой личный компас в мире
-              задач.<br />
-              Всё, что нужно — три главных фокуса в день.
+              COF помогает сфокусироваться на главном и видеть свой прогресс.
+              Никакой магии — только осознанный подход.
             </p>
           </div>
           <div
             v-motion
-            :initial="{ opacity: 0, y: 20 }"
+            :initial="{ opacity: 0, y: 30 }"
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 500, delay: 300 },
+              transition: { duration: 600, delay: 300 },
             }"
           >
             <div class="hero-cta">
               <v-wave>
                 <button class="cta-button" @click="finishOnboarding">
-                  Попробовать
+                  Начать
                   <ArrowRight :size="20" class="btn-icon" />
                 </button>
               </v-wave>
               <span class="hint-text"
-                >или листай дальше, чтобы узнать больше</span
+                >или листайте дальше, чтобы узнать детали</span
               >
             </div>
           </div>
         </div>
         <div class="hero-visual">
-          <div class="hashtag-carousel">
-            <div
-              class="carousel-track track-right"
-              :style="{ '--speed': '5s' }"
-            >
-              <span v-for="tag in leftTags" :key="tag" class="hashtag">{{
-                tag
-              }}</span>
-            </div>
-            <div class="carousel-track track-left" :style="{ '--speed': '5s' }">
-              <span v-for="tag in rightTags" :key="tag" class="hashtag">{{
-                tag
-              }}</span>
-            </div>
-            <div
-              class="carousel-track track-right"
-              :style="{ '--speed': '5s' }"
-            >
-              <span v-for="tag in leftTags2" :key="tag" class="hashtag">{{
-                tag
-              }}</span>
-            </div>
+          <div class="hashtag-cloud">
+            <span v-for="tag in allTags" :key="tag" class="hashtag">{{
+              tag
+            }}</span>
           </div>
-          <div class="carousel-fade-left"></div>
-          <div class="carousel-fade-right"></div>
         </div>
       </section>
 
-      <!-- Секция 2: Философия -->
-      <section id="section-2" class="section philosophy-section">
+      <!-- Шаг 2: Правило трёх -->
+      <section id="step-2" class="section rule-section">
         <div class="section-content">
           <div
             v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 500 } }"
+            :initial="{ opacity: 0, y: 30 }"
+            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
           >
             <div class="section-label">Философия</div>
           </div>
           <div
             v-motion
-            :initial="{ opacity: 0, y: 20 }"
+            :initial="{ opacity: 0, y: 30 }"
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 500, delay: 100 },
+              transition: { duration: 600, delay: 100 },
             }"
           >
-            <h2 class="section-title">Меньше — значит больше.</h2>
+            <h2 class="section-title">Три — магическое число</h2>
           </div>
           <div
             v-motion
-            :initial="{ opacity: 0, y: 20 }"
+            :initial="{ opacity: 0, y: 30 }"
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 500, delay: 200 },
+              transition: { duration: 600, delay: 200 },
             }"
           >
             <p class="section-text">
-              Мы привыкли, что чем больше галочек, тем продуктивнее день. Но на
-              деле это только распыляет внимание. COF помогает выбрать три
-              главные задачи на день, неделю, месяц и год. Всё остальное —
-              подождёт.
+              Наш мозг не умеет работать с длинными списками. Правило трёх
+              освобождает ум и помогает сосредоточиться на действительно важных
+              задачах.
             </p>
           </div>
           <div class="rule-grid">
@@ -185,99 +164,69 @@
               v-for="(rule, i) in rules"
               :key="i"
               v-motion
-              :initial="{ opacity: 0, scale: 0.8 }"
+              :initial="{ opacity: 0, y: 30 }"
               :visible-once="{
                 opacity: 1,
-                scale: 1,
-                transition: { duration: 400, delay: 300 + i * 100 },
+                y: 0,
+                transition: { duration: 500, delay: 300 + i * 100 },
               }"
               class="rule-item"
             >
-              <div class="rule-number">
-                <span
-                  v-if="section2Animated"
-                  class="casino-number"
-                  :style="{ '--delay': i * 0.05 + 's' }"
-                  >{{ rule.number }}</span
-                >
-                <span v-else>0</span>
-              </div>
+              <div class="rule-number">{{ rule.number }}</div>
               <div class="rule-label">{{ rule.label }}</div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Секция 3: Доска -->
-      <section id="section-3" class="section board-section">
+      <!-- Шаг 3: Визуализация -->
+      <section id="step-3" class="section visual-section">
         <div class="section-content">
           <div
             v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 500 } }"
+            :initial="{ opacity: 0, y: 30 }"
+            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
           >
-            <div class="section-label">Твоя карта развития</div>
+            <div class="section-label">Ваш путь</div>
           </div>
           <div
             v-motion
-            :initial="{ opacity: 0, y: 20 }"
+            :initial="{ opacity: 0, y: 30 }"
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 500, delay: 100 },
+              transition: { duration: 600, delay: 100 },
             }"
           >
-            <h2 class="section-title">Смотри, куда идёшь.</h2>
+            <h2 class="section-title">Видеть прогресс</h2>
           </div>
           <div
             v-motion
-            :initial="{ opacity: 0, y: 20 }"
+            :initial="{ opacity: 0, y: 30 }"
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 500, delay: 200 },
+              transition: { duration: 600, delay: 200 },
             }"
           >
             <p class="section-text">
-              Представь белую доску, на которой ты сам строишь свой путь.
-              Добавляй этапы, соединяй их, отмечай пройденное. Это не жёсткая
-              система, а живой инструмент. Хочешь — рисуй прямые линии к цели.
-              Хочешь — петляй. Главное — ты видишь, куда движешься.
+              Интерактивная доска позволяет строить свой путь развития:
+              добавляйте этапы, связывайте их и отмечайте пройденное. Вы всегда
+              видите, куда движетесь и что уже сделано.
             </p>
           </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 500, delay: 300 },
-            }"
-            class="board-features-desktop"
-          >
-            <div class="board-feature">
-              <GitBranch :size="24" /><span>Связывай этапы</span>
+          <div class="visual-features">
+            <div class="feature-row">
+              <GitBranch :size="28" />
+              <span>Связывайте этапы</span>
             </div>
-            <div class="board-feature">
-              <Target :size="24" /><span>Отмечай пройденное</span>
+            <div class="feature-row">
+              <Target :size="28" />
+              <span>Отмечайте пройденное</span>
             </div>
-            <div class="board-feature">
-              <Move :size="24" /><span>Меняй траекторию</span>
-            </div>
-          </div>
-          <div class="board-features-mobile">
-            <div class="marquee">
-              <div class="marquee-content">
-                <div class="board-feature">
-                  <GitBranch :size="24" /><span>Связывай этапы</span>
-                </div>
-                <div class="board-feature">
-                  <Target :size="24" /><span>Отмечай пройденное</span>
-                </div>
-                <div class="board-feature">
-                  <Move :size="24" /><span>Меняй траекторию</span>
-                </div>
-              </div>
+            <div class="feature-row">
+              <Move :size="28" />
+              <span>Меняйте траекторию</span>
             </div>
           </div>
           <div
@@ -286,352 +235,157 @@
             :visible-once="{
               opacity: 1,
               scale: 1,
-              transition: { duration: 500, delay: 400 },
+              transition: { duration: 600, delay: 400 },
             }"
-            class="board-placeholder"
+            class="placeholder-card"
           >
-            <div class="placeholder-glow"></div>
-            <p>Интерактивная доска ждёт тебя внутри</p>
+            <p>Интерактивная доска ждёт вас внутри</p>
           </div>
         </div>
       </section>
 
-      <!-- Секция 4: Конфиденциальность -->
-      <section id="section-4" class="section privacy-section">
+      <!-- Шаг 4: Инструменты -->
+      <section id="step-4" class="section tools-section">
         <div class="section-content">
           <div
             v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-          >
-            <div class="section-label">Безопасность</div>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 500, delay: 100 },
-            }"
-          >
-            <h2 class="section-title">Твои данные — только твои.</h2>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 500, delay: 200 },
-            }"
-          >
-            <p class="section-text">
-              COF хранит всё локально на твоём устройстве. Никаких облаков, если
-              ты сам не захочешь. Но помни: делай бэкапы. Экспортируй данные и
-              храни их где угодно — они только твои.
-            </p>
-          </div>
-          <div class="privacy-cards">
-            <div
-              v-motion
-              :initial="{ opacity: 0, y: 20 }"
-              :visible-once="{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 400, delay: 300 },
-              }"
-              class="privacy-card"
-            >
-              <Shield :size="28" />
-              <h4>Локально</h4>
-              <p>Всё на твоём компьютере</p>
-            </div>
-            <div
-              v-motion
-              :initial="{ opacity: 0, y: 20 }"
-              :visible-once="{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 400, delay: 400 },
-              }"
-              class="privacy-card"
-            >
-              <Download :size="28" />
-              <h4>Экспорт</h4>
-              <p>Сохрани в файл когда угодно</p>
-            </div>
-            <div
-              v-motion
-              :initial="{ opacity: 0, y: 20 }"
-              :visible-once="{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 400, delay: 500 },
-              }"
-              class="privacy-card"
-            >
-              <Upload :size="28" />
-              <h4>Импорт</h4>
-              <p>Восстанови на новом устройстве</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Секция 5: Задачи и привычки -->
-      <section id="section-5" class="section tasks-section">
-        <div class="section-content">
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 500 } }"
+            :initial="{ opacity: 0, y: 30 }"
+            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
           >
             <div class="section-label">Инструменты</div>
           </div>
           <div
             v-motion
-            :initial="{ opacity: 0, y: 20 }"
+            :initial="{ opacity: 0, y: 30 }"
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 500, delay: 100 },
+              transition: { duration: 600, delay: 100 },
             }"
           >
-            <h2 class="section-title">Привычки и задачи — без каши.</h2>
+            <h2 class="section-title">Всё под рукой</h2>
           </div>
-          <div class="tasks-split">
+          <div class="tools-grid">
             <div
               v-motion
-              :initial="{ opacity: 0, x: -20 }"
+              :initial="{ opacity: 0, y: 30 }"
               :visible-once="{
                 opacity: 1,
-                x: 0,
+                y: 0,
                 transition: { duration: 500, delay: 200 },
               }"
-              class="task-block"
+              class="tool-card"
             >
               <RotateCw :size="32" />
               <h3>Привычки</h3>
-              <p>
-                Повторяй сколько хочешь. Пить воду, читать, медитировать — без
-                ограничений.
-              </p>
+              <p>Повторяйте без ограничений — формируйте полезные ритуалы</p>
             </div>
             <div
               v-motion
-              :initial="{ opacity: 0, x: 20 }"
+              :initial="{ opacity: 0, y: 30 }"
               :visible-once="{
                 opacity: 1,
-                x: 0,
+                y: 0,
                 transition: { duration: 500, delay: 300 },
               }"
-              class="task-block"
+              class="tool-card"
             >
               <Calendar :size="32" />
               <h3>Задачи</h3>
-              <p>
-                Три на день. Три на неделю. Три на месяц. Три на год. Фокус —
-                наше всё.
-              </p>
+              <p>Три на день, неделю, месяц, год — фокус на главном</p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Секция 6: Профиль и персонализация -->
-      <section id="section-6" class="section profile-section">
-        <div class="section-content">
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-          >
-            <div class="section-label">Твоё пространство</div>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 500, delay: 100 },
-            }"
-          >
-            <h2 class="section-title">Настрой всё под себя.</h2>
-          </div>
-          <div class="features-grid">
             <div
               v-motion
-              :initial="{ opacity: 0, y: 20 }"
+              :initial="{ opacity: 0, y: 30 }"
               :visible-once="{
                 opacity: 1,
                 y: 0,
-                transition: { duration: 400, delay: 200 },
+                transition: { duration: 500, delay: 400 },
               }"
-              class="feature-card"
+              class="tool-card"
             >
               <Palette :size="32" />
-              <h3>Тема и цвет</h3>
-              <p>Тёмная, светлая или свой акцент — решаешь ты.</p>
-            </div>
-            <div
-              v-motion
-              :initial="{ opacity: 0, y: 20 }"
-              :visible-once="{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 400, delay: 300 },
-              }"
-              class="feature-card"
-            >
-              <UserCircle :size="32" />
-              <h3>Профиль</h3>
-              <p>Имя, аватар, био — добавь индивидуальности.</p>
-            </div>
-            <div
-              v-motion
-              :initial="{ opacity: 0, y: 20 }"
-              :visible-once="{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 400, delay: 400 },
-              }"
-              class="feature-card"
-            >
-              <Bell :size="32" />
-              <h3>Уведомления</h3>
-              <p>Только важное. Когда хочешь и как хочешь.</p>
+              <h3>Персонализация</h3>
+              <p>Тема, акценты, аватар — настройте всё под себя</p>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Секция 7: О проекте и донаты -->
-      <section id="section-7" class="section about-section">
+      <!-- Шаг 5: Безопасность -->
+      <section id="step-5" class="section security-section">
         <div class="section-content">
           <div
             v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 500 } }"
+            :initial="{ opacity: 0, y: 30 }"
+            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
           >
-            <div class="section-label">О проекте</div>
+            <div class="section-label">Данные</div>
           </div>
           <div
             v-motion
-            :initial="{ opacity: 0, y: 20 }"
+            :initial="{ opacity: 0, y: 30 }"
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 500, delay: 100 },
+              transition: { duration: 600, delay: 100 },
             }"
           >
-            <h2 class="section-title">Сделано с душой.</h2>
+            <h2 class="section-title">Только ваши</h2>
           </div>
           <div
             v-motion
-            :initial="{ opacity: 0, y: 20 }"
+            :initial="{ opacity: 0, y: 30 }"
             :visible-once="{
               opacity: 1,
               y: 0,
+              transition: { duration: 600, delay: 200 },
+            }"
+          >
+            <p class="section-text">
+              Всё хранится локально на вашем устройстве. Экспортируйте,
+              импортируйте, делайте бэкапы — ваши данные принадлежат только вам.
+            </p>
+          </div>
+          <div class="security-badges">
+            <div class="badge"><Shield :size="20" /> Локальное хранение</div>
+            <div class="badge"><Download :size="20" /> Экспорт</div>
+            <div class="badge"><Upload :size="20" /> Импорт</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Шаг 6: Старт -->
+      <section id="step-6" class="section start-section">
+        <div class="section-content">
+          <div
+            v-motion
+            :initial="{ opacity: 0, y: 30 }"
+            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
+          >
+            <h2 class="final-title">Пора начинать</h2>
+          </div>
+          <div
+            v-motion
+            :initial="{ opacity: 0, y: 30 }"
+            :visible-once="{
+              opacity: 1,
+              y: 0,
+              transition: { duration: 600, delay: 100 },
+            }"
+          >
+            <p class="final-text">
+              Создайте три задачи на сегодня и почувствуйте, как фокус меняет
+              всё.
+            </p>
+          </div>
+          <div
+            v-motion
+            :initial="{ opacity: 0, scale: 0.9 }"
+            :visible-once="{
+              opacity: 1,
+              scale: 1,
               transition: { duration: 500, delay: 200 },
-            }"
-          >
-            <p class="section-text">
-              COF — это пет-проект одного разработчика. Я делаю его, потому что
-              верю: правильные инструменты помогают жить осознаннее. Сейчас
-              приложение в бете — возможны шероховатости. Но я активно всё
-              допиливаю.
-            </p>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 500, delay: 300 },
-            }"
-          >
-            <p class="section-text">
-              Если хочешь поддержать разработку, можно задонатить. Любая сумма —
-              это топливо для новых фич.
-            </p>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, scale: 0.9 }"
-            :visible-once="{
-              opacity: 1,
-              scale: 1,
-              transition: { duration: 400, delay: 400 },
-            }"
-            class="donation-block"
-          >
-            <Heart :size="20" /><span>Поддержать проект</span>
-            <div class="wallet-address">
-              <code>TXjoHFudFFQT6hXSqb55xz5W2KQUAAbnF8</code
-              ><span class="network">TRC-20 (USDT)</span>
-            </div>
-          </div>
-          <div class="contacts">
-            <div
-              v-motion
-              :initial="{ opacity: 0, y: 20 }"
-              :visible-once="{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 400, delay: 500 },
-              }"
-              class="contact-item"
-            >
-              <Mail :size="16" /><span>sergeyborisov_1@vk.ru</span>
-            </div>
-            <div
-              v-motion
-              :initial="{ opacity: 0, y: 20 }"
-              :visible-once="{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 400, delay: 600 },
-              }"
-              class="contact-item"
-            >
-              <Send :size="16" /><span>borisov_1 (telegram)</span>
-            </div>
-            <div
-              v-motion
-              :initial="{ opacity: 0, y: 20 }"
-              :visible-once="{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 400, delay: 700 },
-              }"
-              class="contact-item"
-            >
-              <Instagram :size="16" /><span>borisov.ph</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Секция 8: Финальный призыв -->
-      <section id="section-8" class="section final-section">
-        <div class="section-content">
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-          >
-            <h2 class="final-title">Начни с трёх задач сегодня.</h2>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, scale: 0.9 }"
-            :visible-once="{
-              opacity: 1,
-              scale: 1,
-              transition: { duration: 400, delay: 200 },
             }"
           >
             <v-wave>
@@ -647,12 +401,25 @@
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 400, delay: 300 },
+              transition: { duration: 500, delay: 300 },
             }"
           >
             <p class="final-hint">
-              Всегда можно вернуться к этому гайду — иконка вопроса в хедере.
+              В любой момент вернитесь к гайду через иконку вопроса в хедере.
             </p>
+          </div>
+          <!-- Контакты и донат (компактно) -->
+          <div class="footer-info">
+            <div class="contacts">
+              <a href="mailto:sergeyborisov_1@vk.ru"><Mail :size="16" /></a>
+              <a href="#"><Send :size="16" /></a>
+              <a href="#"><Instagram :size="16" /></a>
+            </div>
+            <div class="donation">
+              <Heart :size="14" />
+              <code>TXjoHFudFFQT6hXSqb55xz5W2KQUAAbnF8</code>
+              <span>TRC-20 USDT</span>
+            </div>
           </div>
         </div>
       </section>
@@ -668,18 +435,16 @@ import {
   RotateCw,
   Calendar,
   Palette,
-  UserCircle,
+  GitBranch,
+  Target,
+  Move,
+  Shield,
+  Download,
+  Upload,
   Heart,
   Mail,
   Send,
   Instagram,
-  Shield,
-  Download,
-  Upload,
-  Bell,
-  GitBranch,
-  Target,
-  Move,
 } from 'lucide-vue-next'
 import { useOnboardingStore } from '~/stores/onboarding.store'
 
@@ -689,33 +454,31 @@ const router = useRouter()
 const scrollContainer = ref<HTMLElement | null>(null)
 const progress = ref(0)
 
-const section1Animated = ref(false)
-const section2Animated = ref(false)
-const section3Animated = ref(false)
-const section4Animated = ref(false)
-const section5Animated = ref(false)
-const section6Animated = ref(false)
-const section7Animated = ref(false)
-const section8Animated = ref(false)
-
 const shapes = [
   {
     gradient:
-      'radial-gradient(circle at 30% 30%, rgba(var(--accent-rgb), 0.15), transparent 70%)',
+      'radial-gradient(circle at 30% 30%, rgba(var(--accent-rgb), 0.12), transparent 70%)',
   },
   {
     gradient:
-      'radial-gradient(circle at 70% 70%, rgba(var(--accent-rgb), 0.12), transparent 70%)',
+      'radial-gradient(circle at 70% 70%, rgba(var(--accent-rgb), 0.10), transparent 70%)',
   },
   {
     gradient:
-      'radial-gradient(circle at 50% 50%, rgba(var(--accent-rgb), 0.1), transparent 70%)',
+      'radial-gradient(circle at 50% 50%, rgba(var(--accent-rgb), 0.08), transparent 70%)',
   },
 ]
 
-const leftTags = ['#фокус', '#осознанность', '#правилотрёх', '#cof']
-const leftTags2 = ['#развитие', '#привычки', '#цели', '#план', '#дисциплина']
-const rightTags = ['#2026', '#новыйстарт', '#продуктивность', '#меньшедел']
+const allTags = [
+  '#фокус',
+  '#осознанность',
+  '#правилотрёх',
+  '#cof',
+  '#развитие',
+  '#привычки',
+  '#цели',
+  '#2026',
+]
 
 const rules = [
   { number: 3, label: 'задачи на день' },
@@ -735,25 +498,6 @@ function handleScroll() {
   const scrollTop = container.scrollTop
   const scrollHeight = container.scrollHeight - container.clientHeight
   progress.value = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0
-
-  const sections = document.querySelectorAll('.section')
-  const containerCenter = container.clientHeight / 2
-  sections.forEach((section) => {
-    const rect = section.getBoundingClientRect()
-    const sectionCenter = rect.top + rect.height / 2
-    const distanceFromCenter = Math.abs(sectionCenter - containerCenter)
-    if (distanceFromCenter < rect.height / 2) {
-      const id = section.id
-      if (id === 'section-1') section1Animated.value = true
-      if (id === 'section-2') section2Animated.value = true
-      if (id === 'section-3') section3Animated.value = true
-      if (id === 'section-4') section4Animated.value = true
-      if (id === 'section-5') section5Animated.value = true
-      if (id === 'section-6') section6Animated.value = true
-      if (id === 'section-7') section7Animated.value = true
-      if (id === 'section-8') section8Animated.value = true
-    }
-  })
 }
 
 onMounted(() => {
@@ -805,7 +549,7 @@ onMounted(() => {
   border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
   animation: float 22s infinite alternate ease-in-out;
   filter: blur(80px);
-  opacity: 0.6;
+  opacity: 0.5;
   &.shape1 {
     top: -30vh;
     left: -20vw;
@@ -837,7 +581,7 @@ onMounted(() => {
   inset: 0;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(10, 10, 10, 0.7) 0%,
+    color-mix(in srgb, var(--bg) 80%, transparent) 0%,
     var(--bg) 100%
   );
   backdrop-filter: blur(40px);
@@ -853,7 +597,11 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 20px 40px;
-  background: linear-gradient(to bottom, rgba(10, 10, 10, 0.95), transparent);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bg) 95%, transparent),
+    transparent
+  );
   backdrop-filter: blur(10px);
 }
 .logo {
@@ -865,8 +613,8 @@ onMounted(() => {
 }
 .beta-badge {
   padding: 5px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
   border-radius: 30px;
   font-family: 'Manrope', sans-serif;
   font-size: 0.75rem;
@@ -936,7 +684,7 @@ onMounted(() => {
 }
 .section-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(2rem, 6vw, 4rem);
+  font-size: clamp(2.5rem, 6vw, 4rem);
   font-weight: 600;
   line-height: 1.15;
   letter-spacing: -0.02em;
@@ -945,7 +693,7 @@ onMounted(() => {
 }
 .section-text {
   font-family: 'Inter', sans-serif;
-  font-size: clamp(1rem, 4vw, 1.15rem);
+  font-size: clamp(1rem, 4vw, 1.2rem);
   line-height: 1.7;
   color: var(--dim);
   max-width: 700px;
@@ -954,17 +702,16 @@ onMounted(() => {
 
 .hero-section {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: 1fr 1fr;
   gap: 40px;
   align-items: center;
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    gap: 20px;
   }
 }
 .hero-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-size: clamp(3rem, 8vw, 5rem);
   font-weight: 700;
   line-height: 1.1;
   margin-bottom: 20px;
@@ -1001,7 +748,7 @@ onMounted(() => {
   transition: all 0.3s;
   &:hover {
     transform: scale(1.02);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-lg);
     .btn-icon {
       transform: translateX(5px);
     }
@@ -1017,84 +764,33 @@ onMounted(() => {
 }
 
 .hero-visual {
-  position: relative;
-  height: 400px;
-  overflow: hidden;
-  mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 20%,
-    black 80%,
-    transparent
-  );
-  @media (max-width: 768px) {
-    height: 300px;
-  }
-}
-.hashtag-carousel {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 30px 0;
+  justify-content: center;
+  align-items: center;
 }
-.carousel-track {
+.hashtag-cloud {
   display: flex;
-  gap: 20px;
-  animation: scrollX var(--speed, 15s) linear infinite;
-  &.track-left {
-    animation-direction: normal;
-  }
-  &.track-right {
-    animation-direction: reverse;
-  }
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  max-width: 400px;
 }
 .hashtag {
-  padding: 10px 24px;
+  padding: 10px 20px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 40px;
   font-family: 'Manrope', sans-serif;
   font-size: 1rem;
-  font-weight: 500;
   color: var(--accent);
-  white-space: nowrap;
-  backdrop-filter: blur(5px);
-}
-.carousel-fade-left,
-.carousel-fade-right {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 80px;
-  pointer-events: none;
-  z-index: 2;
-}
-.carousel-fade-left {
-  left: 0;
-  background: linear-gradient(to right, var(--bg), transparent);
-}
-.carousel-fade-right {
-  right: 0;
-  background: linear-gradient(to left, var(--bg), transparent);
-}
-@keyframes scrollX {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
 }
 
 .rule-grid {
   display: flex;
-  gap: 50px;
+  gap: 40px;
   margin-top: 50px;
   flex-wrap: wrap;
-  @media (max-width: 768px) {
-    gap: 30px;
-    justify-content: center;
-  }
+  justify-content: center;
 }
 .rule-item {
   text-align: center;
@@ -1103,13 +799,6 @@ onMounted(() => {
     font-size: 5rem;
     font-weight: 700;
     color: var(--accent);
-    line-height: 1;
-    .casino-number {
-      display: inline-block;
-      animation: casinoRoll 0.6s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
-      animation-delay: var(--delay);
-      opacity: 0;
-    }
   }
   .rule-label {
     font-family: 'Manrope', sans-serif;
@@ -1118,95 +807,36 @@ onMounted(() => {
     color: var(--dim);
     margin-top: 10px;
     text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-}
-@keyframes casinoRoll {
-  0% {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
-.board-features-desktop {
+.visual-features {
   display: flex;
   gap: 40px;
-  margin: 30px 0;
-  @media (max-width: 768px) {
-    display: none;
-  }
+  margin: 40px 0;
+  flex-wrap: wrap;
 }
-.board-features-mobile {
-  display: none;
-  @media (max-width: 768px) {
-    display: block;
-    margin: 30px 0;
-    overflow: hidden;
-  }
-}
-.marquee {
-  overflow: hidden;
-  white-space: nowrap;
-}
-.marquee-content {
-  display: inline-flex;
-  gap: 40px;
-  animation: marquee 12s linear infinite;
-}
-.board-feature {
+.feature-row {
   display: flex;
   align-items: center;
   gap: 12px;
   color: var(--accent);
-  svg {
-    opacity: 0.8;
-  }
-  span {
-    font-family: 'Manrope', sans-serif;
-    font-weight: 500;
-  }
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
 }
-@keyframes marquee {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.board-placeholder {
+.placeholder-card {
   margin-top: 30px;
   padding: 60px 40px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 30px;
   text-align: center;
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-  .placeholder-glow {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(
-      circle at 50% 50%,
-      rgba(255, 255, 255, 0.1),
-      transparent 70%
-    );
-  }
   p {
-    font-family: 'Manrope', sans-serif;
-    font-size: 1.2rem;
     color: var(--dim);
-    position: relative;
   }
 }
 
-.privacy-cards {
+.tools-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 25px;
@@ -1215,82 +845,19 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 }
-.privacy-card {
-  padding: 30px 20px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 30px;
-  text-align: center;
-  backdrop-filter: blur(10px);
-  svg {
-    color: var(--accent);
-    margin-bottom: 15px;
-  }
-  h4 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.2rem;
-    margin-bottom: 8px;
-    color: var(--accent);
-  }
-  p {
-    color: var(--dim);
-  }
-}
-
-.tasks-split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  margin: 40px 0;
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-}
-.task-block {
-  padding: 35px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 30px;
-  backdrop-filter: blur(10px);
-  svg {
-    color: var(--accent);
-    margin-bottom: 20px;
-  }
-  h3 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.6rem;
-    margin-bottom: 15px;
-    color: var(--accent);
-  }
-  p {
-    color: var(--dim);
-    line-height: 1.6;
-  }
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 25px;
-  margin-top: 40px;
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-}
-.feature-card {
+.tool-card {
   padding: 35px 25px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 30px;
   text-align: center;
-  backdrop-filter: blur(10px);
   svg {
     color: var(--accent);
     margin-bottom: 20px;
   }
   h3 {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     margin-bottom: 12px;
     color: var(--accent);
   }
@@ -1299,65 +866,35 @@ onMounted(() => {
   }
 }
 
-.donation-block {
+.security-badges {
   display: flex;
-  flex-direction: column;
+  gap: 20px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+.badge {
+  display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 40px 0;
-  padding: 25px;
+  gap: 8px;
+  padding: 10px 20px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 30px;
-  text-align: center;
-  .wallet-address {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    code {
-      font-family: 'Manrope', monospace;
-      font-size: 1rem;
-      padding: 10px 20px;
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 20px;
-      color: var(--accent);
-    }
-    .network {
-      font-size: 0.8rem;
-      color: var(--dim);
-    }
-  }
-}
-.contacts {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 24px;
-  margin-top: 30px;
-  .contact-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 18px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 40px;
-    font-family: 'Manrope', sans-serif;
-    font-size: 0.85rem;
-    color: var(--dim);
-    svg {
-      color: var(--accent);
-    }
-  }
+  border-radius: 40px;
+  font-family: 'Manrope', sans-serif;
+  color: var(--accent);
 }
 
-.final-section {
+.start-section {
   text-align: center;
   .final-title {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-size: clamp(3rem, 6vw, 4.5rem);
+    margin-bottom: 20px;
+  }
+  .final-text {
+    font-size: 1.2rem;
+    color: var(--dim);
     margin-bottom: 40px;
-    color: var(--accent);
   }
   .cta-button.large {
     padding: 22px 50px;
@@ -1365,8 +902,41 @@ onMounted(() => {
     margin-bottom: 30px;
   }
   .final-hint {
-    font-family: 'Manrope', sans-serif;
     color: var(--dim);
+    margin-bottom: 40px;
+  }
+}
+.footer-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  .contacts {
+    display: flex;
+    gap: 16px;
+    a {
+      color: var(--dim);
+      transition: color 0.2s;
+      &:hover {
+        color: var(--accent);
+      }
+    }
+  }
+  .donation {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: var(--dim);
+    code {
+      background: var(--surface);
+      padding: 4px 8px;
+      border-radius: 20px;
+    }
   }
 }
 </style>

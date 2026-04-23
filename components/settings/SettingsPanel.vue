@@ -288,7 +288,7 @@ function resetAllData() {
   align-items: center;
   justify-content: space-between;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.08);
+  border-bottom: 1px solid color-mix(in srgb, var(--dim) 20%, transparent);
 
   &:last-of-type {
     border-bottom: none;
@@ -390,7 +390,7 @@ function resetAllData() {
       width: 16px;
       left: 3px;
       bottom: 3px;
-      background-color: white;
+      background-color: var(--surface);
       transition: 0.2s;
       border-radius: 50%;
     }
@@ -438,7 +438,7 @@ function resetAllData() {
       color: var(--error);
       border-color: var(--error);
       &:hover {
-        background: rgba(255, 77, 77, 0.1);
+        background: color-mix(in srgb, var(--error) 10%, transparent);
       }
     }
   }

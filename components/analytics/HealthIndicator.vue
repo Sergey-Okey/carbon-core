@@ -20,7 +20,7 @@ const chartData = computed(() => ({
   datasets: [
     {
       data: [userStore.hp, 100 - userStore.hp],
-      backgroundColor: ['#FFFFFF', '#222222'],
+      backgroundColor: ['var(--accent)', 'var(--bg)'],
       borderWidth: 0,
     },
   ],

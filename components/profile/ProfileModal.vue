@@ -189,7 +189,7 @@ function saveProfile() {
   justify-content: center;
   z-index: 1000;
   padding: 16px;
-  background: rgba(0, 0, 0, 0.7);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
   backdrop-filter: blur(6px);
 }
 
@@ -282,13 +282,13 @@ form {
     .avatar-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(0, 0, 0, 0.4);
+      background: color-mix(in srgb, var(--bg) 40%, transparent);
       display: flex;
       align-items: center;
       justify-content: center;
       opacity: 0;
       transition: opacity 0.2s;
-      color: white;
+      color: var(--surface);
     }
 
     &:hover .avatar-overlay {
@@ -315,7 +315,7 @@ form {
   .remove-avatar-btn {
     color: var(--error);
     &:hover {
-      background: rgba(255, 77, 77, 0.1);
+      background: color-mix(in srgb, var(--error) 10%, transparent);
     }
   }
 }
@@ -379,16 +379,16 @@ form {
   }
 
   .бронза {
-    color: #cd7f32;
+    color: var(--bronze);
   }
   .серебро {
-    color: #c0c0c0;
+    color: var(--silver);
   }
   .золото {
-    color: #ffd700;
+    color: var(--gold);
   }
   .платина {
-    color: #e5e4e2;
+    color: var(--platinum);
   }
 }
 

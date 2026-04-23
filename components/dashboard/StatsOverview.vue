@@ -261,15 +261,15 @@ const completedTasks = computed(() => {
 }
 
 .бронза {
-  color: #cd7f32;
+  color: var(--bronze);
 }
 .серебро {
-  color: #c0c0c0;
+  color: var(--silver);
 }
 .золото {
-  color: #ffd700;
+  color: var(--gold);
 }
 .платина {
-  color: #e5e4e2;
+  color: var(--platinum);
 }
 </style>

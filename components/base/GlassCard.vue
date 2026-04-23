@@ -16,8 +16,8 @@ defineProps<{ noPadding?: boolean }>()
   box-shadow: var(--shadow-lg);
 
   .light-theme & {
-    background: rgba(255, 255, 255, 0.7);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    box-shadow: var(--shadow-lg);
   }
 
   &.no-padding {

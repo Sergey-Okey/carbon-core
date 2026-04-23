@@ -67,7 +67,7 @@ function getTaskTitle(taskId: string): string {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
   backdrop-filter: blur(6px);
   display: flex;
   align-items: center;

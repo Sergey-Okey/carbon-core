@@ -160,10 +160,10 @@ async function handleDelete() {
     text-transform: uppercase;
     color: var(--accent);
     &.HABIT {
-      background: rgba(0, 255, 136, 0.15);
+      background: color-mix(in srgb, var(--success) 15%, transparent);
     }
     &.PURCHASE {
-      background: rgba(255, 215, 0, 0.15);
+      background: color-mix(in srgb, var(--gold) 15%, transparent);
     }
   }
 

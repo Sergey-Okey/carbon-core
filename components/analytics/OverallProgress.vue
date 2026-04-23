@@ -59,19 +59,19 @@ const chartData = computed(() => {
       {
         label: 'XP',
         data,
-        borderColor: '#FFFFFF',
+        borderColor: 'var(--accent)',
         backgroundColor: (context: any) => {
           const chart = context.chart
           const { ctx, chartArea } = chart
-          if (!chartArea) return '#FFFFFF'
+          if (!chartArea) return 'var(--accent)'
           const gradient = ctx.createLinearGradient(
             0,
             chartArea.bottom,
             0,
             chartArea.top
           )
-          gradient.addColorStop(0, '#222222')
-          gradient.addColorStop(1, '#FFFFFF')
+          gradient.addColorStop(0, 'var(--bg)')
+          gradient.addColorStop(1, 'var(--accent)')
           return gradient
         },
         fill: true,
@@ -86,8 +86,8 @@ const chartOptions = {
   maintainAspectRatio: false,
   plugins: { legend: { display: false } },
   scales: {
-    x: { grid: { color: '#222222' }, ticks: { color: '#AAAAAA' } },
-    y: { grid: { color: '#222222' }, ticks: { color: '#AAAAAA' } },
+    x: { grid: { color: 'var(--border)' }, ticks: { color: 'var(--dim)' } },
+    y: { grid: { color: 'var(--border)' }, ticks: { color: 'var(--dim)' } },
   },
 }
 </script>
