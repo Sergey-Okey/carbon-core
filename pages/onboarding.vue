@@ -355,8 +355,85 @@
         </div>
       </section>
 
-      <!-- Шаг 6: Старт -->
-      <section id="step-6" class="section start-section">
+      <!-- Шаг 6: О проекте -->
+      <section id="step-6" class="section about-section">
+        <div class="section-content">
+          <div
+            v-motion
+            :initial="{ opacity: 0, y: 30 }"
+            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
+          >
+            <div class="section-label">О проекте</div>
+          </div>
+          <div
+            v-motion
+            :initial="{ opacity: 0, y: 30 }"
+            :visible-once="{
+              opacity: 1,
+              y: 0,
+              transition: { duration: 600, delay: 100 },
+            }"
+          >
+            <h2 class="section-title">Кто это делает</h2>
+          </div>
+          <div
+            v-motion
+            :initial="{ opacity: 0, y: 30 }"
+            :visible-once="{
+              opacity: 1,
+              y: 0,
+              transition: { duration: 600, delay: 200 },
+            }"
+          >
+            <p class="section-text">
+              COF — пет-проект одного разработчика, Сергея Борисова. Я делаю
+              его, потому что верю: правильные инструменты помогают жить
+              осознаннее. Сейчас приложение находится на стадии активной
+              бета-разработки, возможны шероховатости, но я непрерывно всё
+              допиливаю.
+            </p>
+          </div>
+          <div
+            v-motion
+            :initial="{ opacity: 0, y: 30 }"
+            :visible-once="{
+              opacity: 1,
+              y: 0,
+              transition: { duration: 600, delay: 300 },
+            }"
+          >
+            <p class="section-text">
+              Если хотите поддержать разработку и ускорить появление новых фич —
+              буду признателен любой сумме.
+            </p>
+          </div>
+          <div
+            v-motion
+            :initial="{ opacity: 0, scale: 0.95 }"
+            :visible-once="{
+              opacity: 1,
+              scale: 1,
+              transition: { duration: 500, delay: 400 },
+            }"
+            class="donation-block"
+          >
+            <Heart :size="20" />
+            <span>Поддержать проект</span>
+            <div class="wallet-address">
+              <code>TXjoHFudFFQT6hXSqb55xz5W2KQUAAbnF8</code>
+              <span class="network">TRC-20 (USDT)</span>
+            </div>
+          </div>
+          <div class="contacts">
+            <a href="mailto:sergeyborisov_1@vk.ru"><Mail :size="20" /></a>
+            <a href="#"><Send :size="20" /></a>
+            <a href="#"><Instagram :size="20" /></a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Шаг 7: Старт -->
+      <section id="step-7" class="section start-section">
         <div class="section-content">
           <div
             v-motion
@@ -407,19 +484,6 @@
             <p class="final-hint">
               В любой момент вернитесь к гайду через иконку вопроса в хедере.
             </p>
-          </div>
-          <!-- Контакты и донат (компактно) -->
-          <div class="footer-info">
-            <div class="contacts">
-              <a href="mailto:sergeyborisov_1@vk.ru"><Mail :size="16" /></a>
-              <a href="#"><Send :size="16" /></a>
-              <a href="#"><Instagram :size="16" /></a>
-            </div>
-            <div class="donation">
-              <Heart :size="14" />
-              <code>TXjoHFudFFQT6hXSqb55xz5W2KQUAAbnF8</code>
-              <span>TRC-20 USDT</span>
-            </div>
           </div>
         </div>
       </section>
@@ -581,7 +645,7 @@ onMounted(() => {
   inset: 0;
   background: radial-gradient(
     circle at 50% 50%,
-    color-mix(in srgb, var(--bg) 80%, transparent) 0%,
+    rgba(10, 10, 10, 0.8) 0%,
     var(--bg) 100%
   );
   backdrop-filter: blur(40px);
@@ -597,11 +661,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 20px 40px;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--bg) 95%, transparent),
-    transparent
-  );
+  background: linear-gradient(to bottom, rgba(10, 10, 10, 0.95), transparent);
   backdrop-filter: blur(10px);
 }
 .logo {
@@ -613,8 +673,8 @@ onMounted(() => {
 }
 .beta-badge {
   padding: 5px 12px;
-  background: color-mix(in srgb, var(--accent) 5%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 30px;
   font-family: 'Manrope', sans-serif;
   font-size: 0.75rem;
@@ -748,7 +808,7 @@ onMounted(() => {
   transition: all 0.3s;
   &:hover {
     transform: scale(1.02);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
     .btn-icon {
       transform: translateX(5px);
     }
@@ -884,6 +944,34 @@ onMounted(() => {
   color: var(--accent);
 }
 
+.about-section .donation-block {
+  display: inline-flex;
+  align-items: center;
+  gap: 15px;
+  margin: 30px 0;
+  padding: 15px 25px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 40px;
+  .wallet-address code {
+    background: transparent;
+    padding: 0;
+    font-size: 0.9rem;
+  }
+}
+.contacts {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+  a {
+    color: var(--dim);
+    transition: color 0.2s;
+    &:hover {
+      color: var(--accent);
+    }
+  }
+}
+
 .start-section {
   text-align: center;
   .final-title {
@@ -903,40 +991,6 @@ onMounted(() => {
   }
   .final-hint {
     color: var(--dim);
-    margin-bottom: 40px;
-  }
-}
-.footer-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
-  .contacts {
-    display: flex;
-    gap: 16px;
-    a {
-      color: var(--dim);
-      transition: color 0.2s;
-      &:hover {
-        color: var(--accent);
-      }
-    }
-  }
-  .donation {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.8rem;
-    color: var(--dim);
-    code {
-      background: var(--surface);
-      padding: 4px 8px;
-      border-radius: 20px;
-    }
   }
 }
 </style>

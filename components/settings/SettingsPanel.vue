@@ -2,34 +2,44 @@
   <div class="settings-page">
     <div class="settings-grid">
       <!-- Внешний вид -->
-      <GlassCard class="settings-card">
-        <h3>Внешний вид</h3>
+      <GlassCard
+        v-motion
+        :initial="{ opacity: 0, y: 20 }"
+        :enter="{ opacity: 1, y: 0, transition: { duration: 400 } }"
+        class="settings-card"
+      >
+        <div class="card-header">
+          <Palette :size="22" />
+          <h3>Внешний вид</h3>
+        </div>
+
         <div class="setting-item">
           <div class="setting-info">
             <span class="label">Тема</span>
-            <span class="desc">Светлая или тёмная</span>
+            <span class="desc">{{ themeLabel }}</span>
           </div>
           <div class="theme-toggle">
             <button
               class="theme-option"
               :class="{ active: settingsStore.theme === 'dark' }"
-              @click="settingsStore.setTheme('dark')"
+              @click="setTheme('dark')"
             >
               <Moon :size="18" />
             </button>
             <button
               class="theme-option"
               :class="{ active: settingsStore.theme === 'light' }"
-              @click="settingsStore.setTheme('light')"
+              @click="setTheme('light')"
             >
               <Sun :size="18" />
             </button>
           </div>
         </div>
+
         <div class="setting-item">
           <div class="setting-info">
-            <span class="label">Акцентный цвет</span>
-            <span class="desc">Выберите оттенок</span>
+            <span class="label">Акцент</span>
+            <span class="desc">{{ accentLabel }}</span>
           </div>
           <div class="color-options">
             <button
@@ -38,83 +48,124 @@
               class="color-dot"
               :style="{ backgroundColor: color.value }"
               :class="{ active: settingsStore.accentColor === color.value }"
-              @click="settingsStore.setAccentColor(color.value)"
+              @click="setAccentColor(color.value, color.name)"
               :title="color.name"
-            />
+            >
+              <Check
+                v-if="settingsStore.accentColor === color.value"
+                :size="12"
+                :stroke-width="3"
+              />
+            </button>
           </div>
         </div>
+
         <div class="setting-item">
           <div class="setting-info">
             <span class="label">Анимации</span>
-            <span class="desc">Плавные переходы</span>
+            <span class="desc">Плавные переходы интерфейса</span>
           </div>
           <label class="switch">
-            <input type="checkbox" v-model="settingsStore.animationsEnabled" />
+            <input
+              type="checkbox"
+              :checked="settingsStore.animationsEnabled"
+              @change="toggleAnimations"
+            />
             <span class="slider"></span>
           </label>
         </div>
       </GlassCard>
 
       <!-- Уведомления -->
-      <GlassCard class="settings-card">
-        <h3>Уведомления</h3>
-        <div class="setting-item">
-          <div class="setting-info">
-            <span class="label">Звук</span>
-            <span class="desc">Короткий сигнал</span>
-          </div>
-          <label class="switch">
-            <input type="checkbox" v-model="settingsStore.soundEnabled" />
-            <span class="slider"></span>
-          </label>
+      <GlassCard
+        v-motion
+        :initial="{ opacity: 0, y: 20 }"
+        :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 100 } }"
+        class="settings-card"
+      >
+        <div class="card-header">
+          <Bell :size="22" />
+          <h3>Уведомления</h3>
         </div>
+
         <div class="setting-item">
           <div class="setting-info">
             <span class="label">Всплывающие сообщения</span>
-            <span class="desc">Показывать тосты</span>
+            <span class="desc">Тосты при действиях</span>
           </div>
           <label class="switch">
             <input
               type="checkbox"
-              v-model="settingsStore.notificationsEnabled"
+              :checked="settingsStore.notificationsEnabled"
+              @change="toggleNotifications"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="label">Звук</span>
+            <span class="desc">Короткий сигнал на события</span>
+          </div>
+          <label class="switch">
+            <input
+              type="checkbox"
+              :checked="settingsStore.soundEnabled"
+              @change="toggleSound"
             />
             <span class="slider"></span>
           </label>
         </div>
       </GlassCard>
 
-      <!-- Данные и бэкап -->
-      <GlassCard class="settings-card">
-        <h3>Данные</h3>
+      <!-- Данные -->
+      <GlassCard
+        v-motion
+        :initial="{ opacity: 0, y: 20 }"
+        :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 200 } }"
+        class="settings-card wide"
+      >
+        <div class="card-header">
+          <Database :size="22" />
+          <h3>Данные</h3>
+        </div>
+
         <div class="setting-item">
           <div class="setting-info">
             <span class="label">Авто-бэкап при выходе</span>
-            <span class="desc">Сохранять копию</span>
+            <span class="desc">Автоматическая резервная копия</span>
           </div>
           <label class="switch">
-            <input type="checkbox" v-model="settingsStore.autoBackup" />
+            <input
+              type="checkbox"
+              :checked="settingsStore.autoBackup"
+              @change="toggleAutoBackup"
+            />
             <span class="slider"></span>
           </label>
         </div>
+
         <div v-if="settingsStore.lastBackupDate" class="backup-info">
-          Последний:
-          {{ new Date(settingsStore.lastBackupDate).toLocaleString() }}
+          <Clock :size="14" />
+          Последний бэкап: {{ lastBackupText }}
         </div>
+
         <div class="action-group">
           <button class="action-btn" @click="createBackup">
-            <Download :size="16" /> Бэкап
+            <Download :size="16" /> Создать бэкап
           </button>
           <button class="action-btn" @click="exportData">
-            <FileJson :size="16" /> Экспорт
+            <FileJson :size="16" /> Экспорт JSON
           </button>
           <button class="action-btn" @click="importData">
-            <Upload :size="16" /> Импорт
+            <Upload :size="16" /> Импорт JSON
           </button>
           <button class="action-btn" @click="restoreAutoBackup">
             <RotateCcw :size="16" /> Восстановить
           </button>
           <button class="action-btn danger" @click="resetAllData">
-            <Trash2 :size="16" /> Сброс
+            <Trash2 :size="16" /> Сбросить всё
           </button>
         </div>
       </GlassCard>
@@ -123,14 +174,20 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import {
   Moon,
   Sun,
+  Check,
   Download,
   FileJson,
   Upload,
   Trash2,
   RotateCcw,
+  Palette,
+  Bell,
+  Database,
+  Clock,
 } from 'lucide-vue-next'
 import { ACCENT_COLORS, useSettingsStore } from '~/stores/settings.store'
 import { useNotification } from '~/composables/useNotification'
@@ -138,6 +195,67 @@ import GlassCard from '~/components/base/GlassCard.vue'
 
 const settingsStore = useSettingsStore()
 const { addNotification } = useNotification()
+
+const themeLabel = computed(() =>
+  settingsStore.theme === 'dark' ? 'Тёмная' : 'Светлая'
+)
+const accentLabel = computed(() => {
+  const found = ACCENT_COLORS.find((c) => c.value === settingsStore.accentColor)
+  return found?.name ?? 'Пользовательский'
+})
+const lastBackupText = computed(() => {
+  if (!settingsStore.lastBackupDate) return ''
+  return new Date(settingsStore.lastBackupDate).toLocaleString('ru')
+})
+
+function setTheme(theme: 'dark' | 'light') {
+  settingsStore.setTheme(theme)
+  addNotification({
+    type: 'info',
+    message:
+      theme === 'dark' ? 'Тёмная тема включена' : 'Светлая тема включена',
+  })
+}
+
+function setAccentColor(color: string, name: string) {
+  settingsStore.setAccentColor(color)
+  addNotification({ type: 'success', message: `Акцент: ${name}` })
+}
+
+function toggleAnimations(e: Event) {
+  const val = (e.target as HTMLInputElement).checked
+  settingsStore.setAnimationsEnabled(val)
+  addNotification({
+    type: 'info',
+    message: val ? 'Анимации включены' : 'Анимации отключены',
+  })
+}
+
+function toggleNotifications(e: Event) {
+  const val = (e.target as HTMLInputElement).checked
+  settingsStore.setNotificationsEnabled(val)
+  if (val) {
+    addNotification({ type: 'success', message: 'Уведомления включены' })
+  }
+}
+
+function toggleSound(e: Event) {
+  const val = (e.target as HTMLInputElement).checked
+  settingsStore.setSoundEnabled(val)
+  addNotification({
+    type: 'info',
+    message: val ? 'Звук включён' : 'Звук отключён',
+  })
+}
+
+function toggleAutoBackup(e: Event) {
+  const val = (e.target as HTMLInputElement).checked
+  settingsStore.setAutoBackup(val)
+  addNotification({
+    type: 'info',
+    message: val ? 'Авто-бэкап включён' : 'Авто-бэкап отключён',
+  })
+}
 
 function createBackup() {
   const data = {
@@ -170,7 +288,7 @@ function exportData() {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `carbon-backup-${new Date().toISOString().split('T')[0]}.json`
+  a.download = `cof-backup-${new Date().toISOString().split('T')[0]}.json`
   a.click()
   URL.revokeObjectURL(url)
   addNotification({ type: 'success', message: 'Данные экспортированы' })
@@ -270,16 +388,32 @@ function resetAllData() {
 }
 
 .settings-card {
-  padding: 20px;
+  padding: 24px;
+
+  &.wide {
+    @include desktop {
+      grid-column: span 2;
+    }
+  }
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--accent);
 
   h3 {
     font-size: 1.1rem;
     font-weight: 600;
-    margin-bottom: 20px;
-    color: var(--accent);
     letter-spacing: -0.01em;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 10px;
+  }
+
+  svg {
+    color: var(--dim);
   }
 }
 
@@ -287,8 +421,8 @@ function resetAllData() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--dim) 20%, transparent);
+  padding: 14px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--dim) 12%, transparent);
 
   &:last-of-type {
     border-bottom: none;
@@ -300,10 +434,12 @@ function resetAllData() {
     font-weight: 500;
     color: var(--accent);
     display: block;
+    font-size: 0.95rem;
   }
   .desc {
     font-size: 0.8rem;
     color: var(--dim);
+    margin-top: 2px;
   }
 }
 
@@ -315,14 +451,14 @@ function resetAllData() {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     border-radius: var(--border-radius-sm);
     background: var(--surface);
     border: 1px solid var(--border);
     color: var(--dim);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-standard);
 
     &:hover {
       background: var(--border);
@@ -342,20 +478,25 @@ function resetAllData() {
   gap: 8px;
 
   .color-dot {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     border: 2px solid transparent;
     cursor: pointer;
-    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-standard);
+    color: var(--surface);
 
     &:hover {
-      transform: scale(1.1);
+      transform: scale(1.15);
     }
 
     &.active {
       border-color: var(--bg);
       box-shadow: 0 0 0 2px var(--accent);
+      transform: scale(1.1);
     }
   }
 }
@@ -363,8 +504,9 @@ function resetAllData() {
 .switch {
   position: relative;
   display: inline-block;
-  width: 40px;
-  height: 22px;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
 
   input {
     opacity: 0;
@@ -375,63 +517,70 @@ function resetAllData() {
   .slider {
     position: absolute;
     cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--border);
-    transition: 0.2s;
-    border-radius: 22px;
+    inset: 0;
+    background: var(--border);
+    transition: background var(--transition-standard);
+    border-radius: 24px;
 
-    &:before {
+    &::before {
       position: absolute;
       content: '';
-      height: 16px;
-      width: 16px;
+      height: 18px;
+      width: 18px;
       left: 3px;
       bottom: 3px;
-      background-color: var(--surface);
-      transition: 0.2s;
+      background: var(--surface);
+      transition: transform var(--transition-standard);
       border-radius: 50%;
+      box-shadow: var(--shadow-sm);
     }
   }
 
   input:checked + .slider {
-    background-color: var(--accent);
+    background: var(--accent);
   }
 
-  input:checked + .slider:before {
-    transform: translateX(18px);
+  input:checked + .slider::before {
+    transform: translateX(20px);
+    background: var(--bg);
   }
 }
 
 .backup-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.8rem;
   color: var(--dim);
-  margin: 8px 0 12px;
+  margin: 8px 0 16px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border-radius: var(--border-radius-sm);
 }
 
 .action-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   margin-top: 16px;
 
   .action-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 14px;
+    padding: 10px 16px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--border-radius-sm);
     color: var(--accent);
     font-size: 0.85rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-standard);
 
     &:hover {
       background: var(--border);
+      transform: translateY(-1px);
     }
 
     &.danger {
