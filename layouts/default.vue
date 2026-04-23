@@ -24,7 +24,6 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
   height: 100vh;
   background: var(--bg);
   color: var(--accent);
-  overflow: hidden;
   transition: background 0.3s ease;
 }
 

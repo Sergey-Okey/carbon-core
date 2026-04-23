@@ -12,10 +12,11 @@
       <button
         v-for="item in navItems"
         :key="item.id"
+        type="button"
         class="nav-item"
         :class="{ active: uiStore.activeNav === item.id }"
         @click="uiStore.setActiveNav(item.id)"
-        :title="!showLabels ? item.label : ''"
+        :title="item.label"
       >
         <component :is="item.icon" :size="20" />
         <Transition name="label-fade">
@@ -95,7 +96,6 @@ function onMouseLeave() {
   will-change: width;
   transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);
 
-  // Мобильная версия: компактный островок внизу
   position: fixed;
   bottom: var(--navbar-margin);
   left: 50%;
@@ -115,7 +115,7 @@ function onMouseLeave() {
     transform: none;
     width: var(--navbar-collapsed-width);
     height: fit-content;
-    margin: auto var(--navbar-margin); // центрирование по вертикали
+    margin: auto var(--navbar-margin);
     border-radius: 20px;
     display: flex;
     flex-direction: column;
@@ -157,6 +157,7 @@ function onMouseLeave() {
     cursor: pointer;
     min-width: 44px;
     min-height: 44px;
+    outline: none;
 
     @include desktop {
       justify-content: flex-start;
@@ -173,6 +174,10 @@ function onMouseLeave() {
     &.active {
       color: var(--accent);
       background: var(--surface);
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 2px var(--accent);
     }
 
     svg {

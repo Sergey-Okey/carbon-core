@@ -2,176 +2,190 @@
   <div class="settings-page">
     <div class="settings-grid">
       <!-- Внешний вид -->
-      <GlassCard class="settings-card" style="--delay: 0s">
-        <div class="card-header">
-          <Palette :size="22" aria-hidden="true" />
-          <h3>Внешний вид</h3>
-        </div>
+      <div
+        v-motion
+        :initial="{ opacity: 0, y: 24 }"
+        :enter="{ opacity: 1, y: 0, transition: { duration: 450, delay: 0 } }"
+      >
+        <GlassCard class="settings-card">
+          <div class="card-header">
+            <Palette :size="22" />
+            <h3>Внешний вид</h3>
+          </div>
 
-        <div class="setting-item">
-          <div class="setting-info">
-            <span class="label">Тема</span>
-            <span class="desc">{{ themeLabel }}</span>
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="label">Тема</span>
+              <span class="desc">{{ themeLabel }}</span>
+            </div>
+            <div class="theme-toggle">
+              <button
+                type="button"
+                :class="[
+                  'theme-option',
+                  { active: settingsStore.theme === 'dark' },
+                ]"
+                @click="setTheme('dark')"
+              >
+                <Moon :size="18" />
+              </button>
+              <button
+                type="button"
+                :class="[
+                  'theme-option',
+                  { active: settingsStore.theme === 'light' },
+                ]"
+                @click="setTheme('light')"
+              >
+                <Sun :size="18" />
+              </button>
+            </div>
           </div>
-          <div class="theme-toggle" role="group" aria-label="Выбор темы">
-            <button
-              type="button"
-              class="theme-option"
-              :class="{ active: settingsStore.theme === 'dark' }"
-              @click="setTheme('dark')"
-              :aria-pressed="settingsStore.theme === 'dark'"
-            >
-              <Moon :size="18" />
-            </button>
-            <button
-              type="button"
-              class="theme-option"
-              :class="{ active: settingsStore.theme === 'light' }"
-              @click="setTheme('light')"
-              :aria-pressed="settingsStore.theme === 'light'"
-            >
-              <Sun :size="18" />
-            </button>
-          </div>
-        </div>
 
-        <div class="setting-item">
-          <div class="setting-info">
-            <span class="label">Акцент</span>
-            <span class="desc">{{ accentLabel }}</span>
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="label">Акцент</span>
+              <span class="desc">{{ accentLabel }}</span>
+            </div>
+            <div class="color-options">
+              <button
+                v-for="color in ACCENT_COLORS"
+                :key="color.value"
+                type="button"
+                class="color-dot"
+                :style="{ backgroundColor: color.value }"
+                :class="{ active: settingsStore.accentColor === color.value }"
+                @click="setAccentColor(color.value, color.name)"
+                :title="color.name"
+              >
+                <Check
+                  v-if="settingsStore.accentColor === color.value"
+                  :size="12"
+                  :stroke-width="3"
+                  :style="{ color: contrastColor(color.value) }"
+                />
+              </button>
+            </div>
           </div>
-          <div
-            class="color-options"
-            role="radiogroup"
-            aria-label="Выбор акцентного цвета"
-          >
-            <button
-              v-for="color in ACCENT_COLORS"
-              :key="color.value"
-              type="button"
-              class="color-dot"
-              :style="{ backgroundColor: color.value }"
-              :class="{ active: settingsStore.accentColor === color.value }"
-              role="radio"
-              :aria-checked="settingsStore.accentColor === color.value"
-              @click="setAccentColor(color.value, color.name)"
-              :title="color.name"
-            >
-              <Check
-                v-if="settingsStore.accentColor === color.value"
-                :size="12"
-                :stroke-width="3"
-                :style="{ color: contrastColor(color.value) }"
-                aria-hidden="true"
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="label">Анимации</span>
+              <span class="desc">Плавные переходы интерфейса</span>
+            </div>
+            <label class="switch">
+              <input
+                type="checkbox"
+                :checked="settingsStore.animationsEnabled"
+                @change="toggleAnimations"
               />
-            </button>
+              <span class="slider"></span>
+            </label>
           </div>
-        </div>
-
-        <div class="setting-item">
-          <div class="setting-info">
-            <span class="label">Анимации</span>
-            <span class="desc">Плавные переходы интерфейса</span>
-          </div>
-          <label class="switch">
-            <input
-              type="checkbox"
-              :checked="settingsStore.animationsEnabled"
-              @change="toggleAnimations"
-            />
-            <span class="slider"></span>
-          </label>
-        </div>
-      </GlassCard>
+        </GlassCard>
+      </div>
 
       <!-- Уведомления -->
-      <GlassCard class="settings-card" style="--delay: 0.08s">
-        <div class="card-header">
-          <Bell :size="22" aria-hidden="true" />
-          <h3>Уведомления</h3>
-        </div>
-
-        <div class="setting-item">
-          <div class="setting-info">
-            <span class="label">Всплывающие сообщения</span>
-            <span class="desc">Тосты при действиях</span>
+      <div
+        v-motion
+        :initial="{ opacity: 0, y: 24 }"
+        :enter="{ opacity: 1, y: 0, transition: { duration: 450, delay: 80 } }"
+      >
+        <GlassCard class="settings-card">
+          <div class="card-header">
+            <Bell :size="22" />
+            <h3>Уведомления</h3>
           </div>
-          <label class="switch">
-            <input
-              type="checkbox"
-              :checked="settingsStore.notificationsEnabled"
-              @change="toggleNotifications"
-            />
-            <span class="slider"></span>
-          </label>
-        </div>
 
-        <div class="setting-item">
-          <div class="setting-info">
-            <span class="label">Звук</span>
-            <span class="desc">Короткий сигнал на события</span>
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="label">Всплывающие сообщения</span>
+              <span class="desc">Тосты при действиях</span>
+            </div>
+            <label class="switch">
+              <input
+                type="checkbox"
+                :checked="settingsStore.notificationsEnabled"
+                @change="toggleNotifications"
+              />
+              <span class="slider"></span>
+            </label>
           </div>
-          <label class="switch">
-            <input
-              type="checkbox"
-              :checked="settingsStore.soundEnabled"
-              @change="toggleSound"
-            />
-            <span class="slider"></span>
-          </label>
-        </div>
-      </GlassCard>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="label">Звук</span>
+              <span class="desc">Короткий сигнал на события</span>
+            </div>
+            <label class="switch">
+              <input
+                type="checkbox"
+                :checked="settingsStore.soundEnabled"
+                @change="toggleSound"
+              />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </GlassCard>
+      </div>
 
       <!-- Данные -->
-      <GlassCard class="settings-card wide" style="--delay: 0.16s">
-        <div class="card-header">
-          <Database :size="22" aria-hidden="true" />
-          <h3>Данные</h3>
-        </div>
-
-        <div class="setting-item">
-          <div class="setting-info">
-            <span class="label">Авто-бэкап при выходе</span>
-            <span class="desc">Автоматическая резервная копия</span>
+      <div
+        v-motion
+        :initial="{ opacity: 0, y: 24 }"
+        :enter="{ opacity: 1, y: 0, transition: { duration: 450, delay: 160 } }"
+        class="wide-wrapper"
+      >
+        <GlassCard class="settings-card">
+          <div class="card-header">
+            <Database :size="22" />
+            <h3>Данные</h3>
           </div>
-          <label class="switch">
-            <input
-              type="checkbox"
-              :checked="settingsStore.autoBackup"
-              @change="toggleAutoBackup"
-            />
-            <span class="slider"></span>
-          </label>
-        </div>
 
-        <div v-if="settingsStore.lastBackupDate" class="backup-info">
-          <Clock :size="14" aria-hidden="true" />
-          Последний бэкап: {{ lastBackupText }}
-        </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="label">Авто-бэкап при выходе</span>
+              <span class="desc">Автоматическая резервная копия</span>
+            </div>
+            <label class="switch">
+              <input
+                type="checkbox"
+                :checked="settingsStore.autoBackup"
+                @change="toggleAutoBackup"
+              />
+              <span class="slider"></span>
+            </label>
+          </div>
 
-        <div class="action-group">
-          <button class="action-btn" @click="createBackup">
-            <Download :size="16" aria-hidden="true" />
-            Создать бэкап
-          </button>
-          <button class="action-btn" @click="exportData">
-            <FileJson :size="16" aria-hidden="true" />
-            Экспорт JSON
-          </button>
-          <button class="action-btn" @click="importData">
-            <Upload :size="16" aria-hidden="true" />
-            Импорт JSON
-          </button>
-          <button class="action-btn" @click="restoreAutoBackup">
-            <RotateCcw :size="16" aria-hidden="true" />
-            Восстановить
-          </button>
-          <button class="action-btn danger" @click="resetAllData">
-            <Trash2 :size="16" aria-hidden="true" />
-            Сбросить всё
-          </button>
-        </div>
-      </GlassCard>
+          <div v-if="settingsStore.lastBackupDate" class="backup-info">
+            <Clock :size="14" />
+            Последний бэкап: {{ lastBackupText }}
+          </div>
+
+          <div class="action-group">
+            <button class="action-btn" @click="createBackup">
+              <Download :size="16" />
+              Создать бэкап
+            </button>
+            <button class="action-btn" @click="exportData">
+              <FileJson :size="16" />
+              Экспорт JSON
+            </button>
+            <button class="action-btn" @click="importData">
+              <Upload :size="16" />
+              Импорт JSON
+            </button>
+            <button class="action-btn" @click="restoreAutoBackup">
+              <RotateCcw :size="16" />
+              Восстановить
+            </button>
+            <button class="action-btn danger" @click="resetAllData">
+              <Trash2 :size="16" />
+              Сбросить всё
+            </button>
+          </div>
+        </GlassCard>
+      </div>
     </div>
   </div>
 </template>
@@ -400,22 +414,11 @@ function resetAllData() {
 
 .settings-card {
   padding: 24px;
-  opacity: 0;
-  transform: translateY(16px);
-  animation: card-in 0.45s cubic-bezier(0.2, 0, 0, 1) forwards;
-  animation-delay: var(--delay, 0s);
-
-  &.wide {
-    @include desktop {
-      grid-column: span 2;
-    }
-  }
 }
 
-@keyframes card-in {
-  to {
-    opacity: 1;
-    transform: translateY(0);
+.wide-wrapper {
+  @include desktop {
+    grid-column: span 2;
   }
 }
 
