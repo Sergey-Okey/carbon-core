@@ -2,14 +2,9 @@
   <div class="settings-page">
     <div class="settings-grid">
       <!-- Внешний вид -->
-      <GlassCard
-        v-motion
-        :initial="{ opacity: 0, y: 20 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 400 } }"
-        class="settings-card"
-      >
+      <GlassCard class="settings-card" style="--delay: 0s">
         <div class="card-header">
-          <Palette :size="22" />
+          <Palette :size="22" aria-hidden="true" />
           <h3>Внешний вид</h3>
         </div>
 
@@ -18,18 +13,22 @@
             <span class="label">Тема</span>
             <span class="desc">{{ themeLabel }}</span>
           </div>
-          <div class="theme-toggle">
+          <div class="theme-toggle" role="group" aria-label="Выбор темы">
             <button
+              type="button"
               class="theme-option"
               :class="{ active: settingsStore.theme === 'dark' }"
               @click="setTheme('dark')"
+              :aria-pressed="settingsStore.theme === 'dark'"
             >
               <Moon :size="18" />
             </button>
             <button
+              type="button"
               class="theme-option"
               :class="{ active: settingsStore.theme === 'light' }"
               @click="setTheme('light')"
+              :aria-pressed="settingsStore.theme === 'light'"
             >
               <Sun :size="18" />
             </button>
@@ -41,13 +40,20 @@
             <span class="label">Акцент</span>
             <span class="desc">{{ accentLabel }}</span>
           </div>
-          <div class="color-options">
+          <div
+            class="color-options"
+            role="radiogroup"
+            aria-label="Выбор акцентного цвета"
+          >
             <button
               v-for="color in ACCENT_COLORS"
               :key="color.value"
+              type="button"
               class="color-dot"
               :style="{ backgroundColor: color.value }"
               :class="{ active: settingsStore.accentColor === color.value }"
+              role="radio"
+              :aria-checked="settingsStore.accentColor === color.value"
               @click="setAccentColor(color.value, color.name)"
               :title="color.name"
             >
@@ -55,6 +61,8 @@
                 v-if="settingsStore.accentColor === color.value"
                 :size="12"
                 :stroke-width="3"
+                :style="{ color: contrastColor(color.value) }"
+                aria-hidden="true"
               />
             </button>
           </div>
@@ -77,14 +85,9 @@
       </GlassCard>
 
       <!-- Уведомления -->
-      <GlassCard
-        v-motion
-        :initial="{ opacity: 0, y: 20 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 100 } }"
-        class="settings-card"
-      >
+      <GlassCard class="settings-card" style="--delay: 0.08s">
         <div class="card-header">
-          <Bell :size="22" />
+          <Bell :size="22" aria-hidden="true" />
           <h3>Уведомления</h3>
         </div>
 
@@ -120,14 +123,9 @@
       </GlassCard>
 
       <!-- Данные -->
-      <GlassCard
-        v-motion
-        :initial="{ opacity: 0, y: 20 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 200 } }"
-        class="settings-card wide"
-      >
+      <GlassCard class="settings-card wide" style="--delay: 0.16s">
         <div class="card-header">
-          <Database :size="22" />
+          <Database :size="22" aria-hidden="true" />
           <h3>Данные</h3>
         </div>
 
@@ -147,25 +145,30 @@
         </div>
 
         <div v-if="settingsStore.lastBackupDate" class="backup-info">
-          <Clock :size="14" />
+          <Clock :size="14" aria-hidden="true" />
           Последний бэкап: {{ lastBackupText }}
         </div>
 
         <div class="action-group">
           <button class="action-btn" @click="createBackup">
-            <Download :size="16" /> Создать бэкап
+            <Download :size="16" aria-hidden="true" />
+            Создать бэкап
           </button>
           <button class="action-btn" @click="exportData">
-            <FileJson :size="16" /> Экспорт JSON
+            <FileJson :size="16" aria-hidden="true" />
+            Экспорт JSON
           </button>
           <button class="action-btn" @click="importData">
-            <Upload :size="16" /> Импорт JSON
+            <Upload :size="16" aria-hidden="true" />
+            Импорт JSON
           </button>
           <button class="action-btn" @click="restoreAutoBackup">
-            <RotateCcw :size="16" /> Восстановить
+            <RotateCcw :size="16" aria-hidden="true" />
+            Восстановить
           </button>
           <button class="action-btn danger" @click="resetAllData">
-            <Trash2 :size="16" /> Сбросить всё
+            <Trash2 :size="16" aria-hidden="true" />
+            Сбросить всё
           </button>
         </div>
       </GlassCard>
@@ -207,6 +210,14 @@ const lastBackupText = computed(() => {
   if (!settingsStore.lastBackupDate) return ''
   return new Date(settingsStore.lastBackupDate).toLocaleString('ru')
 })
+
+function contrastColor(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000
+  return brightness > 160 ? '#121212' : '#ffffff'
+}
 
 function setTheme(theme: 'dark' | 'light') {
   settingsStore.setTheme(theme)
@@ -389,11 +400,22 @@ function resetAllData() {
 
 .settings-card {
   padding: 24px;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: card-in 0.45s cubic-bezier(0.2, 0, 0, 1) forwards;
+  animation-delay: var(--delay, 0s);
 
   &.wide {
     @include desktop {
       grid-column: span 2;
     }
+  }
+}
+
+@keyframes card-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -481,22 +503,24 @@ function resetAllData() {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    border: 2px solid transparent;
+    border: 1px solid color-mix(in srgb, var(--dim) 30%, transparent);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all var(--transition-standard);
-    color: var(--surface);
+    flex-shrink: 0;
 
     &:hover {
       transform: scale(1.15);
     }
 
     &.active {
-      border-color: var(--bg);
-      box-shadow: 0 0 0 2px var(--accent);
+      box-shadow:
+        0 0 0 2px var(--bg),
+        0 0 0 4px var(--accent);
       transform: scale(1.1);
+      border-color: transparent;
     }
   }
 }
