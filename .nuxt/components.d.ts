@@ -35,7 +35,6 @@ export const ProfileModal: typeof import("../components/profile/ProfileModal.vue
 export const QuestCard: typeof import("../components/quest/QuestCard.vue")['default']
 export const QuestForm: typeof import("../components/quest/QuestForm.vue")['default']
 export const QuestList: typeof import("../components/quest/QuestList.vue")['default']
-export const SettingsAccentColorPicker: typeof import("../components/settings/AccentColorPicker.vue")['default']
 export const SettingsDataManager: typeof import("../components/settings/DataManager.vue")['default']
 export const SettingsPanel: typeof import("../components/settings/SettingsPanel.vue")['default']
 export const ShopRewardCard: typeof import("../components/shop/RewardCard.vue")['default']
@@ -90,7 +89,6 @@ export const LazyProfileModal: LazyComponent<typeof import("../components/profil
 export const LazyQuestCard: LazyComponent<typeof import("../components/quest/QuestCard.vue")['default']>
 export const LazyQuestForm: LazyComponent<typeof import("../components/quest/QuestForm.vue")['default']>
 export const LazyQuestList: LazyComponent<typeof import("../components/quest/QuestList.vue")['default']>
-export const LazySettingsAccentColorPicker: LazyComponent<typeof import("../components/settings/AccentColorPicker.vue")['default']>
 export const LazySettingsDataManager: LazyComponent<typeof import("../components/settings/DataManager.vue")['default']>
 export const LazySettingsPanel: LazyComponent<typeof import("../components/settings/SettingsPanel.vue")['default']>
 export const LazyShopRewardCard: LazyComponent<typeof import("../components/shop/RewardCard.vue")['default']>

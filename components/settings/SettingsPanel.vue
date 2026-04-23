@@ -1,192 +1,161 @@
 <template>
   <div class="settings-page">
-    <div class="settings-grid">
-      <!-- Внешний вид -->
-      <div
-        v-motion
-        :initial="{ opacity: 0, y: 24 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 450, delay: 0 } }"
-      >
-        <GlassCard class="settings-card">
-          <div class="card-header">
-            <Palette :size="22" />
-            <h3>Внешний вид</h3>
+    <!-- Группа: Внешний вид -->
+    <section class="settings-group">
+      <div class="group-header">
+        <Palette :size="22" />
+        <h3>Внешний вид</h3>
+      </div>
+      <div class="group-body">
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="label">Тема</span>
+            <span class="desc">{{ themeLabel }}</span>
           </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <span class="label">Тема</span>
-              <span class="desc">{{ themeLabel }}</span>
-            </div>
-            <div class="theme-toggle">
-              <button
-                type="button"
-                :class="[
-                  'theme-option',
-                  { active: settingsStore.theme === 'dark' },
-                ]"
-                @click="setTheme('dark')"
-              >
-                <Moon :size="18" />
-              </button>
-              <button
-                type="button"
-                :class="[
-                  'theme-option',
-                  { active: settingsStore.theme === 'light' },
-                ]"
-                @click="setTheme('light')"
-              >
-                <Sun :size="18" />
-              </button>
-            </div>
+          <div class="theme-toggle">
+            <button
+              :class="[
+                'theme-option',
+                { active: settingsStore.theme === 'dark' },
+              ]"
+              @click="setTheme('dark')"
+            >
+              <Moon :size="18" />
+            </button>
+            <button
+              :class="[
+                'theme-option',
+                { active: settingsStore.theme === 'light' },
+              ]"
+              @click="setTheme('light')"
+            >
+              <Sun :size="18" />
+            </button>
           </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <span class="label">Акцент</span>
-              <span class="desc">{{ accentLabel }}</span>
-            </div>
-            <div class="color-options">
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="label">Акцент</span>
+            <span class="desc">{{ accentLabel }}</span>
+          </div>
+          <div class="accent-picker">
+            <div class="color-dots">
               <button
                 v-for="color in ACCENT_COLORS"
                 :key="color.value"
-                type="button"
                 class="color-dot"
-                :style="{ backgroundColor: color.value }"
+                :style="{ '--dot-color': color.value }"
                 :class="{ active: settingsStore.accentColor === color.value }"
                 @click="setAccentColor(color.value, color.name)"
                 :title="color.name"
-              >
-                <Check
-                  v-if="settingsStore.accentColor === color.value"
-                  :size="12"
-                  :stroke-width="3"
-                  :style="{ color: contrastColor(color.value) }"
-                />
-              </button>
-            </div>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <span class="label">Анимации</span>
-              <span class="desc">Плавные переходы интерфейса</span>
-            </div>
-            <label class="switch">
-              <input
-                type="checkbox"
-                :checked="settingsStore.animationsEnabled"
-                @change="toggleAnimations"
               />
-              <span class="slider"></span>
-            </label>
+            </div>
           </div>
-        </GlassCard>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="label">Анимации</span>
+            <span class="desc">Плавные переходы интерфейса</span>
+          </div>
+          <label class="switch">
+            <input
+              type="checkbox"
+              :checked="settingsStore.animationsEnabled"
+              @change="toggleAnimations"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
       </div>
+    </section>
 
-      <!-- Уведомления -->
-      <div
-        v-motion
-        :initial="{ opacity: 0, y: 24 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 450, delay: 80 } }"
-      >
-        <GlassCard class="settings-card">
-          <div class="card-header">
-            <Bell :size="22" />
-            <h3>Уведомления</h3>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <span class="label">Всплывающие сообщения</span>
-              <span class="desc">Тосты при действиях</span>
-            </div>
-            <label class="switch">
-              <input
-                type="checkbox"
-                :checked="settingsStore.notificationsEnabled"
-                @change="toggleNotifications"
-              />
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <span class="label">Звук</span>
-              <span class="desc">Короткий сигнал на события</span>
-            </div>
-            <label class="switch">
-              <input
-                type="checkbox"
-                :checked="settingsStore.soundEnabled"
-                @change="toggleSound"
-              />
-              <span class="slider"></span>
-            </label>
-          </div>
-        </GlassCard>
+    <!-- Группа: Уведомления -->
+    <section class="settings-group">
+      <div class="group-header">
+        <Bell :size="22" />
+        <h3>Уведомления</h3>
       </div>
-
-      <!-- Данные -->
-      <div
-        v-motion
-        :initial="{ opacity: 0, y: 24 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 450, delay: 160 } }"
-        class="wide-wrapper"
-      >
-        <GlassCard class="settings-card">
-          <div class="card-header">
-            <Database :size="22" />
-            <h3>Данные</h3>
+      <div class="group-body">
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="label">Всплывающие сообщения</span>
+            <span class="desc">Тосты при действиях</span>
           </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <span class="label">Авто-бэкап при выходе</span>
-              <span class="desc">Автоматическая резервная копия</span>
-            </div>
-            <label class="switch">
-              <input
-                type="checkbox"
-                :checked="settingsStore.autoBackup"
-                @change="toggleAutoBackup"
-              />
-              <span class="slider"></span>
-            </label>
+          <label class="switch">
+            <input
+              type="checkbox"
+              :checked="settingsStore.notificationsEnabled"
+              @change="toggleNotifications"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="label">Звук</span>
+            <span class="desc">Короткий сигнал на события</span>
           </div>
-
-          <div v-if="settingsStore.lastBackupDate" class="backup-info">
-            <Clock :size="14" />
-            Последний бэкап: {{ lastBackupText }}
-          </div>
-
-          <div class="action-group">
-            <button class="action-btn" @click="createBackup">
-              <Download :size="16" />
-              Создать бэкап
-            </button>
-            <button class="action-btn" @click="exportData">
-              <FileJson :size="16" />
-              Экспорт JSON
-            </button>
-            <button class="action-btn" @click="importData">
-              <Upload :size="16" />
-              Импорт JSON
-            </button>
-            <button class="action-btn" @click="restoreAutoBackup">
-              <RotateCcw :size="16" />
-              Восстановить
-            </button>
-            <button class="action-btn danger" @click="resetAllData">
-              <Trash2 :size="16" />
-              Сбросить всё
-            </button>
-          </div>
-        </GlassCard>
+          <label class="switch">
+            <input
+              type="checkbox"
+              :checked="settingsStore.soundEnabled"
+              @change="toggleSound"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
       </div>
-    </div>
+    </section>
+
+    <!-- Группа: Данные -->
+    <section class="settings-group">
+      <div class="group-header">
+        <Database :size="22" />
+        <h3>Данные</h3>
+      </div>
+      <div class="group-body">
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="label">Авто-бэкап при выходе</span>
+            <span class="desc">Автоматическая резервная копия</span>
+          </div>
+          <label class="switch">
+            <input
+              type="checkbox"
+              :checked="settingsStore.autoBackup"
+              @change="toggleAutoBackup"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div v-if="settingsStore.lastBackupDate" class="backup-info">
+          <Clock :size="14" />
+          Последний бэкап: {{ lastBackupText }}
+        </div>
+        <div class="action-group">
+          <button class="action-btn" @click="createBackup">
+            <Download :size="16" />
+            Создать бэкап
+          </button>
+          <button class="action-btn" @click="exportData">
+            <FileJson :size="16" />
+            Экспорт JSON
+          </button>
+          <button class="action-btn" @click="importData">
+            <Upload :size="16" />
+            Импорт JSON
+          </button>
+          <button class="action-btn" @click="restoreAutoBackup">
+            <RotateCcw :size="16" />
+            Восстановить
+          </button>
+          <button class="action-btn danger" @click="resetAllData">
+            <Trash2 :size="16" />
+            Сбросить всё
+          </button>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -195,7 +164,6 @@ import { computed } from 'vue'
 import {
   Moon,
   Sun,
-  Check,
   Download,
   FileJson,
   Upload,
@@ -208,7 +176,6 @@ import {
 } from 'lucide-vue-next'
 import { ACCENT_COLORS, useSettingsStore } from '~/stores/settings.store'
 import { useNotification } from '~/composables/useNotification'
-import GlassCard from '~/components/base/GlassCard.vue'
 
 const settingsStore = useSettingsStore()
 const { addNotification } = useNotification()
@@ -224,14 +191,6 @@ const lastBackupText = computed(() => {
   if (!settingsStore.lastBackupDate) return ''
   return new Date(settingsStore.lastBackupDate).toLocaleString('ru')
 })
-
-function contrastColor(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000
-  return brightness > 160 ? '#121212' : '#ffffff'
-}
 
 function setTheme(theme: 'dark' | 'light') {
   settingsStore.setTheme(theme)
@@ -259,9 +218,7 @@ function toggleAnimations(e: Event) {
 function toggleNotifications(e: Event) {
   const val = (e.target as HTMLInputElement).checked
   settingsStore.setNotificationsEnabled(val)
-  if (val) {
-    addNotification({ type: 'success', message: 'Уведомления включены' })
-  }
+  if (val) addNotification({ type: 'success', message: 'Уведомления включены' })
 }
 
 function toggleSound(e: Event) {
@@ -399,55 +356,48 @@ function resetAllData() {
 
 <style scoped lang="scss">
 .settings-page {
-  padding: 8px 0 32px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.settings-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-
-  @include desktop {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.settings-group {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
 }
 
-.settings-card {
-  padding: 24px;
-}
-
-.wide-wrapper {
-  @include desktop {
-    grid-column: span 2;
-  }
-}
-
-.card-header {
+.group-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  padding: 20px 24px 0;
+  margin-bottom: 16px;
   color: var(--accent);
 
   h3 {
     font-size: 1.1rem;
     font-weight: 600;
-    letter-spacing: -0.01em;
   }
 
   svg {
-    color: var(--dim);
+    opacity: 0.7;
   }
 }
 
-.setting-item {
+.group-body {
+  padding: 0 24px 24px;
+}
+
+.setting-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 14px 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--dim) 12%, transparent);
+  border-bottom: 1px solid rgba(var(--dim-rgb, 136, 136, 136), 0.08);
+  gap: 16px;
 
   &:last-of-type {
     border-bottom: none;
@@ -459,10 +409,10 @@ function resetAllData() {
     font-weight: 500;
     color: var(--accent);
     display: block;
-    font-size: 0.95rem;
   }
+
   .desc {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--dim);
     margin-top: 2px;
   }
@@ -471,66 +421,65 @@ function resetAllData() {
 .theme-toggle {
   display: flex;
   gap: 6px;
+}
 
-  .theme-option {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 38px;
-    border-radius: var(--border-radius-sm);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--dim);
-    cursor: pointer;
-    transition: all var(--transition-standard);
+.theme-option {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--border-radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-standard);
 
-    &:hover {
-      background: var(--border);
-      color: var(--accent);
-    }
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 
-    &.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: var(--bg);
-    }
+  &.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
   }
 }
 
-.color-options {
+.accent-picker .color-dots {
   display: flex;
-  gap: 8px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
-  .color-dot {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 1px solid color-mix(in srgb, var(--dim) 30%, transparent);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--transition-standard);
-    flex-shrink: 0;
+.color-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--dot-color);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.15s;
+  padding: 0;
 
-    &:hover {
-      transform: scale(1.15);
-    }
+  &:hover {
+    transform: scale(1.15);
+  }
 
-    &.active {
-      box-shadow:
-        0 0 0 2px var(--bg),
-        0 0 0 4px var(--accent);
-      transform: scale(1.1);
-      border-color: transparent;
-    }
+  &.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--bg);
+    transform: scale(1.15);
   }
 }
 
 .switch {
   position: relative;
-  display: inline-block;
   width: 44px;
   height: 24px;
   flex-shrink: 0;
@@ -543,22 +492,21 @@ function resetAllData() {
 
   .slider {
     position: absolute;
-    cursor: pointer;
     inset: 0;
     background: var(--border);
-    transition: background var(--transition-standard);
     border-radius: 24px;
+    transition: background var(--transition-standard);
 
     &::before {
-      position: absolute;
       content: '';
+      position: absolute;
       height: 18px;
       width: 18px;
       left: 3px;
       bottom: 3px;
       background: var(--surface);
-      transition: transform var(--transition-standard);
       border-radius: 50%;
+      transition: transform var(--transition-standard);
       box-shadow: var(--shadow-sm);
     }
   }
@@ -577,11 +525,12 @@ function resetAllData() {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--dim);
-  margin: 8px 0 16px;
+  margin: 12px 0 16px;
   padding: 8px 12px;
   background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--border-radius-sm);
 }
 
@@ -589,33 +538,33 @@ function resetAllData() {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 16px;
+}
 
-  .action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-sm);
-    color: var(--accent);
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-standard);
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-sm);
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-standard);
+
+  &:hover {
+    background: var(--border);
+    transform: translateY(-1px);
+  }
+
+  &.danger {
+    color: var(--error);
+    border-color: var(--error);
 
     &:hover {
-      background: var(--border);
-      transform: translateY(-1px);
-    }
-
-    &.danger {
-      color: var(--error);
-      border-color: var(--error);
-      &:hover {
-        background: color-mix(in srgb, var(--error) 10%, transparent);
-      }
+      background: rgba(var(--error-rgb, 255, 77, 77), 0.1);
     }
   }
 }

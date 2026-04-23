@@ -35,7 +35,6 @@ interface _GlobalComponents {
   QuestCard: typeof import("../../components/quest/QuestCard.vue")['default']
   QuestForm: typeof import("../../components/quest/QuestForm.vue")['default']
   QuestList: typeof import("../../components/quest/QuestList.vue")['default']
-  SettingsAccentColorPicker: typeof import("../../components/settings/AccentColorPicker.vue")['default']
   SettingsDataManager: typeof import("../../components/settings/DataManager.vue")['default']
   SettingsPanel: typeof import("../../components/settings/SettingsPanel.vue")['default']
   ShopRewardCard: typeof import("../../components/shop/RewardCard.vue")['default']
@@ -90,7 +89,6 @@ interface _GlobalComponents {
   LazyQuestCard: LazyComponent<typeof import("../../components/quest/QuestCard.vue")['default']>
   LazyQuestForm: LazyComponent<typeof import("../../components/quest/QuestForm.vue")['default']>
   LazyQuestList: LazyComponent<typeof import("../../components/quest/QuestList.vue")['default']>
-  LazySettingsAccentColorPicker: LazyComponent<typeof import("../../components/settings/AccentColorPicker.vue")['default']>
   LazySettingsDataManager: LazyComponent<typeof import("../../components/settings/DataManager.vue")['default']>
   LazySettingsPanel: LazyComponent<typeof import("../../components/settings/SettingsPanel.vue")['default']>
   LazyShopRewardCard: LazyComponent<typeof import("../../components/shop/RewardCard.vue")['default']>
