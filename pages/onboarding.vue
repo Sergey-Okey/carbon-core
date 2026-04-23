@@ -50,12 +50,10 @@
         :initial="{ opacity: 0, y: -10 }"
         :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 150 } }"
       >
-        <v-wave>
-          <button class="skip-btn" @click="finishOnboarding">
-            Пропустить
-            <ChevronRight :size="16" />
-          </button>
-        </v-wave>
+        <button class="skip-btn" @click="finishOnboarding">
+          Пропустить
+          <ChevronRight :size="16" />
+        </button>
       </div>
     </div>
 
@@ -102,12 +100,10 @@
             }"
           >
             <div class="hero-cta">
-              <v-wave>
-                <button class="cta-button" @click="finishOnboarding">
-                  Начать
-                  <ArrowRight :size="20" class="btn-icon" />
-                </button>
-              </v-wave>
+              <button class="cta-button" @click="finishOnboarding">
+                Начать
+                <ArrowRight :size="20" class="btn-icon" />
+              </button>
               <span class="hint-text"
                 >или листайте дальше, чтобы узнать детали</span
               >
@@ -465,12 +461,10 @@
               transition: { duration: 500, delay: 200 },
             }"
           >
-            <v-wave>
-              <button class="cta-button large" @click="finishOnboarding">
-                Открыть COF
-                <ArrowRight :size="24" class="btn-icon" />
-              </button>
-            </v-wave>
+            <button class="cta-button large" @click="finishOnboarding">
+              Открыть COF
+              <ArrowRight :size="24" class="btn-icon" />
+            </button>
           </div>
           <div
             v-motion
@@ -645,7 +639,7 @@ onMounted(() => {
   inset: 0;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(10, 10, 10, 0.8) 0%,
+    color-mix(in srgb, var(--bg) 80%, #000) 0%,
     var(--bg) 100%
   );
   backdrop-filter: blur(40px);
@@ -661,7 +655,11 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 20px 40px;
-  background: linear-gradient(to bottom, rgba(10, 10, 10, 0.95), transparent);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bg) 95%, transparent),
+    transparent
+  );
   backdrop-filter: blur(10px);
 }
 .logo {
@@ -808,7 +806,7 @@ onMounted(() => {
   transition: all 0.3s;
   &:hover {
     transform: scale(1.02);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-lg);
     .btn-icon {
       transform: translateX(5px);
     }

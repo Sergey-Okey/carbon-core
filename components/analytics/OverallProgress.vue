@@ -34,7 +34,14 @@ ChartJS.register(
 
 const userStore = useUserStore()
 
-// Имитация истории за последние 7 дней
+function getCssVar(name: string): string {
+  if (typeof document === 'undefined') return '#d6d6d6'
+  return (
+    getComputedStyle(document.documentElement).getPropertyValue(name).trim() ||
+    '#d6d6d6'
+  )
+}
+
 const chartData = computed(() => {
   const labels: string[] = []
   const data: number[] = []
@@ -44,7 +51,6 @@ const chartData = computed(() => {
 
   for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
     labels.push(d.toLocaleDateString('ru', { day: 'numeric', month: 'short' }))
-    // Линейный рост от 0 до текущего totalXP
     const progress = Math.min(
       1,
       (d.getTime() - startDate.getTime()) /
@@ -59,23 +65,25 @@ const chartData = computed(() => {
       {
         label: 'XP',
         data,
-        borderColor: 'var(--accent)',
+        borderColor: getCssVar('--accent'),
         backgroundColor: (context: any) => {
           const chart = context.chart
           const { ctx, chartArea } = chart
-          if (!chartArea) return 'var(--accent)'
+          if (!chartArea) return getCssVar('--accent')
           const gradient = ctx.createLinearGradient(
             0,
             chartArea.bottom,
             0,
             chartArea.top
           )
-          gradient.addColorStop(0, 'var(--bg)')
-          gradient.addColorStop(1, 'var(--accent)')
+          gradient.addColorStop(0, getCssVar('--bg'))
+          gradient.addColorStop(1, getCssVar('--accent'))
           return gradient
         },
         fill: true,
         tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
       },
     ],
   }
@@ -86,8 +94,14 @@ const chartOptions = {
   maintainAspectRatio: false,
   plugins: { legend: { display: false } },
   scales: {
-    x: { grid: { color: 'var(--border)' }, ticks: { color: 'var(--dim)' } },
-    y: { grid: { color: 'var(--border)' }, ticks: { color: 'var(--dim)' } },
+    x: {
+      grid: { color: getCssVar('--border') },
+      ticks: { color: getCssVar('--dim') },
+    },
+    y: {
+      grid: { color: getCssVar('--border') },
+      ticks: { color: getCssVar('--dim') },
+    },
   },
 }
 </script>
