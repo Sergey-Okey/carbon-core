@@ -1,1 +1,6 @@
-export { default } from "file:///C:/Users/smm/Documents/Programing%20Dev/carbon-core/node_modules/@nuxt/vite-builder/dist/vite-node-entry.mjs"
+const entrySpa = () => {
+};
+export {
+  entrySpa as default
+};
+//# sourceMappingURL=server.mjs.map

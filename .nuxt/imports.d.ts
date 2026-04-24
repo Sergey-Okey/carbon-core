@@ -32,7 +32,6 @@ export { computedAsync, asyncComputed, computedEager, eagerComputed, computedInj
 export { definePageMeta } from '../node_modules/nuxt/dist/pages/runtime/composables';
 export { defineLazyHydrationComponent } from '#app/composables/lazy-hydration';
 export { useAutoLayout } from '../composables/useAutoLayout';
-export { useBranchAutomation } from '../composables/useBranchAutomation';
 export { useConfirm } from '../composables/useConfirm';
 export { useDragDrop } from '../composables/useDragDrop';
 export { useLevel } from '../composables/useLevel';

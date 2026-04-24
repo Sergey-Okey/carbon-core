@@ -64,7 +64,7 @@ import { reactive } from 'vue'
 import GlassCard from '~/components/base/GlassCard.vue'
 import type { QuestType, BranchId } from '~/types/quest.types'
 
-const emit = defineEmits<{ (e: 'close'): void; (e: 'save', data: any): void }>()
+const emit = defineEmits<{ (e: 'close'): void; (e: 'save', data: Omit<Quest, 'done' | 'createdAt'>): void }>()
 
 const form = reactive({
   title: '',
