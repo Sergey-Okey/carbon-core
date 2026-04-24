@@ -1,5 +1,5 @@
 <template>
-  <NuxtLayout v-if="ready">
+  <NuxtLayout>
     <NuxtPage />
     <ConfirmDialog />
   </NuxtLayout>
@@ -7,18 +7,20 @@
 </template>
 
 <script setup lang="ts">
-import { useTasksStore } from '~/stores/tasks.store'
-import { useSettingsStore } from '~/stores/settings.store'
-import { useUserStore } from '~/stores/user.store'
+import { onMounted, onUnmounted, watch } from 'vue'
+import { v4 as uuidv4 } from 'uuid'
+import { useDebounceFn } from '@vueuse/core'
+import { SpeedInsights } from '@vercel/speed-insights/vue'
+import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
+import { useAuthStore } from '~/stores/auth.store'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useRewardsStore } from '~/stores/rewards.store'
+import { useSettingsStore } from '~/stores/settings.store'
 import { useTagsStore } from '~/stores/tags.store'
+import { useTasksStore } from '~/stores/tasks.store'
 import { useUIStore } from '~/stores/ui.store'
-import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
-import { SpeedInsights } from '@vercel/speed-insights/vue'
-import { watch, onMounted, onUnmounted, ref } from 'vue'
-import { useDebounceFn } from '@vueuse/core'
-import { v4 as uuidv4 } from 'uuid'
+import { useUserStore } from '~/stores/user.store'
+import { saveAutoBackup } from '~/utils/backup'
 
 const tasksStore = useTasksStore()
 const settingsStore = useSettingsStore()
@@ -27,6 +29,7 @@ const branchesStore = useBranchesStore()
 const rewardsStore = useRewardsStore()
 const tagsStore = useTagsStore()
 const uiStore = useUIStore()
+const authStore = useAuthStore()
 
 const userId = useState<string>('user-id', () => {
   if (process.client) {
@@ -37,13 +40,13 @@ const userId = useState<string>('user-id', () => {
     }
     return id
   }
+
   return 'server'
 })
 
-const ready = ref(false)
-
 onMounted(async () => {
   await settingsStore.ready
+  authStore.init()
 
   try {
     const data = await $fetch('/api/sync', { query: { userId: userId.value } })
@@ -54,18 +57,11 @@ onMounted(async () => {
     if (data.tags) tagsStore.$patch({ tags: data.tags })
     if (data.ui) uiStore.$patch(data.ui)
     if (data.settings) settingsStore.$patch(data.settings)
-  } catch (e) {
+  } catch {
     console.warn(
       'Облачная синхронизация недоступна, используются локальные данные'
     )
   }
-
-  const hasSeenOnboarding = localStorage.getItem('carbon-onboarding')
-  if (!hasSeenOnboarding) {
-    await navigateTo('/onboarding')
-  }
-
-  ready.value = true
 
   tasksStore.resetDailyTasks()
   scheduleNextReset()
@@ -111,26 +107,16 @@ function scheduleNextReset() {
   const next4AM = new Date(now)
   next4AM.setDate(now.getDate() + 1)
   next4AM.setHours(4, 0, 0, 0)
-  const ms = next4AM.getTime() - now.getTime()
 
   setTimeout(() => {
     tasksStore.resetDailyTasks()
     scheduleNextReset()
-  }, ms)
+  }, next4AM.getTime() - now.getTime())
 }
 
 function autoBackupOnUnload() {
-  if (settingsStore.autoBackup) {
-    const data = {
-      tasks: tasksStore.tasks,
-      branches: branchesStore.branches,
-      rewards: rewardsStore.rewards,
-      tags: tagsStore.tags,
-      ui: uiStore.$state,
-      settings: settingsStore.$state,
-    }
-    localStorage.setItem('cof-autobackup-latest', JSON.stringify(data))
-    settingsStore.recordBackup()
-  }
+  if (!settingsStore.autoBackup) return
+  saveAutoBackup()
+  settingsStore.recordBackup()
 }
 </script>

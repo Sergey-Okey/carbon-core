@@ -1,6 +1,5 @@
 <template>
   <div class="settings-page">
-    <!-- Группа: Внешний вид -->
     <section class="settings-group">
       <div class="group-header">
         <Palette :size="22" />
@@ -14,25 +13,20 @@
           </div>
           <div class="theme-toggle">
             <button
-              :class="[
-                'theme-option',
-                { active: settingsStore.theme === 'dark' },
-              ]"
+              :class="['theme-option', { active: settingsStore.theme === 'dark' }]"
               @click="setTheme('dark')"
             >
               <Moon :size="18" />
             </button>
             <button
-              :class="[
-                'theme-option',
-                { active: settingsStore.theme === 'light' },
-              ]"
+              :class="['theme-option', { active: settingsStore.theme === 'light' }]"
               @click="setTheme('light')"
             >
               <Sun :size="18" />
             </button>
           </div>
         </div>
+
         <div class="setting-row">
           <div class="setting-info">
             <span class="label">Акцент</span>
@@ -46,12 +40,13 @@
                 class="color-dot"
                 :style="{ '--dot-color': color.value }"
                 :class="{ active: settingsStore.accentColor === color.value }"
-                @click="setAccentColor(color.value, color.name)"
                 :title="color.name"
+                @click="setAccentColor(color.value, color.name)"
               />
             </div>
           </div>
         </div>
+
         <div class="setting-row">
           <div class="setting-info">
             <span class="label">Анимации</span>
@@ -69,7 +64,6 @@
       </div>
     </section>
 
-    <!-- Группа: Уведомления -->
     <section class="settings-group">
       <div class="group-header">
         <Bell :size="22" />
@@ -90,6 +84,7 @@
             <span class="slider"></span>
           </label>
         </div>
+
         <div class="setting-row">
           <div class="setting-info">
             <span class="label">Звук</span>
@@ -107,7 +102,6 @@
       </div>
     </section>
 
-    <!-- Группа: Данные -->
     <section class="settings-group">
       <div class="group-header">
         <Database :size="22" />
@@ -117,7 +111,7 @@
         <div class="setting-row">
           <div class="setting-info">
             <span class="label">Авто-бэкап при выходе</span>
-            <span class="desc">Автоматическая резервная копия</span>
+            <span class="desc">Сохраняет профиль, авторизацию и прогресс</span>
           </div>
           <label class="switch">
             <input
@@ -128,10 +122,12 @@
             <span class="slider"></span>
           </label>
         </div>
+
         <div v-if="settingsStore.lastBackupDate" class="backup-info">
           <Clock :size="14" />
           Последний бэкап: {{ lastBackupText }}
         </div>
+
         <div class="action-group">
           <button class="action-btn" @click="createBackup">
             <Download :size="16" />
@@ -162,20 +158,26 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import {
-  Moon,
-  Sun,
+  Bell,
+  Clock,
+  Database,
   Download,
   FileJson,
-  Upload,
-  Trash2,
-  RotateCcw,
+  Moon,
   Palette,
-  Bell,
-  Database,
-  Clock,
+  RotateCcw,
+  Sun,
+  Trash2,
+  Upload,
 } from 'lucide-vue-next'
-import { ACCENT_COLORS, useSettingsStore } from '~/stores/settings.store'
 import { useNotification } from '~/composables/useNotification'
+import { ACCENT_COLORS, useSettingsStore } from '~/stores/settings.store'
+import {
+  buildBackupPayload,
+  readAutoBackup,
+  restoreBackupPayload,
+  saveAutoBackup,
+} from '~/utils/backup'
 
 const settingsStore = useSettingsStore()
 const { addNotification } = useNotification()
@@ -183,21 +185,22 @@ const { addNotification } = useNotification()
 const themeLabel = computed(() =>
   settingsStore.theme === 'dark' ? 'Тёмная' : 'Светлая'
 )
+
 const accentLabel = computed(() => {
-  const found = ACCENT_COLORS.find((c) => c.value === settingsStore.accentColor)
+  const found = ACCENT_COLORS.find((color) => color.value === settingsStore.accentColor)
   return found?.name ?? 'Пользовательский'
 })
+
 const lastBackupText = computed(() => {
   if (!settingsStore.lastBackupDate) return ''
-  return new Date(settingsStore.lastBackupDate).toLocaleString('ru')
+  return new Date(settingsStore.lastBackupDate).toLocaleString('ru-RU')
 })
 
 function setTheme(theme: 'dark' | 'light') {
   settingsStore.setTheme(theme)
   addNotification({
     type: 'info',
-    message:
-      theme === 'dark' ? 'Тёмная тема включена' : 'Светлая тема включена',
+    message: theme === 'dark' ? 'Тёмная тема включена' : 'Светлая тема включена',
   })
 }
 
@@ -206,73 +209,60 @@ function setAccentColor(color: string, name: string) {
   addNotification({ type: 'success', message: `Акцент: ${name}` })
 }
 
-function toggleAnimations(e: Event) {
-  const val = (e.target as HTMLInputElement).checked
-  settingsStore.setAnimationsEnabled(val)
+function toggleAnimations(event: Event) {
+  const value = (event.target as HTMLInputElement).checked
+  settingsStore.setAnimationsEnabled(value)
   addNotification({
     type: 'info',
-    message: val ? 'Анимации включены' : 'Анимации отключены',
+    message: value ? 'Анимации включены' : 'Анимации отключены',
   })
 }
 
-function toggleNotifications(e: Event) {
-  const val = (e.target as HTMLInputElement).checked
-  settingsStore.setNotificationsEnabled(val)
-  if (val) addNotification({ type: 'success', message: 'Уведомления включены' })
+function toggleNotifications(event: Event) {
+  const value = (event.target as HTMLInputElement).checked
+  settingsStore.setNotificationsEnabled(value)
+
+  if (value) {
+    addNotification({ type: 'success', message: 'Уведомления включены' })
+  }
 }
 
-function toggleSound(e: Event) {
-  const val = (e.target as HTMLInputElement).checked
-  settingsStore.setSoundEnabled(val)
+function toggleSound(event: Event) {
+  const value = (event.target as HTMLInputElement).checked
+  settingsStore.setSoundEnabled(value)
   addNotification({
     type: 'info',
-    message: val ? 'Звук включён' : 'Звук отключён',
+    message: value ? 'Звук включён' : 'Звук отключён',
   })
 }
 
-function toggleAutoBackup(e: Event) {
-  const val = (e.target as HTMLInputElement).checked
-  settingsStore.setAutoBackup(val)
+function toggleAutoBackup(event: Event) {
+  const value = (event.target as HTMLInputElement).checked
+  settingsStore.setAutoBackup(value)
   addNotification({
     type: 'info',
-    message: val ? 'Авто-бэкап включён' : 'Авто-бэкап отключён',
+    message: value ? 'Авто-бэкап включён' : 'Авто-бэкап отключён',
   })
 }
 
 function createBackup() {
-  const data = {
-    user: JSON.parse(localStorage.getItem('carbon-user') || '{}'),
-    tasks: JSON.parse(localStorage.getItem('carbon-tasks') || '[]'),
-    branches: JSON.parse(localStorage.getItem('carbon-branches') || '[]'),
-    rewards: JSON.parse(localStorage.getItem('carbon-rewards') || '[]'),
-    tags: JSON.parse(localStorage.getItem('carbon-tags') || '[]'),
-    ui: JSON.parse(localStorage.getItem('carbon-ui') || '{}'),
-    settings: JSON.parse(localStorage.getItem('carbon-settings') || '{}'),
-  }
-  localStorage.setItem('carbon-autobackup-latest', JSON.stringify(data))
+  saveAutoBackup()
   settingsStore.recordBackup()
   addNotification({ type: 'success', message: 'Резервная копия создана' })
 }
 
 function exportData() {
-  const data = {
-    user: JSON.parse(localStorage.getItem('carbon-user') || '{}'),
-    tasks: JSON.parse(localStorage.getItem('carbon-tasks') || '[]'),
-    branches: JSON.parse(localStorage.getItem('carbon-branches') || '[]'),
-    rewards: JSON.parse(localStorage.getItem('carbon-rewards') || '[]'),
-    tags: JSON.parse(localStorage.getItem('carbon-tags') || '[]'),
-    ui: JSON.parse(localStorage.getItem('carbon-ui') || '{}'),
-    settings: JSON.parse(localStorage.getItem('carbon-settings') || '{}'),
-  }
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
+  const payload = buildBackupPayload()
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
     type: 'application/json',
   })
   const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `cof-backup-${new Date().toISOString().split('T')[0]}.json`
-  a.click()
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = `cof-backup-${new Date().toISOString().split('T')[0]}.json`
+  anchor.click()
   URL.revokeObjectURL(url)
+
   addNotification({ type: 'success', message: 'Данные экспортированы' })
 }
 
@@ -280,62 +270,46 @@ function importData() {
   const input = document.createElement('input')
   input.type = 'file'
   input.accept = '.json'
-  input.onchange = async (e: Event) => {
-    const file = (e.target as HTMLInputElement).files?.[0]
+  input.onchange = async (event: Event) => {
+    const file = (event.target as HTMLInputElement).files?.[0]
     if (!file) return
-    const text = await file.text()
+
     try {
-      const data = JSON.parse(text)
-      if (data.user)
-        localStorage.setItem('carbon-user', JSON.stringify(data.user))
-      if (data.tasks)
-        localStorage.setItem('carbon-tasks', JSON.stringify(data.tasks))
-      if (data.branches)
-        localStorage.setItem('carbon-branches', JSON.stringify(data.branches))
-      if (data.rewards)
-        localStorage.setItem('carbon-rewards', JSON.stringify(data.rewards))
-      if (data.tags)
-        localStorage.setItem('carbon-tags', JSON.stringify(data.tags))
-      if (data.ui) localStorage.setItem('carbon-ui', JSON.stringify(data.ui))
-      if (data.settings)
-        localStorage.setItem('carbon-settings', JSON.stringify(data.settings))
+      const text = await file.text()
+      const payload = JSON.parse(text)
+      const restored = restoreBackupPayload(payload)
+      if (!restored) throw new Error('restore failed')
+
       addNotification({
         type: 'success',
         message: 'Данные импортированы. Перезагрузка...',
       })
-      setTimeout(() => window.location.reload(), 1500)
+
+      setTimeout(() => window.location.reload(), 1000)
     } catch {
       addNotification({ type: 'error', message: 'Ошибка импорта' })
     }
   }
+
   input.click()
 }
 
 function restoreAutoBackup() {
-  const backup = localStorage.getItem('carbon-autobackup-latest')
+  const backup = readAutoBackup()
   if (!backup) {
     addNotification({ type: 'warning', message: 'Нет сохранённой копии' })
     return
   }
+
   try {
-    const data = JSON.parse(backup)
-    if (data.user)
-      localStorage.setItem('carbon-user', JSON.stringify(data.user))
-    if (data.tasks)
-      localStorage.setItem('carbon-tasks', JSON.stringify(data.tasks))
-    if (data.branches)
-      localStorage.setItem('carbon-branches', JSON.stringify(data.branches))
-    if (data.rewards)
-      localStorage.setItem('carbon-rewards', JSON.stringify(data.rewards))
-    if (data.tags)
-      localStorage.setItem('carbon-tags', JSON.stringify(data.tags))
-    if (data.ui) localStorage.setItem('carbon-ui', JSON.stringify(data.ui))
-    if (data.settings)
-      localStorage.setItem('carbon-settings', JSON.stringify(data.settings))
+    const restored = restoreBackupPayload(backup)
+    if (!restored) throw new Error('restore failed')
+
     addNotification({
       type: 'success',
       message: 'Данные восстановлены. Перезагрузка...',
     })
+
     setTimeout(() => window.location.reload(), 1000)
   } catch {
     addNotification({ type: 'error', message: 'Ошибка восстановления' })
@@ -343,7 +317,9 @@ function restoreAutoBackup() {
 }
 
 function resetAllData() {
-  if (confirm('Удалить все данные? Это действие необратимо.')) {
+  if (
+    confirm('Удалить все данные? Это действие необратимо.')
+  ) {
     localStorage.clear()
     addNotification({
       type: 'success',
@@ -356,7 +332,6 @@ function resetAllData() {
 
 <style scoped lang="scss">
 .settings-page {
-  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -395,26 +370,31 @@ function resetAllData() {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   padding: 14px 0;
   border-bottom: 1px solid rgba(var(--dim-rgb, 136, 136, 136), 0.08);
-  gap: 16px;
 
   &:last-of-type {
     border-bottom: none;
+  }
+
+  @include mobile {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 
 .setting-info {
   .label {
-    font-weight: 500;
-    color: var(--accent);
     display: block;
+    color: var(--accent);
+    font-weight: 500;
   }
 
   .desc {
-    font-size: 0.85rem;
-    color: var(--dim);
     margin-top: 2px;
+    color: var(--dim);
+    font-size: 0.85rem;
   }
 }
 
@@ -424,16 +404,16 @@ function resetAllData() {
 }
 
 .theme-option {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--border-radius-sm);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--dim);
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-sm);
+  background: var(--surface);
+  color: var(--dim);
+  cursor: pointer;
   transition: all var(--transition-standard);
 
   &:hover {
@@ -450,22 +430,22 @@ function resetAllData() {
 
 .accent-picker .color-dots {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 10px;
 }
 
 .color-dot {
   width: 28px;
   height: 28px;
+  padding: 0;
+  border: 2px solid transparent;
   border-radius: 50%;
   background: var(--dot-color);
-  border: 2px solid transparent;
   cursor: pointer;
   transition:
     border-color 0.15s,
     box-shadow 0.15s,
     transform 0.15s;
-  padding: 0;
 
   &:hover {
     transform: scale(1.15);
@@ -485,29 +465,29 @@ function resetAllData() {
   flex-shrink: 0;
 
   input {
-    opacity: 0;
     width: 0;
     height: 0;
+    opacity: 0;
   }
 
   .slider {
     position: absolute;
     inset: 0;
-    background: var(--border);
     border-radius: 24px;
+    background: var(--border);
     transition: background var(--transition-standard);
 
     &::before {
       content: '';
       position: absolute;
-      height: 18px;
-      width: 18px;
       left: 3px;
       bottom: 3px;
-      background: var(--surface);
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
-      transition: transform var(--transition-standard);
+      background: var(--surface);
       box-shadow: var(--shadow-sm);
+      transition: transform var(--transition-standard);
     }
   }
 
@@ -525,13 +505,13 @@ function resetAllData() {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.85rem;
-  color: var(--dim);
   margin: 12px 0 16px;
   padding: 8px 12px;
-  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--border-radius-sm);
+  background: var(--surface);
+  color: var(--dim);
+  font-size: 0.85rem;
 }
 
 .action-group {
@@ -545,9 +525,9 @@ function resetAllData() {
   align-items: center;
   gap: 6px;
   padding: 10px 18px;
-  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--border-radius-sm);
+  background: var(--surface);
   color: var(--accent);
   font-size: 0.85rem;
   font-weight: 500;
@@ -555,13 +535,13 @@ function resetAllData() {
   transition: all var(--transition-standard);
 
   &:hover {
-    background: var(--border);
     transform: translateY(-1px);
+    background: var(--border);
   }
 
   &.danger {
-    color: var(--error);
     border-color: var(--error);
+    color: var(--error);
 
     &:hover {
       background: rgba(var(--error-rgb, 255, 77, 77), 0.1);

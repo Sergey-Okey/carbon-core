@@ -505,8 +505,14 @@ import {
   Instagram,
 } from 'lucide-vue-next'
 import { useOnboardingStore } from '~/stores/onboarding.store'
+import { useAuthStore } from '~/stores/auth.store'
+
+definePageMeta({
+  layout: false,
+})
 
 const onboardingStore = useOnboardingStore()
+const authStore = useAuthStore()
 const router = useRouter()
 
 const scrollContainer = ref<HTMLElement | null>(null)
@@ -547,7 +553,7 @@ const rules = [
 
 function finishOnboarding() {
   onboardingStore.markAsSeen()
-  router.push('/')
+  router.push(authStore.isAuthenticated ? '/' : '/register')
 }
 
 function handleScroll() {

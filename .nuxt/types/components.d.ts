@@ -17,6 +17,7 @@ interface _GlobalComponents {
   AnalyticsPanel: typeof import("../../components/analytics/AnalyticsPanel.vue")['default']
   AnalyticsHealthIndicator: typeof import("../../components/analytics/HealthIndicator.vue")['default']
   AnalyticsOverallProgress: typeof import("../../components/analytics/OverallProgress.vue")['default']
+  AuthPanel: typeof import("../../components/auth/AuthPanel.vue")['default']
   BaseGlassCard: typeof import("../../components/base/GlassCard.vue")['default']
   BaseIconWrapper: typeof import("../../components/base/IconWrapper.vue")['default']
   BaseProgressBar: typeof import("../../components/base/ProgressBar.vue")['default']
@@ -32,6 +33,7 @@ interface _GlobalComponents {
   BranchNodeEditorModal: typeof import("../../components/branch/NodeEditorModal.vue")['default']
   DashboardStatsOverview: typeof import("../../components/dashboard/StatsOverview.vue")['default']
   ProfileModal: typeof import("../../components/profile/ProfileModal.vue")['default']
+  ProfilePanel: typeof import("../../components/profile/ProfilePanel.vue")['default']
   QuestCard: typeof import("../../components/quest/QuestCard.vue")['default']
   QuestForm: typeof import("../../components/quest/QuestForm.vue")['default']
   QuestList: typeof import("../../components/quest/QuestList.vue")['default']
@@ -71,6 +73,7 @@ interface _GlobalComponents {
   LazyAnalyticsPanel: LazyComponent<typeof import("../../components/analytics/AnalyticsPanel.vue")['default']>
   LazyAnalyticsHealthIndicator: LazyComponent<typeof import("../../components/analytics/HealthIndicator.vue")['default']>
   LazyAnalyticsOverallProgress: LazyComponent<typeof import("../../components/analytics/OverallProgress.vue")['default']>
+  LazyAuthPanel: LazyComponent<typeof import("../../components/auth/AuthPanel.vue")['default']>
   LazyBaseGlassCard: LazyComponent<typeof import("../../components/base/GlassCard.vue")['default']>
   LazyBaseIconWrapper: LazyComponent<typeof import("../../components/base/IconWrapper.vue")['default']>
   LazyBaseProgressBar: LazyComponent<typeof import("../../components/base/ProgressBar.vue")['default']>
@@ -86,6 +89,7 @@ interface _GlobalComponents {
   LazyBranchNodeEditorModal: LazyComponent<typeof import("../../components/branch/NodeEditorModal.vue")['default']>
   LazyDashboardStatsOverview: LazyComponent<typeof import("../../components/dashboard/StatsOverview.vue")['default']>
   LazyProfileModal: LazyComponent<typeof import("../../components/profile/ProfileModal.vue")['default']>
+  LazyProfilePanel: LazyComponent<typeof import("../../components/profile/ProfilePanel.vue")['default']>
   LazyQuestCard: LazyComponent<typeof import("../../components/quest/QuestCard.vue")['default']>
   LazyQuestForm: LazyComponent<typeof import("../../components/quest/QuestForm.vue")['default']>
   LazyQuestList: LazyComponent<typeof import("../../components/quest/QuestList.vue")['default']>

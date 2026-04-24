@@ -21,6 +21,9 @@ export const useUserStore = defineStore(
     })
 
     const level = computed(() => calculateLevel(totalXP.value))
+    const displayName = computed(
+      () => profile.value.name || profile.value.email || 'COF User'
+    )
     const currentXP = computed(() =>
       calculateCurrentXP(totalXP.value, level.value)
     )
@@ -56,11 +59,31 @@ export const useUserStore = defineStore(
       profile.value = { ...profile.value, ...newProfile }
     }
 
+    function setProfileFromAuth(authProfile: Partial<typeof profile.value>) {
+      profile.value = {
+        ...profile.value,
+        name: authProfile.name ?? profile.value.name,
+        bio: authProfile.bio ?? profile.value.bio,
+        email: authProfile.email ?? profile.value.email,
+        avatar: authProfile.avatar ?? profile.value.avatar,
+      }
+    }
+
+    function resetProfile() {
+      profile.value = {
+        name: '',
+        bio: '',
+        email: '',
+        avatar: '',
+      }
+    }
+
     return {
       totalXP,
       coins,
       leaguePoints,
       profile,
+      displayName,
       level,
       currentXP,
       neededXPForNextLevel,
@@ -70,6 +93,8 @@ export const useUserStore = defineStore(
       addCoins,
       reduceLeaguePoints,
       updateProfile,
+      setProfileFromAuth,
+      resetProfile,
     }
   },
   {

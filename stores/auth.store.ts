@@ -1,0 +1,293 @@
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
+import { useUserStore } from '~/stores/user.store'
+
+export interface User {
+  id: string
+  email: string
+  password: string
+  name: string
+  bio: string
+  avatar: string
+  createdAt: string
+}
+
+function generateId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2)
+}
+
+function hashPassword(password: string): string {
+  let hash = 0
+
+  for (let index = 0; index < password.length; index++) {
+    const char = password.charCodeAt(index)
+    hash = (hash << 5) - hash + char
+    hash &= hash
+  }
+
+  return hash.toString(36)
+}
+
+function getStorageErrorMessage(error: unknown): string {
+  if (
+    error instanceof DOMException &&
+    (error.name === 'QuotaExceededError' || error.code === 22)
+  ) {
+    return 'Недостаточно места в localStorage. Уменьшите размер аватара или очистите старые данные.'
+  }
+
+  return 'Ошибка локального сохранения'
+}
+
+export const useAuthStore = defineStore(
+  'auth',
+  () => {
+    const currentUser = ref<User | null>(null)
+    const isAuthenticated = ref(false)
+    const isLoading = ref(false)
+    const initialized = ref(false)
+    const usersCount = ref(0)
+
+    const userInitials = computed(() => {
+      if (!currentUser.value) return ''
+
+      return currentUser.value.name
+        .split(' ')
+        .map((part) => part[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    })
+
+    const hasRegisteredUsers = computed(() => usersCount.value > 0)
+
+    function getUsers(): User[] {
+      if (!import.meta.client) return []
+      const users = localStorage.getItem('carbon-users')
+      return users ? JSON.parse(users) : []
+    }
+
+    function saveUsers(users: User[]): void {
+      if (!import.meta.client) return
+      localStorage.setItem('carbon-users', JSON.stringify(users))
+      usersCount.value = users.length
+    }
+
+    function persistSession() {
+      if (!import.meta.client) return
+
+      localStorage.setItem(
+        'carbon-auth',
+        JSON.stringify({
+          currentUser: currentUser.value,
+          isAuthenticated: isAuthenticated.value,
+        })
+      )
+    }
+
+    function syncUserProfile(user: User | null) {
+      const userStore = useUserStore()
+
+      if (!user) {
+        userStore.resetProfile()
+        return
+      }
+
+      userStore.setProfileFromAuth({
+        name: user.name,
+        bio: user.bio,
+        email: user.email,
+        avatar: user.avatar,
+      })
+    }
+
+    function init() {
+      if (!import.meta.client || initialized.value) return
+
+      usersCount.value = getUsers().length
+
+      if (currentUser.value && isAuthenticated.value) {
+        syncUserProfile(currentUser.value)
+      }
+
+      initialized.value = true
+    }
+
+    async function register(
+      email: string,
+      password: string,
+      name: string
+    ): Promise<{ success: boolean; error?: string }> {
+      isLoading.value = true
+
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 350))
+        const users = getUsers()
+
+        if (
+          users.find(
+            (user) => user.email.toLowerCase() === email.trim().toLowerCase()
+          )
+        ) {
+          return {
+            success: false,
+            error: 'Этот email уже зарегистрирован',
+          }
+        }
+
+        const newUser: User = {
+          id: generateId(),
+          email: email.trim(),
+          password: hashPassword(password),
+          name: name.trim() || email.split('@')[0],
+          bio: '',
+          avatar: '',
+          createdAt: new Date().toISOString(),
+        }
+
+        users.push(newUser)
+        saveUsers(users)
+
+        currentUser.value = newUser
+        isAuthenticated.value = true
+        syncUserProfile(newUser)
+        persistSession()
+
+        return { success: true }
+      } catch (error) {
+        return { success: false, error: getStorageErrorMessage(error) }
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    async function login(
+      email: string,
+      password: string
+    ): Promise<{ success: boolean; error?: string }> {
+      isLoading.value = true
+
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 300))
+        const users = getUsers()
+        const hashedPassword = hashPassword(password)
+
+        const user = users.find(
+          (entry) =>
+            entry.email.toLowerCase() === email.trim().toLowerCase() &&
+            entry.password === hashedPassword
+        )
+
+        if (!user) {
+          return {
+            success: false,
+            error: 'Неверный email или пароль',
+          }
+        }
+
+        currentUser.value = user
+        isAuthenticated.value = true
+        syncUserProfile(user)
+        persistSession()
+
+        return { success: true }
+      } catch (error) {
+        return { success: false, error: getStorageErrorMessage(error) }
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    function logout(): void {
+      currentUser.value = null
+      isAuthenticated.value = false
+      syncUserProfile(null)
+      persistSession()
+    }
+
+    function updateProfile(
+      updates: Partial<Pick<User, 'name' | 'bio' | 'email' | 'avatar'>>
+    ): { success: boolean; error?: string } {
+      if (!currentUser.value) {
+        return { success: false, error: 'Пользователь не авторизован' }
+      }
+
+      const nextEmail = updates.email?.trim()
+      const users = getUsers()
+
+      if (
+        nextEmail &&
+        users.some(
+          (user) =>
+            user.id !== currentUser.value?.id &&
+            user.email.toLowerCase() === nextEmail.toLowerCase()
+        )
+      ) {
+        return { success: false, error: 'Этот email уже используется' }
+      }
+
+      const previousUser = { ...currentUser.value }
+      const nextUser: User = {
+        ...currentUser.value,
+        ...updates,
+        email: nextEmail || currentUser.value.email,
+      }
+
+      try {
+        currentUser.value = nextUser
+
+        const index = users.findIndex((user) => user.id === nextUser.id)
+        if (index !== -1) {
+          users[index] = nextUser
+          saveUsers(users)
+        }
+
+        syncUserProfile(nextUser)
+        persistSession()
+        return { success: true }
+      } catch (error) {
+        currentUser.value = previousUser
+        syncUserProfile(previousUser)
+        persistSession()
+        return { success: false, error: getStorageErrorMessage(error) }
+      }
+    }
+
+    function deleteAccount(): void {
+      if (!currentUser.value) return
+
+      const users = getUsers().filter((user) => user.id !== currentUser.value?.id)
+      saveUsers(users)
+      logout()
+    }
+
+    function checkAuth(): boolean {
+      if (!import.meta.client) return false
+      return isAuthenticated.value
+    }
+
+    return {
+      currentUser,
+      isAuthenticated,
+      isLoading,
+      initialized,
+      userInitials,
+      hasRegisteredUsers,
+      init,
+      register,
+      login,
+      logout,
+      updateProfile,
+      deleteAccount,
+      checkAuth,
+    }
+  },
+  {
+    persist: import.meta.client
+      ? {
+          key: 'carbon-auth',
+          storage: localStorage,
+        }
+      : undefined,
+  }
+)

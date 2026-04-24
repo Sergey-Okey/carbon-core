@@ -15,8 +15,8 @@
         type="button"
         class="nav-item"
         :class="{ active: uiStore.activeNav === item.id }"
-        @click="uiStore.setActiveNav(item.id)"
         :title="item.label"
+        @click="handleNavClick(item.id)"
       >
         <component :is="item.icon" :size="20" />
         <Transition name="label-fade">
@@ -28,17 +28,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import {
-  LayoutGrid,
-  CheckSquare,
-  ShoppingBag,
   BarChart2,
+  CheckSquare,
+  LayoutGrid,
   Settings,
+  ShoppingBag,
 } from 'lucide-vue-next'
 import { useUIStore } from '~/stores/ui.store'
 
 const uiStore = useUIStore()
+const route = useRoute()
+const router = useRouter()
 
 const navItems = [
   { id: 'board' as const, label: 'Доска', icon: LayoutGrid },
@@ -49,7 +51,8 @@ const navItems = [
 ]
 
 const isMobile = ref(false)
-const checkMobile = () => {
+
+function checkMobile() {
   isMobile.value = window.innerWidth < 768
 }
 
@@ -57,20 +60,29 @@ onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
 })
+
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
 })
 
-const showLabels = computed(() => {
-  return !isMobile.value && uiStore.showLabels
-})
+const showLabels = computed(() => !isMobile.value && uiStore.showLabels)
 
 let hoverTimer: ReturnType<typeof setTimeout> | null = null
+
+async function handleNavClick(section: (typeof navItems)[number]['id']) {
+  uiStore.setActiveNav(section)
+
+  if (route.path !== '/') {
+    await router.push('/')
+  }
+}
+
 function onMouseEnter() {
   if (isMobile.value) return
   if (hoverTimer) clearTimeout(hoverTimer)
   uiStore.setSidebarHovered(true)
 }
+
 function onMouseLeave() {
   if (isMobile.value) return
   if (hoverTimer) clearTimeout(hoverTimer)
@@ -86,7 +98,6 @@ function onMouseLeave() {
   --navbar-expanded-width: 180px;
   --navbar-margin: 12px;
 
-  @include glass;
   color: var(--accent);
   border: 1px solid var(--border);
   z-index: 100;
@@ -95,6 +106,7 @@ function onMouseLeave() {
   backdrop-filter: blur(12px);
   will-change: width;
   transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);
+  @include glass;
 
   position: fixed;
   bottom: var(--navbar-margin);
@@ -127,76 +139,77 @@ function onMouseLeave() {
       width: var(--navbar-expanded-width);
     }
   }
+}
 
-  .nav-items {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
+.nav-items {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
 
-    @include desktop {
-      flex-direction: column;
-      gap: 2px;
-      width: 100%;
-    }
+  @include desktop {
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+  }
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  color: var(--dim);
+  cursor: pointer;
+  white-space: nowrap;
+  outline: none;
+  transition: all var(--transition-standard);
+
+  @include desktop {
+    justify-content: flex-start;
+    width: calc(100% - 12px);
+    margin: 0 6px;
+    padding: 10px 14px;
   }
 
-  .nav-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: var(--border-radius-md);
-    color: var(--dim);
-    transition: all var(--transition-standard);
-    white-space: nowrap;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    min-width: 44px;
-    min-height: 44px;
-    outline: none;
-
-    @include desktop {
-      justify-content: flex-start;
-      padding: 10px 14px;
-      margin: 0 6px;
-      width: calc(100% - 12px);
-    }
-
-    &:hover {
-      background: var(--surface);
-      color: var(--accent);
-    }
-
-    &.active {
-      color: var(--accent);
-      background: var(--surface);
-    }
-
-    &:focus-visible {
-      box-shadow: 0 0 0 2px var(--accent);
-    }
-
-    svg {
-      stroke: currentColor;
-      flex-shrink: 0;
-    }
-
-    .label {
-      font-size: 0.9rem;
-      font-weight: 500;
-      opacity: 1;
-    }
+  &:hover {
+    background: var(--surface);
+    color: var(--accent);
   }
+
+  &.active {
+    color: var(--accent);
+    background: var(--surface);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+
+  svg {
+    stroke: currentColor;
+    flex-shrink: 0;
+  }
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 1;
 }
 
 .label-fade-enter-active,
 .label-fade-leave-active {
   transition: opacity 0.25s ease;
 }
+
 .label-fade-enter-from,
 .label-fade-leave-to {
   opacity: 0;

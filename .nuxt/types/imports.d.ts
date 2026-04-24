@@ -2,11 +2,13 @@
 export {}
 declare global {
   const ACCENT_COLORS: typeof import('../../stores/settings.store').ACCENT_COLORS
+  const AUTO_BACKUP_KEY: typeof import('../../utils/backup').AUTO_BACKUP_KEY
   const abortNavigation: typeof import('../../node_modules/nuxt/dist/app/composables/router').abortNavigation
   const acceptHMRUpdate: typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables').acceptHMRUpdate
   const addRouteMiddleware: typeof import('../../node_modules/nuxt/dist/app/composables/router').addRouteMiddleware
   const asyncComputed: typeof import('@vueuse/core').asyncComputed
   const autoResetRef: typeof import('@vueuse/core').autoResetRef
+  const buildBackupPayload: typeof import('../../utils/backup').buildBackupPayload
   const calculateCurrentXP: typeof import('../../utils/levelCalculator').calculateCurrentXP
   const calculateLevel: typeof import('../../utils/levelCalculator').calculateLevel
   const calculateNeededXPForNextLevel: typeof import('../../utils/levelCalculator').calculateNeededXPForNextLevel
@@ -120,6 +122,7 @@ declare global {
   const reactivePick: typeof import('@vueuse/core').reactivePick
   const reactiveStyle: typeof import('../../node_modules/@vueuse/motion/dist/nuxt/runtime/composables/index').reactiveStyle
   const reactiveTransform: typeof import('../../node_modules/@vueuse/motion/dist/nuxt/runtime/composables/index').reactiveTransform
+  const readAutoBackup: typeof import('../../utils/backup').readAutoBackup
   const readonly: typeof import('../../node_modules/vue').readonly
   const ref: typeof import('../../node_modules/vue').ref
   const refAutoReset: typeof import('@vueuse/core').refAutoReset
@@ -133,6 +136,8 @@ declare global {
   const reloadNuxtApp: typeof import('../../node_modules/nuxt/dist/app/composables/chunk').reloadNuxtApp
   const requestIdleCallback: typeof import('../../node_modules/nuxt/dist/app/compat/idle-callback').requestIdleCallback
   const resolveComponent: typeof import('../../node_modules/vue').resolveComponent
+  const restoreBackupPayload: typeof import('../../utils/backup').restoreBackupPayload
+  const saveAutoBackup: typeof import('../../utils/backup').saveAutoBackup
   const setInterval: typeof import('../../node_modules/nuxt/dist/app/compat/interval').setInterval
   const setPageLayout: typeof import('../../node_modules/nuxt/dist/app/composables/router').setPageLayout
   const setResponseStatus: typeof import('../../node_modules/nuxt/dist/app/composables/ssr').setResponseStatus
@@ -181,6 +186,7 @@ declare global {
   const useAsyncQueue: typeof import('@vueuse/core').useAsyncQueue
   const useAsyncState: typeof import('@vueuse/core').useAsyncState
   const useAttrs: typeof import('../../node_modules/vue').useAttrs
+  const useAuthStore: typeof import('../../stores/auth.store').useAuthStore
   const useAutoLayout: typeof import('../../composables/useAutoLayout').useAutoLayout
   const useBase64: typeof import('@vueuse/core').useBase64
   const useBattery: typeof import('@vueuse/core').useBattery
@@ -447,6 +453,12 @@ declare global {
   export type { NotificationType, NotificationAction, Notification } from '../../composables/useNotification'
   import('../../composables/useNotification')
   // @ts-ignore
+  export type { BackupPayload } from '../../utils/backup'
+  import('../../utils/backup')
+  // @ts-ignore
+  export type { User } from '../../stores/auth.store'
+  import('../../stores/auth.store')
+  // @ts-ignore
   export type { NavSection } from '../../stores/ui.store'
   import('../../stores/ui.store')
 }
@@ -455,11 +467,13 @@ import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface ComponentCustomProperties {
     readonly ACCENT_COLORS: UnwrapRef<typeof import('../../stores/settings.store')['ACCENT_COLORS']>
+    readonly AUTO_BACKUP_KEY: UnwrapRef<typeof import('../../utils/backup')['AUTO_BACKUP_KEY']>
     readonly abortNavigation: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/router')['abortNavigation']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables')['acceptHMRUpdate']>
     readonly addRouteMiddleware: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/router')['addRouteMiddleware']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
+    readonly buildBackupPayload: UnwrapRef<typeof import('../../utils/backup')['buildBackupPayload']>
     readonly calculateCurrentXP: UnwrapRef<typeof import('../../utils/levelCalculator')['calculateCurrentXP']>
     readonly calculateLevel: UnwrapRef<typeof import('../../utils/levelCalculator')['calculateLevel']>
     readonly calculateNeededXPForNextLevel: UnwrapRef<typeof import('../../utils/levelCalculator')['calculateNeededXPForNextLevel']>
@@ -573,6 +587,7 @@ declare module 'vue' {
     readonly reactivePick: UnwrapRef<typeof import('@vueuse/core')['reactivePick']>
     readonly reactiveStyle: UnwrapRef<typeof import('../../node_modules/@vueuse/motion/dist/nuxt/runtime/composables/index')['reactiveStyle']>
     readonly reactiveTransform: UnwrapRef<typeof import('../../node_modules/@vueuse/motion/dist/nuxt/runtime/composables/index')['reactiveTransform']>
+    readonly readAutoBackup: UnwrapRef<typeof import('../../utils/backup')['readAutoBackup']>
     readonly readonly: UnwrapRef<typeof import('../../node_modules/vue')['readonly']>
     readonly ref: UnwrapRef<typeof import('../../node_modules/vue')['ref']>
     readonly refAutoReset: UnwrapRef<typeof import('@vueuse/core')['refAutoReset']>
@@ -586,6 +601,8 @@ declare module 'vue' {
     readonly reloadNuxtApp: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/chunk')['reloadNuxtApp']>
     readonly requestIdleCallback: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/compat/idle-callback')['requestIdleCallback']>
     readonly resolveComponent: UnwrapRef<typeof import('../../node_modules/vue')['resolveComponent']>
+    readonly restoreBackupPayload: UnwrapRef<typeof import('../../utils/backup')['restoreBackupPayload']>
+    readonly saveAutoBackup: UnwrapRef<typeof import('../../utils/backup')['saveAutoBackup']>
     readonly setInterval: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/compat/interval')['setInterval']>
     readonly setPageLayout: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/router')['setPageLayout']>
     readonly setResponseStatus: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/ssr')['setResponseStatus']>
@@ -634,6 +651,7 @@ declare module 'vue' {
     readonly useAsyncQueue: UnwrapRef<typeof import('@vueuse/core')['useAsyncQueue']>
     readonly useAsyncState: UnwrapRef<typeof import('@vueuse/core')['useAsyncState']>
     readonly useAttrs: UnwrapRef<typeof import('../../node_modules/vue')['useAttrs']>
+    readonly useAuthStore: UnwrapRef<typeof import('../../stores/auth.store')['useAuthStore']>
     readonly useAutoLayout: UnwrapRef<typeof import('../../composables/useAutoLayout')['useAutoLayout']>
     readonly useBase64: UnwrapRef<typeof import('@vueuse/core')['useBase64']>
     readonly useBattery: UnwrapRef<typeof import('@vueuse/core')['useBattery']>

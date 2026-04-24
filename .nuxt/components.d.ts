@@ -17,6 +17,7 @@ type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {},
 export const AnalyticsPanel: typeof import("../components/analytics/AnalyticsPanel.vue")['default']
 export const AnalyticsHealthIndicator: typeof import("../components/analytics/HealthIndicator.vue")['default']
 export const AnalyticsOverallProgress: typeof import("../components/analytics/OverallProgress.vue")['default']
+export const AuthPanel: typeof import("../components/auth/AuthPanel.vue")['default']
 export const BaseGlassCard: typeof import("../components/base/GlassCard.vue")['default']
 export const BaseIconWrapper: typeof import("../components/base/IconWrapper.vue")['default']
 export const BaseProgressBar: typeof import("../components/base/ProgressBar.vue")['default']
@@ -32,6 +33,7 @@ export const BranchMilestoneModal: typeof import("../components/branch/Milestone
 export const BranchNodeEditorModal: typeof import("../components/branch/NodeEditorModal.vue")['default']
 export const DashboardStatsOverview: typeof import("../components/dashboard/StatsOverview.vue")['default']
 export const ProfileModal: typeof import("../components/profile/ProfileModal.vue")['default']
+export const ProfilePanel: typeof import("../components/profile/ProfilePanel.vue")['default']
 export const QuestCard: typeof import("../components/quest/QuestCard.vue")['default']
 export const QuestForm: typeof import("../components/quest/QuestForm.vue")['default']
 export const QuestList: typeof import("../components/quest/QuestList.vue")['default']
@@ -71,6 +73,7 @@ export const NuxtIsland: typeof import("../node_modules/nuxt/dist/app/components
 export const LazyAnalyticsPanel: LazyComponent<typeof import("../components/analytics/AnalyticsPanel.vue")['default']>
 export const LazyAnalyticsHealthIndicator: LazyComponent<typeof import("../components/analytics/HealthIndicator.vue")['default']>
 export const LazyAnalyticsOverallProgress: LazyComponent<typeof import("../components/analytics/OverallProgress.vue")['default']>
+export const LazyAuthPanel: LazyComponent<typeof import("../components/auth/AuthPanel.vue")['default']>
 export const LazyBaseGlassCard: LazyComponent<typeof import("../components/base/GlassCard.vue")['default']>
 export const LazyBaseIconWrapper: LazyComponent<typeof import("../components/base/IconWrapper.vue")['default']>
 export const LazyBaseProgressBar: LazyComponent<typeof import("../components/base/ProgressBar.vue")['default']>
@@ -86,6 +89,7 @@ export const LazyBranchMilestoneModal: LazyComponent<typeof import("../component
 export const LazyBranchNodeEditorModal: LazyComponent<typeof import("../components/branch/NodeEditorModal.vue")['default']>
 export const LazyDashboardStatsOverview: LazyComponent<typeof import("../components/dashboard/StatsOverview.vue")['default']>
 export const LazyProfileModal: LazyComponent<typeof import("../components/profile/ProfileModal.vue")['default']>
+export const LazyProfilePanel: LazyComponent<typeof import("../components/profile/ProfilePanel.vue")['default']>
 export const LazyQuestCard: LazyComponent<typeof import("../components/quest/QuestCard.vue")['default']>
 export const LazyQuestForm: LazyComponent<typeof import("../components/quest/QuestForm.vue")['default']>
 export const LazyQuestList: LazyComponent<typeof import("../components/quest/QuestList.vue")['default']>

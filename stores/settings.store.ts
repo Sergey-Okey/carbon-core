@@ -24,7 +24,6 @@ function getLuminance(hex: string): number {
 function resolveAccentColor(color: string, isLightTheme: boolean): string {
   const lum = getLuminance(color)
   if (isLightTheme && lum > 0.5) return '#2b2b2b'
-  if (!isLightTheme && lum < 0.3) return '#d6d6d6'
   return color
 }
 
