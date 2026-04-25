@@ -14,7 +14,6 @@ const state = ref<ConfirmState>({
 
 export function useConfirm() {
   function confirm(message: string): Promise<boolean> {
-    // Закрываем предыдущий диалог, если он открыт
     if (state.value.isOpen && state.value.resolve) {
       state.value.resolve(false)
     }

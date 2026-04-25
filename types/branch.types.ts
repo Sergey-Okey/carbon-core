@@ -4,7 +4,7 @@ export interface Milestone {
   id: string
   name: string
   description?: string
-  icon?: string // иконка этапа (опционально)
+  icon?: string
   requiredXP: number
   currentXP: number
   status: 'pending' | 'active' | 'completed'

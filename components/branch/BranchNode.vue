@@ -164,7 +164,6 @@ onUnmounted(() => {
     border-color: var(--success);
   }
 
-  // Визуальное отличие ветки (первый узел)
   &.is-branch {
     border-width: 2px;
     background: linear-gradient(145deg, var(--surface), var(--bg));

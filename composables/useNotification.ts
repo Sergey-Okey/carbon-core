@@ -77,6 +77,5 @@ function playNotificationSound(type: NotificationType) {
     osc.start(ctx.currentTime)
     osc.stop(ctx.currentTime + 0.15)
   } catch {
-    // audio not supported
   }
 }

@@ -1,6 +1,5 @@
 <template>
   <div class="stats-bar">
-    <!-- Уровень и XP -->
     <div class="stat-block level-block">
       <div class="stat-row">
         <Zap :size="18" class="stat-icon" />
@@ -17,7 +16,6 @@
       />
     </div>
 
-    <!-- Лига -->
     <div class="stat-block league-block">
       <div class="stat-row">
         <component
@@ -37,7 +35,6 @@
       </div>
     </div>
 
-    <!-- Монеты -->
     <div class="stat-block coins-block">
       <div class="stat-row">
         <Coins :size="18" class="stat-icon" />
@@ -46,7 +43,6 @@
       </div>
     </div>
 
-    <!-- Задачи -->
     <div class="stat-block tasks-block">
       <div class="tasks-indicators">
         <div class="task-indicator" :class="{ done: completedTasks.day === 3 }">

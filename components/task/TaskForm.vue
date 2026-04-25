@@ -99,7 +99,6 @@
       </div>
     </div>
 
-    <!-- Модалка добавления тега -->
     <Teleport to="body">
       <div
         v-if="showAddTagModal"
@@ -184,7 +183,6 @@ const form = reactive({
   tagIds: [] as string[],
 })
 
-// Динамические тексты в зависимости от типа
 const modalTitle = computed(() => {
   if (editing.value) return 'Редактирование'
   return form.type === 'HABIT' ? 'Новая привычка' : 'Новая задача'
@@ -214,7 +212,6 @@ watch(
   { immediate: true }
 )
 
-// Если задан defaultType, синхронизируем его, но только при создании
 watch(
   () => props.defaultType,
   (newType) => {
@@ -257,7 +254,6 @@ function handleSubmit() {
   }
 }
 
-// Логика добавления/удаления тегов
 const showAddTagModal = ref(false)
 const newTagName = ref('')
 const newTagBranchId = ref<'FIN' | 'BODY' | 'MIND' | 'LDR'>('FIN')

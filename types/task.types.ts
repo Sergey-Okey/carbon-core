@@ -12,16 +12,12 @@ export interface Task {
   title: string
   description?: string
   type: TaskType
-  tagIds: string[] // ID тегов из tags.store
+  tagIds: string[]
   done: boolean
   completedAt?: number
-  // Для задач с горизонтом
-  targetDate?: string // YYYY-MM-DD, для TASK_DAY, WEEK, MONTH, YEAR
-  // Для привычек (HABIT) – можно выполнять многократно, done сбрасывается автоматически
+  targetDate?: string
   lastCompletedAt?: number
-  // Для PURCHASE – создаётся при покупке награды
   purchaseRewardId?: string
-  // Системные
   createdAt: number
   updatedAt?: number
 }

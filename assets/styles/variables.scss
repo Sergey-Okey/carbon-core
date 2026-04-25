@@ -1,11 +1,10 @@
-// ===== ЦВЕТОВАЯ ПАЛИТРА CARBON CORE (ГРАФИТОВАЯ) =====
-$bg: #121212; // основной фон — глубокий графит
-$surface: #1e1e1e; // поверхность — чуть светлее
-$border: #2a2a2a; // границы — заметнее, но не контрастные
-$accent: #d6d6d6; // акцент — мягкий белый
-$dim: #888888; // второстепенный текст — средний серый
-$error: #ff4d4d; // ошибка — приглушённый красный
-$success: #4caf7f; // успех — приглушённый зелёный
+$bg: #121212;
+$surface: #1e1e1e;
+$border: #2a2a2a;
+$accent: #d6d6d6;
+$dim: #888888;
+$error: #ff4d4d;
+$success: #4caf7f;
 
 $border-radius-lg: 24px;
 $border-radius-md: 16px;
@@ -13,7 +12,6 @@ $border-radius-sm: 8px;
 
 $transition-standard: 0.3s cubic-bezier(0.2, 0, 0, 1);
 
-// ===== CSS-ПЕРЕМЕННЫЕ ДЛЯ ДИНАМИЧЕСКОЙ ТЕМЫ =====
 :root {
   --bg: #{$bg};
   --surface: #{$surface};
@@ -32,13 +30,11 @@ $transition-standard: 0.3s cubic-bezier(0.2, 0, 0, 1);
   --border-radius-sm: #{$border-radius-sm};
   --transition-standard: #{$transition-standard};
 
-  // Минимальные тени
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
-// ===== СВЕТЛАЯ ТЕМА =====
 .light-theme {
   --bg: #f5f5f5;
   --surface: #ffffff;
@@ -52,7 +48,6 @@ $transition-standard: 0.3s cubic-bezier(0.2, 0, 0, 1);
   --gold: #b88700;
   --platinum: #9f9f9f;
   --accent: #2b2b2b;
-  // Тени для светлой темы (чуть заметнее)
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08);

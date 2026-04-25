@@ -1,6 +1,5 @@
 <template>
   <div class="dashboard">
-    <!-- Статистика (показывается на всех вкладках, кроме доски) -->
     <section
       v-if="uiStore.activeNav !== 'board'"
       class="dashboard-section stats"
@@ -8,7 +7,6 @@
       <StatsOverview />
     </section>
 
-    <!-- Контент в зависимости от активной вкладки -->
     <section class="dashboard-section content-section">
       <BranchFlow v-if="uiStore.activeNav === 'board'" />
 

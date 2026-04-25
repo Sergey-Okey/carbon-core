@@ -1,6 +1,5 @@
 <template>
   <div class="onboarding">
-    <!-- Прогресс-бар -->
     <div class="top-progress">
       <div
         v-motion
@@ -11,7 +10,6 @@
       />
     </div>
 
-    <!-- Фон -->
     <div class="background-layer">
       <div
         v-for="(shape, i) in shapes"
@@ -29,7 +27,6 @@
       <div class="gradient-overlay"></div>
     </div>
 
-    <!-- Хедер -->
     <div class="fixed-header">
       <div
         v-motion
@@ -57,9 +54,7 @@
       </div>
     </div>
 
-    <!-- Скролл-контейнер -->
     <div class="scroll-container" ref="scrollContainer" @scroll="handleScroll">
-      <!-- Шаг 1: Встреча -->
       <section id="step-1" class="section hero-section">
         <div class="section-content">
           <div
@@ -119,7 +114,6 @@
         </div>
       </section>
 
-      <!-- Шаг 2: Правило трёх -->
       <section id="step-2" class="section rule-section">
         <div class="section-content">
           <div
@@ -175,7 +169,6 @@
         </div>
       </section>
 
-      <!-- Шаг 3: Визуализация -->
       <section id="step-3" class="section visual-section">
         <div class="section-content">
           <div
@@ -240,7 +233,6 @@
         </div>
       </section>
 
-      <!-- Шаг 4: Инструменты -->
       <section id="step-4" class="section tools-section">
         <div class="section-content">
           <div
@@ -308,7 +300,6 @@
         </div>
       </section>
 
-      <!-- Шаг 5: Безопасность -->
       <section id="step-5" class="section security-section">
         <div class="section-content">
           <div
@@ -351,7 +342,6 @@
         </div>
       </section>
 
-      <!-- Шаг 6: О проекте -->
       <section id="step-6" class="section about-section">
         <div class="section-content">
           <div
@@ -428,7 +418,6 @@
         </div>
       </section>
 
-      <!-- Шаг 7: Старт -->
       <section id="step-7" class="section start-section">
         <div class="section-content">
           <div

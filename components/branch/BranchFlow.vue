@@ -167,7 +167,6 @@ function onPaneClick() {
   selectedEdgeId.value = null
 }
 
-// Проверка, является ли узел веткой (единственный этап в ветке)
 function isBranchNode(nodeId: string): boolean {
   const node = nodes.value.find((n) => n.id === nodeId)
   if (!node) return false
@@ -251,7 +250,6 @@ function handleKeyDown(event: KeyboardEvent) {
       branch.milestones.length === 1 &&
       branch.milestones[0].id === selectedNodeId.value
     ) {
-      // Это единственный узел ветки → удаляем ветку
       confirm(`Удалить ветку «${branch.displayName}»?`).then((ok) => {
         if (ok) {
           branchesStore.deleteBranch(branch.id)
@@ -259,7 +257,6 @@ function handleKeyDown(event: KeyboardEvent) {
         }
       })
     } else {
-      // Обычный этап
       confirm(`Удалить этап «${milestone.name}»?`).then((ok) => {
         if (ok) {
           branchesStore.deleteMilestone(selectedNodeId.value!)
