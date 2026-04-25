@@ -1,7 +1,7 @@
 <template>
   <section class="auth-shell">
     <div class="auth-copy">
-      <div class="eyebrow">Core of Life</div>
+      <div class="eyebrow">Carbon Core</div>
       <h1>{{ title }}</h1>
       <p>{{ description }}</p>
 

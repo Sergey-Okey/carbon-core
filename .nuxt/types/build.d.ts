@@ -15,7 +15,7 @@ declare module "#build/test-component-wrapper.mjs";
 declare module "#build/vercel-speed-insights.client.ts";
 declare module "#build/vercel-analytics.client.ts";
 declare module "#build/devtools/settings.mjs";
-declare module "#build/runtime.vue-devtools-client.2pC0w0pL5jTIIHcn_ySrmDZaO9Zd_Dy67S0rQec1IT0.js";
+declare module "#build/runtime.vue-devtools-client.dGpF7689E3w8qvyPOuu3YjQcnDCHJLMGIfZgknlipyg.js";
 declare module "#build/routes.mjs";
 declare module "#build/pages.mjs";
 declare module "#build/router.options.mjs";
