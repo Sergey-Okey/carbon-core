@@ -1,93 +1,115 @@
 <template>
-  <section class="auth-shell">
-    <div class="auth-copy">
-      <div class="eyebrow">Carbon Core</div>
-      <h1>{{ title }}</h1>
-      <p>{{ description }}</p>
+  <div class="auth-page">
+    <div class="bg-ambient"></div>
 
-      <div class="copy-cards">
-        <div class="copy-card">
-          <Sparkles :size="18" />
-          <span>Строгий UI и единый стиль тем</span>
+    <div class="auth-grid">
+      <!-- Левая колонка: приветственный текст -->
+      <div
+        v-motion
+        :initial="{ opacity: 0, x: -30 }"
+        :enter="{ opacity: 1, x: 0, transition: { duration: 500, delay: 100 } }"
+        class="auth-intro"
+      >
+        <div class="intro-content">
+          <div class="eyebrow">Core of Life</div>
+          <h1>{{ title }}</h1>
+          <p>{{ description }}</p>
+
+          <div class="feature-cards">
+            <div class="feature-card">
+              <Shield :size="20" />
+              <span>Локальное хранение</span>
+            </div>
+            <div class="feature-card">
+              <Download :size="20" />
+              <span>Бэкапы в один клик</span>
+            </div>
+            <div class="feature-card">
+              <UserCircle :size="20" />
+              <span>Профиль всегда с вами</span>
+            </div>
+          </div>
         </div>
-        <div class="copy-card">
-          <ShieldCheck :size="18" />
-          <span>Локальное хранение и резервные копии</span>
-        </div>
-        <div class="copy-card">
-          <UserRound :size="18" />
-          <span>Профиль, аватар и данные сохраняются после перезагрузки</span>
-        </div>
+      </div>
+
+      <!-- Правая колонка: форма (стеклянная) -->
+      <div
+        v-motion
+        :initial="{ opacity: 0, x: 30 }"
+        :enter="{ opacity: 1, x: 0, transition: { duration: 500, delay: 200 } }"
+      >
+        <GlassCard class="auth-card">
+          <div class="card-header">
+            <div class="badge">{{ badge }}</div>
+            <h2>{{ heading }}</h2>
+          </div>
+
+          <form class="auth-form" @submit.prevent="submit">
+            <label v-if="isRegister" class="field">
+              <span>Имя</span>
+              <input
+                v-model.trim="form.name"
+                type="text"
+                placeholder="Ваше имя"
+                autocomplete="name"
+              />
+            </label>
+
+            <label class="field">
+              <span>Email</span>
+              <input
+                v-model.trim="form.email"
+                type="email"
+                placeholder="email@example.com"
+                autocomplete="email"
+              />
+            </label>
+
+            <label class="field">
+              <span>Пароль</span>
+              <input
+                v-model="form.password"
+                type="password"
+                placeholder="Не менее 6 символов"
+                :autocomplete="isRegister ? 'new-password' : 'current-password'"
+              />
+            </label>
+
+            <label v-if="isRegister" class="field">
+              <span>Подтверждение</span>
+              <input
+                v-model="form.confirmPassword"
+                type="password"
+                placeholder="Повторите пароль"
+                autocomplete="new-password"
+              />
+            </label>
+
+            <p v-if="error" class="error-text">{{ error }}</p>
+
+            <button
+              class="submit-btn"
+              type="submit"
+              :disabled="authStore.isLoading"
+            >
+              <span v-if="authStore.isLoading" class="spinner"></span>
+              <span>{{ submitLabel }}</span>
+            </button>
+          </form>
+
+          <div class="card-footer">
+            <span>{{ footerText }}</span>
+            <NuxtLink :to="switchLink">{{ switchLabel }}</NuxtLink>
+          </div>
+        </GlassCard>
       </div>
     </div>
-
-    <GlassCard class="auth-card">
-      <div class="auth-card__header">
-        <div class="auth-card__badge">{{ badge }}</div>
-        <h2>{{ heading }}</h2>
-        <p>{{ subheading }}</p>
-      </div>
-
-      <form class="auth-form" @submit.prevent="submit">
-        <label v-if="isRegister" class="field">
-          <span>Имя</span>
-          <input
-            v-model.trim="form.name"
-            type="text"
-            placeholder="Как к вам обращаться"
-            autocomplete="name"
-          />
-        </label>
-
-        <label class="field">
-          <span>Email</span>
-          <input
-            v-model.trim="form.email"
-            type="email"
-            placeholder="name@example.com"
-            autocomplete="email"
-          />
-        </label>
-
-        <label class="field">
-          <span>Пароль</span>
-          <input
-            v-model="form.password"
-            type="password"
-            placeholder="Не менее 6 символов"
-            :autocomplete="isRegister ? 'new-password' : 'current-password'"
-          />
-        </label>
-
-        <label v-if="isRegister" class="field">
-          <span>Подтверждение пароля</span>
-          <input
-            v-model="form.confirmPassword"
-            type="password"
-            placeholder="Повторите пароль"
-            autocomplete="new-password"
-          />
-        </label>
-
-        <p v-if="error" class="error-text">{{ error }}</p>
-
-        <button class="submit-btn" type="submit" :disabled="authStore.isLoading">
-          <span v-if="authStore.isLoading" class="spinner"></span>
-          <span>{{ submitLabel }}</span>
-        </button>
-      </form>
-
-      <div class="auth-card__footer">
-        <span>{{ footerText }}</span>
-        <NuxtLink :to="switchLink">{{ switchLabel }}</NuxtLink>
-      </div>
-    </GlassCard>
-  </section>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import { ShieldCheck, Sparkles, UserRound } from 'lucide-vue-next'
+import { Shield, Download, UserCircle } from 'lucide-vue-next'
 import GlassCard from '~/components/base/GlassCard.vue'
 import { useNotification } from '~/composables/useNotification'
 import { useAuthStore } from '~/stores/auth.store'
@@ -111,31 +133,24 @@ const error = ref('')
 
 const isRegister = computed(() => props.mode === 'register')
 const title = computed(() =>
-  isRegister.value ? 'Создайте профиль и начните путь' : 'Вернитесь в свой рабочий ритм'
+  isRegister.value
+    ? 'Ваше пространство начинается здесь'
+    : 'Продолжите с того места, где остановились'
 )
 const description = computed(() =>
   isRegister.value
-    ? 'После регистрации данные профиля, аватар и настройки будут доступны в приложении и попадут в резервные копии.'
-    : 'Войдите в существующий профиль, чтобы восстановить свои настройки, прогресс и персональные данные.'
+    ? 'Пара шагов — и вы получите доступ к системе осознанного управления задачами.'
+    : 'Войдите, чтобы восстановить свои задачи, привычки и прогресс.'
 )
-const badge = computed(() => (isRegister.value ? 'Регистрация' : 'Авторизация'))
-const heading = computed(() =>
-  isRegister.value ? 'Новый аккаунт' : 'Вход в аккаунт'
-)
-const subheading = computed(() =>
-  isRegister.value
-    ? 'Минимум полей, максимум совместимости с текущим UI.'
-    : 'Используйте email и пароль, которые вы уже сохраняли в приложении.'
-)
+const badge = computed(() => (isRegister.value ? 'Регистрация' : 'Вход'))
+const heading = computed(() => (isRegister.value ? 'Создать аккаунт' : 'Войти'))
 const submitLabel = computed(() =>
   isRegister.value ? 'Создать аккаунт' : 'Войти'
 )
 const footerText = computed(() =>
-  isRegister.value ? 'Уже есть аккаунт?' : 'Новый пользователь?'
+  isRegister.value ? 'Уже есть аккаунт?' : 'Нет аккаунта?'
 )
-const switchLabel = computed(() =>
-  isRegister.value ? 'Перейти ко входу' : 'Создать аккаунт'
-)
+const switchLabel = computed(() => (isRegister.value ? 'Войти' : 'Регистрация'))
 const switchLink = computed(() => (isRegister.value ? '/auth' : '/register'))
 
 async function submit() {
@@ -175,199 +190,242 @@ async function submit() {
 </script>
 
 <style scoped lang="scss">
-.auth-shell {
-  display: grid;
+.auth-page {
   min-height: 100vh;
-  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 480px);
-  gap: 32px;
+  display: flex;
   align-items: center;
-  width: min(1180px, calc(100% - 32px));
-  margin: 0 auto;
-  padding: 32px 0;
+  justify-content: center;
+  background: var(--bg);
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  position: relative;
+  padding: 32px 16px;
+}
 
-  @media (max-width: 960px) {
-    grid-template-columns: 1fr;
-    width: min(100%, calc(100% - 24px));
-    padding: 20px 0 32px;
+.bg-ambient {
+  position: absolute;
+  inset: -10%;
+  background:
+    radial-gradient(
+      ellipse at 30% 20%,
+      rgba(var(--accent-rgb, 214, 214, 214), 0.06) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 70% 80%,
+      rgba(var(--accent-rgb, 214, 214, 214), 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 50% 50%,
+      rgba(var(--accent-rgb, 214, 214, 214), 0.03) 0%,
+      transparent 70%
+    );
+  z-index: 0;
+  filter: blur(40px);
+  animation: ambientShift 16s ease-in-out infinite alternate;
+}
+
+@keyframes ambientShift {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.1) translate(2%, -1%);
   }
 }
 
-.auth-copy {
-  padding: 24px 12px 24px 0;
+.auth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  max-width: 1100px;
+  width: 100%;
+  align-items: center;
+  position: relative;
+  z-index: 1;
 
-  @media (max-width: 960px) {
-    padding: 12px 4px 0;
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 0;
+    max-width: 440px;
+  }
+}
+
+.auth-intro {
+  display: flex;
+  align-items: center;
+  padding-right: 24px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+
+  .intro-content {
+    max-width: 480px;
   }
 
   .eyebrow {
-    margin-bottom: 16px;
-    color: var(--dim);
-    font-size: 0.82rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 0.8rem;
     font-weight: 600;
-    letter-spacing: 0.18em;
+    letter-spacing: 4px;
     text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 20px;
   }
 
   h1 {
-    max-width: 12ch;
-    margin: 0 0 18px;
-    color: var(--accent);
     font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(2.6rem, 6vw, 4.8rem);
-    line-height: 0.96;
-    letter-spacing: -0.04em;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+    margin-bottom: 20px;
   }
 
   p {
-    max-width: 58ch;
-    margin: 0;
+    font-size: 1rem;
+    line-height: 1.6;
     color: var(--dim);
-    font-size: 1.02rem;
-    line-height: 1.7;
+    margin-bottom: 32px;
   }
 }
 
-.copy-cards {
-  display: grid;
+.feature-cards {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
-  margin-top: 28px;
 }
 
-.copy-card {
+.feature-card {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 12px 16px;
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
   border: 1px solid var(--border);
-  border-radius: 18px;
-  background: rgba(var(--accent-rgb, 214, 214, 214), 0.04);
+  border-radius: var(--border-radius-sm);
   color: var(--accent);
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.9rem;
 
   svg {
+    opacity: 0.7;
     flex-shrink: 0;
-    color: var(--accent);
-  }
-
-  span {
-    line-height: 1.5;
   }
 }
 
 .auth-card {
-  width: 100%;
-  padding: 28px;
+  padding: 32px;
   border: 1px solid var(--border);
+  backdrop-filter: blur(24px);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  box-shadow: var(--shadow-lg);
 
-  @media (max-width: 640px) {
-    padding: 22px 18px;
+  @media (max-width: 480px) {
+    padding: 24px;
   }
-}
 
-.auth-card__header {
-  margin-bottom: 22px;
+  .card-header {
+    margin-bottom: 24px;
 
-  h2 {
-    margin: 12px 0 8px;
+    h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      color: var(--accent);
+      margin: 12px 0 0;
+    }
+  }
+
+  .badge {
+    display: inline-flex;
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
     color: var(--accent);
-    font-size: 1.5rem;
-    line-height: 1.2;
+    font-family: 'Manrope', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
-
-  p {
-    margin: 0;
-    color: var(--dim);
-    line-height: 1.6;
-  }
-}
-
-.auth-card__badge {
-  display: inline-flex;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: rgba(var(--accent-rgb, 214, 214, 214), 0.06);
-  color: var(--accent);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .auth-form {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .field {
   display: grid;
-  gap: 8px;
+  gap: 4px;
 
   span {
-    color: var(--dim);
-    font-size: 0.84rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 0.7rem;
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
+    color: var(--dim);
   }
 
   input {
     width: 100%;
-    padding: 14px 16px;
+    padding: 10px 14px;
     border: 1px solid var(--border);
-    border-radius: 16px;
-    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    border-radius: var(--border-radius-sm);
+    background: var(--surface);
     color: var(--accent);
-    font-size: 1rem;
-    transition:
-      border-color var(--transition-standard),
-      transform var(--transition-standard);
+    font-size: 0.95rem;
+    transition: border-color var(--transition-standard);
 
     &::placeholder {
       color: var(--dim);
-      opacity: 0.72;
     }
 
     &:focus {
       outline: none;
       border-color: var(--accent);
-      transform: translateY(-1px);
     }
   }
 }
 
 .error-text {
-  margin: -2px 0 0;
   color: var(--error);
-  font-size: 0.92rem;
+  font-size: 0.85rem;
+  margin: -2px 0;
 }
 
 .submit-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  margin-top: 4px;
-  padding: 15px 18px;
+  padding: 12px 20px;
   border: none;
-  border-radius: 18px;
+  border-radius: var(--border-radius-sm);
   background: var(--accent);
   color: var(--bg);
-  font-size: 0.98rem;
-  font-weight: 700;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
+  margin-top: 4px;
   transition:
     transform var(--transition-standard),
-    box-shadow var(--transition-standard),
-    opacity var(--transition-standard);
+    box-shadow var(--transition-standard);
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-md);
   }
 
   &:disabled {
-    opacity: 0.7;
+    opacity: 0.6;
     cursor: wait;
   }
 }
@@ -375,30 +433,29 @@ async function submit() {
 .spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(0, 0, 0, 0.18);
-  border-top-color: currentColor;
+  border: 2px solid var(--border);
+  border-top-color: var(--bg);
   border-radius: 50%;
-  animation: spin 0.9s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
-.auth-card__footer {
+.card-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 18px;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 0.85rem;
   color: var(--dim);
-  font-size: 0.92rem;
 
   a {
     color: var(--accent);
     font-weight: 600;
     text-decoration: none;
-  }
 
-  @media (max-width: 480px) {
-    align-items: flex-start;
-    flex-direction: column;
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 
