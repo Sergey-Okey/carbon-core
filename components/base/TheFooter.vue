@@ -1,6 +1,6 @@
 <template>
   <footer class="footer">
-    <span>Carbon Core v1.0</span>
+    <span>Core of Life v1.0</span>
     <span>© 2026</span>
   </footer>
 </template>

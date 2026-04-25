@@ -1,484 +1,185 @@
 <template>
   <div class="onboarding">
-    <!-- Прогресс-бар -->
     <div class="top-progress">
-      <div
-        v-motion
-        class="progress-fill"
-        :initial="{ width: '0%' }"
-        :animate="{ width: progress + '%' }"
-        :transition="{ duration: 300 }"
-      />
+      <div class="progress-fill" :style="{ width: progress + '%' }" />
     </div>
 
-    <!-- Фон -->
-    <div class="background-layer">
-      <div
-        v-for="(shape, i) in shapes"
-        :key="i"
-        v-motion
-        :initial="{ opacity: 0, scale: 0.8 }"
-        :enter="{
-          opacity: 1,
-          scale: 1,
-          transition: { duration: 800, delay: i * 100 },
-        }"
-        :class="['floating-shape', `shape${i + 1}`]"
-        :style="{ background: shape.gradient }"
-      />
-      <div class="gradient-overlay"></div>
+    <div class="background-layer" aria-hidden="true">
+      <span class="orb orb--one" />
+      <span class="orb orb--two" />
+      <span class="orb orb--three" />
+      <span class="noise-mask" />
     </div>
 
-    <!-- Хедер -->
-    <div class="fixed-header">
-      <div
-        v-motion
-        :initial="{ opacity: 0, y: -10 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 400 } }"
-      >
-        <div class="logo">COF</div>
+    <header class="fixed-header">
+      <div class="brand">
+        <span class="brand-mark">CL</span>
+        <span class="brand-name">Core of Life</span>
       </div>
-      <div
-        v-motion
-        :initial="{ opacity: 0, y: -10 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 100 } }"
-      >
-        <div class="beta-badge">beta</div>
-      </div>
-      <div
-        v-motion
-        :initial="{ opacity: 0, y: -10 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 150 } }"
-      >
+      <div class="header-meta">
+        <span class="beta-badge">active beta</span>
         <button class="skip-btn" @click="finishOnboarding">
           Пропустить
           <ChevronRight :size="16" />
         </button>
       </div>
-    </div>
+    </header>
 
-    <!-- Скролл-контейнер -->
     <div class="scroll-container" ref="scrollContainer" @scroll="handleScroll">
-      <!-- Шаг 1: Встреча -->
-      <section id="step-1" class="section hero-section">
-        <div class="section-content">
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 100 },
-            }"
-          >
-            <h1 class="hero-title">
-              <span class="line">Делайте меньше,</span>
-              <span class="line">достигайте большего</span>
-            </h1>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 200 },
-            }"
-          >
-            <p class="hero-subtitle">
-              COF помогает сфокусироваться на главном и видеть свой прогресс.
-              Никакой магии — только осознанный подход.
-            </p>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 300 },
-            }"
-          >
-            <div class="hero-cta">
-              <button class="cta-button" @click="finishOnboarding">
-                Начать
-                <ArrowRight :size="20" class="btn-icon" />
-              </button>
-              <span class="hint-text"
-                >или листайте дальше, чтобы узнать детали</span
-              >
-            </div>
-          </div>
-        </div>
-        <div class="hero-visual">
-          <div class="hashtag-cloud">
-            <span v-for="tag in allTags" :key="tag" class="hashtag">{{
-              tag
-            }}</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- Шаг 2: Правило трёх -->
-      <section id="step-2" class="section rule-section">
-        <div class="section-content">
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
-          >
-            <div class="section-label">Философия</div>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 100 },
-            }"
-          >
-            <h2 class="section-title">Три — магическое число</h2>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 200 },
-            }"
-          >
-            <p class="section-text">
-              Наш мозг не умеет работать с длинными списками. Правило трёх
-              освобождает ум и помогает сосредоточиться на действительно важных
-              задачах.
-            </p>
-          </div>
-          <div class="rule-grid">
-            <div
-              v-for="(rule, i) in rules"
-              :key="i"
-              v-motion
-              :initial="{ opacity: 0, y: 30 }"
-              :visible-once="{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 500, delay: 300 + i * 100 },
-              }"
-              class="rule-item"
-            >
-              <div class="rule-number">{{ rule.number }}</div>
-              <div class="rule-label">{{ rule.label }}</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Шаг 3: Визуализация -->
-      <section id="step-3" class="section visual-section">
-        <div class="section-content">
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
-          >
-            <div class="section-label">Ваш путь</div>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 100 },
-            }"
-          >
-            <h2 class="section-title">Видеть прогресс</h2>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 200 },
-            }"
-          >
-            <p class="section-text">
-              Интерактивная доска позволяет строить свой путь развития:
-              добавляйте этапы, связывайте их и отмечайте пройденное. Вы всегда
-              видите, куда движетесь и что уже сделано.
-            </p>
-          </div>
-          <div class="visual-features">
-            <div class="feature-row">
-              <GitBranch :size="28" />
-              <span>Связывайте этапы</span>
-            </div>
-            <div class="feature-row">
-              <Target :size="28" />
-              <span>Отмечайте пройденное</span>
-            </div>
-            <div class="feature-row">
-              <Move :size="28" />
-              <span>Меняйте траекторию</span>
-            </div>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, scale: 0.95 }"
-            :visible-once="{
-              opacity: 1,
-              scale: 1,
-              transition: { duration: 600, delay: 400 },
-            }"
-            class="placeholder-card"
-          >
-            <p>Интерактивная доска ждёт вас внутри</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Шаг 4: Инструменты -->
-      <section id="step-4" class="section tools-section">
-        <div class="section-content">
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
-          >
-            <div class="section-label">Инструменты</div>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 100 },
-            }"
-          >
-            <h2 class="section-title">Всё под рукой</h2>
-          </div>
-          <div class="tools-grid">
-            <div
-              v-motion
-              :initial="{ opacity: 0, y: 30 }"
-              :visible-once="{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 500, delay: 200 },
-              }"
-              class="tool-card"
-            >
-              <RotateCw :size="32" />
-              <h3>Привычки</h3>
-              <p>Повторяйте без ограничений — формируйте полезные ритуалы</p>
-            </div>
-            <div
-              v-motion
-              :initial="{ opacity: 0, y: 30 }"
-              :visible-once="{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 500, delay: 300 },
-              }"
-              class="tool-card"
-            >
-              <Calendar :size="32" />
-              <h3>Задачи</h3>
-              <p>Три на день, неделю, месяц, год — фокус на главном</p>
-            </div>
-            <div
-              v-motion
-              :initial="{ opacity: 0, y: 30 }"
-              :visible-once="{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 500, delay: 400 },
-              }"
-              class="tool-card"
-            >
-              <Palette :size="32" />
-              <h3>Персонализация</h3>
-              <p>Тема, акценты, аватар — настройте всё под себя</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Шаг 5: Безопасность -->
-      <section id="step-5" class="section security-section">
-        <div class="section-content">
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
-          >
-            <div class="section-label">Данные</div>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 100 },
-            }"
-          >
-            <h2 class="section-title">Только ваши</h2>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 200 },
-            }"
-          >
-            <p class="section-text">
-              Всё хранится локально на вашем устройстве. Экспортируйте,
-              импортируйте, делайте бэкапы — ваши данные принадлежат только вам.
-            </p>
-          </div>
-          <div class="security-badges">
-            <div class="badge"><Shield :size="20" /> Локальное хранение</div>
-            <div class="badge"><Download :size="20" /> Экспорт</div>
-            <div class="badge"><Upload :size="20" /> Импорт</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Шаг 6: О проекте -->
-      <section id="step-6" class="section about-section">
-        <div class="section-content">
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
-          >
-            <div class="section-label">О проекте</div>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 100 },
-            }"
-          >
-            <h2 class="section-title">Кто это делает</h2>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 200 },
-            }"
-          >
-            <p class="section-text">
-              COF — пет-проект одного разработчика, Сергея Борисова. Я делаю
-              его, потому что верю: правильные инструменты помогают жить
-              осознаннее. Сейчас приложение находится на стадии активной
-              бета-разработки, возможны шероховатости, но я непрерывно всё
-              допиливаю.
-            </p>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 300 },
-            }"
-          >
-            <p class="section-text">
-              Если хотите поддержать разработку и ускорить появление новых фич —
-              буду признателен любой сумме.
-            </p>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, scale: 0.95 }"
-            :visible-once="{
-              opacity: 1,
-              scale: 1,
-              transition: { duration: 500, delay: 400 },
-            }"
-            class="donation-block"
-          >
-            <Heart :size="20" />
-            <span>Поддержать проект</span>
-            <div class="wallet-address">
-              <code>TXjoHFudFFQT6hXSqb55xz5W2KQUAAbnF8</code>
-              <span class="network">TRC-20 (USDT)</span>
-            </div>
-          </div>
-          <div class="contacts">
-            <a href="mailto:sergeyborisov_1@vk.ru"><Mail :size="20" /></a>
-            <a href="#"><Send :size="20" /></a>
-            <a href="#"><Instagram :size="20" /></a>
-          </div>
-        </div>
-      </section>
-
-      <!-- Шаг 7: Старт -->
-      <section id="step-7" class="section start-section">
-        <div class="section-content">
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
-          >
-            <h2 class="final-title">Пора начинать</h2>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 100 },
-            }"
-          >
-            <p class="final-text">
-              Создайте три задачи на сегодня и почувствуйте, как фокус меняет
-              всё.
-            </p>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, scale: 0.9 }"
-            :visible-once="{
-              opacity: 1,
-              scale: 1,
-              transition: { duration: 500, delay: 200 },
-            }"
-          >
-            <button class="cta-button large" @click="finishOnboarding">
-              Открыть COF
-              <ArrowRight :size="24" class="btn-icon" />
+      <section class="screen hero-screen">
+        <div class="screen-content">
+          <div class="section-label">Ваш новый ритм</div>
+          <h1 class="hero-title">
+            Меньше хаоса.
+            <br />
+            Больше смысла каждый день.
+          </h1>
+          <p class="hero-text">
+            Core of Life помогает держать фокус, видеть прогресс и двигаться по
+            своей траектории без перегруза списками.
+          </p>
+          <div class="hero-cta">
+            <button class="cta-button" @click="finishOnboarding">
+              Начать сейчас
+              <ArrowRight :size="18" class="btn-icon" />
             </button>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 20 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 500, delay: 300 },
-            }"
-          >
-            <p class="final-hint">
-              В любой момент вернитесь к гайду через иконку вопроса в хедере.
+            <p class="hint-text">
+              Или листайте вниз — покажем философию и ключевые инструменты.
             </p>
           </div>
+
+          <div class="stat-strip">
+            <article v-for="item in heroStats" :key="item.title" class="stat-card">
+              <span class="stat-title">{{ item.title }}</span>
+              <strong>{{ item.value }}</strong>
+            </article>
+          </div>
+        </div>
+
+        <aside class="hero-panel">
+          <div class="hero-panel__frame">
+            <div class="hero-panel__header">
+              <span>Фокус-сессия</span>
+              <Clock3 :size="16" />
+            </div>
+            <ul class="pulse-list">
+              <li v-for="task in demoTasks" :key="task" class="pulse-item">
+                <span class="pulse-dot" />
+                <span>{{ task }}</span>
+              </li>
+            </ul>
+            <div class="hero-tags">
+              <span v-for="tag in tags" :key="tag">{{ tag }}</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="screen focus-screen">
+        <div class="screen-content">
+          <div class="section-label">Принцип фокуса</div>
+          <h2 class="section-title">Правило трёх работает на каждом горизонте</h2>
+          <p class="section-text">
+            Вместо бесконечных списков — управляемый объём задач. Вы всегда
+            понимаете, что важно сегодня, на неделе, в месяце и в году.
+          </p>
+
+          <div class="rules-grid">
+            <article v-for="rule in rules" :key="rule.label" class="rule-card">
+              <div class="rule-card__icon">
+                <component :is="rule.icon" :size="20" />
+              </div>
+              <div class="rule-number">3</div>
+              <div class="rule-label">{{ rule.label }}</div>
+              <div class="rule-desc">{{ rule.desc }}</div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen author-screen">
+        <div class="screen-content">
+          <div class="section-label">Третий экран: за кулисами</div>
+          <h2 class="section-title">Проект создаёт один человек. Личность скрыта.</h2>
+          <p class="section-text">
+            Без громких обещаний и команды маркетинга. Только постоянная работа,
+            реальные итерации и внимательное отношение к деталям.
+          </p>
+
+          <div class="mystery-layout">
+            <article class="mystery-card">
+              <div class="mystery-card__head">
+                <Ghost :size="18" />
+                <span>Кто разработчик?</span>
+              </div>
+              <p>
+                Пока это остаётся интригой. Важно не имя, а качество продукта и
+                прозрачный прогресс.
+              </p>
+            </article>
+            <article class="mystery-card">
+              <div class="mystery-card__head">
+                <FlaskConical :size="18" />
+                <span>Текущий статус</span>
+              </div>
+              <p>
+                Core of Life находится в стадии активной разработки и бета-тестирования.
+                Функции обновляются и улучшаются регулярно.
+              </p>
+            </article>
+            <article class="mystery-card">
+              <div class="mystery-card__head">
+                <Radar :size="18" />
+                <span>Что дальше</span>
+              </div>
+              <p>
+                Впереди оптимизация UX, новые сценарии планирования и развитие
+                аналитики прогресса.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen features-screen">
+        <div class="screen-content">
+          <div class="section-label">Что внутри</div>
+          <h2 class="section-title">Инструменты, которые работают вместе</h2>
+          <p class="section-text">
+            Всё в едином рабочем пространстве: задачи, привычки, карта развития,
+            аналитика и персональные настройки.
+          </p>
+
+          <div class="features-grid">
+            <article v-for="feature in features" :key="feature.title" class="feature-card">
+              <div class="feature-icon">
+                <component :is="feature.icon" :size="20" />
+              </div>
+              <h3>{{ feature.title }}</h3>
+              <p>{{ feature.desc }}</p>
+            </article>
+          </div>
+
+          <div class="security-row">
+            <div class="security-pill"><Shield :size="16" /> Локальное хранение</div>
+            <div class="security-pill"><Download :size="16" /> Экспорт и импорт</div>
+            <div class="security-pill"><Sparkles :size="16" /> Гибкая персонализация</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen final-screen">
+        <div class="screen-content final-content">
+          <div class="section-label">Старт</div>
+          <h2 class="final-title">Готовы собрать свой фокус?</h2>
+          <p class="final-text">
+            Начните с трёх задач на сегодня и почувствуйте, как меняется ритм
+            дня, когда приоритеты действительно ясны.
+          </p>
+          <button class="cta-button cta-button--large" @click="finishOnboarding">
+            Открыть Core of Life
+            <ArrowRight :size="20" class="btn-icon" />
+          </button>
         </div>
       </section>
     </div>
@@ -488,24 +189,22 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import {
-  ChevronRight,
   ArrowRight,
-  RotateCw,
   Calendar,
-  Palette,
-  GitBranch,
-  Target,
-  Move,
-  Shield,
+  ChevronRight,
+  Clock3,
+  Compass,
   Download,
-  Upload,
-  Heart,
-  Mail,
-  Send,
-  Instagram,
+  FlaskConical,
+  Ghost,
+  GitBranch,
+  Radar,
+  Shield,
+  Sparkles,
+  Target,
 } from 'lucide-vue-next'
-import { useOnboardingStore } from '~/stores/onboarding.store'
 import { useAuthStore } from '~/stores/auth.store'
+import { useOnboardingStore } from '~/stores/onboarding.store'
 
 definePageMeta({
   layout: false,
@@ -518,37 +217,64 @@ const router = useRouter()
 const scrollContainer = ref<HTMLElement | null>(null)
 const progress = ref(0)
 
-const shapes = [
-  {
-    gradient:
-      'radial-gradient(circle at 30% 30%, rgba(var(--accent-rgb), 0.12), transparent 70%)',
-  },
-  {
-    gradient:
-      'radial-gradient(circle at 70% 70%, rgba(var(--accent-rgb), 0.10), transparent 70%)',
-  },
-  {
-    gradient:
-      'radial-gradient(circle at 50% 50%, rgba(var(--accent-rgb), 0.08), transparent 70%)',
-  },
+const heroStats = [
+  { title: 'Фокус', value: '3 приоритета' },
+  { title: 'Прогресс', value: 'ежедневно' },
+  { title: 'Ритм', value: 'без перегруза' },
 ]
 
-const allTags = [
-  '#фокус',
-  '#осознанность',
-  '#правилотрёх',
-  '#cof',
-  '#развитие',
-  '#привычки',
-  '#цели',
-  '#2026',
+const demoTasks = [
+  'Закрыть ключевую задачу дня',
+  'Поддержать важную привычку',
+  'Сдвинуть личный проект на шаг',
 ]
+
+const tags = ['#focus', '#discipline', '#progress', '#coreoflife']
 
 const rules = [
-  { number: 3, label: 'задачи на день' },
-  { number: 3, label: 'на неделю' },
-  { number: 3, label: 'на месяц' },
-  { number: 3, label: 'на год' },
+  {
+    icon: Target,
+    label: 'На день',
+    desc: 'Только три приоритета, которые реально закрыть.',
+  },
+  {
+    icon: Calendar,
+    label: 'На неделю',
+    desc: 'Фиксируйте вектор недели, а не хаотичные списки.',
+  },
+  {
+    icon: Compass,
+    label: 'На месяц',
+    desc: 'Собирайте крупные результаты из малых шагов.',
+  },
+  {
+    icon: GitBranch,
+    label: 'На год',
+    desc: 'Держите курс и отслеживайте путь развития.',
+  },
+]
+
+const features = [
+  {
+    icon: Calendar,
+    title: 'Задачи и привычки',
+    desc: 'Единый контур для повседневных действий и долгих серий.',
+  },
+  {
+    icon: GitBranch,
+    title: 'Карта развития',
+    desc: 'Визуализируйте траекторию и отмечайте пройденные этапы.',
+  },
+  {
+    icon: Radar,
+    title: 'Аналитика',
+    desc: 'Наблюдайте динамику прогресса и стабильность фокуса.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Персонализация',
+    desc: 'Настраивайте тему, акцент, анимации и рабочее окружение.',
+  },
 ]
 
 function finishOnboarding() {
@@ -559,17 +285,29 @@ function finishOnboarding() {
 function handleScroll() {
   const container = scrollContainer.value
   if (!container) return
-  const scrollTop = container.scrollTop
-  const scrollHeight = container.scrollHeight - container.clientHeight
-  progress.value = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0
+  const maxScroll = container.scrollHeight - container.clientHeight
+  progress.value = maxScroll > 0 ? (container.scrollTop / maxScroll) * 100 : 0
+}
+
+function attachScrollListener() {
+  const container = scrollContainer.value
+  if (!container) return
+  container.addEventListener('scroll', handleScroll, { passive: true })
+  handleScroll()
+}
+
+function detachScrollListener() {
+  const container = scrollContainer.value
+  if (!container) return
+  container.removeEventListener('scroll', handleScroll)
 }
 
 onMounted(() => {
-  const container = scrollContainer.value
-  if (!container) return
-  container.addEventListener('scroll', handleScroll)
-  handleScroll()
-  onUnmounted(() => container.removeEventListener('scroll', handleScroll))
+  attachScrollListener()
+})
+
+onUnmounted(() => {
+  detachScrollListener()
 })
 </script>
 
@@ -577,12 +315,13 @@ onMounted(() => {
 .onboarding {
   position: fixed;
   inset: 0;
-  background: var(--bg);
-  color: var(--accent);
   z-index: 9999;
   display: flex;
   flex-direction: column;
+  background: var(--bg);
+  color: var(--accent);
   font-family: 'Inter', sans-serif;
+  overflow: hidden;
 }
 
 .top-progress {
@@ -590,411 +329,599 @@ onMounted(() => {
   top: 0;
   left: 0;
   right: 0;
+  z-index: 40;
   height: 3px;
   background: var(--border);
-  z-index: 200;
+
   .progress-fill {
     height: 100%;
     background: var(--accent);
-    width: 0%;
+    transition: width 0.2s linear;
   }
 }
 
 .background-layer {
   position: absolute;
   inset: 0;
-  overflow: hidden;
   pointer-events: none;
+  overflow: hidden;
 }
-.floating-shape {
+
+.orb {
   position: absolute;
-  width: 80vmax;
-  height: 80vmax;
-  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-  animation: float 22s infinite alternate ease-in-out;
-  filter: blur(80px);
-  opacity: 0.5;
-  &.shape1 {
-    top: -30vh;
-    left: -20vw;
-  }
-  &.shape2 {
-    bottom: -20vh;
-    right: -15vw;
-    animation-duration: 28s;
-    animation-direction: alternate-reverse;
-  }
-  &.shape3 {
-    top: 40vh;
-    left: 50vw;
-    width: 60vmax;
-    height: 60vmax;
-    animation-duration: 20s;
-  }
+  border-radius: 999px;
+  filter: blur(60px);
+  opacity: 0.35;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  animation: drift 20s ease-in-out infinite alternate;
 }
-@keyframes float {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  100% {
-    transform: translate(10%, 15%) rotate(8deg);
-  }
+
+.orb--one {
+  top: -12rem;
+  left: -6rem;
+  width: 24rem;
+  height: 24rem;
 }
-.gradient-overlay {
+
+.orb--two {
+  right: -10rem;
+  top: 25%;
+  width: 28rem;
+  height: 28rem;
+  animation-duration: 26s;
+}
+
+.orb--three {
+  left: 40%;
+  bottom: -12rem;
+  width: 22rem;
+  height: 22rem;
+  animation-duration: 22s;
+}
+
+.noise-mask {
   position: absolute;
   inset: 0;
   background: radial-gradient(
-    circle at 50% 50%,
-    color-mix(in srgb, var(--bg) 80%, #000) 0%,
+    circle at center,
+    color-mix(in srgb, var(--bg) 80%, transparent) 0%,
     var(--bg) 100%
   );
-  backdrop-filter: blur(40px);
 }
 
 .fixed-header {
   position: fixed;
-  top: 0;
+  top: 12px;
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 30;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 40px;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--bg) 95%, transparent),
-    transparent
-  );
-  backdrop-filter: blur(10px);
+  gap: 12px;
+  padding: 0 24px;
 }
-.logo {
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 2rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--accent);
 }
-.beta-badge {
-  padding: 5px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 30px;
-  font-family: 'Manrope', sans-serif;
-  font-size: 0.75rem;
+
+.brand-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--dim);
+  letter-spacing: 0.01em;
 }
+
+.header-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.beta-badge {
+  padding: 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  color: var(--dim);
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .skip-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 18px;
-  background: transparent;
+  padding: 9px 14px;
   border: 1px solid var(--border);
-  border-radius: 40px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
   color: var(--dim);
   font-family: 'Manrope', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition:
+    color var(--transition-standard),
+    border-color var(--transition-standard),
+    transform var(--transition-standard);
+
   &:hover {
-    border-color: var(--accent);
     color: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-1px);
   }
 }
 
 .scroll-container {
-  flex: 1;
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  scroll-behavior: smooth;
   scroll-snap-type: y mandatory;
-  &::-webkit-scrollbar {
-    width: 0;
-  }
-  padding-top: 80px;
+  scroll-behavior: smooth;
+  padding-top: 64px;
 }
 
-.section {
-  min-height: 100vh;
+.screen {
+  min-height: calc(100dvh - 64px);
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 60px 40px;
-  position: relative;
   scroll-snap-align: start;
-  @media (max-width: 768px) {
-    padding: 40px 20px;
-    min-height: calc(100vh - 80px);
-  }
-}
-.section-content {
-  max-width: 1100px;
-  margin: 0 auto;
-  width: 100%;
-}
-.section-label {
-  font-family: 'Manrope', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 4px;
-  color: var(--dim);
-  margin-bottom: 20px;
-}
-.section-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(2.5rem, 6vw, 4rem);
-  font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  margin-bottom: 25px;
-  color: var(--accent);
-}
-.section-text {
-  font-family: 'Inter', sans-serif;
-  font-size: clamp(1rem, 4vw, 1.2rem);
-  line-height: 1.7;
-  color: var(--dim);
-  max-width: 700px;
-  margin-bottom: 40px;
+  padding: 48px 24px 52px;
 }
 
-.hero-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-  align-items: center;
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
+.screen-content {
+  width: min(1120px, 100%);
+  margin: 0 auto;
 }
-.hero-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(3rem, 8vw, 5rem);
-  font-weight: 700;
-  line-height: 1.1;
-  margin-bottom: 20px;
-  .line {
-    display: block;
-  }
-}
-.hero-subtitle {
-  font-family: 'Inter', sans-serif;
-  font-size: clamp(1rem, 4vw, 1.25rem);
-  line-height: 1.6;
+
+.section-label {
+  margin-bottom: 14px;
   color: var(--dim);
-  margin-bottom: 35px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.77rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
+
+.section-title {
+  margin: 0 0 16px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.9rem, 4.8vw, 3.2rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.section-text {
+  max-width: 70ch;
+  margin: 0 0 28px;
+  color: var(--dim);
+  font-size: clamp(0.98rem, 1.8vw, 1.1rem);
+  line-height: 1.65;
+}
+
+.hero-screen {
+  .screen-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 22px;
+    align-items: stretch;
+  }
+}
+
+.hero-title {
+  margin: 0 0 16px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.1rem, 6vw, 4.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+.hero-text {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--dim);
+  font-size: clamp(1rem, 2.2vw, 1.18rem);
+  line-height: 1.7;
+}
+
 .hero-cta {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
+  margin-top: 24px;
+  display: grid;
+  gap: 10px;
 }
+
 .cta-button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  padding: 16px 36px;
+  width: fit-content;
+  min-width: 180px;
+  padding: 14px 24px;
+  border: 1px solid transparent;
+  border-radius: 14px;
   background: var(--accent);
   color: var(--bg);
-  border: none;
-  border-radius: 50px;
   font-family: 'Manrope', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 0.98rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s;
+  transition:
+    transform var(--transition-standard),
+    box-shadow var(--transition-standard),
+    opacity var(--transition-standard);
+
+  .btn-icon {
+    transition: transform var(--transition-standard);
+  }
+
   &:hover {
-    transform: scale(1.02);
+    transform: translateY(-1px);
     box-shadow: var(--shadow-lg);
+
     .btn-icon {
-      transform: translateX(5px);
+      transform: translateX(2px);
     }
   }
-  .btn-icon {
-    transition: transform 0.2s;
-  }
-}
-.hint-text {
-  font-family: 'Manrope', sans-serif;
-  font-size: 0.9rem;
-  color: var(--dim);
 }
 
-.hero-visual {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.hashtag-cloud {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-  max-width: 400px;
-}
-.hashtag {
-  padding: 10px 20px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 40px;
-  font-family: 'Manrope', sans-serif;
+.cta-button--large {
+  width: auto;
+  min-width: 250px;
+  padding: 16px 28px;
   font-size: 1rem;
-  color: var(--accent);
 }
 
-.rule-grid {
-  display: flex;
-  gap: 40px;
-  margin-top: 50px;
-  flex-wrap: wrap;
-  justify-content: center;
+.hint-text {
+  margin: 0;
+  color: var(--dim);
+  font-size: 0.86rem;
 }
-.rule-item {
-  text-align: center;
-  .rule-number {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 5rem;
-    font-weight: 700;
-    color: var(--accent);
-  }
-  .rule-label {
-    font-family: 'Manrope', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
+
+.stat-strip {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.stat-card {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  display: grid;
+  gap: 2px;
+
+  .stat-title {
     color: var(--dim);
-    margin-top: 10px;
-    text-transform: uppercase;
+    font-size: 0.78rem;
+  }
+
+  strong {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
   }
 }
 
-.visual-features {
-  display: flex;
-  gap: 40px;
-  margin: 40px 0;
-  flex-wrap: wrap;
+.hero-panel__frame {
+  height: 100%;
+  min-height: 280px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface) 92%, transparent),
+      color-mix(in srgb, var(--surface) 80%, transparent)
+    );
+  padding: 18px;
+  display: grid;
+  gap: 16px;
+  box-shadow: var(--shadow-md);
 }
-.feature-row {
+
+.hero-panel__header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  color: var(--accent);
-  font-family: 'Manrope', sans-serif;
-  font-weight: 500;
+  justify-content: space-between;
+  color: var(--dim);
+  font-size: 0.84rem;
+  font-weight: 600;
 }
-.placeholder-card {
-  margin-top: 30px;
-  padding: 60px 40px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 30px;
-  text-align: center;
-  p {
+
+.pulse-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pulse-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+  font-size: 0.92rem;
+}
+
+.pulse-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  span {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 90%, transparent);
     color: var(--dim);
+    font-size: 0.76rem;
   }
 }
 
-.tools-grid {
+.rules-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 25px;
-  margin-top: 40px;
-  @media (max-width: 768px) {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.rule-card {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.rule-card__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.rule-number {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.rule-label {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.rule-desc {
+  color: var(--dim);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.mystery-layout {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mystery-card {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      circle at top right,
+      color-mix(in srgb, var(--accent) 10%, transparent),
+      transparent 40%
+    ),
+    color-mix(in srgb, var(--surface) 90%, transparent);
+  display: grid;
+  gap: 10px;
+
+  p {
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+}
+
+.mystery-card__head {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.feature-card {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  display: grid;
+  gap: 8px;
+
+  h3 {
+    margin: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+}
+
+.feature-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.security-row {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.security-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  color: var(--dim);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.final-content {
+  max-width: 760px;
+  text-align: center;
+}
+
+.final-title {
+  margin: 0 0 14px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.1rem, 5vw, 3.6rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+}
+
+.final-text {
+  margin: 0 auto 24px;
+  color: var(--dim);
+  max-width: 58ch;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(8%, -6%, 0);
+  }
+}
+
+@media (max-width: 1024px) {
+  .hero-screen .screen-content {
+    grid-template-columns: 1fr;
+  }
+
+  .rules-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mystery-layout {
     grid-template-columns: 1fr;
   }
 }
-.tool-card {
-  padding: 35px 25px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 30px;
-  text-align: center;
-  svg {
-    color: var(--accent);
-    margin-bottom: 20px;
-  }
-  h3 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.4rem;
-    margin-bottom: 12px;
-    color: var(--accent);
-  }
-  p {
-    color: var(--dim);
-  }
-}
 
-.security-badges {
-  display: flex;
-  gap: 20px;
-  margin-top: 40px;
-  flex-wrap: wrap;
-}
-.badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 40px;
-  font-family: 'Manrope', sans-serif;
-  color: var(--accent);
-}
+@media (max-width: 767px) {
+  .fixed-header {
+    top: 10px;
+    padding: 0 12px;
+  }
 
-.about-section .donation-block {
-  display: inline-flex;
-  align-items: center;
-  gap: 15px;
-  margin: 30px 0;
-  padding: 15px 25px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 40px;
-  .wallet-address code {
-    background: transparent;
-    padding: 0;
-    font-size: 0.9rem;
+  .brand-name {
+    display: none;
   }
-}
-.contacts {
-  display: flex;
-  gap: 20px;
-  margin-top: 20px;
-  a {
-    color: var(--dim);
-    transition: color 0.2s;
-    &:hover {
-      color: var(--accent);
-    }
-  }
-}
 
-.start-section {
-  text-align: center;
-  .final-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(3rem, 6vw, 4.5rem);
-    margin-bottom: 20px;
+  .beta-badge {
+    display: none;
   }
-  .final-text {
-    font-size: 1.2rem;
-    color: var(--dim);
-    margin-bottom: 40px;
+
+  .skip-btn {
+    padding: 8px 11px;
+    font-size: 0.78rem;
   }
-  .cta-button.large {
-    padding: 22px 50px;
-    font-size: 1.2rem;
-    margin-bottom: 30px;
+
+  .scroll-container {
+    padding-top: 58px;
   }
-  .final-hint {
-    color: var(--dim);
+
+  .screen {
+    min-height: calc(100dvh - 58px);
+    padding: 26px 12px 34px;
+  }
+
+  .section-title {
+    font-size: clamp(1.7rem, 8vw, 2.3rem);
+  }
+
+  .hero-title {
+    font-size: clamp(1.9rem, 11vw, 2.8rem);
+  }
+
+  .stat-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .rules-grid,
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cta-button,
+  .cta-button--large {
+    width: 100%;
   }
 }
 </style>
