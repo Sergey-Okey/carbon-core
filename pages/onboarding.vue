@@ -1,9 +1,11 @@
 <template>
   <div class="onboarding">
+    <!-- Прогресс-бар -->
     <div class="top-progress">
       <div class="progress-fill" :style="{ width: progress + '%' }" />
     </div>
 
+    <!-- Фоновый слой (сетка, свет, геометрия, партиклы) -->
     <div class="background-layer">
       <div class="background-grid"></div>
       <div class="light-layer">
@@ -83,6 +85,7 @@
       <div class="gradient-overlay"></div>
     </div>
 
+    <!-- Хедер -->
     <div class="fixed-header">
       <div
         v-motion
@@ -110,8 +113,9 @@
       </div>
     </div>
 
+    <!-- Скролл-контейнер -->
     <div class="scroll-container" ref="scrollContainer" @scroll="handleScroll">
-      <!-- Шаг 1 – Вступление -->
+      <!-- Шаг 1 – Вступление (изолированная центрированная секция) -->
       <section id="step-1" class="section hero-section">
         <div class="section-content">
           <div
@@ -489,7 +493,7 @@
         </div>
       </section>
 
-      <!-- Шаг 7 – Старт -->
+      <!-- Шаг 7 – Старт (изолированная центрированная секция) -->
       <section id="step-7" class="section start-section">
         <div class="section-content">
           <div
@@ -767,7 +771,7 @@ function animateTags(time: number) {
   const tags = tagRefs.value
   const p = pointer.value
   const container = heroVisualRef.value
-  const isMobile = window.innerWidth <= 768
+  const isMobile = window.innerWidth < 768
 
   tags.forEach((tagEl, i) => {
     if (!tagEl) return
@@ -1066,7 +1070,7 @@ onUnmounted(() => {
 }
 
 .fixed-header {
-  position: fixed;
+  position: sticky;
   top: 0;
   left: 0;
   right: 0;
@@ -1131,11 +1135,8 @@ onUnmounted(() => {
   scroll-padding-top: calc(var(--header-height) + 12px);
   padding-top: var(--header-height);
 
-  @media (min-width: 769px) {
-    scroll-snap-type: y mandatory;
-  }
   @media (max-width: 768px) {
-    scroll-snap-type: none;
+    scroll-snap-type: y mandatory;
     -webkit-overflow-scrolling: touch;
   }
 
@@ -1152,11 +1153,9 @@ onUnmounted(() => {
   padding: 52px 40px 44px;
   position: relative;
 
-  @media (min-width: 769px) {
-    scroll-snap-align: start;
-  }
   @media (max-width: 768px) {
-    scroll-snap-align: none;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
     min-height: auto;
     padding: 40px 20px 32px;
   }
@@ -1200,6 +1199,9 @@ onUnmounted(() => {
   align-items: center;
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    min-height: calc(100dvh - var(--header-height));
+    justify-content: center;
+    align-items: center;
   }
 }
 .hero-title {
@@ -1419,6 +1421,12 @@ onUnmounted(() => {
 
 .start-section {
   text-align: center;
+  @media (max-width: 768px) {
+    min-height: calc(100dvh - var(--header-height));
+    justify-content: center;
+    align-items: center;
+    display: flex;
+  }
   .final-title {
     font-family: 'Space Grotesk', sans-serif;
     font-size: clamp(3rem, 6vw, 4.5rem);
@@ -1541,6 +1549,9 @@ onUnmounted(() => {
   .hero-section {
     grid-template-columns: 1fr;
     gap: 20px;
+    min-height: calc(100dvh - var(--header-height));
+    justify-content: center;
+    align-items: center;
   }
 
   .hero-visual {
@@ -1635,19 +1646,24 @@ onUnmounted(() => {
     gap: 14px;
   }
 
-  .start-section .final-title {
-    font-size: clamp(2rem, 10vw, 2.8rem);
-  }
-
-  .start-section .final-text {
-    font-size: 1rem;
-    margin-bottom: 24px;
-  }
-
-  .start-section .cta-button.large {
-    width: 100%;
-    padding: 16px 20px;
-    font-size: 1rem;
+  .start-section {
+    min-height: calc(100dvh - var(--header-height));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    .final-title {
+      font-size: clamp(2rem, 10vw, 2.8rem);
+    }
+    .final-text {
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+    .cta-button.large {
+      width: 100%;
+      padding: 16px 20px;
+      font-size: 1rem;
+    }
   }
 }
 </style>
