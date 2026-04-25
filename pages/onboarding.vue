@@ -115,7 +115,7 @@
 
     <!-- Скролл-контейнер -->
     <div class="scroll-container" ref="scrollContainer" @scroll="handleScroll">
-      <!-- Шаг 1 – Вступление (изолированная центрированная секция) -->
+      <!-- Шаг 1 – Вступление -->
       <section id="step-1" class="section hero-section">
         <div class="section-content">
           <div
@@ -417,7 +417,7 @@
         </div>
       </section>
 
-      <!-- Шаг 6 – О проекте (без имени) -->
+      <!-- Шаг 6 – О проекте (с аккордеоном для доната) -->
       <section id="step-6" class="section about-section">
         <div class="section-content">
           <div
@@ -447,7 +447,7 @@
               transition: { duration: 600, delay: 200 },
             }"
           >
-            <p class="section-text">
+            <p class="section-text about-text">
               COF создаётся одним разработчиком как персональный инструмент для
               осознанного управления задачами. Проект находится в активной
               бета‑стадии — возможны мелкие недочёты, но каждая деталь
@@ -463,26 +463,30 @@
               transition: { duration: 600, delay: 300 },
             }"
           >
-            <p class="section-text">
+            <p class="section-text about-text">
               Поддержите разработку — любая сумма помогает быстрее выпускать
               новые возможности.
             </p>
           </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, scale: 0.95 }"
-            :visible-once="{
-              opacity: 1,
-              scale: 1,
-              transition: { duration: 500, delay: 400 },
-            }"
-            class="donation-block"
-          >
-            <Heart :size="20" />
-            <span>Поддержать проект</span>
-            <div class="wallet-address">
-              <code>TXjoHFudFFQT6hXSqb55xz5W2KQUAAbnF8</code>
-              <span class="network">TRC-20 (USDT)</span>
+          <!-- Аккордеон с адресом -->
+          <div class="donation-wrapper">
+            <button
+              class="donation-btn"
+              :class="{ expanded: showDonation }"
+              @click="showDonation = !showDonation"
+            >
+              <Heart :size="20" />
+              <span>Поддержать проект</span>
+              <ChevronRight :size="16" class="chevron" />
+            </button>
+            <div v-if="showDonation" class="donation-content">
+              <div class="wallet-info">
+                <span class="network-badge">TRC-20 (USDT)</span>
+                <code class="wallet-code"
+                  >TXjoHFudFFQT6hXSqb55xz5W2KQUAAbnF8</code
+                >
+              </div>
+              <p class="donation-hint">Нажмите на адрес, чтобы скопировать</p>
             </div>
           </div>
           <div class="contacts">
@@ -493,7 +497,7 @@
         </div>
       </section>
 
-      <!-- Шаг 7 – Старт (изолированная центрированная секция) -->
+      <!-- Шаг 7 – Старт -->
       <section id="step-7" class="section start-section">
         <div class="section-content">
           <div
@@ -581,6 +585,7 @@ const router = useRouter()
 
 const scrollContainer = ref<HTMLElement | null>(null)
 const progress = ref(0)
+const showDonation = ref(false)
 
 const shapes = [
   {
@@ -740,7 +745,11 @@ const allTags = [
   { id: 't5', label: '#развитие' },
   { id: 't6', label: '#привычки' },
   { id: 't7', label: '#цели' },
-  { id: 't8', label: '#2026' },
+  { id: 't8', label: '#работа' },
+  { id: 't9', label: '#бизнес' },
+  { id: 't10', label: '#работа' },
+  { id: '11', label: '#фитнес' },
+  { id: '12', label: '#практика' },
 ]
 
 const rules = [
@@ -1132,13 +1141,10 @@ onUnmounted(() => {
   overflow-y: auto;
   overflow-x: hidden;
   scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--header-height) + 12px);
   padding-top: var(--header-height);
-
-  @media (max-width: 768px) {
-    scroll-snap-type: y mandatory;
-    -webkit-overflow-scrolling: touch;
-  }
+  will-change: transform;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
 
   &::-webkit-scrollbar {
     width: 0;
@@ -1152,12 +1158,13 @@ onUnmounted(() => {
   justify-content: center;
   padding: 52px 40px 44px;
   position: relative;
+  transform: translate3d(0, 0, 0);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 
   @media (max-width: 768px) {
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-    min-height: auto;
     padding: 40px 20px 32px;
+    min-height: calc(100dvh - var(--header-height));
   }
 }
 .section-content {
@@ -1199,7 +1206,6 @@ onUnmounted(() => {
   align-items: center;
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    min-height: calc(100dvh - var(--header-height));
     justify-content: center;
     align-items: center;
   }
@@ -1298,14 +1304,25 @@ onUnmounted(() => {
   margin-top: 50px;
   flex-wrap: wrap;
   justify-content: center;
+
+  @media (max-width: 768px) {
+    gap: 20px;
+    justify-content: space-around;
+  }
 }
 .rule-item {
   text-align: center;
+
   .rule-number {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 5rem;
     font-weight: 700;
     color: var(--accent);
+    line-height: 1;
+
+    @media (max-width: 768px) {
+      font-size: 2.8rem;
+    }
   }
   .rule-label {
     font-family: 'Manrope', sans-serif;
@@ -1314,6 +1331,19 @@ onUnmounted(() => {
     color: var(--dim);
     margin-top: 10px;
     text-transform: uppercase;
+
+    @media (max-width: 768px) {
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-direction: row;
+    justify-content: center;
   }
 }
 
@@ -1391,21 +1421,102 @@ onUnmounted(() => {
   color: var(--accent);
 }
 
-.about-section .donation-block {
-  display: inline-flex;
-  align-items: center;
-  gap: 15px;
-  margin: 30px 0;
-  padding: 15px 25px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 40px;
-  .wallet-address code {
-    background: transparent;
-    padding: 0;
-    font-size: 0.9rem;
+/* ===== Обновлённые стили для секции "О проекте" ===== */
+.about-section {
+  .about-text {
+    margin-bottom: 24px; // Уменьшаем отступы между параграфами
   }
 }
+
+.donation-wrapper {
+  margin: 32px 0 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.donation-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-md);
+  color: var(--accent);
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--transition-standard),
+    border-color var(--transition-standard);
+
+  .chevron {
+    transition: transform 0.25s ease;
+    opacity: 0.7;
+  }
+
+  &.expanded .chevron {
+    transform: rotate(90deg);
+  }
+
+  &:hover {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+  }
+}
+
+.donation-content {
+  margin-top: 14px;
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wallet-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-sm);
+}
+
+.network-badge {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim);
+  padding: 4px 10px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.wallet-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--accent);
+  word-break: break-all;
+  user-select: all;
+  cursor: copy;
+  line-height: 1.5;
+}
+
+.donation-hint {
+  font-size: 0.8rem;
+  color: var(--dim);
+  margin: 0;
+  padding-left: 4px;
+}
+
 .contacts {
   display: flex;
   gap: 20px;
@@ -1421,12 +1532,6 @@ onUnmounted(() => {
 
 .start-section {
   text-align: center;
-  @media (max-width: 768px) {
-    min-height: calc(100dvh - var(--header-height));
-    justify-content: center;
-    align-items: center;
-    display: flex;
-  }
   .final-title {
     font-family: 'Space Grotesk', sans-serif;
     font-size: clamp(3rem, 6vw, 4.5rem);
@@ -1447,6 +1552,7 @@ onUnmounted(() => {
   }
 }
 
+// Адаптивность (только необходимые правки)
 @media (max-width: 1024px) {
   .onboarding {
     --header-height: 76px;
@@ -1461,15 +1567,15 @@ onUnmounted(() => {
   }
 
   .hero-section {
-    gap: 28px;
+    gap: 32px;
   }
 
   .section {
-    padding-inline: 24px;
+    padding-inline: 32px;
   }
 
   .rule-grid {
-    gap: 24px;
+    gap: 28px;
   }
 
   .ambient-light {
@@ -1523,10 +1629,6 @@ onUnmounted(() => {
   .geo-shape {
     opacity: 0.44;
     box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 20%, #ffffff);
-  }
-
-  .section {
-    padding: 26px 16px 22px;
   }
 
   .section-label {
@@ -1589,12 +1691,22 @@ onUnmounted(() => {
   }
 
   .rule-grid {
-    gap: 18px;
-    justify-content: flex-start;
+    gap: 20px;
+    justify-content: space-around;
   }
 
-  .rule-item .rule-number {
-    font-size: 3.2rem;
+  .rule-item {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 6px;
+
+    .rule-number {
+      font-size: 2.8rem;
+    }
+    .rule-label {
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
   }
 
   .visual-features {
@@ -1633,13 +1745,9 @@ onUnmounted(() => {
     justify-content: center;
   }
 
-  .about-section .donation-block {
+  .donation-btn {
     width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-    border-radius: 18px;
-    gap: 10px;
-    padding: 14px;
+    justify-content: center;
   }
 
   .contacts {
@@ -1647,7 +1755,6 @@ onUnmounted(() => {
   }
 
   .start-section {
-    min-height: calc(100dvh - var(--header-height));
     display: flex;
     flex-direction: column;
     justify-content: center;
