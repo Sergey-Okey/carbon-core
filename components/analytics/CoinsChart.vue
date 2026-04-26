@@ -1,36 +1,25 @@
 <template>
-  <div class="overall-progress">
-    <h4>Общий прогресс XP</h4>
-    <Line :data="chartData" :options="chartOptions" />
+  <div class="coins-chart">
+    <h4>Монеты по дням</h4>
+    <Bar :data="chartData" :options="chartOptions" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Line } from 'vue-chartjs'
+import { Bar } from 'vue-chartjs'
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
-  Filler,
 } from 'chart.js'
 import { useUserStore } from '~/stores/user.store'
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-)
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const userStore = useUserStore()
 
@@ -49,42 +38,22 @@ const chartData = computed(() => {
   const startDate = new Date(today)
   startDate.setDate(today.getDate() - 6)
 
-  let cumulativeXP = 0
   for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
     labels.push(d.toLocaleDateString('ru', { day: 'numeric', month: 'short' }))
     const dateStr = d.toISOString().split('T')[0]
-    const history = userStore.xpHistory.find((h) => h.date === dateStr)
-    if (history) {
-      cumulativeXP += history.xp
-    }
-    data.push(cumulativeXP)
+    const history = userStore.coinsHistory.find((h) => h.date === dateStr)
+    data.push(history ? history.coins : 0)
   }
 
   return {
     labels,
     datasets: [
       {
-        label: 'XP',
+        label: 'Монеты',
         data,
-        borderColor: getCssVar('--accent'),
-        backgroundColor: (context: any) => {
-          const chart = context.chart
-          const { ctx, chartArea } = chart
-          if (!chartArea) return getCssVar('--accent')
-          const gradient = ctx.createLinearGradient(
-            0,
-            chartArea.bottom,
-            0,
-            chartArea.top
-          )
-          gradient.addColorStop(0, getCssVar('--bg'))
-          gradient.addColorStop(1, getCssVar('--accent'))
-          return gradient
-        },
-        fill: true,
-        tension: 0.4,
-        pointRadius: 4,
-        pointHoverRadius: 6,
+        backgroundColor: getCssVar('--success'),
+        borderColor: getCssVar('--success'),
+        borderWidth: 1,
       },
     ],
   }
@@ -108,7 +77,7 @@ const chartOptions = {
 </script>
 
 <style scoped lang="scss">
-.overall-progress {
+.coins-chart {
   height: 200px;
   margin-bottom: 24px;
   h4 {

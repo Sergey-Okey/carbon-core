@@ -604,7 +604,7 @@ form {
     border: 1px solid var(--border);
     color: var(--dim);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.1s;
     padding: 0;
 
     &:hover {

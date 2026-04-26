@@ -1,6 +1,6 @@
 <template>
-  <div class="overall-progress">
-    <h4>Общий прогресс XP</h4>
+  <div class="level-chart">
+    <h4>Прогресс уровня</h4>
     <Line :data="chartData" :options="chartOptions" />
   </div>
 </template>
@@ -57,31 +57,20 @@ const chartData = computed(() => {
     if (history) {
       cumulativeXP += history.xp
     }
-    data.push(cumulativeXP)
+    // Calculate level based on cumulative XP
+    const level = Math.floor(cumulativeXP / 100) + 1 // Simple level calculation
+    data.push(level)
   }
 
   return {
     labels,
     datasets: [
       {
-        label: 'XP',
+        label: 'Уровень',
         data,
         borderColor: getCssVar('--accent'),
-        backgroundColor: (context: any) => {
-          const chart = context.chart
-          const { ctx, chartArea } = chart
-          if (!chartArea) return getCssVar('--accent')
-          const gradient = ctx.createLinearGradient(
-            0,
-            chartArea.bottom,
-            0,
-            chartArea.top
-          )
-          gradient.addColorStop(0, getCssVar('--bg'))
-          gradient.addColorStop(1, getCssVar('--accent'))
-          return gradient
-        },
-        fill: true,
+        backgroundColor: getCssVar('--accent'),
+        fill: false,
         tension: 0.4,
         pointRadius: 4,
         pointHoverRadius: 6,
@@ -102,13 +91,14 @@ const chartOptions = {
     y: {
       grid: { color: getCssVar('--border') },
       ticks: { color: getCssVar('--dim') },
+      beginAtZero: true,
     },
   },
 }
 </script>
 
 <style scoped lang="scss">
-.overall-progress {
+.level-chart {
   height: 200px;
   margin-bottom: 24px;
   h4 {

@@ -33,6 +33,7 @@ export const useSettingsStore = defineStore(
     const theme = ref<'dark' | 'light'>('dark')
     const accentColor = ref<string>(ACCENT_COLORS[0].value)
     const animationsEnabled = ref<boolean>(true)
+    const animationSpeed = ref<number>(1) // multiplier, 0.5 = slower, 2 = faster
     const soundEnabled = ref<boolean>(false)
     const notificationsEnabled = ref<boolean>(true)
     const autoBackup = ref<boolean>(true)
@@ -81,9 +82,11 @@ export const useSettingsStore = defineStore(
 
     function applyAnimations(enabled: boolean) {
       if (import.meta.client) {
+        const baseDuration = 0.1 // base duration in seconds
+        const duration = enabled ? baseDuration / animationSpeed.value : 0
         document.documentElement.style.setProperty(
           '--transition-standard',
-          enabled ? '0.3s cubic-bezier(0.2, 0, 0, 1)' : '0s'
+          `${duration}s cubic-bezier(0.2, 0, 0, 1)`
         )
       }
     }
@@ -91,6 +94,11 @@ export const useSettingsStore = defineStore(
     function setAnimationsEnabled(val: boolean) {
       animationsEnabled.value = val
       applyAnimations(val)
+    }
+
+    function setAnimationSpeed(val: number) {
+      animationSpeed.value = val
+      applyAnimations(animationsEnabled.value)
     }
 
     function setSoundEnabled(val: boolean) {
@@ -124,6 +132,7 @@ export const useSettingsStore = defineStore(
       theme,
       accentColor,
       animationsEnabled,
+      animationSpeed,
       soundEnabled,
       notificationsEnabled,
       autoBackup,
@@ -132,6 +141,7 @@ export const useSettingsStore = defineStore(
       setTheme,
       setAccentColor,
       setAnimationsEnabled,
+      setAnimationSpeed,
       setSoundEnabled,
       setNotificationsEnabled,
       setAutoBackup,

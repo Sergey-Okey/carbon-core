@@ -33,7 +33,7 @@
 
 /* ✅ ГЛОБАЛЬНЫЕ МИКРО-ВЗАИМОДЕЙСТВИЯ */
 button {
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  transition: all 0.1s cubic-bezier(0.2, 0, 0, 1);
 
   &:active:not(:disabled) {
     transform: scale(0.95);

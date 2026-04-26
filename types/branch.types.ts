@@ -20,6 +20,7 @@ export interface Branch {
   taskIds: string[]
   milestones: Milestone[]
   order: number
+  position?: { x: number; y: number }
 }
 
 export type BranchNodeData = {

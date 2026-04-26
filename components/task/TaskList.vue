@@ -224,7 +224,7 @@ function handleSave(taskData: any) {
   /* ✅ АНИМАЦИИ ДЛЯ СПИСКА ЗАДАЧ */
   .task-list-enter-active,
   .task-list-leave-active {
-    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
   }
 
   .task-list-enter-from {
@@ -238,7 +238,7 @@ function handleSave(taskData: any) {
   }
 
   .task-list-move {
-    transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+    transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1);
   }
 
   /* ✅ АДАПТИВНОСТЬ ДЛЯ ПЛАНШЕТОВ И МОБИЛЬНЫХ */

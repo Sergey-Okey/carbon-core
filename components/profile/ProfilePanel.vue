@@ -11,7 +11,11 @@
           <LayoutGrid :size="16" />
           Задачи
         </button>
-        <button class="nav-chip" type="button" @click="goToWorkspace('settings')">
+        <button
+          class="nav-chip"
+          type="button"
+          @click="goToWorkspace('settings')"
+        >
           <Settings :size="16" />
           Настройки
         </button>
@@ -59,41 +63,70 @@
       </div>
     </div>
 
-    <div class="profile-grid">
-      <GlassCard class="profile-card editor-card">
-        <div class="section-head">
-          <h2>Редактирование</h2>
-          <span>Имя, email, био и аватар сохраняются локально и попадают в backup</span>
-        </div>
+    <div class="profile-tabs">
+      <button
+        v-for="tab in tabs"
+        :key="tab.key"
+        class="tab-btn"
+        :class="{ active: activeTab === tab.key }"
+        @click="activeTab = tab.key"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
 
-        <form class="profile-form" @submit.prevent="saveProfile">
-          <label class="field">
-            <span>Имя</span>
-            <input v-model.trim="form.name" type="text" maxlength="40" />
-          </label>
-
-          <label class="field">
-            <span>Email</span>
-            <input v-model.trim="form.email" type="email" autocomplete="email" />
-          </label>
-
-          <label class="field">
-            <span>О себе</span>
-            <textarea v-model.trim="form.bio" rows="5" maxlength="240"></textarea>
-          </label>
-
-          <div class="save-row">
-            <p v-if="error" class="error-text">{{ error }}</p>
-            <p v-else-if="savedMessage" class="saved-text">{{ savedMessage }}</p>
+    <div class="profile-content">
+      <div v-if="activeTab === 'general'" class="tab-content">
+        <GlassCard class="profile-card editor-card">
+          <div class="section-head">
+            <h2>Редактирование</h2>
+            <span
+              >Имя, email, био и аватар сохраняются локально и попадают в
+              backup</span
+            >
           </div>
 
-          <div class="form-actions">
-            <button class="primary-btn" type="submit">Сохранить профиль</button>
-          </div>
-        </form>
-      </GlassCard>
+          <form class="profile-form" @submit.prevent="saveProfile">
+            <label class="field">
+              <span>Имя</span>
+              <input v-model.trim="form.name" type="text" maxlength="40" />
+            </label>
 
-      <div class="side-column">
+            <label class="field">
+              <span>Email</span>
+              <input
+                v-model.trim="form.email"
+                type="email"
+                autocomplete="email"
+              />
+            </label>
+
+            <label class="field">
+              <span>О себе</span>
+              <textarea
+                v-model.trim="form.bio"
+                rows="5"
+                maxlength="240"
+              ></textarea>
+            </label>
+
+            <div class="save-row">
+              <p v-if="error" class="error-text">{{ error }}</p>
+              <p v-else-if="savedMessage" class="saved-text">
+                {{ savedMessage }}
+              </p>
+            </div>
+
+            <div class="form-actions">
+              <button class="primary-btn" type="submit">
+                Сохранить профиль
+              </button>
+            </div>
+          </form>
+        </GlassCard>
+      </div>
+
+      <div v-if="activeTab === 'progress'" class="tab-content">
         <GlassCard class="profile-card">
           <div class="section-head">
             <h2>Прогресс</h2>
@@ -123,7 +156,9 @@
             </div>
           </div>
         </GlassCard>
+      </div>
 
+      <div v-if="activeTab === 'account'" class="tab-content">
         <GlassCard class="profile-card">
           <div class="section-head">
             <h2>Аккаунт</h2>
@@ -141,7 +176,9 @@
             </div>
             <div class="meta-row">
               <span>Состояние</span>
-              <strong>{{ authStore.isAuthenticated ? 'Авторизован' : 'Гость' }}</strong>
+              <strong>{{
+                authStore.isAuthenticated ? 'Авторизован' : 'Гость'
+              }}</strong>
             </div>
           </div>
 
@@ -149,7 +186,11 @@
             <button class="ghost-btn" type="button" @click="logout">
               Выйти
             </button>
-            <button class="ghost-btn danger" type="button" @click="deleteAccount">
+            <button
+              class="ghost-btn danger"
+              type="button"
+              @click="deleteAccount"
+            >
               Удалить аккаунт
             </button>
           </div>
@@ -189,6 +230,13 @@ const router = useRouter()
 const fileInput = ref<HTMLInputElement | null>(null)
 const error = ref('')
 const savedMessage = ref('')
+const activeTab = ref('general')
+
+const tabs = [
+  { key: 'general', label: 'Общее' },
+  { key: 'progress', label: 'Прогресс' },
+  { key: 'account', label: 'Аккаунт' },
+]
 
 const form = reactive({
   name: '',
@@ -344,6 +392,46 @@ function deleteAccount() {
   gap: 24px;
 }
 
+.profile-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--dim);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-standard);
+
+  &:hover {
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  &.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+}
+
+.profile-content {
+  display: grid;
+  gap: 24px;
+}
+
+.tab-content {
+  display: grid;
+  gap: 16px;
+}
+
 .profile-topbar {
   display: flex;
   align-items: center;
@@ -374,7 +462,11 @@ function deleteAccount() {
   border: 1px solid var(--border);
   border-radius: 28px;
   background:
-    linear-gradient(135deg, rgba(var(--accent-rgb, 214, 214, 214), 0.08), transparent 55%),
+    linear-gradient(
+      135deg,
+      rgba(var(--accent-rgb, 214, 214, 214), 0.08),
+      transparent 55%
+    ),
     color-mix(in srgb, var(--surface) 86%, transparent);
   box-shadow: var(--shadow-md);
 
@@ -460,21 +552,6 @@ function deleteAccount() {
     color: var(--dim);
     line-height: 1.7;
   }
-}
-
-.profile-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
-  gap: 24px;
-
-  @media (max-width: 980px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.side-column {
-  display: grid;
-  gap: 24px;
 }
 
 .profile-card {

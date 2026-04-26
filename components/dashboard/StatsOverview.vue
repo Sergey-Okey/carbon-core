@@ -51,10 +51,18 @@
         >
           <div
             class="chart-column__bar"
-            :style="{ height: day.count > 0 ? Math.max(2, (day.count / maxChartCount) * 20) + 'px' : '2px' }"
+            :style="{
+              height:
+                day.count > 0
+                  ? Math.max(2, (day.count / maxChartCount) * 20) + 'px'
+                  : '2px',
+            }"
             :class="{ 'chart-column__bar--empty': day.count === 0 }"
           ></div>
-          <div class="chart-column__dot" :class="{ 'chart-column__dot--active': day.count > 0 }"></div>
+          <div
+            class="chart-column__dot"
+            :class="{ 'chart-column__dot--active': day.count > 0 }"
+          ></div>
           <span class="chart-column__label">{{ day.shortLabel }}</span>
         </div>
       </div>
@@ -64,19 +72,31 @@
     <div class="stat-item stat-item--tasks">
       <div class="stat-item__body">
         <div class="task-counters">
-          <div class="task-counter" :class="{ 'task-counter--done': completed.day === 3 }">
+          <div
+            class="task-counter"
+            :class="{ 'task-counter--done': completed.day === 3 }"
+          >
             <span class="task-counter__label">Д</span>
             <span class="task-counter__value">{{ completed.day }}/3</span>
           </div>
-          <div class="task-counter" :class="{ 'task-counter--done': completed.week === 3 }">
+          <div
+            class="task-counter"
+            :class="{ 'task-counter--done': completed.week === 3 }"
+          >
             <span class="task-counter__label">Н</span>
             <span class="task-counter__value">{{ completed.week }}/3</span>
           </div>
-          <div class="task-counter" :class="{ 'task-counter--done': completed.month === 3 }">
+          <div
+            class="task-counter"
+            :class="{ 'task-counter--done': completed.month === 3 }"
+          >
             <span class="task-counter__label">М</span>
             <span class="task-counter__value">{{ completed.month }}/3</span>
           </div>
-          <div class="task-counter" :class="{ 'task-counter--done': completed.year === 3 }">
+          <div
+            class="task-counter"
+            :class="{ 'task-counter--done': completed.year === 3 }"
+          >
             <span class="task-counter__label">Г</span>
             <span class="task-counter__value">{{ completed.year }}/3</span>
           </div>
@@ -91,6 +111,7 @@ import { computed } from 'vue'
 import { Zap, Medal, Award, Gem, Crown } from 'lucide-vue-next'
 import { useUserStore } from '~/stores/user.store'
 import { useTasksStore } from '~/stores/tasks.store'
+import type { Task } from '~/types/task.types'
 
 const userStore = useUserStore()
 const tasksStore = useTasksStore()
@@ -128,24 +149,69 @@ const leagueIcon = computed(() => {
 
 const leagueClass = computed(() => userStore.league.toLowerCase())
 
-const completed = computed(() => ({
-  day: tasksStore.tasks.filter(t => t.type === 'TASK_DAY' && t.done).length,
-  week: tasksStore.tasks.filter(t => t.type === 'TASK_WEEK' && t.done).length,
-  month: tasksStore.tasks.filter(t => t.type === 'TASK_MONTH' && t.done).length,
-  year: tasksStore.tasks.filter(t => t.type === 'TASK_YEAR' && t.done).length,
-}))
+const completed = computed(() => {
+  const now = new Date()
+  const today = now.toISOString().split('T')[0]
+  const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()))
+  startOfWeek.setHours(0, 0, 0, 0)
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const startOfYear = new Date(now.getFullYear(), 0, 1)
+
+  const isInPeriod = (completedAt: number, start: Date) => {
+    return new Date(completedAt) >= start
+  }
+
+  return {
+    day: tasksStore.tasks.filter(
+      (t: Task) =>
+        t.type === 'TASK_DAY' &&
+        t.done &&
+        t.completedAt &&
+        isInPeriod(t.completedAt, new Date(today))
+    ).length,
+    week: tasksStore.tasks.filter(
+      (t: Task) =>
+        t.type === 'TASK_WEEK' &&
+        t.done &&
+        t.completedAt &&
+        isInPeriod(t.completedAt, startOfWeek)
+    ).length,
+    month: tasksStore.tasks.filter(
+      (t: Task) =>
+        t.type === 'TASK_MONTH' &&
+        t.done &&
+        t.completedAt &&
+        isInPeriod(t.completedAt, startOfMonth)
+    ).length,
+    year: tasksStore.tasks.filter(
+      (t: Task) =>
+        t.type === 'TASK_YEAR' &&
+        t.done &&
+        t.completedAt &&
+        isInPeriod(t.completedAt, startOfYear)
+    ).length,
+  }
+})
 
 const weeklyChart = computed(() => {
   const days = []
   const today = new Date()
   const dayNames = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
-  const fullDayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
+  const fullDayNames = [
+    'Воскресенье',
+    'Понедельник',
+    'Вторник',
+    'Среда',
+    'Четверг',
+    'Пятница',
+    'Суббота',
+  ]
 
   for (let i = 6; i >= 0; i--) {
     const d = new Date(today)
     d.setDate(today.getDate() - i)
     const dateStr = d.toISOString().split('T')[0]
-    const count = tasksStore.tasks.filter(t => {
+    const count = tasksStore.tasks.filter((t: Task) => {
       if (!t.done || !t.completedAt) return false
       const completedDate = new Date(t.completedAt).toISOString().split('T')[0]
       return completedDate === dateStr
@@ -161,7 +227,7 @@ const weeklyChart = computed(() => {
 })
 
 const maxChartCount = computed(() => {
-  const max = Math.max(...weeklyChart.value.map(d => d.count), 1)
+  const max = Math.max(...weeklyChart.value.map((d: any) => d.count), 1)
   return max
 })
 </script>
@@ -326,7 +392,9 @@ const maxChartCount = computed(() => {
   border-radius: 2px;
   background: var(--accent);
   opacity: 0.55;
-  transition: height 0.3s ease, opacity 0.2s;
+  transition:
+    height 0.3s ease,
+    opacity 0.2s;
 
   @include mobile {
     width: 100%;
@@ -358,8 +426,16 @@ const maxChartCount = computed(() => {
   color: var(--dim);
 }
 
-.бронза { color: var(--bronze); }
-.серебро { color: var(--silver); }
-.золото { color: var(--gold); }
-.платина { color: var(--platinum); }
+.бронза {
+  color: var(--bronze);
+}
+.серебро {
+  color: var(--silver);
+}
+.золото {
+  color: var(--gold);
+}
+.платина {
+  color: var(--platinum);
+}
 </style>

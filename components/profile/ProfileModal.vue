@@ -305,7 +305,7 @@ form {
     cursor: pointer;
     padding: 4px 8px;
     border-radius: 16px;
-    transition: all 0.2s;
+    transition: all 0.1s;
     &:hover {
       background: var(--surface);
       color: var(--accent);

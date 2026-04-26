@@ -15,7 +15,10 @@
         <component :is="iconComponent" :size="20" />
         <div class="header-actions">
           <div class="node-marker"></div>
-          <button class="edit-btn" @click.stop="emit('edit', data.branchId)">
+          <button
+            class="edit-btn nodrag"
+            @click.stop="emit('edit', data.branchId)"
+          >
             <PenSquare :size="14" />
           </button>
         </div>
@@ -31,7 +34,7 @@
       </div>
       <div class="task-counter">{{ totalTasks }} задач</div>
       <div v-if="isBranchCompleted" class="completed-label">Выполнена</div>
-      <button class="expand-btn" @click.stop="togglePinned">
+      <button class="expand-btn nodrag" @click.stop="togglePinned">
         <ChevronDown :size="16" :class="{ rotated: isExpanded }" />
       </button>
     </div>
@@ -237,10 +240,12 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     border-radius: 2px;
     border: 1px solid var(--bg);
     transition: opacity 0.2s;
+    z-index: 2;
   }
 
   &:hover .node-marker {
     opacity: 0;
+    z-index: 1;
   }
 
   .edit-btn {
@@ -258,6 +263,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     color: var(--dim);
     cursor: pointer;
     opacity: 0;
+    z-index: 3;
     transition:
       opacity 0.2s,
       background 0.2s,
@@ -322,7 +328,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     border: none;
     color: var(--dim);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.1s;
     &:hover {
       background: var(--surface);
       color: var(--accent);
@@ -391,7 +397,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 }
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.2s;
+  transition: all 0.1s;
 }
 .expand-enter-from,
 .expand-leave-to {

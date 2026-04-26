@@ -1,5 +1,17 @@
 <template>
   <div class="branch-mobile-view">
+    <!-- Панель инструментов -->
+    <div class="mobile-controls">
+      <button @click="addBranch" title="Добавить ветку">
+        <Plus :size="18" />
+        <span>Ветка</span>
+      </button>
+      <button @click="addMilestoneToSelectedBranch" title="Добавить этап">
+        <PlusCircle :size="18" />
+        <span>Этап</span>
+      </button>
+    </div>
+
     <!-- ✅ АЛЬТЕРНАТИВНЫЙ ВИД ДЛЯ МОБИЛЬНЫХ: Вертикальный список веток -->
     <div class="branches-list">
       <div
@@ -90,19 +102,20 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { ChevronDown, Plus, Edit } from 'lucide-vue-next'
+import { ChevronDown, Plus, Edit, PlusCircle } from 'lucide-vue-next'
 import { useBranchesStore } from '~/stores/branches.store'
 import type { Milestone } from '~/types/branch.types'
+
+const emit = defineEmits<{
+  (e: 'edit-milestone', milestone: Milestone): void
+  (e: 'add-milestone', branchId?: string): void
+  (e: 'add-branch'): void
+}>()
 
 const branchesStore = useBranchesStore()
 const expandedBranch = ref<string | null>(null)
 
 const branches = computed(() => branchesStore.branches)
-
-const emit = defineEmits<{
-  (e: 'edit-milestone', milestone: Milestone): void
-  (e: 'add-milestone', branchId: string): void
-}>()
 
 function toggleBranch(branchId: string) {
   expandedBranch.value = expandedBranch.value === branchId ? null : branchId
@@ -114,6 +127,14 @@ function editMilestone(milestone: Milestone) {
 
 function addMilestone(branchId: string) {
   emit('add-milestone', branchId)
+}
+
+function addBranch() {
+  emit('add-branch')
+}
+
+function addMilestoneToSelectedBranch() {
+  emit('add-milestone')
 }
 
 function getIconComponent(iconName: string) {
@@ -129,6 +150,36 @@ function getIconComponent(iconName: string) {
   overflow-y: auto;
 }
 
+.mobile-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius-sm);
+    color: var(--accent);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.1s;
+
+    &:active {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    span {
+      font-weight: 500;
+    }
+  }
+}
+
 .branches-list {
   display: flex;
   flex-direction: column;
@@ -140,7 +191,7 @@ function getIconComponent(iconName: string) {
   border: 1px solid var(--border);
   border-radius: var(--border-radius-md);
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: all 0.1s ease;
 
   &.expanded {
     box-shadow: var(--shadow-md);
@@ -198,7 +249,7 @@ function getIconComponent(iconName: string) {
   background: var(--bg);
   border-radius: var(--border-radius-sm);
   border-left: 3px solid var(--border);
-  transition: all 0.2s;
+  transition: all 0.1s;
 
   &.pending {
     border-left-color: var(--dim);
@@ -309,7 +360,7 @@ function getIconComponent(iconName: string) {
   color: var(--dim);
   cursor: pointer;
   border-radius: var(--border-radius-sm);
-  transition: all 0.2s;
+  transition: all 0.1s;
   flex-shrink: 0;
 
   &:active {
@@ -331,7 +382,7 @@ function getIconComponent(iconName: string) {
   color: var(--dim);
   font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.1s;
 
   &:active {
     background: var(--surface);
@@ -343,7 +394,7 @@ function getIconComponent(iconName: string) {
 /* ✅ АНИМАЦИИ ДЛЯ РАСКРЫТИЯ */
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+  transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .expand-enter-from {

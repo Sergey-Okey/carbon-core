@@ -1129,7 +1129,7 @@ onUnmounted(() => {
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.1s;
   &:hover {
     border-color: var(--accent);
     color: var(--accent);

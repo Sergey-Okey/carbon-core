@@ -3,7 +3,9 @@
     <div class="modal-overlay" @click.self="emit('close')">
       <div class="modal">
         <div class="modal-header">
-          <h3>{{ props.isCreateMode ? 'Создать этап' : 'Редактировать этап' }}</h3>
+          <h3>
+            {{ props.isCreateMode ? 'Создать этап' : 'Редактировать этап' }}
+          </h3>
           <button class="close-btn" @click="emit('close')">
             <X :size="20" />
           </button>
@@ -25,7 +27,7 @@
           </div>
 
           <div class="form-group">
-            <label>Привязанные задачи (исключая привычки)</label>
+            <label>Привязанные задачи</label>
             <div class="tasks-section">
               <button
                 type="button"
@@ -62,10 +64,17 @@
             <button type="button" class="btn-secondary" @click="emit('close')">
               Отмена
             </button>
-            <button v-if="!props.isCreateMode" type="button" class="btn-danger" @click="handleDelete">
+            <button
+              v-if="!props.isCreateMode"
+              type="button"
+              class="btn-danger"
+              @click="handleDelete"
+            >
               Удалить
             </button>
-            <button type="submit" class="btn-primary">{{ props.isCreateMode ? 'Создать' : 'Сохранить' }}</button>
+            <button type="submit" class="btn-primary">
+              {{ props.isCreateMode ? 'Создать' : 'Сохранить' }}
+            </button>
           </div>
         </form>
       </div>
@@ -92,7 +101,7 @@ const { confirm } = useConfirm()
 const tasksExpanded = ref(false)
 
 const activeTasks = computed(() => {
-  return tasksStore.tasks.filter((t) => t.type !== 'HABIT')
+  return tasksStore.tasks.filter((t) => !t.done)
 })
 
 const form = reactive({
@@ -223,7 +232,7 @@ form {
     color: var(--accent);
     font-size: 0.9rem;
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: border-color 0.1s;
     &:hover {
       border-color: var(--accent);
     }
@@ -258,7 +267,7 @@ form {
     border: 1px solid var(--border);
     color: var(--dim);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.1s;
     &:hover {
       border-color: var(--accent);
       color: var(--accent);
@@ -283,7 +292,7 @@ form {
     color: var(--accent);
     font-size: 0.9rem;
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: border-color 0.1s;
     &:hover {
       border-color: var(--accent);
     }
@@ -341,7 +350,7 @@ form {
           background: var(--bg);
           border: 1px solid var(--border);
           border-radius: 4px;
-          transition: all 0.2s;
+          transition: all 0.1s;
         }
         input:checked + .checkmark {
           background: var(--accent);
@@ -413,7 +422,7 @@ form {
 }
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.2s;
+  transition: all 0.1s;
 }
 .expand-enter-from,
 .expand-leave-to {

@@ -15,13 +15,16 @@ type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {},
 
 interface _GlobalComponents {
   AnalyticsPanel: typeof import("../../components/analytics/AnalyticsPanel.vue")['default']
+  AnalyticsCoinsChart: typeof import("../../components/analytics/CoinsChart.vue")['default']
   AnalyticsHealthIndicator: typeof import("../../components/analytics/HealthIndicator.vue")['default']
+  AnalyticsLevelChart: typeof import("../../components/analytics/LevelChart.vue")['default']
   AnalyticsOverallProgress: typeof import("../../components/analytics/OverallProgress.vue")['default']
+  AnalyticsTaskTypesChart: typeof import("../../components/analytics/TaskTypesChart.vue")['default']
+  AnalyticsTasksChart: typeof import("../../components/analytics/TasksChart.vue")['default']
   AuthPanel: typeof import("../../components/auth/AuthPanel.vue")['default']
   BaseGlassCard: typeof import("../../components/base/GlassCard.vue")['default']
   BaseIconWrapper: typeof import("../../components/base/IconWrapper.vue")['default']
   BaseProgressBar: typeof import("../../components/base/ProgressBar.vue")['default']
-  BaseTheFooter: typeof import("../../components/base/TheFooter.vue")['default']
   BaseTheHeader: typeof import("../../components/base/TheHeader.vue")['default']
   BaseTheNavbar: typeof import("../../components/base/TheNavbar.vue")['default']
   BaseToastContainer: typeof import("../../components/base/ToastContainer.vue")['default']
@@ -73,13 +76,16 @@ interface _GlobalComponents {
   Body: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Body']
   NuxtIsland: typeof import("../../node_modules/nuxt/dist/app/components/nuxt-island")['default']
   LazyAnalyticsPanel: LazyComponent<typeof import("../../components/analytics/AnalyticsPanel.vue")['default']>
+  LazyAnalyticsCoinsChart: LazyComponent<typeof import("../../components/analytics/CoinsChart.vue")['default']>
   LazyAnalyticsHealthIndicator: LazyComponent<typeof import("../../components/analytics/HealthIndicator.vue")['default']>
+  LazyAnalyticsLevelChart: LazyComponent<typeof import("../../components/analytics/LevelChart.vue")['default']>
   LazyAnalyticsOverallProgress: LazyComponent<typeof import("../../components/analytics/OverallProgress.vue")['default']>
+  LazyAnalyticsTaskTypesChart: LazyComponent<typeof import("../../components/analytics/TaskTypesChart.vue")['default']>
+  LazyAnalyticsTasksChart: LazyComponent<typeof import("../../components/analytics/TasksChart.vue")['default']>
   LazyAuthPanel: LazyComponent<typeof import("../../components/auth/AuthPanel.vue")['default']>
   LazyBaseGlassCard: LazyComponent<typeof import("../../components/base/GlassCard.vue")['default']>
   LazyBaseIconWrapper: LazyComponent<typeof import("../../components/base/IconWrapper.vue")['default']>
   LazyBaseProgressBar: LazyComponent<typeof import("../../components/base/ProgressBar.vue")['default']>
-  LazyBaseTheFooter: LazyComponent<typeof import("../../components/base/TheFooter.vue")['default']>
   LazyBaseTheHeader: LazyComponent<typeof import("../../components/base/TheHeader.vue")['default']>
   LazyBaseTheNavbar: LazyComponent<typeof import("../../components/base/TheNavbar.vue")['default']>
   LazyBaseToastContainer: LazyComponent<typeof import("../../components/base/ToastContainer.vue")['default']>

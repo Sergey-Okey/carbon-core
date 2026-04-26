@@ -93,7 +93,12 @@
             <button type="button" class="btn-secondary" @click="emit('close')">
               Отмена
             </button>
-            <button v-if="branch" type="button" class="btn-danger" @click="deleteBranch">
+            <button
+              v-if="branch"
+              type="button"
+              class="btn-danger"
+              @click="deleteBranch"
+            >
               Удалить
             </button>
             <button type="submit" class="btn-primary">
@@ -109,8 +114,22 @@
 <script setup lang="ts">
 import { reactive, ref, computed, watch } from 'vue'
 import {
-  X, ChevronDown, TrendingUp, Dumbbell, Brain, Users, Target,
-  Briefcase, Heart, BookOpen, Globe, Award, Coffee, Music, Camera, Code,
+  X,
+  ChevronDown,
+  TrendingUp,
+  Dumbbell,
+  Brain,
+  Users,
+  Target,
+  Briefcase,
+  Heart,
+  BookOpen,
+  Globe,
+  Award,
+  Coffee,
+  Music,
+  Camera,
+  Code,
 } from 'lucide-vue-next'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useBranchesStore } from '~/stores/branches.store'
@@ -120,7 +139,10 @@ import type { Branch } from '~/types/branch.types'
 const props = defineProps<{ branch?: Branch | null }>()
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'save', data: { name: string; icon: string; description: string; taskIds: string[] }): void
+  (
+    e: 'save',
+    data: { name: string; icon: string; description: string; taskIds: string[] }
+  ): void
   (e: 'delete'): void
 }>()
 
@@ -131,17 +153,38 @@ const iconsExpanded = ref(false)
 const tasksExpanded = ref(false)
 
 const iconOptions = [
-  'trending-up', 'dumbbell', 'brain', 'users', 'target',
-  'briefcase', 'heart', 'book-open', 'globe', 'award',
-  'coffee', 'music', 'camera', 'code'
+  'trending-up',
+  'dumbbell',
+  'brain',
+  'users',
+  'target',
+  'briefcase',
+  'heart',
+  'book-open',
+  'globe',
+  'award',
+  'coffee',
+  'music',
+  'camera',
+  'code',
 ]
 
 const iconComponent = (name: string) => {
   const map: Record<string, any> = {
-    'trending-up': TrendingUp, 'dumbbell': Dumbbell, 'brain': Brain, 'users': Users,
-    'target': Target, 'briefcase': Briefcase, 'heart': Heart, 'book-open': BookOpen,
-    'globe': Globe, 'award': Award, 'coffee': Coffee, 'music': Music, 'camera': Camera,
-    'code': Code,
+    'trending-up': TrendingUp,
+    dumbbell: Dumbbell,
+    brain: Brain,
+    users: Users,
+    target: Target,
+    briefcase: Briefcase,
+    heart: Heart,
+    'book-open': BookOpen,
+    globe: Globe,
+    award: Award,
+    coffee: Coffee,
+    music: Music,
+    camera: Camera,
+    code: Code,
   }
   return map[name] || Target
 }
@@ -166,13 +209,18 @@ watch(
       form.description = newBranch.description || ''
       form.taskIds = [...(newBranch.taskIds || [])]
     } else {
-      form.name = ''; form.icon = 'target'; form.description = ''; form.taskIds = []
+      form.name = ''
+      form.icon = 'target'
+      form.description = ''
+      form.taskIds = []
     }
   },
   { immediate: true }
 )
 
-function handleSubmit() { emit('save', { ...form }) }
+function handleSubmit() {
+  emit('save', { ...form })
+}
 
 async function deleteBranch() {
   if (!props.branch) return
@@ -270,7 +318,7 @@ form {
     color: var(--accent);
     font-size: 0.9rem;
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: border-color 0.1s;
     &:hover {
       border-color: var(--accent);
     }
@@ -305,7 +353,7 @@ form {
     border: 1px solid var(--border);
     color: var(--dim);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.1s;
     &:hover {
       border-color: var(--accent);
       color: var(--accent);
@@ -330,7 +378,7 @@ form {
     color: var(--accent);
     font-size: 0.9rem;
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: border-color 0.1s;
     &:hover {
       border-color: var(--accent);
     }
@@ -388,7 +436,7 @@ form {
           background: var(--bg);
           border: 1px solid var(--border);
           border-radius: 4px;
-          transition: all 0.2s;
+          transition: all 0.1s;
         }
         input:checked + .checkmark {
           background: var(--accent);
@@ -460,7 +508,7 @@ form {
 }
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.2s;
+  transition: all 0.1s;
 }
 .expand-enter-from,
 .expand-leave-to {

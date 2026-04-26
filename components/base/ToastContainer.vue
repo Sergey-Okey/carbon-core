@@ -63,7 +63,7 @@ const { notifications, removeNotification } = useNotification()
   color: var(--accent);
   box-shadow: var(--shadow-lg);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.1s ease;
   width: fit-content;
   backdrop-filter: blur(12px);
   touch-action: pan-y;

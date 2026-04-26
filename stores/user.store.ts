@@ -12,6 +12,8 @@ export const useUserStore = defineStore(
     const coins = ref<number>(100)
     const leaguePoints = ref<number>(0)
     const completedTasksCount = ref<number>(0)
+    const xpHistory = ref<{ date: string; xp: number }[]>([])
+    const coinsHistory = ref<{ date: string; coins: number }[]>([])
 
     const profile = ref({
       name: '',
@@ -29,11 +31,13 @@ export const useUserStore = defineStore(
     )
     const currentProgress = computed(() => {
       // Сколько задач выполнено на текущем уровне
-      const tasksInCurrentLevel = completedTasksCount.value % tasksForNextLevel.value
+      const tasksInCurrentLevel =
+        completedTasksCount.value % tasksForNextLevel.value
       return tasksInCurrentLevel
     })
     const levelProgressPercent = computed(() => {
-      const tasksInCurrentLevel = completedTasksCount.value % tasksForNextLevel.value
+      const tasksInCurrentLevel =
+        completedTasksCount.value % tasksForNextLevel.value
       return (tasksInCurrentLevel / tasksForNextLevel.value) * 100
     })
 
@@ -47,6 +51,17 @@ export const useUserStore = defineStore(
     function addXP(amount: number) {
       totalXP.value += amount
       leaguePoints.value += amount * 0.5
+
+      // Записать в историю
+      const today = new Date().toISOString().split('T')[0]
+      const existing = xpHistory.value.find((h) => h.date === today)
+      if (existing) {
+        existing.xp += amount
+      } else {
+        xpHistory.value.push({ date: today, xp: amount })
+      }
+      // Ограничить историю последними 30 днями
+      xpHistory.value = xpHistory.value.slice(-30)
     }
 
     function incrementCompletedTasks(amount: number = 1) {
@@ -60,6 +75,16 @@ export const useUserStore = defineStore(
 
     function addCoins(amount: number) {
       coins.value += amount
+
+      // Записать в историю
+      const today = new Date().toISOString().split('T')[0]
+      const existing = coinsHistory.value.find((h) => h.date === today)
+      if (existing) {
+        existing.coins += amount
+      } else {
+        coinsHistory.value.push({ date: today, coins: amount })
+      }
+      coinsHistory.value = coinsHistory.value.slice(-30)
     }
 
     function reduceLeaguePoints(amount: number) {
@@ -94,6 +119,8 @@ export const useUserStore = defineStore(
       coins,
       leaguePoints,
       completedTasksCount,
+      xpHistory,
+      coinsHistory,
       profile,
       displayName,
       level,
