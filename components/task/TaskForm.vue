@@ -29,12 +29,11 @@
             />
           </div>
 
-          <div class="form-row" v-if="!hideType">
+          <div class="form-row" v-if="!hideType && form.type !== 'HABIT'">
             <div class="form-group">
               <label>Тип</label>
               <div class="select-wrapper">
                 <select v-model="form.type">
-                  <option value="HABIT">Привычка</option>
                   <option value="TASK_DAY">На день</option>
                   <option value="TASK_WEEK">На неделю</option>
                   <option value="TASK_MONTH">На месяц</option>
@@ -44,7 +43,7 @@
               </div>
             </div>
 
-            <div class="form-group" v-if="form.type !== 'HABIT'">
+            <div class="form-group">
               <label>Срок</label>
               <div class="date-wrapper">
                 <input type="date" v-model="form.targetDate" />
@@ -87,7 +86,7 @@
             </div>
           </div>
 
-          <div class="form-group" v-if="!editing">
+          <div class="form-group" v-if="!editing && form.type !== 'HABIT'">
             <label class="checkbox-label">
               <input type="checkbox" v-model="createBranch" />
               <span class="checkmark"></span>

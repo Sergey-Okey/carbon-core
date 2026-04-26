@@ -21,6 +21,9 @@ export const useTagsStore = defineStore(
   () => {
     const tags = ref<InternalTag[]>([])
 
+    // Вызываем при создании стора чтобы теги точно были
+    ensureSystemTags()
+
     async function initTagsAfterHydration() {
       const store = useTagsStore()
       if (store.$persistedState) {
