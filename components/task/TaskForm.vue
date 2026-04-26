@@ -87,6 +87,14 @@
             </div>
           </div>
 
+          <div class="form-group" v-if="!editing">
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="createBranch" />
+              <span class="checkmark"></span>
+              <span class="checkbox-text">Создать ветку из задачи</span>
+            </label>
+          </div>
+
           <div class="form-actions">
             <button type="button" class="btn-secondary" @click="emit('close')">
               Отмена
@@ -156,6 +164,7 @@ import { reactive, watch, ref, computed } from 'vue'
 import { X, ChevronDown, Calendar, Plus } from 'lucide-vue-next'
 import { useTagsStore } from '~/stores/tags.store'
 import { useTasksStore } from '~/stores/tasks.store'
+import { useBranchesStore } from '~/stores/branches.store'
 import { useNotification } from '~/composables/useNotification'
 import type { Task } from '~/types/task.types'
 
@@ -172,8 +181,10 @@ const emit = defineEmits<{
 
 const tagsStore = useTagsStore()
 const tasksStore = useTasksStore()
+const branchesStore = useBranchesStore()
 const { addNotification } = useNotification()
 const editing = computed(() => !!props.task)
+const createBranch = ref(false)
 
 const form = reactive({
   title: '',
@@ -237,13 +248,28 @@ function handleSubmit() {
   } else {
     const result = tasksStore.addTask({ ...form })
     if (result) {
-      addNotification({
-        type: 'success',
-        message:
-          form.type === 'HABIT'
-            ? `Привычка «${result.title}» добавлена`
-            : `«${result.title}» добавлено`,
-      })
+      // Если выбрано создание ветки - создаем её
+      if (createBranch.value) {
+        const branchesStore = useBranchesStore()
+        branchesStore.addBranch(
+          result.title, // Название задачи как название ветки
+          'question', // Значок "?" для последующего выбора
+          form.description || '',
+          [result.id] // Привязываем созданную задачу
+        )
+        addNotification({
+          type: 'success',
+          message: `Ветка «${result.title}» создана в доске`,
+        })
+      } else {
+        addNotification({
+          type: 'success',
+          message:
+            form.type === 'HABIT'
+              ? `Привычка «${result.title}» добавлена`
+              : `«${result.title}» добавлено`,
+        })
+      }
       emit('close')
     } else {
       addNotification({
@@ -412,6 +438,63 @@ form {
     &:focus {
       border-color: var(--accent);
       outline: none;
+    }
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: normal;
+    margin-bottom: 0;
+
+    input[type="checkbox"] {
+      display: none;
+    }
+
+    .checkmark {
+      position: relative;
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--border-radius-sm);
+      transition: all var(--transition-standard);
+
+      &::after {
+        content: '';
+        position: absolute;
+        display: none;
+        left: 6px;
+        top: 2px;
+        width: 5px;
+        height: 10px;
+        border: solid var(--bg);
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+    }
+
+    input[type="checkbox"]:checked + .checkmark {
+      background: var(--accent);
+      border-color: var(--accent);
+      &::after {
+        display: block;
+      }
+    }
+
+    .checkbox-text {
+      font-size: 0.95rem;
+      color: var(--accent);
+    }
+
+    &:hover .checkmark {
+      border-color: var(--accent);
     }
   }
 }

@@ -3,6 +3,8 @@ import { ref } from 'vue'
 import type { Branch, BranchId, Milestone } from '~/types/branch.types'
 import type { Edge } from '@vue-flow/core'
 import { v4 as uuidv4 } from 'uuid'
+import { useUserStore } from './user.store'
+import { useTasksStore } from './tasks.store'
 
 export const useBranchesStore = defineStore(
   'branches',
@@ -113,27 +115,54 @@ export const useBranchesStore = defineStore(
         (m) => m.status === 'active'
       )
       if (activeMilestone) {
-        activeMilestone.currentXP += xp
+        // Прогресс считается по количеству выполненных привязанных задач
+        const tasksStore = useTasksStore()
+        const completedTasks = activeMilestone.taskIds.filter(taskId => {
+          const task = tasksStore.tasks.find((t: any) => t.id === taskId)
+          return task && task.done
+        }).length
+        activeMilestone.currentXP = completedTasks
         updateMilestoneStatus(activeMilestone)
       } else {
         const pendingMilestone = branch.milestones.find(
           (m) => m.status === 'pending'
         )
         if (pendingMilestone) {
-          pendingMilestone.currentXP += xp
           pendingMilestone.status = 'active'
+          // Прогресс считается по количеству выполненных привязанных задач
+          const tasksStore = useTasksStore()
+          const completedTasks = pendingMilestone.taskIds.filter(taskId => {
+            const task = tasksStore.tasks.find((t: any) => t.id === taskId)
+            return task && task.done
+          }).length
+          pendingMilestone.currentXP = completedTasks
           updateMilestoneStatus(pendingMilestone)
         }
       }
     }
 
     function updateMilestoneStatus(milestone: Milestone) {
-      if (milestone.currentXP >= milestone.requiredXP) {
+      const tasksStore = useTasksStore()
+      const totalTasks = milestone.taskIds.length
+      const completedTasks = milestone.taskIds.filter(taskId => {
+        const task = tasksStore.tasks.find(t => t.id === taskId)
+        return task && task.done
+      }).length
+      
+      // Этап завершен когда все привязанные задачи выполнены
+      if (completedTasks >= totalTasks && totalTasks > 0) {
         milestone.status = 'completed'
         const branch = branches.value.find((b) =>
           b.milestones.some((m) => m.id === milestone.id)
         )
         if (branch) {
+          // Начисляем бонус за завершение узла/раздела
+          const userStore = useUserStore()
+          const bonusXP = userStore.getMilestoneBonus(milestone.requiredXP)
+          userStore.addXP(bonusXP)
+          // Увеличиваем счетчик выполненных задач (бонус)
+          userStore.incrementCompletedTasks(5)
+          
           const nextXP = Math.floor(milestone.requiredXP * 1.5)
           const newMilestone: Milestone = {
             id: uuidv4(),
@@ -221,6 +250,7 @@ export const useBranchesStore = defineStore(
       branchId: BranchId,
       name: string,
       description: string = '',
+      icon?: string,
       position?: { x: number; y: number }
     ) {
       const branch = branches.value.find((b) => b.id === branchId)
@@ -229,7 +259,7 @@ export const useBranchesStore = defineStore(
       const newMilestone: Milestone = {
         id: uuidv4(),
         name,
-        icon: branch.icon,
+        icon: icon || 'question', // Если иконка не передана - ставим "?"
         description,
         requiredXP: last ? Math.floor(last.requiredXP * 1.5) : 500,
         currentXP: 0,
@@ -307,7 +337,13 @@ export const useBranchesStore = defineStore(
       if (branch) {
         if (updates.displayName !== undefined)
           branch.displayName = updates.displayName
-        if (updates.icon !== undefined) branch.icon = updates.icon
+        if (updates.icon !== undefined) {
+          branch.icon = updates.icon
+          // Меняем иконку у ВСЕХ привязанных этапов
+          branch.milestones.forEach(milestone => {
+            milestone.icon = updates.icon
+          })
+        }
         if (updates.description !== undefined)
           branch.description = updates.description
         if (updates.taskIds !== undefined) branch.taskIds = updates.taskIds

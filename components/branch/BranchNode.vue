@@ -1,11 +1,10 @@
 <template>
   <GlassCard
-    :id="`node-${milestone.id}`"
+    :id="`node-${milestone?.id}`"
     class="branch-node"
     :class="{
-      completed: milestone.status === 'completed',
+      completed: milestone?.status === 'completed',
       expanded: isExpanded,
-      'is-branch': data.type === 'branch',
     }"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
@@ -14,21 +13,24 @@
       <div class="node-header">
         <component :is="iconComponent" :size="20" />
         <div class="header-actions">
-          <button class="edit-btn" @click.stop="emit('edit', milestone)">
+          <button class="edit-btn" @click.stop="emit('edit', milestone!)">
             <PenSquare :size="14" />
           </button>
-          <span class="status-dot" :class="milestone.status"></span>
+          <span class="status-dot" :class="milestone?.status"></span>
         </div>
       </div>
-      <h4>{{ milestone.name }}</h4>
-      <ProgressBar
-        :value="milestone.currentXP"
-        :max="milestone.requiredXP"
-        height="4px"
-        class="progress"
-      />
+      <h4>{{ milestone?.name }}</h4>
+      <div class="task-dots">
+        <div 
+          v-for="n in Math.min(totalTasksCount, 20)" 
+          :key="n"
+          class="task-dot"
+          :class="{ filled: n <= completedTasksCount }"
+        ></div>
+        <span v-if="totalTasksCount === 0" class="no-tasks">Нет задач</span>
+      </div>
       <div class="xp-info">
-        {{ milestone.currentXP }} / {{ milestone.requiredXP }} XP
+        {{ completedTasksCount }} / {{ totalTasksCount }} задач
       </div>
       <button class="expand-btn" @click.stop="togglePinned">
         <ChevronDown :size="16" :class="{ rotated: isExpanded }" />
@@ -37,7 +39,7 @@
 
     <Transition name="expand">
       <div v-if="isExpanded" class="node-details">
-        <p v-if="milestone.description">{{ milestone.description }}</p>
+        <p v-if="milestone?.description">{{ milestone.description }}</p>
         <p v-else class="placeholder">Нет описания</p>
         <div class="linked-tasks">
           <span class="label">Привязанные задачи:</span>
@@ -74,10 +76,11 @@ import {
   Music,
   Camera,
   Code,
+  HelpCircle as Question,
 } from 'lucide-vue-next'
 import GlassCard from '~/components/base/GlassCard.vue'
-import ProgressBar from '~/components/base/ProgressBar.vue'
 import { useTasksStore } from '~/stores/tasks.store'
+import { useBranchesStore } from '~/stores/branches.store'
 import type { Milestone, BranchNodeData } from '~/types/branch.types'
 
 const props = defineProps<{
@@ -86,15 +89,17 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ (e: 'edit', milestone: Milestone): void }>()
 
-const milestone = props.data.milestone!
 const tasksStore = useTasksStore()
+const branchesStore = useBranchesStore()
+
+const milestone = props.data.milestone
 
 const isExpanded = ref(false)
 const isPinned = ref(false)
 const hovered = ref(false)
 
 const iconComponent = computed(() => {
-  const iconName = milestone.icon || props.data.branchIcon || 'target'
+  const iconName = milestone?.icon || props.data.branchIcon || 'target'
   const map: Record<string, any> = {
     'trending-up': TrendingUp,
     dumbbell: Dumbbell,
@@ -110,12 +115,26 @@ const iconComponent = computed(() => {
     music: Music,
     camera: Camera,
     code: Code,
+    question: Question,
   }
   return map[iconName] || Target
 })
 
 const linkedTasks = computed(() => {
+  if (!milestone) return []
   return tasksStore.tasks.filter((t) => milestone.taskIds.includes(t.id))
+})
+
+const totalTasksCount = computed(() => {
+  return milestone?.taskIds.length || 0
+})
+
+const completedTasksCount = computed(() => {
+  if (!milestone) return 0
+  return milestone.taskIds.filter(taskId => {
+    const task = tasksStore.tasks.find(t => t.id === taskId)
+    return task && task.done
+  }).length
 })
 
 function togglePinned() {
@@ -162,18 +181,32 @@ onUnmounted(() => {
 
   &.completed {
     border-color: var(--success);
-  }
-
-  &.is-branch {
-    border-width: 2px;
-    background: linear-gradient(145deg, var(--surface), var(--bg));
-    box-shadow: var(--shadow-sm);
+    background: color-mix(in srgb, var(--success) 8%, var(--surface));
   }
 
   .node-main {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+  }
+
+  .completion-badge {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: color-mix(in srgb, var(--success) 90%, var(--surface));
+    border: 2px solid var(--success);
+    border-radius: var(--border-radius-md);
+    color: var(--surface);
+    font-weight: 600;
+    font-size: 0.95rem;
+    z-index: 10;
+    box-shadow: var(--shadow-lg);
   }
 
   .node-header {
@@ -243,6 +276,33 @@ onUnmounted(() => {
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
+  }
+
+  .task-dots {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 6px;
+    min-height: 6px;
+    
+    .task-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: all var(--transition-standard);
+      
+      &.filled {
+        background: var(--accent);
+      }
+    }
+    
+    .no-tasks {
+      font-size: 0.75rem;
+      color: var(--dim);
+      font-style: italic;
+    }
   }
 
   .progress {

@@ -305,7 +305,9 @@ async function deleteSelectedBranch() {
 
 function syncNodesAndEdges() {
   const newNodes: Node<BranchNodeData>[] = []
+  
   branchesStore.branches.forEach((branch) => {
+    // Добавляем ТОЛЬКО этапы ветки (без отдельного узла ветки)
     branch.milestones.forEach((milestone) => {
       newNodes.push({
         id: milestone.id,
@@ -320,6 +322,7 @@ function syncNodesAndEdges() {
       })
     })
   })
+  
   nodes.value = newNodes
 
   const existingNodeIds = new Set(newNodes.map((n) => n.id))
@@ -390,17 +393,31 @@ function autoLayout() {
 
 function addMilestoneToSelectedBranch() {
   let targetBranch: Branch | undefined
+  let selectedMilestone: Milestone | undefined
+  
   if (selectedNodeId.value) {
+    // Ищем ветку по выбранному этапу
     targetBranch = branchesStore.branches.find((b) =>
       b.milestones.some((m) => m.id === selectedNodeId.value)
     )
+    // Также находим сам выбранный этап чтобы взять его иконку
+    for (const branch of branchesStore.branches) {
+      const ms = branch.milestones.find((m) => m.id === selectedNodeId.value)
+      if (ms) {
+        selectedMilestone = ms
+        break
+      }
+    }
   }
+  
+  // Если ничего не выбрано - нельзя создать этап
   if (!targetBranch) {
-    targetBranch = branchesStore.branches[0]
+    return
   }
-  if (targetBranch) {
-    branchesStore.addMilestone(targetBranch.id, 'Новый этап', '')
-  }
+  
+  // Если выбрана ветка или этап - создаем этап с иконкой от выбранного
+  const iconToUse = selectedMilestone?.icon || targetBranch.icon
+  branchesStore.addMilestone(targetBranch.id, 'Новый этап', '', iconToUse)
 }
 </script>
 

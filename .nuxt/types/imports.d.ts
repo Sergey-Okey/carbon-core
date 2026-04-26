@@ -9,9 +9,9 @@ declare global {
   const asyncComputed: typeof import('@vueuse/core').asyncComputed
   const autoResetRef: typeof import('@vueuse/core').autoResetRef
   const buildBackupPayload: typeof import('../../utils/backup').buildBackupPayload
-  const calculateCurrentXP: typeof import('../../utils/levelCalculator').calculateCurrentXP
+  const calculateBonusXPForMilestone: typeof import('../../utils/levelCalculator').calculateBonusXPForMilestone
   const calculateLevel: typeof import('../../utils/levelCalculator').calculateLevel
-  const calculateNeededXPForNextLevel: typeof import('../../utils/levelCalculator').calculateNeededXPForNextLevel
+  const calculateTasksForNextLevel: typeof import('../../utils/levelCalculator').calculateTasksForNextLevel
   const callOnce: typeof import('../../node_modules/nuxt/dist/app/composables/once').callOnce
   const cancelIdleCallback: typeof import('../../node_modules/nuxt/dist/app/compat/idle-callback').cancelIdleCallback
   const clampXP: typeof import('../../utils/xpHelpers').clampXP
@@ -474,9 +474,9 @@ declare module 'vue' {
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly buildBackupPayload: UnwrapRef<typeof import('../../utils/backup')['buildBackupPayload']>
-    readonly calculateCurrentXP: UnwrapRef<typeof import('../../utils/levelCalculator')['calculateCurrentXP']>
+    readonly calculateBonusXPForMilestone: UnwrapRef<typeof import('../../utils/levelCalculator')['calculateBonusXPForMilestone']>
     readonly calculateLevel: UnwrapRef<typeof import('../../utils/levelCalculator')['calculateLevel']>
-    readonly calculateNeededXPForNextLevel: UnwrapRef<typeof import('../../utils/levelCalculator')['calculateNeededXPForNextLevel']>
+    readonly calculateTasksForNextLevel: UnwrapRef<typeof import('../../utils/levelCalculator')['calculateTasksForNextLevel']>
     readonly callOnce: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/once')['callOnce']>
     readonly cancelIdleCallback: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/compat/idle-callback')['cancelIdleCallback']>
     readonly clampXP: UnwrapRef<typeof import('../../utils/xpHelpers')['clampXP']>

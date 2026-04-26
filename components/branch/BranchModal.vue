@@ -116,6 +116,7 @@ import { reactive, ref, computed, watch } from 'vue'
 import {
   X,
   ChevronDown,
+  HelpCircle,
   TrendingUp,
   Dumbbell,
   Brain,
@@ -139,6 +140,7 @@ import type { Branch } from '~/types/branch.types'
 const props = defineProps<{ branch?: Branch | null }>()
 const emit = defineEmits<{
   (e: 'close'): void
+  (e: 'delete', id: string): void
   (
     e: 'save',
     data: { name: string; icon: string; description: string; taskIds: string[] }
@@ -184,6 +186,7 @@ const iconComponent = (name: string) => {
     music: Music,
     camera: Camera,
     code: Code,
+    question: HelpCircle,
   }
   return map[name] || Target
 }

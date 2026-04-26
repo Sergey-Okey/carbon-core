@@ -109,6 +109,7 @@ import { reactive, ref, computed, watch } from 'vue'
 import {
   X,
   ChevronDown,
+  HelpCircle as Question,
   TrendingUp,
   Dumbbell,
   Brain,
@@ -171,6 +172,7 @@ const iconComponent = (name: string) => {
     music: Music,
     camera: Camera,
     code: Code,
+    question: Question,
   }
   return map[name] || Target
 }

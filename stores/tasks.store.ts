@@ -51,6 +51,8 @@ export const useTasksStore = defineStore(
           branchesStore.addXPToBranch(tag.branchId, xpPerTag)
         })
         userStore.addXP(xpPerTag * tags.length)
+        // Увеличиваем счетчик выполненных задач для уровня
+        userStore.incrementCompletedTasks()
         return
       }
 
@@ -63,6 +65,8 @@ export const useTasksStore = defineStore(
           branchesStore.addXPToBranch(tag.branchId, baseXP)
         })
         userStore.addXP(baseXP * tags.length)
+        // Увеличиваем счетчик выполненных задач для уровня
+        userStore.incrementCompletedTasks()
 
         if (task.type === 'PURCHASE' && task.purchaseRewardId) {
           rewardsStore.confirmPurchase(task.purchaseRewardId)

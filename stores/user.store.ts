@@ -2,8 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import {
   calculateLevel,
-  calculateCurrentXP,
-  calculateNeededXPForNextLevel,
+  calculateTasksForNextLevel,
 } from '~/utils/levelCalculator'
 
 export const useUserStore = defineStore(
@@ -12,6 +11,7 @@ export const useUserStore = defineStore(
     const totalXP = ref<number>(0)
     const coins = ref<number>(100)
     const leaguePoints = ref<number>(0)
+    const completedTasksCount = ref<number>(0)
 
     const profile = ref({
       name: '',
@@ -20,19 +20,21 @@ export const useUserStore = defineStore(
       avatar: '',
     })
 
-    const level = computed(() => calculateLevel(totalXP.value))
+    const level = computed(() => calculateLevel(completedTasksCount.value))
     const displayName = computed(
       () => profile.value.name || profile.value.email || 'COF User'
     )
-    const currentXP = computed(() =>
-      calculateCurrentXP(totalXP.value, level.value)
+    const tasksForNextLevel = computed(() =>
+      calculateTasksForNextLevel(level.value, league.value)
     )
-    const neededXPForNextLevel = computed(() =>
-      calculateNeededXPForNextLevel(level.value)
-    )
+    const currentProgress = computed(() => {
+      // Сколько задач выполнено на текущем уровне
+      const tasksInCurrentLevel = completedTasksCount.value % tasksForNextLevel.value
+      return tasksInCurrentLevel
+    })
     const levelProgressPercent = computed(() => {
-      if (neededXPForNextLevel.value === 0) return 100
-      return (currentXP.value / neededXPForNextLevel.value) * 100
+      const tasksInCurrentLevel = completedTasksCount.value % tasksForNextLevel.value
+      return (tasksInCurrentLevel / tasksForNextLevel.value) * 100
     })
 
     const league = computed(() => {
@@ -45,6 +47,15 @@ export const useUserStore = defineStore(
     function addXP(amount: number) {
       totalXP.value += amount
       leaguePoints.value += amount * 0.5
+    }
+
+    function incrementCompletedTasks(amount: number = 1) {
+      completedTasksCount.value += amount
+    }
+
+    function getMilestoneBonus(requiredXP: number): number {
+      // Бонус за завершение узла - возвращается как дополнительный XP
+      return Math.floor(requiredXP * 0.5)
     }
 
     function addCoins(amount: number) {
@@ -82,15 +93,18 @@ export const useUserStore = defineStore(
       totalXP,
       coins,
       leaguePoints,
+      completedTasksCount,
       profile,
       displayName,
       level,
-      currentXP,
-      neededXPForNextLevel,
+      currentProgress,
+      tasksForNextLevel,
       levelProgressPercent,
       league,
       addXP,
       addCoins,
+      incrementCompletedTasks,
+      getMilestoneBonus,
       reduceLeaguePoints,
       updateProfile,
       setProfileFromAuth,

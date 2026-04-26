@@ -1,7 +1,11 @@
 <template>
   <div class="health-indicator">
-    <h4>Здоровье</h4>
+    <h4>Прогресс уровня</h4>
     <Doughnut :data="chartData" :options="chartOptions" />
+    <div class="level-info">
+      <span class="level-text">Уровень {{ userStore.level }}</span>
+      <span class="tasks-text">{{ userStore.completedTasksCount }} задач</span>
+    </div>
   </div>
 </template>
 
@@ -16,11 +20,11 @@ ChartJS.register(ArcElement, Tooltip, Legend)
 const userStore = useUserStore()
 
 const chartData = computed(() => ({
-  labels: ['HP', 'Потеряно'],
+  labels: ['Прогресс', 'Осталось'],
   datasets: [
     {
-      data: [userStore.hp, 100 - userStore.hp],
-      backgroundColor: ['var(--accent)', 'var(--bg)'],
+      data: [userStore.levelProgressPercent, 100 - userStore.levelProgressPercent],
+      backgroundColor: ['var(--accent)', 'var(--border)'],
       borderWidth: 0,
     },
   ],
@@ -34,10 +38,29 @@ const chartOptions = {
 
 <style scoped lang="scss">
 .health-indicator {
-  height: 150px;
+  height: 180px;
   h4 {
     margin-bottom: 8px;
     color: var(--accent);
+  }
+  
+  .level-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    
+    .level-text {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+    
+    .tasks-text {
+      font-size: 0.85rem;
+      color: var(--dim);
+    }
   }
 }
 </style>

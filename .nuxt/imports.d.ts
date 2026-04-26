@@ -40,7 +40,7 @@ export { useNotification, NotificationType, NotificationAction, Notification } f
 export { useTaskActions } from '../composables/useTaskActions';
 export { AUTO_BACKUP_KEY, buildBackupPayload, saveAutoBackup, readAutoBackup, restoreBackupPayload, BackupPayload } from '../utils/backup';
 export { getTodayDateString, isDateBeforeToday } from '../utils/dateHelpers';
-export { calculateLevel, calculateCurrentXP, calculateNeededXPForNextLevel } from '../utils/levelCalculator';
+export { calculateLevel, calculateTasksForNextLevel, calculateBonusXPForMilestone } from '../utils/levelCalculator';
 export { clampXP } from '../utils/xpHelpers';
 export { useAuthStore, User } from '../stores/auth.store';
 export { useBranchesStore } from '../stores/branches.store';
