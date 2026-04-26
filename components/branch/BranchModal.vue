@@ -56,7 +56,7 @@
           </div>
 
           <div class="form-group">
-            <label>Привязанные задачи (опционально)</label>
+            <label>Привязанные задачи (исключая привычки)</label>
             <div class="tasks-section">
               <button
                 type="button"
@@ -93,12 +93,7 @@
             <button type="button" class="btn-secondary" @click="emit('close')">
               Отмена
             </button>
-            <button
-              v-if="branch"
-              type="button"
-              class="btn-danger"
-              @click="deleteBranch"
-            >
+            <button v-if="branch" type="button" class="btn-danger" @click="deleteBranch">
               Удалить
             </button>
             <button type="submit" class="btn-primary">
@@ -114,23 +109,8 @@
 <script setup lang="ts">
 import { reactive, ref, computed, watch } from 'vue'
 import {
-  X,
-  ChevronDown,
-  HelpCircle,
-  TrendingUp,
-  Dumbbell,
-  Brain,
-  Users,
-  Target,
-  Briefcase,
-  Heart,
-  BookOpen,
-  Globe,
-  Award,
-  Coffee,
-  Music,
-  Camera,
-  Code,
+  X, ChevronDown, TrendingUp, Dumbbell, Brain, Users, Target,
+  Briefcase, Heart, BookOpen, Globe, Award, Coffee, Music, Camera, Code,
 } from 'lucide-vue-next'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useBranchesStore } from '~/stores/branches.store'
@@ -140,11 +120,8 @@ import type { Branch } from '~/types/branch.types'
 const props = defineProps<{ branch?: Branch | null }>()
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'delete', id: string): void
-  (
-    e: 'save',
-    data: { name: string; icon: string; description: string; taskIds: string[] }
-  ): void
+  (e: 'save', data: { name: string; icon: string; description: string; taskIds: string[] }): void
+  (e: 'delete'): void
 }>()
 
 const tasksStore = useTasksStore()
@@ -154,45 +131,23 @@ const iconsExpanded = ref(false)
 const tasksExpanded = ref(false)
 
 const iconOptions = [
-  'trending-up',
-  'dumbbell',
-  'brain',
-  'users',
-  'target',
-  'briefcase',
-  'heart',
-  'book-open',
-  'globe',
-  'award',
-  'coffee',
-  'music',
-  'camera',
-  'code',
+  'trending-up', 'dumbbell', 'brain', 'users', 'target',
+  'briefcase', 'heart', 'book-open', 'globe', 'award',
+  'coffee', 'music', 'camera', 'code'
 ]
 
 const iconComponent = (name: string) => {
   const map: Record<string, any> = {
-    'trending-up': TrendingUp,
-    dumbbell: Dumbbell,
-    brain: Brain,
-    users: Users,
-    target: Target,
-    briefcase: Briefcase,
-    heart: Heart,
-    'book-open': BookOpen,
-    globe: Globe,
-    award: Award,
-    coffee: Coffee,
-    music: Music,
-    camera: Camera,
-    code: Code,
-    question: HelpCircle,
+    'trending-up': TrendingUp, 'dumbbell': Dumbbell, 'brain': Brain, 'users': Users,
+    'target': Target, 'briefcase': Briefcase, 'heart': Heart, 'book-open': BookOpen,
+    'globe': Globe, 'award': Award, 'coffee': Coffee, 'music': Music, 'camera': Camera,
+    'code': Code,
   }
   return map[name] || Target
 }
 
 const activeTasks = computed(() => {
-  return tasksStore.tasks.filter((t) => !t.done || t.type === 'HABIT')
+  return tasksStore.tasks.filter((t) => t.type !== 'HABIT')
 })
 
 const form = reactive({
@@ -211,26 +166,17 @@ watch(
       form.description = newBranch.description || ''
       form.taskIds = [...(newBranch.taskIds || [])]
     } else {
-      form.name = ''
-      form.icon = 'target'
-      form.description = ''
-      form.taskIds = []
+      form.name = ''; form.icon = 'target'; form.description = ''; form.taskIds = []
     }
   },
   { immediate: true }
 )
 
-function handleSubmit() {
-  emit('save', { ...form })
-}
+function handleSubmit() { emit('save', { ...form }) }
 
 async function deleteBranch() {
   if (!props.branch) return
-  const ok = await confirm(`Удалить ветку "${props.branch.displayName}"?`)
-  if (ok) {
-    branchesStore.deleteBranch(props.branch.id)
-    emit('close')
-  }
+  emit('delete')
 }
 </script>
 

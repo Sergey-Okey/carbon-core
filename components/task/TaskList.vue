@@ -12,7 +12,8 @@
         <Plus :size="20" />
       </button>
     </div>
-    <div class="tasks">
+    <!-- ✅ ДОБАВЛЕНЫ АНИМАЦИИ: TransitionGroup для плавного появления/удаления -->
+    <TransitionGroup name="task-list" class="tasks" tag="div">
       <TaskCard
         v-for="task in tasks"
         :key="task.id"
@@ -21,10 +22,10 @@
         @delete="tasksStore.deleteTask"
         @edit="handleEdit"
       />
-      <p v-if="tasks.length === 0" class="empty">
+      <p v-if="tasks.length === 0" key="empty-state" class="empty">
         {{ emptyMessage }}
       </p>
-    </div>
+    </TransitionGroup>
     <Teleport to="body">
       <TaskForm
         v-if="showForm"
@@ -218,6 +219,100 @@ function handleSave(taskData: any) {
     color: var(--dim);
     padding: 16px;
     font-size: 0.9rem;
+  }
+
+  /* ✅ АНИМАЦИИ ДЛЯ СПИСКА ЗАДАЧ */
+  .task-list-enter-active,
+  .task-list-leave-active {
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .task-list-enter-from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  .task-list-leave-to {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  .task-list-move {
+    transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /* ✅ АДАПТИВНОСТЬ ДЛЯ ПЛАНШЕТОВ И МОБИЛЬНЫХ */
+  @media (max-width: 768px) {
+    .list-header {
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    h3 {
+      font-size: 1rem;
+    }
+
+    .add-btn {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+    }
+
+    .tasks {
+      gap: 10px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .list-header {
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .title-wrapper {
+      gap: 6px;
+    }
+
+    h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .info-badge {
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+    }
+
+    .add-btn {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      flex-shrink: 0;
+    }
+
+    .tasks {
+      gap: 8px;
+    }
+
+    .empty {
+      padding: 12px;
+      font-size: 0.85rem;
+    }
+  }
+
+  @media (max-width: 375px) {
+    h3 {
+      font-size: 0.9rem;
+    }
+
+    .info-badge {
+      display: none;
+    }
+
+    .tasks {
+      gap: 6px;
+    }
   }
 }
 </style>

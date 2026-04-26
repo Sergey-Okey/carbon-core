@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, watch } from 'vue'
+import { onMounted, onUnmounted, watch, ref, watchEffect } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 import { useDebounceFn } from '@vueuse/core'
 import { SpeedInsights } from '@vercel/speed-insights/vue'
@@ -85,17 +85,32 @@ const syncToCloud = useDebounceFn(async () => {
   } catch {}
 }, 2000)
 
+// ✅ Оптимизирована: вместо deep watch на все stores,
+// отслеживаем только длину массивов (более дешевая операция)
 watch(
   [
-    () => tasksStore.tasks,
-    () => branchesStore.branches,
-    () => rewardsStore.rewards,
-    () => tagsStore.tags,
-    () => uiStore.$state,
-    () => settingsStore.$state,
+    () => tasksStore.tasks.length,
+    () => branchesStore.branches.length,
+    () => rewardsStore.rewards.length,
+    () => tagsStore.tags.length,
   ],
+  () => {
+    // Проверяем действительно ли произошли изменения
+    syncToCloud()
+  }
+)
+
+// Отдельный watch для UI и Settings (они изменяются реже)
+watch(
+  () => uiStore.panelWidth,
   () => syncToCloud(),
-  { deep: true }
+  { flush: 'post' }
+)
+
+watch(
+  () => settingsStore.theme,
+  () => syncToCloud(),
+  { flush: 'post' }
 )
 
 onUnmounted(() => {

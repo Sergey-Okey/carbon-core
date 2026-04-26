@@ -27,9 +27,11 @@ interface _GlobalComponents {
   BaseToastContainer: typeof import("../../components/base/ToastContainer.vue")['default']
   BranchBoardControls: typeof import("../../components/branch/BoardControls.vue")['default']
   BranchFlow: typeof import("../../components/branch/BranchFlow.vue")['default']
+  BranchMobileView: typeof import("../../components/branch/BranchMobileView.vue")['default']
   BranchModal: typeof import("../../components/branch/BranchModal.vue")['default']
   BranchNode: typeof import("../../components/branch/BranchNode.vue")['default']
   BranchMilestoneModal: typeof import("../../components/branch/MilestoneModal.vue")['default']
+  BranchMilestoneNode: typeof import("../../components/branch/MilestoneNode.vue")['default']
   BranchNodeEditorModal: typeof import("../../components/branch/NodeEditorModal.vue")['default']
   DashboardStatsOverview: typeof import("../../components/dashboard/StatsOverview.vue")['default']
   ProfileModal: typeof import("../../components/profile/ProfileModal.vue")['default']
@@ -83,9 +85,11 @@ interface _GlobalComponents {
   LazyBaseToastContainer: LazyComponent<typeof import("../../components/base/ToastContainer.vue")['default']>
   LazyBranchBoardControls: LazyComponent<typeof import("../../components/branch/BoardControls.vue")['default']>
   LazyBranchFlow: LazyComponent<typeof import("../../components/branch/BranchFlow.vue")['default']>
+  LazyBranchMobileView: LazyComponent<typeof import("../../components/branch/BranchMobileView.vue")['default']>
   LazyBranchModal: LazyComponent<typeof import("../../components/branch/BranchModal.vue")['default']>
   LazyBranchNode: LazyComponent<typeof import("../../components/branch/BranchNode.vue")['default']>
   LazyBranchMilestoneModal: LazyComponent<typeof import("../../components/branch/MilestoneModal.vue")['default']>
+  LazyBranchMilestoneNode: LazyComponent<typeof import("../../components/branch/MilestoneNode.vue")['default']>
   LazyBranchNodeEditorModal: LazyComponent<typeof import("../../components/branch/NodeEditorModal.vue")['default']>
   LazyDashboardStatsOverview: LazyComponent<typeof import("../../components/dashboard/StatsOverview.vue")['default']>
   LazyProfileModal: LazyComponent<typeof import("../../components/profile/ProfileModal.vue")['default']>

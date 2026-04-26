@@ -450,7 +450,7 @@ form {
     font-weight: normal;
     margin-bottom: 0;
 
-    input[type="checkbox"] {
+    input[type='checkbox'] {
       display: none;
     }
 
@@ -479,7 +479,7 @@ form {
       }
     }
 
-    input[type="checkbox"]:checked + .checkmark {
+    input[type='checkbox']:checked + .checkmark {
       background: var(--accent);
       border-color: var(--accent);
       &::after {
@@ -663,6 +663,121 @@ form {
       opacity: 0.9;
       transform: translateY(-1px);
       box-shadow: var(--shadow-sm);
+    }
+  }
+}
+
+/* ✅ АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ */
+@media (max-width: 640px) {
+  .modal-overlay {
+    padding: 0;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-header {
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+
+    h3,
+    h4 {
+      font-size: 1.1rem;
+    }
+
+    .close-btn {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  form {
+    padding: 20px 16px 24px;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+
+    label {
+      font-size: 0.8rem;
+    }
+
+    input,
+    select {
+      padding: 10px 12px;
+      font-size: 16px; /* Предотвращает зум на iOS */
+    }
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+    margin-top: 20px;
+    padding: 0 0 20px 0;
+
+    button {
+      width: 100%;
+      padding: 14px 16px;
+    }
+  }
+
+  .tags-cloud {
+    gap: 6px;
+
+    .tag-btn {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+  }
+
+  .tag-modal {
+    max-width: 100vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header {
+    padding: 12px 16px;
+  }
+
+  form {
+    padding: 16px 12px 20px;
+  }
+
+  .form-group {
+    margin-bottom: 12px;
+
+    input,
+    select {
+      padding: 8px 10px;
+    }
+  }
+
+  .tags-cloud {
+    gap: 4px;
+
+    .tag-btn {
+      padding: 4px 8px;
+      font-size: 0.75rem;
     }
   }
 }

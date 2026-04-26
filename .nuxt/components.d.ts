@@ -27,9 +27,11 @@ export const BaseTheNavbar: typeof import("../components/base/TheNavbar.vue")['d
 export const BaseToastContainer: typeof import("../components/base/ToastContainer.vue")['default']
 export const BranchBoardControls: typeof import("../components/branch/BoardControls.vue")['default']
 export const BranchFlow: typeof import("../components/branch/BranchFlow.vue")['default']
+export const BranchMobileView: typeof import("../components/branch/BranchMobileView.vue")['default']
 export const BranchModal: typeof import("../components/branch/BranchModal.vue")['default']
 export const BranchNode: typeof import("../components/branch/BranchNode.vue")['default']
 export const BranchMilestoneModal: typeof import("../components/branch/MilestoneModal.vue")['default']
+export const BranchMilestoneNode: typeof import("../components/branch/MilestoneNode.vue")['default']
 export const BranchNodeEditorModal: typeof import("../components/branch/NodeEditorModal.vue")['default']
 export const DashboardStatsOverview: typeof import("../components/dashboard/StatsOverview.vue")['default']
 export const ProfileModal: typeof import("../components/profile/ProfileModal.vue")['default']
@@ -83,9 +85,11 @@ export const LazyBaseTheNavbar: LazyComponent<typeof import("../components/base/
 export const LazyBaseToastContainer: LazyComponent<typeof import("../components/base/ToastContainer.vue")['default']>
 export const LazyBranchBoardControls: LazyComponent<typeof import("../components/branch/BoardControls.vue")['default']>
 export const LazyBranchFlow: LazyComponent<typeof import("../components/branch/BranchFlow.vue")['default']>
+export const LazyBranchMobileView: LazyComponent<typeof import("../components/branch/BranchMobileView.vue")['default']>
 export const LazyBranchModal: LazyComponent<typeof import("../components/branch/BranchModal.vue")['default']>
 export const LazyBranchNode: LazyComponent<typeof import("../components/branch/BranchNode.vue")['default']>
 export const LazyBranchMilestoneModal: LazyComponent<typeof import("../components/branch/MilestoneModal.vue")['default']>
+export const LazyBranchMilestoneNode: LazyComponent<typeof import("../components/branch/MilestoneNode.vue")['default']>
 export const LazyBranchNodeEditorModal: LazyComponent<typeof import("../components/branch/NodeEditorModal.vue")['default']>
 export const LazyDashboardStatsOverview: LazyComponent<typeof import("../components/dashboard/StatsOverview.vue")['default']>
 export const LazyProfileModal: LazyComponent<typeof import("../components/profile/ProfileModal.vue")['default']>

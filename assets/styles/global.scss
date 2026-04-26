@@ -25,7 +25,91 @@
 .fade-leave-to {
   opacity: 0;
 }
+
 .no-animations * {
   transition: none !important;
   animation: none !important;
+}
+
+/* ✅ ГЛОБАЛЬНЫЕ МИКРО-ВЗАИМОДЕЙСТВИЯ */
+button {
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+input,
+select,
+textarea {
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+
+  &:focus {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+}
+
+/* Плавные переходы при изменении класса */
+* {
+  &.completed {
+    transition:
+      filter 0.3s,
+      opacity 0.3s;
+  }
+}
+
+/* Анимация для success/error уведомлений */
+.notification {
+  animation: slideInDown 0.3s ease-out;
+
+  &.success {
+    animation: slideInDown 0.3s ease-out;
+  }
+
+  &.error {
+    animation: shake 0.3s ease-in-out;
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Предотвращение мерцания при загрузке */
+body {
+  background: var(--bg);
+  color: var(--accent);
 }

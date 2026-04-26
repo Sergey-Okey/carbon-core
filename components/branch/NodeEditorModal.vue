@@ -3,7 +3,7 @@
     <div class="modal-overlay" @click.self="emit('close')">
       <div class="modal">
         <div class="modal-header">
-          <h3>Редактировать этап</h3>
+          <h3>{{ props.isCreateMode ? 'Создать этап' : 'Редактировать этап' }}</h3>
           <button class="close-btn" @click="emit('close')">
             <X :size="20" />
           </button>
@@ -25,38 +25,7 @@
           </div>
 
           <div class="form-group">
-            <label>Иконка</label>
-            <div class="icon-section">
-              <button
-                type="button"
-                class="toggle-icons-btn"
-                @click="iconsExpanded = !iconsExpanded"
-              >
-                <div class="selected-icon">
-                  <component :is="iconComponent(form.icon)" :size="20" />
-                  <span>{{ form.icon }}</span>
-                </div>
-                <ChevronDown :size="16" :class="{ rotated: iconsExpanded }" />
-              </button>
-              <Transition name="expand">
-                <div v-if="iconsExpanded" class="icons-grid">
-                  <button
-                    v-for="icon in iconOptions"
-                    :key="icon"
-                    type="button"
-                    class="icon-option"
-                    :class="{ active: form.icon === icon }"
-                    @click="form.icon = icon"
-                  >
-                    <component :is="iconComponent(icon)" :size="20" />
-                  </button>
-                </div>
-              </Transition>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Привязанные задачи</label>
+            <label>Привязанные задачи (исключая привычки)</label>
             <div class="tasks-section">
               <button
                 type="button"
@@ -93,10 +62,10 @@
             <button type="button" class="btn-secondary" @click="emit('close')">
               Отмена
             </button>
-            <button type="button" class="btn-danger" @click="emit('delete')">
+            <button v-if="!props.isCreateMode" type="button" class="btn-danger" @click="handleDelete">
               Удалить
             </button>
-            <button type="submit" class="btn-primary">Сохранить</button>
+            <button type="submit" class="btn-primary">{{ props.isCreateMode ? 'Создать' : 'Сохранить' }}</button>
           </div>
         </form>
       </div>
@@ -106,29 +75,12 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, watch } from 'vue'
-import {
-  X,
-  ChevronDown,
-  HelpCircle as Question,
-  TrendingUp,
-  Dumbbell,
-  Brain,
-  Users,
-  Target,
-  Briefcase,
-  Heart,
-  BookOpen,
-  Globe,
-  Award,
-  Coffee,
-  Music,
-  Camera,
-  Code,
-} from 'lucide-vue-next'
+import { X, ChevronDown } from 'lucide-vue-next'
 import { useTasksStore } from '~/stores/tasks.store'
+import { useConfirm } from '~/composables/useConfirm'
 import type { Milestone } from '~/types/branch.types'
 
-const props = defineProps<{ milestone: Milestone }>()
+const props = defineProps<{ milestone: Milestone; isCreateMode?: boolean }>()
 const emit = defineEmits<{
   (e: 'close'): void
   (e: 'save', updates: Partial<Milestone>): void
@@ -136,49 +88,11 @@ const emit = defineEmits<{
 }>()
 
 const tasksStore = useTasksStore()
-const iconsExpanded = ref(false)
+const { confirm } = useConfirm()
 const tasksExpanded = ref(false)
 
-const iconOptions = [
-  'trending-up',
-  'dumbbell',
-  'brain',
-  'users',
-  'target',
-  'briefcase',
-  'heart',
-  'book-open',
-  'globe',
-  'award',
-  'coffee',
-  'music',
-  'camera',
-  'code',
-]
-
-const iconComponent = (name: string) => {
-  const map: Record<string, any> = {
-    'trending-up': TrendingUp,
-    dumbbell: Dumbbell,
-    brain: Brain,
-    users: Users,
-    target: Target,
-    briefcase: Briefcase,
-    heart: Heart,
-    'book-open': BookOpen,
-    globe: Globe,
-    award: Award,
-    coffee: Coffee,
-    music: Music,
-    camera: Camera,
-    code: Code,
-    question: Question,
-  }
-  return map[name] || Target
-}
-
 const activeTasks = computed(() => {
-  return tasksStore.tasks.filter((t) => !t.done || t.type === 'HABIT')
+  return tasksStore.tasks.filter((t) => t.type !== 'HABIT')
 })
 
 const form = reactive({
@@ -208,6 +122,14 @@ function handleSubmit() {
     icon: form.icon,
     taskIds: form.taskIds,
   })
+}
+
+async function handleDelete() {
+  const ok = await confirm('Удалить этот этап?')
+  if (ok) {
+    emit('delete')
+    emit('close')
+  }
 }
 </script>
 

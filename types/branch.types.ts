@@ -25,6 +25,6 @@ export interface Branch {
 export type BranchNodeData = {
   type: 'branch' | 'milestone'
   branchId: string
-  milestone?: Milestone
+  milestone: Milestone | null
   branchIcon?: string
 }

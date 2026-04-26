@@ -1,9 +1,9 @@
 <template>
   <GlassCard
-    :id="`node-${data.branchId}`"
-    class="branch-node"
+    :id="`node-${data.milestone.id}`"
+    class="milestone-node"
     :class="{
-      completed: isBranchCompleted,
+      completed: data.milestone.status === 'completed',
       expanded: isExpanded,
       selected: selected,
     }"
@@ -15,12 +15,12 @@
         <component :is="iconComponent" :size="20" />
         <div class="header-actions">
           <div class="node-marker"></div>
-          <button class="edit-btn" @click.stop="emit('edit', data.branchId)">
+          <button class="edit-btn" @click.stop="emit('edit', data.milestone)">
             <PenSquare :size="14" />
           </button>
         </div>
       </div>
-      <h4>{{ branchName }}</h4>
+      <h4>{{ data.milestone.name }}</h4>
       <div class="progress-dashes" v-if="indicatorTasks > 0">
         <span
           v-for="i in indicatorTasks"
@@ -29,8 +29,6 @@
           :class="{ filled: i <= completedIndicatorTasks }"
         ></span>
       </div>
-      <div class="task-counter">{{ totalTasks }} задач</div>
-      <div v-if="isBranchCompleted" class="completed-label">Выполнена</div>
       <button class="expand-btn" @click.stop="togglePinned">
         <ChevronDown :size="16" :class="{ rotated: isExpanded }" />
       </button>
@@ -38,7 +36,7 @@
 
     <Transition name="expand">
       <div v-if="isExpanded" class="node-details">
-        <p v-if="data.milestone && data.milestone.description">
+        <p v-if="data.milestone.description">
           {{ data.milestone.description }}
         </p>
         <p v-else class="placeholder">Нет описания</p>
@@ -81,34 +79,23 @@ import {
 } from 'lucide-vue-next'
 import GlassCard from '~/components/base/GlassCard.vue'
 import { useTasksStore } from '~/stores/tasks.store'
-import { useBranchesStore } from '~/stores/branches.store'
-import type { BranchNodeData } from '~/types/branch.types'
+import type { Milestone, BranchNodeData } from '~/types/branch.types'
 
 const props = defineProps<{
   data: BranchNodeData
   selected?: boolean
 }>()
-const emit = defineEmits<{ (e: 'edit', branchId: string): void }>()
+const emit = defineEmits<{ (e: 'edit', milestone: Milestone): void }>()
 
 const tasksStore = useTasksStore()
-const branchesStore = useBranchesStore()
+const milestone = computed(() => props.data.milestone!)
 
 const isExpanded = ref(false)
 const isPinned = ref(false)
 const hovered = ref(false)
 
-const branchName = computed(() => {
-  const branch = branchesStore.branches.find(
-    (b) => b.id === props.data.branchId
-  )
-  return branch?.displayName || 'Ветка'
-})
-
 const iconComponent = computed(() => {
-  const branch = branchesStore.branches.find(
-    (b) => b.id === props.data.branchId
-  )
-  const iconName = branch?.icon || 'help-circle'
+  const iconName = milestone.value.icon || 'help-circle'
   const map: Record<string, any> = {
     'trending-up': TrendingUp,
     dumbbell: Dumbbell,
@@ -129,34 +116,14 @@ const iconComponent = computed(() => {
   return map[iconName] || HelpCircle
 })
 
-const isBranchCompleted = computed(() => {
-  const branch = branchesStore.branches.find(
-    (b) => b.id === props.data.branchId
-  )
-  if (!branch || branch.milestones.length === 0) return false
-  return branch.milestones.every((m) => m.status === 'completed')
-})
-
-const totalTasks = computed(() => {
-  return branchesStore.getBranchTotalTasks(props.data.branchId)
-})
-
-const indicatorTasks = totalTasks
-const completedIndicatorTasks = computed(() =>
-  branchesStore.getBranchCompletedTasks(props.data.branchId)
-)
-
 const linkedTasks = computed(() => {
-  const branch = branchesStore.branches.find(
-    (b) => b.id === props.data.branchId
-  )
-  if (!branch) return []
-  const allTaskIds = new Set<string>()
-  branch.milestones.forEach((m) =>
-    m.taskIds.forEach((id) => allTaskIds.add(id))
-  )
-  return tasksStore.tasks.filter((t) => allTaskIds.has(t.id))
+  return tasksStore.tasks.filter((t) => milestone.value.taskIds.includes(t.id))
 })
+
+const indicatorTasks = computed(() => milestone.value.taskIds.length)
+const completedIndicatorTasks = computed(
+  () => linkedTasks.value.filter((t) => t.done).length
+)
 
 function togglePinned() {
   isPinned.value = !isPinned.value
@@ -174,8 +141,8 @@ function updateExpanded() {
   isExpanded.value = hovered.value || isPinned.value
 }
 function handleClickOutside(event: MouseEvent) {
-  const el = document.getElementById(`node-${props.data.branchId}`)
-  if (el && !el.contains(event.target as Node)) {
+  const node = document.getElementById(`node-${milestone.value.id}`)
+  if (node && !node.contains(event.target as Node)) {
     isPinned.value = false
     hovered.value = false
     updateExpanded()
@@ -187,8 +154,8 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 </script>
 
 <style scoped lang="scss">
-.branch-node {
-  width: 240px;
+.milestone-node {
+  width: 220px;
   padding: 12px;
   position: relative;
   overflow: visible;
@@ -234,7 +201,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     width: 10px;
     height: 10px;
     background: var(--accent);
-    border-radius: 2px;
+    border-radius: 50%;
     border: 1px solid var(--bg);
     transition: opacity 0.2s;
   }
@@ -294,18 +261,6 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     &.filled {
       background: var(--accent);
     }
-  }
-  .task-counter {
-    font-size: 0.8rem;
-    color: var(--dim);
-    margin-bottom: 4px;
-  }
-  .completed-label {
-    text-align: center;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--success);
-    margin-bottom: 6px;
   }
 
   .expand-btn {

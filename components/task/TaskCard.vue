@@ -197,7 +197,7 @@ async function handleDelete() {
 
   .actions {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     margin-left: auto;
   }
 

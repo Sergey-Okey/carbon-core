@@ -1,13 +1,11 @@
 <template>
   <div class="branch-flow-wrapper">
-    <div v-if="isMobile" class="mobile-warning">
-      <AlertTriangle :size="32" />
-      <h3>Доступно только на десктопе</h3>
-      <p>
-        Для работы с доской развития используйте компьютер или планшет в
-        горизонтальной ориентации.
-      </p>
-    </div>
+    <!-- ✅ АЛЬТЕРНАТИВНЫЙ МОБ ИЛЬНЫЙ ВИД ВМЕСТО WARNING -->
+    <BranchMobileView
+      v-if="isMobile"
+      @edit-milestone="openMilestoneEditor"
+      @add-milestone="addMilestoneToSelectedBranch"
+    />
 
     <VueFlow
       v-else
@@ -23,6 +21,7 @@
       :fit-view-on-init="true"
       :nodes-draggable="true"
       :edges-updatable="false"
+      :nodes-focusable="true"
       @nodes-change="onNodesChange"
       @edges-change="onEdgesChange"
       @connect="onConnect"
@@ -51,14 +50,18 @@
           <Plus :size="18" />
         </button>
         <button
+          v-if="selectedNodeId && isBranchNode(selectedNodeId)"
+          @click="addMilestoneToSelectedBranch"
+          title="Добавить этап"
+        >
+          <PlusCircle :size="18" />
+        </button>
+        <button
           v-if="selectedEdgeId"
           @click="deleteSelectedEdge"
           title="Удалить связь"
         >
           <Unlink :size="18" />
-        </button>
-        <button @click="addMilestoneToSelectedBranch" title="Добавить этап">
-          <PlusCircle :size="18" />
         </button>
         <button
           v-if="selectedNodeId && isBranchNode(selectedNodeId)"
@@ -67,13 +70,30 @@
         >
           <Trash2 :size="18" />
         </button>
+        <button
+          v-if="selectedNodeId && !isBranchNode(selectedNodeId)"
+          @click="deleteSelectedMilestone"
+          title="Удалить этап"
+        >
+          <Trash2 :size="18" />
+        </button>
       </Panel>
 
-      <template #node-branch="nodeProps">
+      <template #node-branch-node="nodeProps">
         <BranchNode
           :data="nodeProps.data"
           :selected="selectedNodeId === nodeProps.id"
-          @edit="openEditor(nodeProps.data.milestone)"
+          @edit="openBranchEditor(nodeProps.data.branchId)"
+        />
+      </template>
+      <template #node-milestone-node="nodeProps">
+        <MilestoneNode
+          :data="nodeProps.data"
+          :selected="selectedNodeId === nodeProps.id"
+          @edit="
+            nodeProps.data.milestone &&
+            openMilestoneEditor(nodeProps.data.milestone)
+          "
         />
       </template>
     </VueFlow>
@@ -85,7 +105,23 @@
       @save="handleSaveMilestone"
       @delete="handleDeleteMilestone"
     />
-
+    <NodeEditorModal
+      v-if="creatingMilestone"
+      :milestone="{
+        id: '',
+        name: '',
+        icon: 'target',
+        description: '',
+        requiredXP: 500,
+        currentXP: 0,
+        status: 'pending',
+        taskIds: [],
+        position: { x: 0, y: 0 },
+      }"
+      :is-create-mode="true"
+      @close="creatingMilestone = false"
+      @save="handleCreateMilestone"
+    />
     <BranchModal
       v-if="branchModal.visible"
       :branch="branchModal.branch"
@@ -97,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import {
   VueFlow,
   ConnectionMode,
@@ -123,8 +159,10 @@ import { useBranchesStore } from '~/stores/branches.store'
 import { useAutoLayout } from '~/composables/useAutoLayout'
 import { useConfirm } from '~/composables/useConfirm'
 import BranchNode from './BranchNode.vue'
+import MilestoneNode from './MilestoneNode.vue'
 import NodeEditorModal from './NodeEditorModal.vue'
 import BranchModal from './BranchModal.vue'
+import BranchMobileView from './BranchMobileView.vue' // ✅ Новый мобильный компонент
 import type { Milestone, Branch, BranchNodeData } from '~/types/branch.types'
 
 import '@vue-flow/core/dist/style.css'
@@ -135,7 +173,10 @@ const { fitView, zoomIn: vfZoomIn, zoomOut: vfZoomOut } = useVueFlow()
 const { applyLayout } = useAutoLayout()
 const { confirm } = useConfirm()
 
-const nodeTypes = { branch: BranchNode }
+const nodeTypes = {
+  'branch-node': BranchNode,
+  'milestone-node': MilestoneNode,
+}
 const nodes = ref<Node<BranchNodeData>[]>([])
 const edges = ref<Edge[]>([])
 
@@ -169,16 +210,65 @@ function onPaneClick() {
 
 function isBranchNode(nodeId: string): boolean {
   const node = nodes.value.find((n) => n.id === nodeId)
-  if (!node) return false
-  const branch = branchesStore.branches.find((b) =>
-    b.milestones.some((m) => m.id === nodeId)
-  )
-  return branch?.milestones.length === 1 && branch.milestones[0].id === nodeId
+  return node?.type === 'branch-node'
 }
 
 const editingMilestone = ref<Milestone | null>(null)
-function openEditor(milestone: Milestone) {
+const creatingMilestone = ref(false)
+const branchModal = ref<{ visible: boolean; branch: Branch | null }>({
+  visible: false,
+  branch: null,
+})
+
+function openMilestoneEditor(milestone: Milestone) {
   editingMilestone.value = milestone
+}
+function openMilestoneCreator() {
+  creatingMilestone.value = true
+}
+function handleCreateMilestone(data: {
+  name: string
+  icon: string
+  description: string
+  taskIds: string[]
+}) {
+  let targetBranch: Branch | undefined
+  if (selectedNodeId.value) {
+    targetBranch = branchesStore.branches.find((b) =>
+      b.milestones.some((m) => m.id === selectedNodeId.value)
+    )
+  }
+  const branchId = targetBranch?.id || null
+  const icon = targetBranch?.icon || data.icon
+
+  const lastMilestone =
+    targetBranch?.milestones[targetBranch.milestones.length - 1]
+
+  const newMilestone = branchesStore.addMilestone(branchId, data.name)
+
+  // принудительно обновляем milestone в сторе для гарантированной реактивности
+  branchesStore.updateMilestone(newMilestone.id, {
+    description: data.description,
+    icon: icon,
+    taskIds: data.taskIds,
+  })
+
+  if (lastMilestone) {
+    branchesStore.addEdge({
+      id: `edge-${lastMilestone.id}-${newMilestone.id}-${Date.now()}`,
+      source: lastMilestone.id,
+      target: newMilestone.id,
+      type: 'smoothstep',
+      animated: false,
+      style: { stroke: 'var(--accent)', strokeWidth: 1 },
+    })
+  }
+
+  nextTick(() => {
+    syncNodesAndEdges()
+  })
+
+  creatingMilestone.value = false
 }
 function handleSaveMilestone(updates: Partial<Milestone>) {
   if (editingMilestone.value) {
@@ -196,10 +286,12 @@ async function handleDeleteMilestone() {
   }
 }
 
-const branchModal = ref<{ visible: boolean; branch: Branch | null }>({
-  visible: false,
-  branch: null,
-})
+function openBranchEditor(branchId: string) {
+  const branch = branchesStore.branches.find((b) => b.id === branchId)
+  if (branch) {
+    branchModal.value = { visible: true, branch }
+  }
+}
 function openAddBranchModal() {
   branchModal.value = { visible: true, branch: null }
 }
@@ -231,6 +323,7 @@ async function handleDeleteBranch() {
   if (ok) {
     branchesStore.deleteBranch(branch.id)
     branchModal.value.visible = false
+    selectedNodeId.value = null
   }
 }
 
@@ -240,26 +333,24 @@ function handleKeyDown(event: KeyboardEvent) {
   if (selectedNodeId.value) {
     const node = nodes.value.find((n) => n.id === selectedNodeId.value)
     if (!node) return
-    const milestone = node.data.milestone!
-    const branch = branchesStore.branches.find((b) =>
-      b.milestones.some((m) => m.id === selectedNodeId.value)
-    )
 
-    if (
-      branch &&
-      branch.milestones.length === 1 &&
-      branch.milestones[0].id === selectedNodeId.value
-    ) {
-      confirm(`Удалить ветку «${branch.displayName}»?`).then((ok) => {
-        if (ok) {
-          branchesStore.deleteBranch(branch.id)
-          selectedNodeId.value = null
-        }
-      })
-    } else {
+    if (node.type === 'branch-node') {
+      const branch = branchesStore.branches.find(
+        (b) => b.id === node.data.branchId
+      )
+      if (branch) {
+        confirm(`Удалить ветку «${branch.displayName}»?`).then((ok) => {
+          if (ok) {
+            branchesStore.deleteBranch(branch.id)
+            selectedNodeId.value = null
+          }
+        })
+      }
+    } else if (node.type === 'milestone-node' && node.data.milestone) {
+      const milestone = node.data.milestone
       confirm(`Удалить этап «${milestone.name}»?`).then((ok) => {
         if (ok) {
-          branchesStore.deleteMilestone(selectedNodeId.value!)
+          branchesStore.deleteMilestone(milestone.id)
           selectedNodeId.value = null
         }
       })
@@ -268,50 +359,113 @@ function handleKeyDown(event: KeyboardEvent) {
     confirm('Удалить связь?').then((ok) => {
       if (ok) {
         branchesStore.removeEdge(selectedEdgeId.value!)
+        const edge = edges.value.find((e) => e.id === selectedEdgeId.value)
+        if (edge) {
+          const sourceNode = nodes.value.find((n) => n.id === edge.source)
+          if (sourceNode?.type === 'milestone-node') {
+            branchesStore.detachMilestoneFromBranch(edge.source)
+          }
+          branchesStore.refreshMilestonesByTaskId(edge.source)
+          branchesStore.refreshMilestonesByTaskId(edge.target)
+        }
         selectedEdgeId.value = null
       }
     })
   }
 }
-onMounted(() => {
-  window.addEventListener('keydown', handleKeyDown)
-})
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeyDown)
-})
+onMounted(() => window.addEventListener('keydown', handleKeyDown))
+onUnmounted(() => window.removeEventListener('keydown', handleKeyDown))
 
 async function deleteSelectedEdge() {
   if (selectedEdgeId.value) {
+    const edge = edges.value.find((e) => e.id === selectedEdgeId.value)
     const ok = await confirm('Удалить связь?')
     if (ok) {
       branchesStore.removeEdge(selectedEdgeId.value)
+
+      if (edge) {
+        const sourceNode = nodes.value.find((n) => n.id === edge.source)
+        if (sourceNode?.data.type === 'milestone') {
+          branchesStore.detachMilestoneFromBranch(edge.source)
+        }
+
+        branchesStore.refreshMilestonesByTaskId(edge.source)
+        branchesStore.refreshMilestonesByTaskId(edge.target)
+      }
       selectedEdgeId.value = null
     }
   }
 }
-
 async function deleteSelectedBranch() {
   if (!selectedNodeId.value) return
-  const branch = branchesStore.branches.find((b) =>
-    b.milestones.some((m) => m.id === selectedNodeId.value)
-  )
+
+  const selectedNode = nodes.value.find((n) => n.id === selectedNodeId.value)
+  if (!selectedNode) return
+
+  let branchIdToDelete: string | null = null
+
+  if (selectedNode.data.type === 'branch') {
+    branchIdToDelete = selectedNode.data.branchId
+  } else if (selectedNode.data.type === 'milestone') {
+    const branch = branchesStore.branches.find((b) =>
+      b.milestones.some((m) => m.id === selectedNodeId.value)
+    )
+    if (branch && branch.milestones[0]?.id === selectedNodeId.value) {
+      branchIdToDelete = branch.id
+    }
+  }
+
+  if (!branchIdToDelete) return
+
+  const branch = branchesStore.branches.find((b) => b.id === branchIdToDelete)
   if (!branch) return
+
   const ok = await confirm(`Удалить ветку «${branch.displayName}»?`)
   if (ok) {
-    branchesStore.deleteBranch(branch.id)
+    branchesStore.deleteBranch(branchIdToDelete!)
     selectedNodeId.value = null
+    nodes.value = nodes.value.map((n) => ({ ...n, selected: false }))
+  }
+}
+
+async function deleteSelectedMilestone() {
+  if (!selectedNodeId.value) return
+
+  const node = nodes.value.find((n) => n.id === selectedNodeId.value)
+  if (!node || node.data.type !== 'milestone' || !node.data.milestone) return
+
+  const milestone = node.data.milestone
+  const ok = await confirm(`Удалить этап «${milestone.name}»?`)
+  if (ok) {
+    branchesStore.deleteMilestone(milestone.id)
+    selectedNodeId.value = null
+    nodes.value = nodes.value.map((n) => ({ ...n, selected: false }))
   }
 }
 
 function syncNodesAndEdges() {
   const newNodes: Node<BranchNodeData>[] = []
-  
+
   branchesStore.branches.forEach((branch) => {
-    // Добавляем ТОЛЬКО этапы ветки (без отдельного узла ветки)
-    branch.milestones.forEach((milestone) => {
+    const firstMilestone = branch.milestones[0]
+    if (firstMilestone) {
+      newNodes.push({
+        id: branch.id,
+        type: 'branch-node',
+        position: firstMilestone.position,
+        data: {
+          type: 'branch',
+          branchId: branch.id,
+          milestone: null,
+          branchIcon: branch.icon,
+        },
+      })
+    }
+
+    branch.milestones.slice(1).forEach((milestone) => {
       newNodes.push({
         id: milestone.id,
-        type: 'branch',
+        type: 'milestone-node',
         position: milestone.position,
         data: {
           type: 'milestone',
@@ -322,7 +476,13 @@ function syncNodesAndEdges() {
       })
     })
   })
-  
+
+  const currentSelectedNode = selectedNodeId.value
+  const selectedNodeExists = newNodes.some((n) => n.id === currentSelectedNode)
+  if (!selectedNodeExists) {
+    selectedNodeId.value = null
+  }
+
   nodes.value = newNodes
 
   const existingNodeIds = new Set(newNodes.map((n) => n.id))
@@ -358,14 +518,61 @@ function onConnect(connection: Connection) {
     style: { stroke: 'var(--accent)', strokeWidth: 1 },
   }
   branchesStore.addEdge(newEdge)
+
+  const sourceNode = nodes.value.find((n) => n.id === connection.source)
+  const targetNode = nodes.value.find((n) => n.id === connection.target)
+
+  if (
+    sourceNode?.data.type === 'milestone' &&
+    targetNode?.data.type === 'branch'
+  ) {
+    branchesStore.attachMilestoneToBranch(
+      connection.source,
+      targetNode.data.branchId
+    )
+    branchesStore.refreshMilestonesByTaskId(connection.source)
+  } else if (
+    sourceNode?.data.type === 'milestone' &&
+    targetNode?.data.type === 'milestone'
+  ) {
+    const targetBranchId = targetNode.data.branchId
+    if (targetBranchId) {
+      branchesStore.attachMilestoneToBranch(connection.source, targetBranchId)
+      branchesStore.refreshMilestonesByTaskId(connection.source)
+    }
+  }
 }
 function onEdgeUpdate({ edge, connection }: any) {
+  const oldSource = edge.source
+  const oldTarget = edge.target
   const updatedEdge = {
     ...edge,
     source: connection.source,
     target: connection.target,
   }
   branchesStore.updateEdge(updatedEdge)
+
+  const newSourceNode = nodes.value.find((n) => n.id === connection.source)
+  const newTargetNode = nodes.value.find((n) => n.id === connection.target)
+
+  if (newSourceNode?.data.type === 'milestone') {
+    let newBranchId: string | null = null
+
+    if (newTargetNode?.data.type === 'branch') {
+      newBranchId = newTargetNode.data.branchId
+    } else if (newTargetNode?.data.type === 'milestone') {
+      newBranchId = newTargetNode.data.branchId
+    }
+
+    if (newBranchId) {
+      branchesStore.attachMilestoneToBranch(connection.source, newBranchId)
+    }
+  }
+
+  branchesStore.refreshMilestonesByTaskId(oldSource)
+  branchesStore.refreshMilestonesByTaskId(oldTarget)
+  branchesStore.refreshMilestonesByTaskId(connection.source)
+  branchesStore.refreshMilestonesByTaskId(connection.target)
 }
 
 function zoomIn() {
@@ -374,50 +581,27 @@ function zoomIn() {
 function zoomOut() {
   vfZoomOut()
 }
-
 function autoLayout() {
   const allMilestones = branchesStore.branches.flatMap((b) => b.milestones)
   const currentNodes: Node[] = allMilestones.map((m) => ({
     id: m.id,
-    type: 'branch',
+    type: 'milestone-node',
     position: m.position,
-    data: { milestone: m },
+    data: {
+      type: 'milestone',
+      milestone: m,
+      branchIcon: '',
+      branchId: m.branchId!,
+    },
   }))
   const currentEdges: Edge[] = branchesStore.edges
-
   const layoutedNodes = applyLayout(currentNodes, currentEdges)
   layoutedNodes.forEach((node) => {
     branchesStore.updateMilestone(node.id, { position: node.position })
   })
 }
-
 function addMilestoneToSelectedBranch() {
-  let targetBranch: Branch | undefined
-  let selectedMilestone: Milestone | undefined
-  
-  if (selectedNodeId.value) {
-    // Ищем ветку по выбранному этапу
-    targetBranch = branchesStore.branches.find((b) =>
-      b.milestones.some((m) => m.id === selectedNodeId.value)
-    )
-    // Также находим сам выбранный этап чтобы взять его иконку
-    for (const branch of branchesStore.branches) {
-      const ms = branch.milestones.find((m) => m.id === selectedNodeId.value)
-      if (ms) {
-        selectedMilestone = ms
-        break
-      }
-    }
-  }
-  
-  // Если ничего не выбрано - нельзя создать этап
-  if (!targetBranch) {
-    return
-  }
-  
-  // Если выбрана ветка или этап - создаем этап с иконкой от выбранного
-  const iconToUse = selectedMilestone?.icon || targetBranch.icon
-  branchesStore.addMilestone(targetBranch.id, 'Новый этап', '', iconToUse)
+  openMilestoneCreator()
 }
 </script>
 
@@ -476,10 +660,12 @@ function addMilestoneToSelectedBranch() {
     stroke: var(--success);
   }
 }
-:deep(.vue-flow__node-branch.selected) {
-  .branch-node {
-    border: 1px solid var(--accent);
-    box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.2);
+:deep(.vue-flow__node) {
+  &.selected {
+    .branch-node,
+    .milestone-node {
+      border: 1px solid #ffffff !important;
+    }
   }
 }
 :deep(.vue-flow__edge.selected .vue-flow__edge-path) {
