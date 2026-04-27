@@ -611,6 +611,7 @@ function addMilestoneToSelectedBranch() {
 <style scoped lang="scss">
 .branch-flow-wrapper {
   width: 100%;
+  height: 100%;
   border-radius: var(--border-radius-lg);
   overflow: hidden;
   border: 1px solid var(--border);
@@ -644,6 +645,8 @@ function addMilestoneToSelectedBranch() {
 
 :deep(.vue-flow) {
   background: var(--bg);
+  width: 100%;
+  height: 100%;
 }
 :deep(.vue-flow__background) {
   background-color: var(--bg);

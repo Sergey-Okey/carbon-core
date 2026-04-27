@@ -63,11 +63,15 @@ const uiStore = useUIStore()
   padding-bottom: 80px;
   @include desktop {
     padding-bottom: 0;
+    height: 100vh;
   }
 }
 
 .content-section {
   min-height: 400px;
+  @include desktop {
+    height: calc(100vh - 200px);
+  }
 }
 
 .tasks-dashboard {
