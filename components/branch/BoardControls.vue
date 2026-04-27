@@ -10,6 +10,13 @@
       <ZoomOut :size="18" />
     </button>
     <div class="divider"></div>
+    <button @click="$emit('undo')" title="Отменить действие" :disabled="!canUndo">
+      <Undo :size="18" />
+    </button>
+    <button @click="$emit('redo')" title="Повторить действие" :disabled="!canRedo">
+      <Redo :size="18" />
+    </button>
+    <div class="divider"></div>
     <button @click="$emit('rebuild')" title="Перестроить доску">
       <RefreshCw :size="18" />
     </button>
@@ -18,9 +25,14 @@
 
 <script setup lang="ts">
 import { Panel } from '@vue-flow/core'
-import { Maximize, ZoomIn, ZoomOut, RefreshCw } from 'lucide-vue-next'
+import { Maximize, ZoomIn, ZoomOut, RefreshCw, Undo, Redo } from 'lucide-vue-next'
 
-defineEmits(['fit-view', 'zoom-in', 'zoom-out', 'rebuild'])
+defineProps<{
+  canUndo?: boolean
+  canRedo?: boolean
+}>()
+
+defineEmits(['fit-view', 'zoom-in', 'zoom-out', 'undo', 'redo', 'rebuild'])
 </script>
 
 <style scoped lang="scss">
@@ -48,6 +60,11 @@ defineEmits(['fit-view', 'zoom-in', 'zoom-out', 'rebuild'])
 
     &:hover {
       background: var(--surface);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
     }
   }
 

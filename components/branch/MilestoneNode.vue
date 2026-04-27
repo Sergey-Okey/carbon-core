@@ -286,7 +286,8 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     border: none;
     color: var(--dim);
     cursor: pointer;
-    transition: all 0.1s;
+    transition: all 0.2s;
+    z-index: 5;
     &:hover {
       background: var(--surface);
       color: var(--accent);
@@ -339,6 +340,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     }
   }
 
+  /* Фиксированные хендлы по центру */
   .handle-right,
   .handle-left {
     width: 10px;
@@ -347,6 +349,8 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     border: 1px solid var(--bg);
     opacity: 0;
     transition: opacity 0.2s;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
   }
   &:hover .handle-right,
   &:hover .handle-left {
@@ -355,7 +359,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 }
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.1s;
+  transition: all 0.2s;
 }
 .expand-enter-from,
 .expand-leave-to {

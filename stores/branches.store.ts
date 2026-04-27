@@ -8,107 +8,104 @@ import { useTasksStore } from './tasks.store'
 export const useBranchesStore = defineStore(
   'branches',
   () => {
+    // Демо-ветка COF с этапами
     const branches = ref<Branch[]>([
       {
-        id: 'FIN',
-        displayName: 'Финансы',
-        icon: 'trending-up',
-        description: '',
+        id: 'COF',
+        displayName: 'Core of Life',
+        icon: 'target',
+        description: 'Разработка главного приложения для саморазвития',
         taskIds: [],
         milestones: [
           {
-            id: 'fin-milestone-1',
-            name: 'Основы финансов',
-            icon: 'trending-up',
-            description: '',
+            id: 'cof-m1',
+            name: 'Идея и концепция',
+            icon: 'target',
+            description: 'Определение миссии, целевой аудитории и ключевых фич',
+            requiredXP: 200,
+            currentXP: 200,
+            status: 'completed',
+            taskIds: ['task-ideation', 'task-research'],
+            position: { x: 200, y: 200 },
+          },
+          {
+            id: 'cof-m2',
+            name: 'Дизайн интерфейса',
+            icon: 'palette',
+            description: 'Прототипирование, UI Kit, адаптивный дизайн',
+            requiredXP: 300,
+            currentXP: 150,
+            status: 'active',
+            taskIds: ['task-design', 'task-prototype'],
+            position: { x: 500, y: 150 },
+          },
+          {
+            id: 'cof-m3',
+            name: 'Frontend (Vue 3)',
+            icon: 'code',
+            description: 'Компоненты, маршрутизация, хранение состояния',
+            requiredXP: 400,
+            currentXP: 100,
+            status: 'active',
+            taskIds: ['task-frontend-base', 'task-state'],
+            position: { x: 500, y: 300 },
+          },
+          {
+            id: 'cof-m4',
+            name: 'Backend & API',
+            icon: 'server',
+            description: 'Создание API, авторизация, база данных',
             requiredXP: 500,
             currentXP: 0,
             status: 'pending',
-            taskIds: [],
-            position: { x: 200, y: 200 },
+            taskIds: ['task-backend-setup', 'task-api'],
+            position: { x: 800, y: 150 },
           },
-        ],
-        order: 0,
-        position: { x: 50, y: 200 },
-      },
-      {
-        id: 'BODY',
-        displayName: 'Тело',
-        icon: 'dumbbell',
-        description: '',
-        taskIds: [],
-        milestones: [
           {
-            id: 'body-milestone-1',
-            name: 'Регулярные тренировки',
-            icon: 'dumbbell',
-            description: '',
+            id: 'cof-m5',
+            name: 'Интеграция и тестирование',
+            icon: 'test-tube',
+            description: 'Юнит-тесты, e2e, исправление багов',
             requiredXP: 300,
             currentXP: 0,
             status: 'pending',
-            taskIds: [],
-            position: { x: 500, y: 200 },
+            taskIds: ['task-testing', 'task-fixes'],
+            position: { x: 800, y: 300 },
           },
-        ],
-        order: 1,
-        position: { x: 350, y: 200 },
-      },
-      {
-        id: 'MIND',
-        displayName: 'Интеллект',
-        icon: 'brain',
-        description: '',
-        taskIds: [],
-        milestones: [
           {
-            id: 'mind-milestone-1',
-            name: 'Ежедневное чтение',
-            icon: 'brain',
-            description: '',
-            requiredXP: 400,
+            id: 'cof-m6',
+            name: 'Деплой и мониторинг',
+            icon: 'rocket',
+            description: 'Развёртывание, CI/CD, аналитика',
+            requiredXP: 250,
             currentXP: 0,
             status: 'pending',
-            taskIds: [],
-            position: { x: 800, y: 200 },
+            taskIds: ['task-deploy', 'task-monitor'],
+            position: { x: 1100, y: 220 },
           },
         ],
-        order: 2,
-        position: { x: 650, y: 200 },
-      },
-      {
-        id: 'LDR',
-        displayName: 'Лидерство',
-        icon: 'users',
-        description: '',
-        taskIds: [],
-        milestones: [
-          {
-            id: 'ldr-milestone-1',
-            name: 'Первая публичная речь',
-            icon: 'users',
-            description: '',
-            requiredXP: 200,
-            currentXP: 0,
-            status: 'pending',
-            taskIds: [],
-            position: { x: 1100, y: 200 },
-          },
-        ],
-        order: 3,
-        position: { x: 950, y: 200 },
+        order: 0,
+        position: { x: 50, y: 220 },
       },
     ])
 
-    const edges = ref<Edge[]>([])
+    // Рёбра для COF
+    const edges = ref<Edge[]>([
+      { id: 'edge-cof-m1', source: 'COF', target: 'cof-m1', type: 'smoothstep', animated: false, style: { stroke: 'var(--accent)', strokeWidth: 1 } },
+      { id: 'edge-m1-m2', source: 'cof-m1', target: 'cof-m2', type: 'smoothstep', animated: false, style: { stroke: 'var(--accent)', strokeWidth: 1 } },
+      { id: 'edge-m1-m3', source: 'cof-m1', target: 'cof-m3', type: 'smoothstep', animated: false, style: { stroke: 'var(--accent)', strokeWidth: 1 } },
+      { id: 'edge-m2-m4', source: 'cof-m2', target: 'cof-m4', type: 'smoothstep', animated: false, style: { stroke: 'var(--accent)', strokeWidth: 1 } },
+      { id: 'edge-m3-m5', source: 'cof-m3', target: 'cof-m5', type: 'smoothstep', animated: false, style: { stroke: 'var(--accent)', strokeWidth: 1 } },
+      { id: 'edge-m4-m6', source: 'cof-m4', target: 'cof-m6', type: 'smoothstep', animated: false, style: { stroke: 'var(--accent)', strokeWidth: 1 } },
+      { id: 'edge-m5-m6', source: 'cof-m5', target: 'cof-m6', type: 'smoothstep', animated: false, style: { stroke: 'var(--accent)', strokeWidth: 1 } },
+    ])
 
-    // Миграция недостающих рёбер для старых данных
+    // ========== Миграция и чистка ==========
     function migrateMissingEdges() {
       branches.value.forEach((branch) => {
         if (branch.milestones.length === 0) return
         const firstMilestone = branch.milestones[0]
-        const edgeBranchToFirst = edges.value.some(
-          (e) => e.source === branch.id && e.target === firstMilestone.id
-        )
+        const edgeBranchToFirst = edges.value.some((e) => e.source === branch.id && e.target === firstMilestone.id)
         if (!edgeBranchToFirst) {
           edges.value.push({
             id: `edge-${branch.id}-${firstMilestone.id}-migrate`,
@@ -122,9 +119,7 @@ export const useBranchesStore = defineStore(
         for (let i = 0; i < branch.milestones.length - 1; i++) {
           const source = branch.milestones[i].id
           const target = branch.milestones[i + 1].id
-          const edgeExists = edges.value.some(
-            (e) => e.source === source && e.target === target
-          )
+          const edgeExists = edges.value.some((e) => e.source === source && e.target === target)
           if (!edgeExists) {
             edges.value.push({
               id: `edge-${source}-${target}-migrate`,
@@ -140,29 +135,21 @@ export const useBranchesStore = defineStore(
     }
 
     function cleanupEdges() {
-      const existingNodeIds = new Set(
-        branches.value.flatMap((b) => b.milestones.map((m) => m.id))
-      )
+      const existingNodeIds = new Set(branches.value.flatMap((b) => b.milestones.map((m) => m.id)))
       branches.value.forEach((b) => existingNodeIds.add(b.id))
-      edges.value = edges.value.filter(
-        (e) => existingNodeIds.has(e.source) && existingNodeIds.has(e.target)
-      )
+      edges.value = edges.value.filter((e) => existingNodeIds.has(e.source) && existingNodeIds.has(e.target))
     }
 
+    // ========== XP и статусы ==========
     function addXPToBranch(branchId: BranchId, xp: number) {
       const branch = branches.value.find((b) => b.id === branchId)
       if (!branch) return
-
-      const activeMilestone = branch.milestones.find(
-        (m) => m.status === 'active'
-      )
+      const activeMilestone = branch.milestones.find((m) => m.status === 'active')
       if (activeMilestone) {
         activeMilestone.currentXP += xp
         updateMilestoneStatus(activeMilestone)
       } else {
-        const pendingMilestone = branch.milestones.find(
-          (m) => m.status === 'pending'
-        )
+        const pendingMilestone = branch.milestones.find((m) => m.status === 'pending')
         if (pendingMilestone) {
           pendingMilestone.currentXP += xp
           pendingMilestone.status = 'active'
@@ -174,13 +161,10 @@ export const useBranchesStore = defineStore(
 
     function updateMilestoneStatus(milestone: Milestone) {
       const tasksStore = useTasksStore()
-      const allTasksDone =
-        milestone.taskIds.length > 0 &&
-        milestone.taskIds.every((id) => {
-          const task = tasksStore.tasks.find((t) => t.id === id)
-          return task && task.done
-        })
-
+      const allTasksDone = milestone.taskIds.length > 0 && milestone.taskIds.every((id) => {
+        const task = tasksStore.tasks.find((t) => t.id === id)
+        return task && task.done
+      })
       if (allTasksDone) {
         milestone.status = 'completed'
       } else if (milestone.currentXP >= milestone.requiredXP) {
@@ -193,15 +177,11 @@ export const useBranchesStore = defineStore(
     }
 
     function updateBranchStatus(branch: Branch) {
-      const allCompleted = branch.milestones.every(
-        (m) => m.status === 'completed'
-      )
+      const allCompleted = branch.milestones.every((m) => m.status === 'completed')
       if (allCompleted && branch.milestones.length > 0) {
         branch.milestones[0].status = 'completed'
       } else if (branch.milestones.length > 0) {
-        const activeOrPending = branch.milestones.find(
-          (m) => m.status !== 'completed'
-        )
+        const activeOrPending = branch.milestones.find((m) => m.status !== 'completed')
         branch.milestones[0].status = activeOrPending?.status ?? 'pending'
       }
     }
@@ -210,9 +190,7 @@ export const useBranchesStore = defineStore(
       const branch = branches.value.find((b) => b.id === branchId)
       if (!branch) return 0
       const allTaskIds = new Set<string>()
-      branch.milestones.forEach((m) =>
-        m.taskIds.forEach((id) => allTaskIds.add(id))
-      )
+      branch.milestones.forEach((m) => m.taskIds.forEach((id) => allTaskIds.add(id)))
       return allTaskIds.size
     }
 
@@ -220,9 +198,7 @@ export const useBranchesStore = defineStore(
       const branch = branches.value.find((b) => b.id === branchId)
       if (!branch) return 0
       const allTaskIds = new Set<string>()
-      branch.milestones.forEach((m) =>
-        m.taskIds.forEach((id) => allTaskIds.add(id))
-      )
+      branch.milestones.forEach((m) => m.taskIds.forEach((id) => allTaskIds.add(id)))
       const tasksStore = useTasksStore()
       return [...allTaskIds].filter((id) => {
         const task = tasksStore.tasks.find((t) => t.id === id)
@@ -253,6 +229,7 @@ export const useBranchesStore = defineStore(
       }
     }
 
+    // ========== Прикрепление / отсоединение этапов ==========
     function attachMilestoneToBranch(milestoneId: string, branchId: string) {
       let milestone: Milestone | undefined
       let sourceBranch: Branch | undefined
@@ -265,16 +242,11 @@ export const useBranchesStore = defineStore(
         }
       }
       if (!milestone) return
-
       const targetBranch = branches.value.find((b) => b.id === branchId)
       if (targetBranch) {
         milestone.icon = targetBranch.icon
         targetBranch.milestones.push(milestone)
-        // Добавляем ребро
-        const previousNodeId =
-          targetBranch.milestones.length === 1
-            ? targetBranch.id
-            : targetBranch.milestones[targetBranch.milestones.length - 2].id
+        const previousNodeId = targetBranch.milestones.length === 1 ? targetBranch.id : targetBranch.milestones[targetBranch.milestones.length - 2].id
         const newEdge: Edge = {
           id: `edge-${previousNodeId}-${milestone.id}-${Date.now()}`,
           source: previousNodeId,
@@ -289,11 +261,8 @@ export const useBranchesStore = defineStore(
           refreshMilestonesByTaskId(sourceBranch.milestones[0].id)
         }
       }
-
       if (sourceBranch && sourceBranch.milestones.length === 0) {
-        const branchIndex = branches.value.findIndex(
-          (b) => b.id === sourceBranch!.id
-        )
+        const branchIndex = branches.value.findIndex((b) => b.id === sourceBranch!.id)
         if (branchIndex !== -1) branches.value.splice(branchIndex, 1)
       }
     }
@@ -307,16 +276,12 @@ export const useBranchesStore = defineStore(
           milestone.currentXP = 0
           milestone.status = 'pending'
           updateMilestoneStatus(milestone)
-          edges.value = edges.value.filter(
-            (e) => e.source !== milestoneId && e.target !== milestoneId
-          )
+          edges.value = edges.value.filter((e) => e.source !== milestoneId && e.target !== milestoneId)
           if (branch.milestones.length > 0) {
             refreshMilestonesByTaskId(branch.milestones[0].id)
           }
           if (branch.milestones.length === 0) {
-            const branchIndex = branches.value.findIndex(
-              (b) => b.id === branch.id
-            )
+            const branchIndex = branches.value.findIndex((b) => b.id === branch.id)
             if (branchIndex !== -1) branches.value.splice(branchIndex, 1)
           }
           const newBranchId = uuidv4()
@@ -328,10 +293,7 @@ export const useBranchesStore = defineStore(
             taskIds: [],
             milestones: [milestone],
             order: branches.value.length,
-            position: {
-              x: milestone.position.x - 150,
-              y: milestone.position.y,
-            },
+            position: { x: milestone.position.x - 150, y: milestone.position.y },
           })
           const newEdge: Edge = {
             id: `edge-${newBranchId}-${milestone.id}-detach`,
@@ -348,6 +310,8 @@ export const useBranchesStore = defineStore(
       }
     }
 
+    // ========== Управление ветками ==========
+    // ИСПРАВЛЕННЫЙ addBranch: ветка без этапов
     function addBranch(
       displayName: string,
       icon: string,
@@ -355,46 +319,23 @@ export const useBranchesStore = defineStore(
       taskIds: string[] = []
     ) {
       let branchPos = { x: 100, y: 100 }
-      let milestonePos = { x: 250, y: 100 }
       if (branches.value.length > 0) {
         const lastBranch = branches.value[branches.value.length - 1]
         const lastBranchPos = lastBranch.position || { x: 100, y: 100 }
         branchPos = { x: lastBranchPos.x, y: lastBranchPos.y + 150 }
-        milestonePos = { x: branchPos.x + 150, y: branchPos.y }
       }
       const newBranchId = uuidv4()
-      const newMilestone: Milestone = {
-        id: uuidv4(),
-        name: displayName,
-        icon,
-        description,
-        requiredXP: 500,
-        currentXP: 0,
-        status: 'pending',
-        taskIds: taskIds,
-        position: milestonePos,
-      }
       const newBranch: Branch = {
         id: newBranchId,
         displayName,
         icon,
         description,
         taskIds,
-        milestones: [newMilestone],
+        milestones: [], // пустой массив этапов
         order: branches.value.length,
         position: branchPos,
       }
       branches.value.push(newBranch)
-
-      const newEdge: Edge = {
-        id: `edge-${newBranchId}-${newMilestone.id}-${Date.now()}`,
-        source: newBranchId,
-        target: newMilestone.id,
-        type: 'smoothstep',
-        animated: false,
-        style: { stroke: 'var(--accent)', strokeWidth: 1 },
-      }
-      addEdge(newEdge)
     }
 
     function deleteBranch(branchId: string) {
@@ -402,25 +343,21 @@ export const useBranchesStore = defineStore(
       if (index !== -1) {
         const milestoneIds = branches.value[index].milestones.map((m) => m.id)
         edges.value = edges.value.filter(
-          (e) =>
-            !milestoneIds.includes(e.source) &&
-            !milestoneIds.includes(e.target) &&
-            e.source !== branchId &&
-            e.target !== branchId
+          (e) => !milestoneIds.includes(e.source) && !milestoneIds.includes(e.target) && e.source !== branchId && e.target !== branchId
         )
         branches.value.splice(index, 1)
       }
     }
 
+    // ========== Управление этапами ==========
     function addMilestone(
       branchId: BranchId | null,
       name: string,
       position?: { x: number; y: number }
     ): Milestone {
-      let branch = branchId
-        ? branches.value.find((b) => b.id === branchId)
-        : null
+      const branch = branchId ? branches.value.find((b) => b.id === branchId) : null
       if (!branch) {
+        // Создаём новую ветку с этапом (для совместимости, но по логике мы не должны вызывать без branchId)
         const newBranchId = uuidv4()
         const newMilestone: Milestone = {
           id: uuidv4(),
@@ -441,10 +378,7 @@ export const useBranchesStore = defineStore(
           taskIds: [],
           milestones: [newMilestone],
           order: branches.value.length,
-          position: {
-            x: newMilestone.position.x - 150,
-            y: newMilestone.position.y,
-          },
+          position: { x: newMilestone.position.x - 150, y: newMilestone.position.y },
         }
         branches.value.push(newBranch)
         const newEdge: Edge = {
@@ -464,9 +398,7 @@ export const useBranchesStore = defineStore(
         id: uuidv4(),
         name,
         icon: branch.icon,
-        requiredXP: lastMilestone
-          ? Math.floor(lastMilestone.requiredXP * 1.5)
-          : 500,
+        requiredXP: lastMilestone ? Math.floor(lastMilestone.requiredXP * 1.5) : 500,
         currentXP: 0,
         status: 'pending',
         taskIds: [],
@@ -476,18 +408,12 @@ export const useBranchesStore = defineStore(
           y: lastMilestone?.position.y || 200,
         },
       }
-
-      const updatedBranch = {
-        ...branch,
-        milestones: [...branch.milestones, newMilestone],
-      }
+      const updatedBranch = { ...branch, milestones: [...branch.milestones, newMilestone] }
       const branchIndex = branches.value.findIndex((b) => b.id === branch.id)
       const updatedBranches = [...branches.value]
       updatedBranches.splice(branchIndex, 1, updatedBranch)
       branches.value = updatedBranches
-
-      const sourceId =
-        branch.milestones.length === 0 ? branch.id : lastMilestone!.id
+      const sourceId = branch.milestones.length === 0 ? branch.id : lastMilestone!.id
       const newEdge: Edge = {
         id: `edge-${sourceId}-${newMilestone.id}-${Date.now()}`,
         source: sourceId,
@@ -497,38 +423,22 @@ export const useBranchesStore = defineStore(
         style: { stroke: 'var(--accent)', strokeWidth: 1 },
       }
       addEdge(newEdge)
-
       return newMilestone
     }
 
     function updateMilestone(milestoneId: string, updates: Partial<Milestone>) {
-      const branchIndex = branches.value.findIndex((b) =>
-        b.milestones.some((m) => m.id === milestoneId)
-      )
+      const branchIndex = branches.value.findIndex((b) => b.milestones.some((m) => m.id === milestoneId))
       if (branchIndex === -1) return
-
       const branch = branches.value[branchIndex]
-      const milestoneIndex = branch.milestones.findIndex(
-        (m) => m.id === milestoneId
-      )
+      const milestoneIndex = branch.milestones.findIndex((m) => m.id === milestoneId)
       if (milestoneIndex === -1) return
-
-      const updatedMilestone = {
-        ...branch.milestones[milestoneIndex],
-        ...updates,
-      }
+      const updatedMilestone = { ...branch.milestones[milestoneIndex], ...updates }
       const updatedMilestones = [...branch.milestones]
       updatedMilestones.splice(milestoneIndex, 1, updatedMilestone)
-
-      const updatedBranch = {
-        ...branch,
-        milestones: updatedMilestones,
-      }
-
+      const updatedBranch = { ...branch, milestones: updatedMilestones }
       const updatedBranches = [...branches.value]
       updatedBranches.splice(branchIndex, 1, updatedBranch)
       branches.value = updatedBranches
-
       updateMilestoneStatus(updatedMilestone)
       updateBranchStatus(updatedBranch)
     }
@@ -538,13 +448,9 @@ export const useBranchesStore = defineStore(
         const index = branch.milestones.findIndex((m) => m.id === milestoneId)
         if (index !== -1) {
           branch.milestones.splice(index, 1)
-          edges.value = edges.value.filter(
-            (e) => e.source !== milestoneId && e.target !== milestoneId
-          )
+          edges.value = edges.value.filter((e) => e.source !== milestoneId && e.target !== milestoneId)
           if (branch.milestones.length === 0) {
-            const branchIndex = branches.value.findIndex(
-              (b) => b.id === branch.id
-            )
+            const branchIndex = branches.value.findIndex((b) => b.id === branch.id)
             if (branchIndex !== -1) branches.value.splice(branchIndex, 1)
           } else {
             updateBranchStatus(branch)
@@ -554,16 +460,15 @@ export const useBranchesStore = defineStore(
       }
     }
 
-    function addEdge(edge: Edge) {
-      edges.value.push(edge)
-    }
-    function removeEdge(edgeId: string) {
-      edges.value = edges.value.filter((e) => e.id !== edgeId)
-    }
+    // ========== Управление ребрами ==========
+    function addEdge(edge: Edge) { edges.value.push(edge) }
+    function removeEdge(edgeId: string) { edges.value = edges.value.filter((e) => e.id !== edgeId) }
     function updateEdge(updatedEdge: Edge) {
       const index = edges.value.findIndex((e) => e.id === updatedEdge.id)
       if (index !== -1) edges.value[index] = updatedEdge
     }
+
+    // ========== Прочие методы ==========
     function updateBranch(branchId: string, updates: Partial<Branch>) {
       const branch = branches.value.find((b) => b.id === branchId)
       if (branch) {
@@ -572,21 +477,16 @@ export const useBranchesStore = defineStore(
         if (firstMilestone) {
           if (updates.displayName) firstMilestone.name = updates.displayName
           if (updates.icon) firstMilestone.icon = updates.icon
-          if (updates.description)
-            firstMilestone.description = updates.description
+          if (updates.description) firstMilestone.description = updates.description
           if (updates.taskIds) firstMilestone.taskIds = updates.taskIds
         }
         updateBranchStatus(branch)
       }
     }
-    function updateBranchPosition(
-      branchId: string,
-      position: { x: number; y: number }
-    ) {
+
+    function updateBranchPosition(branchId: string, position: { x: number; y: number }) {
       const branch = branches.value.find((b) => b.id === branchId)
-      if (branch) {
-        branch.position = position
-      }
+      if (branch) branch.position = position
     }
 
     if (import.meta.client) {
@@ -617,8 +517,6 @@ export const useBranchesStore = defineStore(
     }
   },
   {
-    persist: import.meta.client
-      ? { key: 'carbon-branches', storage: localStorage }
-      : undefined,
+    persist: import.meta.client ? { key: 'carbon-branches', storage: localStorage } : undefined,
   }
 )

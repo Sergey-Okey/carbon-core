@@ -81,17 +81,28 @@
                 <p v-if="milestone.description" class="description">
                   {{ milestone.description }}
                 </p>
-                <div class="xp-bar">
-                  <div
-                    class="xp-fill"
-                    :style="{
-                      width: (milestone.currentXP / milestone.requiredXP) * 100 + '%',
-                    }"
-                  ></div>
+                <div class="progress-dashes" v-if="milestone.taskIds.length">
+                  <span
+                    v-for="i in milestone.taskIds.length"
+                    :key="i"
+                    class="dash"
+                    :class="{ filled: i <= completedMilestoneTasks(milestone) }"
+                  ></span>
                 </div>
-                <span class="xp-text"
-                  >{{ milestone.currentXP }} / {{ milestone.requiredXP }} XP</span
-                >
+                <div class="task-counter" v-if="milestone.taskIds.length">
+                  {{ completedMilestoneTasks(milestone) }} / {{ milestone.taskIds.length }} задач
+                </div>
+                <div class="milestone-tasks" v-if="getMilestoneTasks(milestone).length">
+                  <ul>
+                    <li 
+                      v-for="task in getMilestoneTasks(milestone)" 
+                      :key="task.id"
+                      :class="{ done: task.done }"
+                    >
+                      {{ task.title }}
+                    </li>
+                  </ul>
+                </div>
               </div>
               <div class="milestone-actions">
                 <button
@@ -183,6 +194,12 @@ function completedMilestoneTasks(milestone: Milestone): number {
     return task?.done
   }).length
   return completed
+}
+
+function getMilestoneTasks(milestone: Milestone) {
+  return milestone.taskIds
+    .map((id) => tasksStore.tasks.find((t) => t.id === id))
+    .filter((task) => task !== undefined)
 }
 
 function toggleBranch(branchId: string) {
@@ -492,25 +509,41 @@ function getIconComponent(iconName: string) {
   line-height: 1.35;
 }
 
-.xp-bar {
-  height: 4px;
-  background: var(--surface);
-  border-radius: 2px;
-  overflow: hidden;
-  margin: 8px 0 4px;
+.progress-dashes {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  margin: 6px 0 4px;
 }
 
-.xp-fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 2px;
-  transition: width 0.3s;
-}
-
-.xp-text {
-  display: block;
-  font-size: 0.7rem;
+.task-counter {
+  font-size: 0.75rem;
   color: var(--dim);
+  margin-bottom: 8px;
+}
+
+.milestone-tasks {
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  li {
+    font-size: 0.8rem;
+    color: var(--accent);
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: all 0.2s;
+
+    &.done {
+      color: var(--dim);
+      text-decoration: line-through;
+    }
+  }
 }
 
 .milestone-actions {
