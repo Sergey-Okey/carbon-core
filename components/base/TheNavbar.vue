@@ -18,7 +18,7 @@
         :title="item.label"
         @click="handleNavClick(item.id)"
       >
-        <component :is="item.icon" :size="20" />
+        <component :is="item.icon" :size="isMobile ? 24 : 20" class="nav-icon" />
         <Transition name="label-fade">
           <span v-if="showLabels" class="label">{{ item.label }}</span>
         </Transition>
@@ -94,10 +94,6 @@ function onMouseLeave() {
 
 <style scoped lang="scss">
 .navbar {
-  --navbar-collapsed-width: 64px;
-  --navbar-expanded-width: 180px;
-  --navbar-margin: 12px;
-
   color: var(--accent);
   border: 1px solid var(--border);
   z-index: 100;
@@ -108,16 +104,7 @@ function onMouseLeave() {
   transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);
   @include glass;
 
-  position: fixed;
-  bottom: var(--navbar-margin);
-  left: 50%;
-  transform: translateX(-50%);
-  width: auto;
-  height: auto;
-  padding: 6px 12px;
-  border-radius: 32px;
-  display: inline-flex;
-
+  /* Десктоп (без изменений) */
   @include desktop {
     position: relative;
     top: 0;
@@ -125,19 +112,49 @@ function onMouseLeave() {
     left: 0;
     right: auto;
     transform: none;
-    width: var(--navbar-collapsed-width);
+    width: 64px;
     height: fit-content;
-    margin: auto var(--navbar-margin);
+    margin: auto 12px;
     border-radius: 20px;
     display: flex;
     flex-direction: column;
     padding: 8px 0;
+
+    &.is-expanded {
+      width: 180px;
+    }
   }
 
-  &.is-expanded {
-    @include desktop {
-      width: var(--navbar-expanded-width);
+  /* Мобильная версия — островок, чуть шире, с анимацией */
+  @include mobile {
+     @include glass;
+    position: fixed;
+    bottom: 20px;
+    left: 16px;
+    right: 16px;
+    width: auto;
+    padding: 8px 16px;
+    border-radius: 40px;         
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    animation: slideUp 0.3s ease-out;
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    &:active {
+      transform: scale(0.98);
     }
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -151,6 +168,13 @@ function onMouseLeave() {
   @include desktop {
     flex-direction: column;
     gap: 2px;
+    width: 100%;
+  }
+
+  @include mobile {
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 8px;
     width: 100%;
   }
 }
@@ -177,11 +201,24 @@ function onMouseLeave() {
     width: calc(100% - 12px);
     margin: 0 6px;
     padding: 10px 14px;
+    border-radius: 40px;
+  }
+
+  @include mobile {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 6px;
+    min-height: 52px;
+    border-radius: 40px;
   }
 
   &:hover {
     background: var(--surface);
     color: var(--accent);
+  }
+
+  &:active {
+    transform: scale(0.96);
   }
 
   &.active {
@@ -192,10 +229,17 @@ function onMouseLeave() {
   &:focus-visible {
     box-shadow: 0 0 0 2px var(--accent);
   }
+}
 
-  svg {
-    stroke: currentColor;
-    flex-shrink: 0;
+.nav-icon {
+  stroke: currentColor;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+
+  @include desktop {
+    .nav-item:hover & {
+      transform: scale(1.08);
+    }
   }
 }
 
@@ -209,7 +253,6 @@ function onMouseLeave() {
 .label-fade-leave-active {
   transition: opacity 0.25s ease;
 }
-
 .label-fade-enter-from,
 .label-fade-leave-to {
   opacity: 0;

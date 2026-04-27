@@ -3,16 +3,16 @@
     <!-- Панель инструментов -->
     <div class="mobile-controls">
       <button @click="addBranch" title="Добавить ветку">
-        <Plus :size="18" />
+        <Plus :size="20" />
         <span>Ветка</span>
       </button>
       <button @click="addMilestoneToSelectedBranch" title="Добавить этап">
-        <PlusCircle :size="18" />
+        <PlusCircle :size="20" />
         <span>Этап</span>
       </button>
     </div>
 
-    <!-- ✅ АЛЬТЕРНАТИВНЫЙ ВИД ДЛЯ МОБИЛЬНЫХ: Вертикальный список веток -->
+    <!-- Список веток -->
     <div class="branches-list">
       <div
         v-for="branch in branches"
@@ -20,22 +20,39 @@
         class="branch-item"
         :class="{ expanded: expandedBranch === branch.id }"
       >
+        <!-- Заголовок ветки -->
         <div class="branch-header" @click="toggleBranch(branch.id)">
           <div class="branch-info">
-            <component :is="getIconComponent(branch.icon)" :size="20" />
+            <!-- Декоративный маркер ветки (квадрат) -->
+            <div class="node-marker branch-marker"></div>
+            <component :is="getIconComponent(branch.icon)" :size="22" class="branch-icon" />
             <div class="branch-text">
               <h4>{{ branch.displayName }}</h4>
-              <span class="milestone-count"
-                >{{ branch.milestones.length }} этапов</span
-              >
+              <div class="branch-stats">
+                <span class="task-count">{{ totalTasks(branch.id) }} задач</span>
+                <div class="progress-dashes" v-if="totalTasks(branch.id) > 0">
+                  <span
+                    v-for="i in totalTasks(branch.id)"
+                    :key="i"
+                    class="dash"
+                    :class="{ filled: i <= completedTasks(branch.id) }"
+                  ></span>
+                </div>
+              </div>
             </div>
           </div>
-          <ChevronDown
-            :size="16"
-            :class="{ rotated: expandedBranch === branch.id }"
-          />
+          <div class="branch-actions">
+            <button class="branch-edit" @click.stop="editBranch(branch.id)" title="Редактировать ветку">
+              <PenSquare :size="16" />
+            </button>
+            <button class="branch-delete" @click.stop="deleteBranch(branch.id)" title="Удалить ветку">
+              <Trash2 :size="16" />
+            </button>
+            <ChevronDown :size="20" :class="{ rotated: expandedBranch === branch.id }" />
+          </div>
         </div>
 
+        <!-- Список этапов ветки (раскрывается) -->
         <Transition name="expand">
           <div v-if="expandedBranch === branch.id" class="milestones">
             <div
@@ -44,22 +61,22 @@
               class="milestone-item"
               :class="milestone.status"
             >
+              <!-- Декоративный маркер этапа (круг) -->
+              <div class="node-marker milestone-marker"></div>
               <div class="milestone-number">{{ index + 1 }}</div>
               <div class="milestone-content">
                 <div class="milestone-header">
                   <h5>{{ milestone.name }}</h5>
-                  <span
-                    v-if="milestone.status === 'completed'"
-                    class="badge completed"
-                  >
-                    ✓
-                  </span>
-                  <span
-                    v-else-if="milestone.status === 'active'"
-                    class="badge active"
-                  >
-                    ◐
-                  </span>
+                  <div class="milestone-badges">
+                    <div class="task-dashes" v-if="milestone.taskIds.length">
+                      <span
+                        v-for="i in milestone.taskIds.length"
+                        :key="i"
+                        class="dash small"
+                        :class="{ filled: i <= completedMilestoneTasks(milestone) }"
+                      ></span>
+                    </div>
+                  </div>
                 </div>
                 <p v-if="milestone.description" class="description">
                   {{ milestone.description }}
@@ -68,23 +85,30 @@
                   <div
                     class="xp-fill"
                     :style="{
-                      width:
-                        (milestone.currentXP / milestone.requiredXP) * 100 +
-                        '%',
+                      width: (milestone.currentXP / milestone.requiredXP) * 100 + '%',
                     }"
                   ></div>
                 </div>
                 <span class="xp-text"
-                  >{{ milestone.currentXP }} /
-                  {{ milestone.requiredXP }} XP</span
+                  >{{ milestone.currentXP }} / {{ milestone.requiredXP }} XP</span
                 >
               </div>
-              <button
-                class="milestone-edit"
-                @click.stop="editMilestone(milestone)"
-              >
-                <Edit :size="16" />
-              </button>
+              <div class="milestone-actions">
+                <button
+                  class="milestone-edit"
+                  @click.stop="editMilestone(milestone)"
+                  title="Редактировать этап"
+                >
+                  <PenSquare :size="16" />
+                </button>
+                <button
+                  class="milestone-delete"
+                  @click.stop="deleteMilestone(milestone.id)"
+                  title="Удалить этап"
+                >
+                  <Trash2 :size="16" />
+                </button>
+              </div>
             </div>
 
             <button
@@ -102,20 +126,64 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { ChevronDown, Plus, Edit, PlusCircle } from 'lucide-vue-next'
+import {
+  ChevronDown,
+  Plus,
+  PlusCircle,
+  PenSquare,
+  Trash2,
+  TrendingUp,
+  Dumbbell,
+  Brain,
+  Users,
+  Target,
+  Briefcase,
+  Heart,
+  BookOpen,
+  Globe,
+  Award,
+  Coffee,
+  Music,
+  Camera,
+  Code,
+  HelpCircle,
+} from 'lucide-vue-next'
 import { useBranchesStore } from '~/stores/branches.store'
+import { useTasksStore } from '~/stores/tasks.store'
+import { useConfirm } from '~/composables/useConfirm'
 import type { Milestone } from '~/types/branch.types'
 
 const emit = defineEmits<{
   (e: 'edit-milestone', milestone: Milestone): void
   (e: 'add-milestone', branchId?: string): void
   (e: 'add-branch'): void
+  (e: 'edit-branch', branchId: string): void
+  (e: 'delete-branch', branchId: string): void
+  (e: 'delete-milestone', milestoneId: string): void
 }>()
 
 const branchesStore = useBranchesStore()
+const tasksStore = useTasksStore()
+const { confirm } = useConfirm()
 const expandedBranch = ref<string | null>(null)
 
 const branches = computed(() => branchesStore.branches)
+
+function totalTasks(branchId: string): number {
+  return branchesStore.getBranchTotalTasks(branchId)
+}
+
+function completedTasks(branchId: string): number {
+  return branchesStore.getBranchCompletedTasks(branchId)
+}
+
+function completedMilestoneTasks(milestone: Milestone): number {
+  const completed = milestone.taskIds.filter((id) => {
+    const task = tasksStore.tasks.find((t) => t.id === id)
+    return task?.done
+  }).length
+  return completed
+}
 
 function toggleBranch(branchId: string) {
   expandedBranch.value = expandedBranch.value === branchId ? null : branchId
@@ -123,6 +191,15 @@ function toggleBranch(branchId: string) {
 
 function editMilestone(milestone: Milestone) {
   emit('edit-milestone', milestone)
+}
+
+async function deleteMilestone(milestoneId: string) {
+  const milestone = branches.value.flatMap(b => b.milestones).find(m => m.id === milestoneId)
+  if (!milestone) return
+  const ok = await confirm(`Удалить этап «${milestone.name}»?`)
+  if (ok) {
+    emit('delete-milestone', milestoneId)
+  }
 }
 
 function addMilestone(branchId: string) {
@@ -137,9 +214,38 @@ function addMilestoneToSelectedBranch() {
   emit('add-milestone')
 }
 
+function editBranch(branchId: string) {
+  emit('edit-branch', branchId)
+}
+
+async function deleteBranch(branchId: string) {
+  const branch = branches.value.find(b => b.id === branchId)
+  if (!branch) return
+  const ok = await confirm(`Удалить ветку «${branch.displayName}»?`)
+  if (ok) {
+    emit('delete-branch', branchId)
+  }
+}
+
 function getIconComponent(iconName: string) {
-  // Можно добавить динамический импорт иконок
-  return 'div'
+  const map: Record<string, any> = {
+    'trending-up': TrendingUp,
+    dumbbell: Dumbbell,
+    brain: Brain,
+    users: Users,
+    target: Target,
+    briefcase: Briefcase,
+    heart: Heart,
+    'book-open': BookOpen,
+    globe: Globe,
+    award: Award,
+    coffee: Coffee,
+    music: Music,
+    camera: Camera,
+    code: Code,
+    'help-circle': HelpCircle,
+  }
+  return map[iconName] || HelpCircle
 }
 </script>
 
@@ -148,34 +254,34 @@ function getIconComponent(iconName: string) {
   padding: 12px;
   max-width: 100%;
   overflow-y: auto;
+  background: var(--bg);
+  min-height: 100%;
 }
 
 .mobile-controls {
   display: flex;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 
   button {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
+    gap: 8px;
+    padding: 10px 16px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--border-radius-sm);
+    border-radius: 40px;
     color: var(--accent);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.1s;
+    transition: all 0.2s;
 
     &:active {
       background: var(--accent);
       color: var(--bg);
-    }
-
-    span {
-      font-weight: 500;
+      transform: scale(0.96);
     }
   }
 }
@@ -183,15 +289,15 @@ function getIconComponent(iconName: string) {
 .branches-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .branch-item {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--border-radius-md);
+  border-radius: var(--border-radius-lg);
   overflow: hidden;
-  transition: all 0.1s ease;
+  transition: all 0.2s ease;
 
   &.expanded {
     box-shadow: var(--shadow-md);
@@ -202,7 +308,7 @@ function getIconComponent(iconName: string) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px;
+  padding: 14px 16px;
   cursor: pointer;
   transition: background-color 0.2s;
 
@@ -214,54 +320,120 @@ function getIconComponent(iconName: string) {
 .branch-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex: 1;
+
+  .node-marker {
+    margin-right: 2px;
+  }
+}
+
+.branch-icon {
+  flex-shrink: 0;
+  color: var(--accent);
 }
 
 .branch-text {
+  flex: 1;
+
   h4 {
     font-weight: 600;
-    font-size: 0.95rem;
-    margin: 0;
+    font-size: 1rem;
+    margin: 0 0 4px;
     color: var(--accent);
   }
 
-  .milestone-count {
-    display: block;
+  .branch-stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .task-count {
     font-size: 0.75rem;
     color: var(--dim);
-    margin-top: 2px;
+  }
+
+  .progress-dashes {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+}
+
+.dash {
+  width: 12px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  transition: background 0.2s;
+
+  &.filled {
+    background: var(--accent);
+  }
+
+  &.small {
+    width: 8px;
+    height: 2px;
+  }
+}
+
+.branch-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--dim);
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s;
+
+    &:active {
+      background: var(--border);
+      color: var(--accent);
+    }
+  }
+
+  .branch-delete:active {
+    color: var(--error);
   }
 }
 
 .milestones {
   border-top: 1px solid var(--border);
-  padding: 8px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .milestone-item {
   display: flex;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 8px;
   padding: 12px;
   background: var(--bg);
-  border-radius: var(--border-radius-sm);
-  border-left: 3px solid var(--border);
-  transition: all 0.1s;
+  border-radius: var(--border-radius-md);
+  transition: all 0.2s;
+
+  .node-marker {
+    margin-top: 8px;
+  }
 
   &.pending {
-    border-left-color: var(--dim);
+    background: var(--bg);
   }
 
   &.active {
-    border-left-color: var(--warning);
     background: color-mix(in srgb, var(--warning) 5%, var(--bg));
   }
 
   &.completed {
-    border-left-color: var(--success);
     background: color-mix(in srgb, var(--success) 5%, var(--bg));
   }
 }
@@ -270,8 +442,8 @@ function getIconComponent(iconName: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   background: var(--surface);
   border-radius: 50%;
   font-weight: 600;
@@ -290,6 +462,8 @@ function getIconComponent(iconName: string) {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 6px;
+  flex-wrap: wrap;
+  gap: 6px;
 
   h5 {
     font-weight: 600;
@@ -298,34 +472,24 @@ function getIconComponent(iconName: string) {
     color: var(--accent);
   }
 
-  .badge {
-    display: inline-block;
-    width: 18px;
-    height: 18px;
+  .milestone-badges {
     display: flex;
     align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    font-size: 0.7rem;
-    font-weight: 700;
+    gap: 8px;
+  }
 
-    &.active {
-      background: var(--warning);
-      color: var(--bg);
-    }
-
-    &.completed {
-      background: var(--success);
-      color: var(--bg);
-    }
+  .task-dashes {
+    display: flex;
+    gap: 3px;
+    align-items: center;
   }
 }
 
 .description {
   font-size: 0.8rem;
   color: var(--dim);
-  margin: 4px 0;
-  line-height: 1.3;
+  margin: 6px 0;
+  line-height: 1.35;
 }
 
 .xp-bar {
@@ -333,7 +497,7 @@ function getIconComponent(iconName: string) {
   background: var(--surface);
   border-radius: 2px;
   overflow: hidden;
-  margin: 6px 0 2px;
+  margin: 8px 0 4px;
 }
 
 .xp-fill {
@@ -349,23 +513,29 @@ function getIconComponent(iconName: string) {
   color: var(--dim);
 }
 
-.milestone-edit {
+.milestone-actions {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: transparent;
-  border: none;
-  color: var(--dim);
-  cursor: pointer;
-  border-radius: var(--border-radius-sm);
-  transition: all 0.1s;
+  flex-direction: column;
+  gap: 8px;
   flex-shrink: 0;
 
-  &:active {
-    background: var(--surface);
-    color: var(--accent);
+  button {
+    background: transparent;
+    border: none;
+    color: var(--dim);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s;
+
+    &:active {
+      background: var(--surface);
+      color: var(--accent);
+    }
+  }
+
+  .milestone-delete:active {
+    color: var(--error);
   }
 }
 
@@ -373,16 +543,17 @@ function getIconComponent(iconName: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   background: var(--bg);
   border: 1px dashed var(--border);
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius-md);
   color: var(--dim);
   font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.1s;
+  transition: all 0.2s;
 
   &:active {
     background: var(--surface);
@@ -391,25 +562,40 @@ function getIconComponent(iconName: string) {
   }
 }
 
-/* ✅ АНИМАЦИИ ДЛЯ РАСКРЫТИЯ */
+/* Маркеры (декоративные) */
+.node-marker {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  background: var(--accent);
+  border: 1px solid var(--bg);
+  transition: opacity 0.2s;
+}
+
+.branch-marker {
+  border-radius: 2px;
+}
+
+.milestone-marker {
+  border-radius: 50%;
+}
+
+/* Анимации раскрытия */
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  overflow: hidden;
 }
 
-.expand-enter-from {
-  opacity: 0;
-  max-height: 0;
-}
-
+.expand-enter-from,
 .expand-leave-to {
   opacity: 0;
   max-height: 0;
 }
 
-/* ✅ РОТАЦИЯ ИКОНКИ */
+/* Ротация иконки */
 svg {
-  transition: transform 0.3s;
+  transition: transform 0.2s;
 
   &.rotated {
     transform: rotate(180deg);

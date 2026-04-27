@@ -611,15 +611,10 @@ function addMilestoneToSelectedBranch() {
 <style scoped lang="scss">
 .branch-flow-wrapper {
   width: 100%;
-  height: 100%;
-  min-height: 500px;
   border-radius: var(--border-radius-lg);
   overflow: hidden;
   border: 1px solid var(--border);
   background: var(--bg);
-  @include desktop {
-    height: calc(100vh - 120px);
-  }
 }
 
 .mobile-warning {

@@ -13,6 +13,7 @@
     </div>
 
     <div class="settings-content">
+      <!-- Внешний вид -->
       <section v-if="activeTab === 'appearance'" class="settings-group">
         <div class="group-header">
           <Palette :size="22" />
@@ -26,19 +27,13 @@
             </div>
             <div class="theme-toggle">
               <button
-                :class="[
-                  'theme-option',
-                  { active: settingsStore.theme === 'dark' },
-                ]"
+                :class="['theme-option', { active: settingsStore.theme === 'dark' }]"
                 @click="setTheme('dark')"
               >
                 <Moon :size="18" />
               </button>
               <button
-                :class="[
-                  'theme-option',
-                  { active: settingsStore.theme === 'light' },
-                ]"
+                :class="['theme-option', { active: settingsStore.theme === 'light' }]"
                 @click="setTheme('light')"
               >
                 <Sun :size="18" />
@@ -63,6 +58,7 @@
                   @click="setAccentColor(color.value, color.name)"
                 />
               </div>
+              <div class="accent-preview" :style="{ backgroundColor: settingsStore.accentColor }"></div>
             </div>
           </div>
 
@@ -101,6 +97,7 @@
         </div>
       </section>
 
+      <!-- Уведомления -->
       <section v-if="activeTab === 'notifications'" class="settings-group">
         <div class="group-header">
           <Bell :size="22" />
@@ -139,6 +136,7 @@
         </div>
       </section>
 
+      <!-- Данные -->
       <section v-if="activeTab === 'data'" class="settings-group">
         <div class="group-header">
           <Database :size="22" />
@@ -148,9 +146,7 @@
           <div class="setting-row">
             <div class="setting-info">
               <span class="label">Авто-бэкап при выходе</span>
-              <span class="desc"
-                >Сохраняет профиль, авторизацию и прогресс</span
-              >
+              <span class="desc">Сохраняет профиль, авторизацию и прогресс</span>
             </div>
             <label class="switch">
               <input
@@ -192,504 +188,514 @@
         </div>
       </section>
     </div>
-
-    <script setup lang="ts">
-      import { computed, ref } from 'vue'
-      import {
-        Bell,
-        Clock,
-        Database,
-        Download,
-        FileJson,
-        Moon,
-        Palette,
-        RotateCcw,
-        Sun,
-        Trash2,
-        Upload,
-      } from 'lucide-vue-next'
-      import { useNotification } from '~/composables/useNotification'
-      import { ACCENT_COLORS, useSettingsStore } from '~/stores/settings.store'
-      import {
-        buildBackupPayload,
-        readAutoBackup,
-        restoreBackupPayload,
-        saveAutoBackup,
-      } from '~/utils/backup'
-
-      const settingsStore = useSettingsStore()
-      const { addNotification } = useNotification()
-      const activeTab = ref('appearance')
-
-      const tabs = [
-        { key: 'appearance', label: 'Внешний вид' },
-        { key: 'notifications', label: 'Уведомления' },
-        { key: 'data', label: 'Данные' },
-      ]
-
-      const themeLabel = computed(() =>
-        settingsStore.theme === 'dark' ? 'Тёмная' : 'Светлая'
-      )
-
-      const accentLabel = computed(() => {
-        const found = ACCENT_COLORS.find(
-          (color) => color.value === settingsStore.accentColor
-        )
-        return found?.name ?? 'Пользовательский'
-      })
-
-      const animationSpeedLabel = computed(() => {
-        const speed = settingsStore.animationSpeed
-        if (speed < 0.8) return 'Медленно'
-        if (speed < 1.2) return 'Нормально'
-        return 'Быстро'
-      })
-
-      const lastBackupText = computed(() => {
-        if (!settingsStore.lastBackupDate) return ''
-        return new Date(settingsStore.lastBackupDate).toLocaleString('ru-RU')
-      })
-
-      function setTheme(theme: 'dark' | 'light') {
-        settingsStore.setTheme(theme)
-        addNotification({
-          type: 'info',
-          message:
-            theme === 'dark' ? 'Тёмная тема включена' : 'Светлая тема включена',
-        })
-      }
-
-      function setAccentColor(color: string, name: string) {
-        settingsStore.setAccentColor(color)
-        addNotification({ type: 'success', message: `Акцент: ${name}` })
-      }
-
-      function toggleAnimations(event: Event) {
-        const value = (event.target as HTMLInputElement).checked
-        settingsStore.setAnimationsEnabled(value)
-        addNotification({
-          type: 'info',
-          message: value ? 'Анимации включены' : 'Анимации отключены',
-        })
-      }
-
-      function setAnimationSpeed(event: Event) {
-        const value = parseFloat((event.target as HTMLInputElement).value)
-        settingsStore.setAnimationSpeed(value)
-        addNotification({
-          type: 'info',
-          message: `Скорость анимаций: ${animationSpeedLabel.value}`,
-        })
-      }
-
-      function toggleNotifications(event: Event) {
-        const value = (event.target as HTMLInputElement).checked
-        settingsStore.setNotificationsEnabled(value)
-
-        if (value) {
-          addNotification({ type: 'success', message: 'Уведомления включены' })
-        }
-      }
-
-      function toggleSound(event: Event) {
-        const value = (event.target as HTMLInputElement).checked
-        settingsStore.setSoundEnabled(value)
-        addNotification({
-          type: 'info',
-          message: value ? 'Звук включён' : 'Звук отключён',
-        })
-      }
-
-      function toggleAutoBackup(event: Event) {
-        const value = (event.target as HTMLInputElement).checked
-        settingsStore.setAutoBackup(value)
-        addNotification({
-          type: 'info',
-          message: value ? 'Авто-бэкап включён' : 'Авто-бэкап отключён',
-        })
-      }
-
-      function createBackup() {
-        saveAutoBackup()
-        settingsStore.recordBackup()
-        addNotification({ type: 'success', message: 'Резервная копия создана' })
-      }
-
-      function exportData() {
-        const payload = buildBackupPayload()
-        const blob = new Blob([JSON.stringify(payload, null, 2)], {
-          type: 'application/json',
-        })
-        const url = URL.createObjectURL(blob)
-        const anchor = document.createElement('a')
-        anchor.href = url
-        anchor.download = `cof-backup-${new Date().toISOString().split('T')[0]}.json`
-        anchor.click()
-        URL.revokeObjectURL(url)
-
-        addNotification({ type: 'success', message: 'Данные экспортированы' })
-      }
-
-      function importData() {
-        const input = document.createElement('input')
-        input.type = 'file'
-        input.accept = '.json'
-        input.onchange = async (event: Event) => {
-          const file = (event.target as HTMLInputElement).files?.[0]
-          if (!file) return
-
-          try {
-            const text = await file.text()
-            const payload = JSON.parse(text)
-            const restored = restoreBackupPayload(payload)
-            if (!restored) throw new Error('restore failed')
-
-            addNotification({
-              type: 'success',
-              message: 'Данные импортированы. Перезагрузка...',
-            })
-
-            setTimeout(() => window.location.reload(), 1000)
-          } catch {
-            addNotification({ type: 'error', message: 'Ошибка импорта' })
-          }
-        }
-
-        input.click()
-      }
-
-      function restoreAutoBackup() {
-        const backup = readAutoBackup()
-        if (!backup) {
-          addNotification({ type: 'warning', message: 'Нет сохранённой копии' })
-          return
-        }
-
-        try {
-          const restored = restoreBackupPayload(backup)
-          if (!restored) throw new Error('restore failed')
-
-          addNotification({
-            type: 'success',
-            message: 'Данные восстановлены. Перезагрузка...',
-          })
-
-          setTimeout(() => window.location.reload(), 1000)
-        } catch {
-          addNotification({ type: 'error', message: 'Ошибка восстановления' })
-        }
-      }
-
-      function resetAllData() {
-        if (confirm('Удалить все данные? Это действие необратимо.')) {
-          localStorage.clear()
-          addNotification({
-            type: 'success',
-            message: 'Данные сброшены. Перезагрузка...',
-          })
-          setTimeout(() => window.location.reload(), 1000)
-        }
-      }
-    </script>
-
-    <style scoped lang="scss">
-      .settings-page {
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-      }
-
-      .settings-tabs {
-        display: flex;
-        gap: 8px;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 8px;
-      }
-
-      .tab-btn {
-        padding: 8px 16px;
-        border: 1px solid transparent;
-        border-radius: var(--border-radius-sm);
-        background: transparent;
-        color: var(--dim);
-        font-size: 0.9rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all var(--transition-standard);
-
-        &:hover {
-          background: var(--surface);
-          color: var(--text);
-        }
-
-        &.active {
-          background: var(--accent);
-          color: var(--bg);
-          border-color: var(--accent);
-        }
-      }
-
-      .settings-content {
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-      }
-
-      .settings-group {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--border-radius-lg);
-        overflow: hidden;
-      }
-
-      .group-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 20px 24px 0;
-        margin-bottom: 16px;
-        color: var(--accent);
-
-        h3 {
-          font-size: 1.1rem;
-          font-weight: 600;
-        }
-
-        svg {
-          opacity: 0.7;
-        }
-      }
-
-      .group-body {
-        padding: 0 24px 24px;
-      }
-
-      .setting-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        padding: 14px 0;
-        border-bottom: 1px solid rgba(var(--dim-rgb, 136, 136, 136), 0.08);
-
-        &:last-of-type {
-          border-bottom: none;
-        }
-
-        @include mobile {
-          align-items: flex-start;
-          flex-direction: column;
-        }
-      }
-
-      .setting-info {
-        .label {
-          display: block;
-          color: var(--accent);
-          font-weight: 500;
-        }
-
-        .desc {
-          margin-top: 2px;
-          color: var(--dim);
-          font-size: 0.85rem;
-        }
-      }
-
-      .theme-toggle {
-        display: flex;
-        gap: 6px;
-      }
-
-      .theme-option {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 38px;
-        height: 38px;
-        border: 1px solid var(--border);
-        border-radius: var(--border-radius-sm);
-        background: var(--surface);
-        color: var(--dim);
-        cursor: pointer;
-        transition: all var(--transition-standard);
-
-        &:hover {
-          border-color: var(--accent);
-          color: var(--accent);
-        }
-
-        &.active {
-          background: var(--accent);
-          border-color: var(--accent);
-          color: var(--bg);
-        }
-      }
-
-      .accent-picker .color-dots {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      .color-dot {
-        width: 28px;
-        height: 28px;
-        padding: 0;
-        border: 2px solid transparent;
-        border-radius: 50%;
-        background: var(--dot-color);
-        cursor: pointer;
-        transition:
-          border-color 0.15s,
-          box-shadow 0.15s,
-          transform 0.15s;
-
-        &:hover {
-          transform: scale(1.15);
-        }
-
-        &.active {
-          border-color: var(--accent);
-          box-shadow: 0 0 0 1px var(--bg);
-          transform: scale(1.15);
-        }
-      }
-
-      .switch {
-        position: relative;
-        width: 44px;
-        height: 24px;
-        flex-shrink: 0;
-
-        input {
-          width: 0;
-          height: 0;
-          opacity: 0;
-        }
-
-        .slider {
-          position: absolute;
-          inset: 0;
-          border-radius: 24px;
-          background: var(--border);
-          transition: background var(--transition-standard);
-
-          &::before {
-            content: '';
-            position: absolute;
-            left: 3px;
-            bottom: 3px;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--surface);
-            box-shadow: var(--shadow-sm);
-            transition: transform var(--transition-standard);
-          }
-        }
-
-        input:checked + .slider {
-          background: var(--accent);
-        }
-
-        input:checked + .slider::before {
-          transform: translateX(20px);
-          background: var(--bg);
-        }
-      }
-
-      .slider-container {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 120px;
-      }
-
-      .speed-slider {
-        width: 100%;
-        height: 6px;
-        border-radius: 3px;
-        background: var(--border);
-        outline: none;
-        -webkit-appearance: none;
-        appearance: none;
-        cursor: pointer;
-
-        &::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          background: var(--accent);
-          cursor: pointer;
-          box-shadow: var(--shadow-sm);
-          transition: transform 0.1s;
-
-          &:hover {
-            transform: scale(1.1);
-          }
-        }
-
-        &::-moz-range-thumb {
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          background: var(--accent);
-          cursor: pointer;
-          border: none;
-          box-shadow: var(--shadow-sm);
-        }
-      }
-
-      .backup-info {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin: 12px 0 16px;
-        padding: 8px 12px;
-        border: 1px solid var(--border);
-        border-radius: var(--border-radius-sm);
-        background: var(--surface);
-        color: var(--dim);
-        font-size: 0.85rem;
-      }
-
-      .action-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      .action-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 10px 18px;
-        border: 1px solid var(--border);
-        border-radius: var(--border-radius-sm);
-        background: var(--surface);
-        color: var(--accent);
-        font-size: 0.85rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all var(--transition-standard);
-
-        &:hover {
-          transform: translateY(-1px);
-          background: var(--border);
-        }
-
-        &.danger {
-          border-color: var(--error);
-          color: var(--error);
-
-          &:hover {
-            background: rgba(var(--error-rgb, 255, 77, 77), 0.1);
-          }
-        }
-      }
-    </style>
   </div>
 </template>
+
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import {
+  Bell,
+  Clock,
+  Database,
+  Download,
+  FileJson,
+  Moon,
+  Palette,
+  RotateCcw,
+  Sun,
+  Trash2,
+  Upload,
+} from 'lucide-vue-next'
+import { useNotification } from '~/composables/useNotification'
+import { ACCENT_COLORS, useSettingsStore } from '~/stores/settings.store'
+import {
+  buildBackupPayload,
+  readAutoBackup,
+  restoreBackupPayload,
+  saveAutoBackup,
+} from '~/utils/backup'
+
+const settingsStore = useSettingsStore()
+const { addNotification } = useNotification()
+const activeTab = ref<'appearance' | 'notifications' | 'data'>('appearance')
+
+const tabs = [
+  { key: 'appearance', label: 'Внешний вид' },
+  { key: 'notifications', label: 'Уведомления' },
+  { key: 'data', label: 'Данные' },
+]
+
+const themeLabel = computed(() =>
+  settingsStore.theme === 'dark' ? 'Тёмная' : 'Светлая'
+)
+
+const accentLabel = computed(() => {
+  const found = ACCENT_COLORS.find(
+    (color) => color.value === settingsStore.accentColor
+  )
+  return found?.name ?? 'Пользовательский'
+})
+
+const animationSpeedLabel = computed(() => {
+  const speed = settingsStore.animationSpeed
+  if (speed < 0.8) return 'Медленно'
+  if (speed < 1.2) return 'Нормально'
+  return 'Быстро'
+})
+
+const lastBackupText = computed(() => {
+  if (!settingsStore.lastBackupDate) return ''
+  return new Date(settingsStore.lastBackupDate).toLocaleString('ru-RU')
+})
+
+function setTheme(theme: 'dark' | 'light') {
+  settingsStore.setTheme(theme)
+  addNotification({
+    type: 'info',
+    message: theme === 'dark' ? 'Тёмная тема включена' : 'Светлая тема включена',
+  })
+}
+
+function setAccentColor(color: string, name: string) {
+  settingsStore.setAccentColor(color)
+  addNotification({ type: 'success', message: `Акцент: ${name}` })
+}
+
+function toggleAnimations(event: Event) {
+  const target = event.target as HTMLInputElement
+  settingsStore.setAnimationsEnabled(target.checked)
+  addNotification({
+    type: 'info',
+    message: target.checked ? 'Анимации включены' : 'Анимации отключены',
+  })
+}
+
+function setAnimationSpeed(event: Event) {
+  const target = event.target as HTMLInputElement
+  const value = parseFloat(target.value)
+  settingsStore.setAnimationSpeed(value)
+  addNotification({
+    type: 'info',
+    message: `Скорость анимаций: ${animationSpeedLabel.value}`,
+  })
+}
+
+function toggleNotifications(event: Event) {
+  const target = event.target as HTMLInputElement
+  settingsStore.setNotificationsEnabled(target.checked)
+  if (target.checked) {
+    addNotification({ type: 'success', message: 'Уведомления включены' })
+  }
+}
+
+function toggleSound(event: Event) {
+  const target = event.target as HTMLInputElement
+  settingsStore.setSoundEnabled(target.checked)
+  addNotification({
+    type: 'info',
+    message: target.checked ? 'Звук включён' : 'Звук отключён',
+  })
+}
+
+function toggleAutoBackup(event: Event) {
+  const target = event.target as HTMLInputElement
+  settingsStore.setAutoBackup(target.checked)
+  addNotification({
+    type: 'info',
+    message: target.checked ? 'Авто-бэкап включён' : 'Авто-бэкап отключён',
+  })
+}
+
+function createBackup() {
+  saveAutoBackup()
+  settingsStore.recordBackup()
+  addNotification({ type: 'success', message: 'Резервная копия создана' })
+}
+
+function exportData() {
+  try {
+    const payload = buildBackupPayload()
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `cof-backup-${new Date().toISOString().split('T')[0]}.json`
+    anchor.click()
+    URL.revokeObjectURL(url)
+    addNotification({ type: 'success', message: 'Данные экспортированы' })
+  } catch (error) {
+    console.error(error)
+    addNotification({ type: 'error', message: 'Ошибка экспорта' })
+  }
+}
+
+function importData() {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.json'
+  input.onchange = async (event: Event) => {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    if (!file) return
+
+    try {
+      const text = await file.text()
+      const payload = JSON.parse(text)
+      const restored = restoreBackupPayload(payload)
+      if (!restored) throw new Error('Некорректный формат бэкапа')
+      addNotification({
+        type: 'success',
+        message: 'Данные импортированы. Перезагрузка...',
+      })
+      setTimeout(() => window.location.reload(), 1000)
+    } catch (err) {
+      console.error(err)
+      addNotification({ type: 'error', message: 'Ошибка импорта' })
+    }
+  }
+  input.click()
+}
+
+function restoreAutoBackup() {
+  try {
+    const backup = readAutoBackup()
+    if (!backup) {
+      addNotification({ type: 'warning', message: 'Нет сохранённой копии' })
+      return
+    }
+    const restored = restoreBackupPayload(backup)
+    if (!restored) throw new Error('Восстановление не удалось')
+    addNotification({
+      type: 'success',
+      message: 'Данные восстановлены. Перезагрузка...',
+    })
+    setTimeout(() => window.location.reload(), 1000)
+  } catch (err) {
+    console.error(err)
+    addNotification({ type: 'error', message: 'Ошибка восстановления' })
+  }
+}
+
+function resetAllData() {
+  if (confirm('Удалить все данные? Это действие необратимо.')) {
+    localStorage.clear()
+    addNotification({
+      type: 'success',
+      message: 'Данные сброшены. Перезагрузка...',
+    })
+    setTimeout(() => window.location.reload(), 1000)
+  }
+}
+</script>
+
+<style scoped lang="scss">
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settings-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--dim);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-standard);
+
+  &:hover {
+    background: var(--surface);
+    color: var(--text, var(--accent));
+  }
+
+  &.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settings-group {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px 0;
+  margin-bottom: 16px;
+  color: var(--accent);
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  svg {
+    opacity: 0.7;
+  }
+}
+
+.group-body {
+  padding: 0 24px 24px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(var(--dim-rgb, 136, 136, 136), 0.08);
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  @include mobile {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+.setting-info {
+  .label {
+    display: block;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .desc {
+    margin-top: 2px;
+    color: var(--dim);
+    font-size: 0.85rem;
+  }
+}
+
+.theme-toggle {
+  display: flex;
+  gap: 6px;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-sm);
+  background: var(--surface);
+  color: var(--dim);
+  cursor: pointer;
+  transition: all var(--transition-standard);
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  &.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+  }
+}
+
+.accent-picker {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.color-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.color-dot {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: var(--dot-color);
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+
+  &.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--bg);
+    transform: scale(1.15);
+  }
+}
+
+.accent-preview {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  transition: background-color 0.2s;
+}
+
+.switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+
+  input {
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+
+  .slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    background: var(--border);
+    transition: background var(--transition-standard);
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 3px;
+      bottom: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--transition-standard);
+    }
+  }
+
+  input:checked + .slider {
+    background: var(--accent);
+  }
+
+  input:checked + .slider::before {
+    transform: translateX(20px);
+    background: var(--bg);
+  }
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 120px;
+}
+
+.speed-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.1s;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  &::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: none;
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.backup-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 16px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-sm);
+  background: var(--surface);
+  color: var(--dim);
+  font-size: 0.85rem;
+}
+
+.action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-sm);
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-standard);
+
+  &:hover {
+    transform: translateY(-1px);
+    background: var(--border);
+  }
+
+  &.danger {
+    border-color: var(--error);
+    color: var(--error);
+
+    &:hover {
+      background: rgba(var(--error-rgb, 255, 77, 77), 0.1);
+    }
+  }
+}
+</style>
