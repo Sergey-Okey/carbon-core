@@ -56,8 +56,11 @@
       </div>
     </Transition>
 
-    <Handle type="source" :position="Position.Right" class="handle-right" />
-    <Handle type="target" :position="Position.Left" class="handle-left" />
+    <!-- Хендлы -->
+    <Handle type="target" :position="Position.Left" class="handle handle-left" />
+    <Handle type="source" :position="Position.Right" class="handle handle-right" />
+    <Handle type="target" :position="Position.Top" class="handle handle-top" />
+    <Handle type="source" :position="Position.Bottom" class="handle handle-bottom" />
   </GlassCard>
 </template>
 
@@ -274,8 +277,8 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
   .expand-btn {
     position: absolute;
-    bottom: 8px;
-    right: 8px;
+    top: 45px;           /* фиксированный отступ от верхнего края – не съезжает при раскрытии */
+    right:13px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -340,23 +343,61 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     }
   }
 
-  /* Фиксированные хендлы по центру */
-  .handle-right,
-  .handle-left {
-    width: 10px;
-    height: 10px;
+  /* Хендлы */
+  .handle {
+    transition: opacity 0.2s ease, transform 0.2s ease;
     background: var(--accent);
     border: 1px solid var(--bg);
     opacity: 0;
-    transition: opacity 0.2s;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
+    z-index: 10;
   }
-  &:hover .handle-right,
-  &:hover .handle-left {
+
+  .handle-left {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    top: 55px !important;
+    left: -5px !important;
+    transform: none !important;
+  }
+
+  .handle-right {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    top: 55px !important;
+    right: -5px !important;
+    transform: none !important;
+  }
+
+  .handle-top {
+    width: 12px;
+    height: 6px;
+    border-radius: 2px;
+    top: -3px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .handle-bottom {
+    width: 12px;
+    height: 6px;
+    border-radius: 2px;
+    bottom: -3px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+
+  &:hover .handle {
     opacity: 1;
+    transform: scale(1.05);
+  }
+
+  .handle:active {
+    box-shadow: 0 0 0 2px var(--accent);
   }
 }
+
 .expand-enter-active,
 .expand-leave-active {
   transition: all 0.2s;
