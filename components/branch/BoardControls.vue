@@ -13,44 +13,46 @@
       </button>
       <div class="divider"></div>
 
-      <!-- Группа 2: правка и расположение -->
-      <button @click="$emit('auto-layout')" title="Авто-расположение">
-        <Layout :size="18" />
+      <!-- Группа 2: выравнивание -->
+      <button @click="$emit('align-layout')" title="Выровнить положение (сетка + авто-раскладка)">
+        <RefreshCw :size="18" />
       </button>
-      <button @click="$emit('add-branch')" title="Добавить ветку">
+      <div class="divider"></div>
+
+      <!-- Группа 3: создание элементов -->
+      <button 
+        @click="$emit('add-branch')" 
+        title="Добавить ветку" 
+        :disabled="!canAddBranch"
+      >
         <Plus :size="18" />
       </button>
-      <button
-        @click="$emit('add-milestone')"
-        title="Добавить этап"
+      <button 
+        @click="$emit('add-milestone')" 
+        title="Добавить этап" 
         :disabled="!canAddMilestone"
       >
         <PlusCircle :size="18" />
       </button>
       <div class="divider"></div>
 
-      <!-- Группа 3: действия с выбранным элементом -->
+      <!-- Группа 4: действия с выбранным элементом -->
       <button
         v-if="hasSelection"
         @click="$emit('delete-selected')"
         title="Удалить выбранное"
+        class="delete-btn"
       >
         <Trash2 :size="18" />
       </button>
       <div v-if="hasSelection" class="divider"></div>
 
-      <!-- Группа 4: история -->
+      <!-- Группа 5: история -->
       <button @click="$emit('undo')" title="Отменить" :disabled="!canUndo">
         <Undo :size="18" />
       </button>
       <button @click="$emit('redo')" title="Повторить" :disabled="!canRedo">
         <Redo :size="18" />
-      </button>
-      <div class="divider"></div>
-
-      <!-- Группа 5: перестроение -->
-      <button @click="$emit('rebuild')" title="Перестроить доску">
-        <RefreshCw :size="18" />
       </button>
     </div>
   </Panel>
@@ -62,7 +64,6 @@ import {
   Maximize,
   ZoomIn,
   ZoomOut,
-  Layout,
   Plus,
   PlusCircle,
   Trash2,
@@ -74,6 +75,7 @@ import {
 defineProps<{
   canUndo?: boolean
   canRedo?: boolean
+  canAddBranch?: boolean
   canAddMilestone?: boolean
   hasSelection?: boolean
 }>()
@@ -82,19 +84,18 @@ defineEmits([
   'fit-view',
   'zoom-in',
   'zoom-out',
-  'auto-layout',
+  'align-layout',
   'add-branch',
   'add-milestone',
   'delete-selected',
   'undo',
   'redo',
-  'rebuild',
 ])
 </script>
 
 <style scoped lang="scss">
 .board-controls-panel {
-  pointer-events: none; // чтобы панель не перехватывала клики на канвас
+  pointer-events: none;
   z-index: 10;
 }
 
@@ -106,10 +107,10 @@ defineEmits([
   padding: 8px 12px;
   border-radius: 40px;
   border: 1px solid var(--border);
-  background: transparent; // убираем фоновый цвет – только glass и размытие
-  pointer-events: auto; // кнопки кликабельны
+  background: transparent;
+  pointer-events: auto;
   backdrop-filter: blur(16px);
-  transform: translateY(-16px); // маленький отступ от нижнего края
+  transform: translateY(-16px);
 
   button {
     display: flex;
@@ -137,6 +138,14 @@ defineEmits([
       opacity: 0.4;
       cursor: not-allowed;
       transform: none;
+    }
+  }
+
+  .delete-btn {
+    color: var(--error);
+    &:hover {
+      background: transparent;
+      transform: scale(1.08);
     }
   }
 
