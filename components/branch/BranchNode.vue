@@ -56,9 +56,7 @@
     </Transition>
 
     <!-- Хендлы -->
-    <Handle type="source" :position="Position.Right" class="handle handle-right" />
     <Handle type="target" :position="Position.Top" class="handle handle-top" />
-    <Handle type="source" :position="Position.Bottom" class="handle handle-bottom" />
   </GlassCard>
 </template>
 
@@ -152,15 +150,8 @@ const completedIndicatorTasks = computed(() =>
 )
 
 const linkedTasks = computed(() => {
-  const branch = branchesStore.branches.find(
-    (b) => b.id === props.data.branchId
-  )
-  if (!branch) return []
-  const allTaskIds = new Set<string>()
-  branch.milestones.forEach((m) =>
-    m.taskIds.forEach((id) => allTaskIds.add(id))
-  )
-  return tasksStore.tasks.filter((t) => allTaskIds.has(t.id))
+  const taskIds = branchesStore.getBranchTaskIds(props.data.branchId)
+  return tasksStore.tasks.filter((task) => taskIds.includes(task.id))
 })
 
 function togglePinned() {
@@ -393,29 +384,11 @@ top: 45px;           /* фиксированный отступ от верхн�
     z-index: 10;
   }
 
-  .handle-right {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    top: 60px !important;
-    right: -5px !important;
-    transform: none !important;
-  }
-
   .handle-top {
     width: 12px;
     height: 6px;
     border-radius: 2px;
     top: -3px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-  }
-
-  .handle-bottom {
-    width: 12px;
-    height: 6px;
-    border-radius: 2px;
-    bottom: -3px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
   }
