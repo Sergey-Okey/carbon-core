@@ -274,6 +274,22 @@ export const useBranchesStore = defineStore(
       })
     }
 
+    function removeTaskFromMilestones(taskId: string) {
+      let changed = false
+
+      branches.value.forEach((branch) => {
+        branch.milestones.forEach((milestone) => {
+          const nextTaskIds = milestone.taskIds.filter((id) => id !== taskId)
+          if (nextTaskIds.length !== milestone.taskIds.length) {
+            milestone.taskIds = nextTaskIds
+            changed = true
+          }
+        })
+      })
+
+      if (changed) refreshAllBranches()
+    }
+
     function getBranchTotalTasks(branchId: string): number {
       const branch = branches.value.find((item) => item.id === branchId)
       if (!branch) return 0
@@ -650,6 +666,7 @@ export const useBranchesStore = defineStore(
       getBranchTotalTasks,
       getBranchCompletedTasks,
       refreshMilestonesByTaskId,
+      removeTaskFromMilestones,
       syncMilestoneIcon,
       attachMilestoneToBranch,
       connectNodes,

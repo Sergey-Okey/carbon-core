@@ -201,6 +201,7 @@ export const useTasksStore = defineStore(
         if (existing) existing.count += 1
         else completedTasksHistory.value.push({ date: today, count: 1 })
         completedTasksHistory.value = completedTasksHistory.value.slice(-30)
+        branchesStore.refreshMilestonesByTaskId(task.id)
         return
       }
 
@@ -232,12 +233,20 @@ export const useTasksStore = defineStore(
 
     function deleteTask(id: string) {
       const index = tasks.value.findIndex((t) => t.id === id)
-      if (index !== -1) tasks.value.splice(index, 1)
+      if (index === -1) return
+
+      tasks.value.splice(index, 1)
+      const branchesStore = useBranchesStore()
+      branchesStore.removeTaskFromMilestones(id)
     }
 
     function updateTask(id: string, updates: Partial<Task>) {
       const task = tasks.value.find((t) => t.id === id)
-      if (task) Object.assign(task, { ...updates, updatedAt: Date.now() })
+      if (!task) return
+
+      Object.assign(task, { ...updates, updatedAt: Date.now() })
+      const branchesStore = useBranchesStore()
+      branchesStore.refreshMilestonesByTaskId(id)
     }
 
     function resetDailyTasks() {

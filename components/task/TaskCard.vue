@@ -50,7 +50,6 @@ import type { Task } from '~/types/task.types'
 import GlassCard from '~/components/base/GlassCard.vue'
 import { CheckCircle, Circle, Trash2, Edit, Calendar } from 'lucide-vue-next'
 import { useTagsStore } from '~/stores/tags.store'
-import { useTasksStore } from '~/stores/tasks.store'
 import { useNotification } from '~/composables/useNotification'
 import { useConfirm } from '~/composables/useConfirm'
 
@@ -62,7 +61,6 @@ const emit = defineEmits<{
 }>()
 
 const tagsStore = useTagsStore()
-const tasksStore = useTasksStore()
 const { addNotification } = useNotification()
 const { confirm } = useConfirm()
 
@@ -93,7 +91,6 @@ const isOverdue = computed(() => {
 })
 
 function handleToggle() {
-  tasksStore.completeTask(props.task.id)
   addNotification({
     type: 'success',
     message:
@@ -108,7 +105,6 @@ async function handleDelete() {
   const ok = await confirm(`Удалить задачу «${props.task.title}»?`)
   if (!ok) return
 
-  tasksStore.deleteTask(props.task.id)
   addNotification({
     type: 'info',
     message: `«${props.task.title}» удалено`,

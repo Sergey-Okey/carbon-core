@@ -18,8 +18,8 @@
         v-for="task in tasks"
         :key="task.id"
         :task="task"
-        @toggle="tasksStore.completeTask"
-        @delete="tasksStore.deleteTask"
+        @toggle="handleToggle"
+        @delete="handleDelete"
         @edit="handleEdit"
       />
       <p v-if="tasks.length === 0" key="empty-state" class="empty">
@@ -41,6 +41,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useTasksStore } from '~/stores/tasks.store'
+import { useBranchesStore } from '~/stores/branches.store'
 import { useNotification } from '~/composables/useNotification'
 import TaskCard from './TaskCard.vue'
 import TaskForm from './TaskForm.vue'
@@ -54,6 +55,7 @@ const props = defineProps<{
 }>()
 
 const tasksStore = useTasksStore()
+const branchesStore = useBranchesStore()
 const { addNotification } = useNotification()
 const showForm = ref(false)
 const editingTask = ref<Task | undefined>(undefined)
@@ -105,38 +107,64 @@ function handleEdit(task: Task) {
   showForm.value = true
 }
 
+function handleToggle(taskId: string) {
+  tasksStore.completeTask(taskId)
+}
+
+function handleDelete(taskId: string) {
+  tasksStore.deleteTask(taskId)
+}
+
 function closeForm() {
   showForm.value = false
   editingTask.value = undefined
 }
 
 function handleSave(taskData: any) {
+  const { createBranch, ...cleanTaskData } = taskData
+
   if (editingTask.value) {
-    tasksStore.updateTask(editingTask.value.id, taskData)
+    tasksStore.updateTask(editingTask.value.id, cleanTaskData)
     addNotification({
       type: 'success',
       message: 'Задача обновлена',
     })
     closeForm()
-  } else {
-    const result = tasksStore.addTask({
-      ...taskData,
-      type: props.defaultType || (props.taskType as TaskType),
-    })
-    if (result) {
-      addNotification({
-        type: 'success',
-        message: `«${result.title}» добавлено`,
-      })
-      closeForm()
-    } else {
-      addNotification({
-        type: 'error',
-        message: 'Не удалось добавить задачу',
-      })
-    }
+    return
   }
+
+  const result = tasksStore.addTask({
+    ...cleanTaskData,
+    type: props.defaultType || (props.taskType as TaskType),
+  })
+
+  if (!result) {
+    addNotification({
+      type: 'error',
+      message: 'Не удалось добавить задачу',
+    })
+    return
+  }
+
+  if (createBranch && result.type !== 'HABIT') {
+    branchesStore.addBranch(result.title, 'help-circle', result.description || '', [result.id])
+    addNotification({
+      type: 'success',
+      message: `Ветка «${result.title}» создана в доске`,
+    })
+  } else {
+    addNotification({
+      type: 'success',
+      message:
+        result.type === 'HABIT'
+          ? `Привычка «${result.title}» добавлена`
+          : `«${result.title}» добавлено`,
+    })
+  }
+
+  closeForm()
 }
+
 </script>
 
 <style scoped lang="scss">

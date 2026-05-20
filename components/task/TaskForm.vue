@@ -162,8 +162,6 @@
 import { reactive, watch, ref, computed } from 'vue'
 import { X, ChevronDown, Calendar, Plus } from 'lucide-vue-next'
 import { useTagsStore } from '~/stores/tags.store'
-import { useTasksStore } from '~/stores/tasks.store'
-import { useBranchesStore } from '~/stores/branches.store'
 import { useNotification } from '~/composables/useNotification'
 import type { Task } from '~/types/task.types'
 
@@ -179,8 +177,6 @@ const emit = defineEmits<{
 }>()
 
 const tagsStore = useTagsStore()
-const tasksStore = useTasksStore()
-const branchesStore = useBranchesStore()
 const { addNotification } = useNotification()
 const editing = computed(() => !!props.task)
 const createBranch = ref(false)
@@ -217,6 +213,14 @@ watch(
       form.type = newTask.type
       form.targetDate = newTask.targetDate || ''
       form.tagIds = [...newTask.tagIds]
+      createBranch.value = false
+    } else {
+      form.title = ''
+      form.description = ''
+      form.type = props.defaultType || 'HABIT'
+      form.targetDate = ''
+      form.tagIds = []
+      createBranch.value = false
     }
   },
   { immediate: true }
@@ -242,43 +246,15 @@ function toggleTag(tagId: string) {
 }
 
 function handleSubmit() {
-  if (editing.value) {
-    emit('save', { ...form })
-  } else {
-    const result = tasksStore.addTask({ ...form })
-    if (result) {
-      // Если выбрано создание ветки - создаем её
-      if (createBranch.value) {
-        const branchesStore = useBranchesStore()
-        branchesStore.addBranch(
-          result.title, // Название задачи как название ветки
-          'question', // Значок "?" для последующего выбора
-          form.description || '',
-          [result.id] // Привязываем созданную задачу
-        )
-        addNotification({
-          type: 'success',
-          message: `Ветка «${result.title}» создана в доске`,
-        })
-      } else {
-        addNotification({
-          type: 'success',
-          message:
-            form.type === 'HABIT'
-              ? `Привычка «${result.title}» добавлена`
-              : `«${result.title}» добавлено`,
-        })
-      }
-      emit('close')
-    } else {
-      addNotification({
-        type: 'warning',
-        message: 'Лимит задач на этот период исчерпан',
-      })
-    }
-  }
-}
+  if (!form.title.trim()) return
 
+  emit('save', {
+    ...form,
+    title: form.title.trim(),
+    description: form.description.trim(),
+    createBranch: !editing.value && createBranch.value,
+  })
+}
 const showAddTagModal = ref(false)
 const newTagName = ref('')
 const newTagBranchId = ref<'FIN' | 'BODY' | 'MIND' | 'LDR'>('FIN')
