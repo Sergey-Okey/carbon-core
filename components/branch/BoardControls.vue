@@ -1,7 +1,6 @@
 <template>
   <Panel position="bottom-center" class="board-controls-panel">
     <div class="board-controls">
-      <!-- Группа 1: вид и зум -->
       <button @click="$emit('fit-view')" title="Сбросить вид">
         <Maximize :size="18" />
       </button>
@@ -13,30 +12,27 @@
       </button>
       <div class="divider"></div>
 
-      <!-- Группа 2: выравнивание -->
-      <button @click="$emit('align-layout')" title="Выровнить положение (сетка + авто-раскладка)">
-        <RefreshCw :size="18" />
+      <button @click="$emit('align-layout')" title="Выровнять доску">
+        <LayoutGrid :size="18" />
       </button>
       <div class="divider"></div>
 
-      <!-- Группа 3: создание элементов -->
-      <button 
-        @click="$emit('add-branch')" 
-        title="Добавить ветку" 
+      <button
+        @click="$emit('add-branch')"
+        title="Добавить ветку"
         :disabled="!canAddBranch"
       >
         <Plus :size="18" />
       </button>
-      <button 
-        @click="$emit('add-milestone')" 
-        title="Добавить этап" 
+      <button
+        @click="$emit('add-milestone')"
+        :title="canAddMilestone ? 'Добавить этап' : 'Выберите ветку или этап'"
         :disabled="!canAddMilestone"
       >
         <PlusCircle :size="18" />
       </button>
       <div class="divider"></div>
 
-      <!-- Группа 4: действия с выбранным элементом -->
       <button
         v-if="hasSelection"
         @click="$emit('delete-selected')"
@@ -48,7 +44,6 @@
       </button>
       <div v-if="hasSelection" class="divider"></div>
 
-      <!-- Группа 5: история -->
       <button @click="$emit('undo')" title="Отменить" :disabled="!canUndo">
         <Undo :size="18" />
       </button>
@@ -71,16 +66,16 @@ import {
   Unlink2,
   Undo,
   Redo,
-  RefreshCw,
+  LayoutGrid,
 } from 'lucide-vue-next'
 
-defineProps<{
+const props = defineProps<{
   canUndo?: boolean
   canRedo?: boolean
   canAddBranch?: boolean
   canAddMilestone?: boolean
   hasSelection?: boolean
-  selectionType?: 'node' | 'edge' | 'none'
+  selectionType?: 'branch' | 'milestone' | 'edge' | 'none'
 }>()
 
 defineEmits([
@@ -146,6 +141,7 @@ defineEmits([
 
   .delete-btn {
     color: var(--error);
+
     &:hover {
       background: transparent;
       transform: scale(1.08);

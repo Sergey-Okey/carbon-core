@@ -393,7 +393,8 @@ top: 45px;           /* фиксированный отступ от верхн�
     transform: none !important;
   }
 
-  &:hover .handle {
+  &:hover .handle,
+  &.selected .handle {
     opacity: 1;
     transform: scale(1.05);
   }

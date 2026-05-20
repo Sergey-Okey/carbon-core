@@ -43,7 +43,7 @@
         :can-add-branch="canAddBranch"
         :can-add-milestone="canAddMilestone"
         :has-selection="!!selectedNodeId || !!selectedEdgeId"
-        :selection-type="selectedEdgeId ? 'edge' : selectedNodeId ? 'node' : 'none'"
+        :selection-type="selectedControlType"
         @fit-view="fitView"
         @zoom-in="zoomIn"
         @zoom-out="zoomOut"
@@ -162,10 +162,17 @@ const emptyMilestone: Milestone = {
   position: { x: 0, y: 0 },
 }
 
-const canAddBranch = computed(
-  () => selectedNodeId.value === null && selectedEdgeId.value === null
-)
+const canAddBranch = computed(() => true)
 const canAddMilestone = computed(() => selectedNodeId.value !== null)
+const selectedControlType = computed<'branch' | 'milestone' | 'edge' | 'none'>(() => {
+  if (selectedEdgeId.value) return 'edge'
+  if (!selectedNodeId.value) return 'none'
+
+  const node = nodes.value.find((item) => item.id === selectedNodeId.value)
+  if (node?.type === 'branch-node') return 'branch'
+  if (node?.type === 'milestone-node') return 'milestone'
+  return 'none'
+})
 
 function cloneState() {
   return {
@@ -311,7 +318,7 @@ async function deleteSelectedEdge() {
   const edgeId = selectedEdgeId.value
   if (!edgeId) return
 
-  const ok = await confirm('Удалить связь?')
+  const ok = await confirm('Разорвать связь?')
   if (!ok) return
 
   const edge =
@@ -471,13 +478,9 @@ function openBranchEditor(branchId: string) {
 }
 
 function openAddBranchModal() {
-  if (!canAddBranch.value) {
-    addNotification({
-      type: 'warning',
-      message: 'Снимите выделение, чтобы создать ветку',
-    })
-    return
-  }
+  selectedNodeId.value = null
+  selectedEdgeId.value = null
+  selectedEdge.value = null
 
   branchModal.value = { visible: true, branch: null }
 }

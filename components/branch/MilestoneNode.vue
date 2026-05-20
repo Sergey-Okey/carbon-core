@@ -392,7 +392,8 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     transform: translateX(-50%) !important;
   }
 
-  &:hover .handle {
+  &:hover .handle,
+  &.selected .handle {
     opacity: 1;
     transform: scale(1.05);
   }
