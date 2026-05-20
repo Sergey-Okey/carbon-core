@@ -397,6 +397,12 @@ function alignLayout() {
 }
 
 function handleKeyDown(event: KeyboardEvent) {
+  const target = event.target as HTMLElement | null
+  const isTyping =
+    target?.closest('input, textarea, select, [contenteditable="true"], .modal-overlay')
+
+  if (isTyping) return
+
   const key = event.key.toLowerCase()
   if ((event.ctrlKey || event.metaKey) && key === 'z') {
     event.preventDefault()

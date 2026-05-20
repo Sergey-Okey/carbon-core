@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div class="modal-overlay" @click.self="emit('close')">
-      <form class="modal" @submit.prevent="handleSubmit">
+      <form class="modal" @submit.prevent="handleSubmit" @keydown.stop>
         <header class="modal-header">
           <div>
             <span class="modal-kicker">Этап</span>
@@ -254,8 +254,8 @@ async function handleDelete() {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: color-mix(in srgb, var(--bg) 70%, transparent);
-  backdrop-filter: blur(6px);
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  backdrop-filter: blur(14px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -265,12 +265,14 @@ async function handleDelete() {
 
 .modal {
   @include glass;
-  width: min(460px, 100%);
-  max-height: min(86vh, 760px);
+  width: min(520px, 100%);
+  max-height: min(88vh, 760px);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   border: 1px solid var(--border);
   border-radius: var(--border-radius-lg);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  box-shadow: var(--shadow-lg);
   color: var(--accent);
   overflow: hidden;
 }
@@ -286,6 +288,7 @@ async function handleDelete() {
 
 .modal-header {
   border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
 
   h3 {
     margin: 2px 0 0;
@@ -299,6 +302,7 @@ async function handleDelete() {
   color: var(--dim);
   font-size: 0.72rem;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .modal-body {
@@ -308,6 +312,7 @@ async function handleDelete() {
 
 .modal-footer {
   border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 50%, transparent);
 }
 
 .footer-actions {
@@ -350,8 +355,8 @@ async function handleDelete() {
   input,
   textarea {
     width: 100%;
-    padding: 10px 12px;
-    background: var(--surface);
+    padding: 12px 14px;
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
     border: 1px solid var(--border);
     border-radius: var(--border-radius-sm);
     color: var(--accent);
@@ -359,6 +364,7 @@ async function handleDelete() {
 
     &:focus {
       border-color: var(--accent);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 14%, transparent);
       outline: none;
     }
 
@@ -368,7 +374,7 @@ async function handleDelete() {
   }
 
   textarea {
-    min-height: 76px;
+    min-height: 88px;
     resize: vertical;
   }
 }
@@ -385,8 +391,9 @@ async function handleDelete() {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 10px 12px;
-  background: var(--surface);
+  min-height: 44px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--border-radius-sm);
   color: var(--accent);
@@ -394,6 +401,7 @@ async function handleDelete() {
 
   &:hover {
     border-color: var(--accent);
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
   }
 
   .rotated {
@@ -413,7 +421,7 @@ async function handleDelete() {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 8px;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--border-radius-sm);
 }
@@ -444,7 +452,7 @@ async function handleDelete() {
   margin-top: 8px;
   max-height: 260px;
   overflow-y: auto;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--border-radius-sm);
 }
@@ -453,8 +461,8 @@ async function handleDelete() {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 42px;
-  padding: 9px 12px;
+  min-height: 46px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border);
   cursor: pointer;
 
@@ -486,7 +494,7 @@ async function handleDelete() {
 .checkmark {
   position: absolute;
   inset: 0;
-  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
   border: 1px solid var(--border);
   border-radius: 4px;
 }
@@ -529,10 +537,19 @@ input:checked + .checkmark {
 .btn-secondary,
 .btn-primary,
 .btn-danger {
-  min-height: 36px;
-  padding: 0 16px;
+  min-height: 40px;
+  padding: 0 18px;
   border-radius: var(--border-radius-sm);
   cursor: pointer;
+  transition:
+    background var(--transition-standard),
+    border-color var(--transition-standard),
+    color var(--transition-standard),
+    transform var(--transition-standard);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
 }
 
 .btn-secondary {
@@ -583,11 +600,77 @@ input:checked + .checkmark {
 @media (max-width: 768px) {
   .modal-overlay {
     align-items: stretch;
-    padding: 8px;
+    padding: 10px;
   }
 
   .modal {
+    width: 100%;
+    height: calc(100dvh - 20px);
     max-height: none;
+    border-radius: var(--border-radius-lg);
+  }
+
+  .modal-header,
+  .modal-footer {
+    position: sticky;
+    z-index: 2;
+    padding: 14px;
+  }
+
+  .modal-header {
+    top: 0;
+  }
+
+  .modal-footer {
+    bottom: 0;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .footer-actions {
+    width: 100%;
+    margin-left: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .btn-danger {
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .modal-body {
+    padding: 14px;
+  }
+
+  .icons-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .task-row {
+    align-items: flex-start;
+  }
+
+  .task-xp {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .modal-overlay {
+    padding: 0;
+  }
+
+  .modal {
+    height: 100dvh;
+    min-height: 100dvh;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .footer-actions {
+    grid-template-columns: 1fr;
   }
 }
 </style>
