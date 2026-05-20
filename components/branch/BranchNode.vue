@@ -56,7 +56,7 @@
     </Transition>
 
     <!-- Хендлы -->
-    <Handle type="target" :position="Position.Top" class="handle handle-top" />
+    <Handle type="target" :position="Position.Right" class="handle handle-right" />
   </GlassCard>
 </template>
 
@@ -384,13 +384,13 @@ top: 45px;           /* фиксированный отступ от верхн�
     z-index: 10;
   }
 
-  .handle-top {
-    width: 12px;
-    height: 6px;
-    border-radius: 2px;
-    top: -3px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
+  .handle-right {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    top: 55px !important;
+    right: -5px !important;
+    transform: none !important;
   }
 
   &:hover .handle {

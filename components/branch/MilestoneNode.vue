@@ -58,8 +58,12 @@
 
     <!-- Хендлы -->
     <Handle type="target" :position="Position.Left" class="handle handle-left" />
-    <Handle type="source" :position="Position.Right" class="handle handle-right" />
+    <Handle type="target" :position="Position.Right" class="handle handle-right" />
     <Handle type="target" :position="Position.Top" class="handle handle-top" />
+    <Handle type="target" :position="Position.Bottom" class="handle handle-bottom" />
+    <Handle type="source" :position="Position.Left" class="handle handle-left" />
+    <Handle type="source" :position="Position.Right" class="handle handle-right" />
+    <Handle type="source" :position="Position.Top" class="handle handle-top" />
     <Handle type="source" :position="Position.Bottom" class="handle handle-bottom" />
   </GlassCard>
 </template>

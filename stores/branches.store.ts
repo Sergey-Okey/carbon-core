@@ -18,6 +18,19 @@ function createEdge(source: string, target: string): Edge {
   }
 }
 
+type BoardNodeKind = 'branch' | 'milestone'
+
+type MilestoneLocation = {
+  branch: Branch
+  milestone: Milestone
+  index: number
+}
+
+type BoardActionResult = {
+  ok: boolean
+  reason?: string
+}
+
 export const useBranchesStore = defineStore(
   'branches',
   () => {
@@ -111,6 +124,15 @@ export const useBranchesStore = defineStore(
       { id: 'edge-m5-m6', source: 'cof-m5', target: 'cof-m6', type: 'smoothstep', animated: false, style: edgeStyle },
     ])
 
+    function getBranch(branchId: string): Branch | undefined {
+      return branches.value.find((branch) => branch.id === branchId)
+    }
+
+    function getNodeKind(nodeId: string): BoardNodeKind | null {
+      if (getBranch(nodeId)) return 'branch'
+      return getMilestoneLocation(nodeId) ? 'milestone' : null
+    }
+
     function allNodeIds(): Set<string> {
       const ids = new Set<string>()
       branches.value.forEach((branch) => {
@@ -120,21 +142,59 @@ export const useBranchesStore = defineStore(
       return ids
     }
 
+    function getMilestoneLocation(milestoneId: string): MilestoneLocation | undefined {
+      for (const branch of branches.value) {
+        const index = branch.milestones.findIndex(
+          (milestone) => milestone.id === milestoneId
+        )
+        if (index !== -1) {
+          return { branch, milestone: branch.milestones[index], index }
+        }
+      }
+      return undefined
+    }
+
+    function getAllMilestones(): Milestone[] {
+      return branches.value.flatMap((branch) => branch.milestones)
+    }
+
+    function collectReachableMilestoneIds(startId: string): Set<string> {
+      const milestoneIds = new Set(getAllMilestones().map((milestone) => milestone.id))
+      const visited = new Set<string>()
+      const queue = [startId]
+
+      while (queue.length) {
+        const currentId = queue.shift()!
+        edges.value
+          .filter((edge) => edge.source === currentId)
+          .forEach((edge) => {
+            if (!milestoneIds.has(edge.target) || visited.has(edge.target)) return
+            visited.add(edge.target)
+            queue.push(edge.target)
+          })
+      }
+
+      return visited
+    }
+
+    function collectBranchMilestoneIds(branchId: string): Set<string> {
+      return collectReachableMilestoneIds(branchId)
+    }
+
     function findBranchByMilestone(milestoneId: string): Branch | undefined {
-      return branches.value.find((branch) =>
-        branch.milestones.some((milestone) => milestone.id === milestoneId)
-      )
+      return getMilestoneLocation(milestoneId)?.branch
     }
 
     function findMilestone(milestoneId: string): Milestone | undefined {
-      return findBranchByMilestone(milestoneId)?.milestones.find(
-        (milestone) => milestone.id === milestoneId
-      )
+      return getMilestoneLocation(milestoneId)?.milestone
     }
 
     function collectBranchTaskIds(branch: Branch): string[] {
       const ids = new Set<string>()
-      branch.milestones.forEach((milestone) => {
+      const reachableMilestoneIds = collectBranchMilestoneIds(branch.id)
+      getAllMilestones()
+        .filter((milestone) => reachableMilestoneIds.has(milestone.id))
+        .forEach((milestone) => {
         milestone.taskIds.forEach((id) => ids.add(id))
       })
       return [...ids]
@@ -157,6 +217,21 @@ export const useBranchesStore = defineStore(
         seen.add(key)
         return true
       })
+    }
+
+    function normalizeBoard() {
+      branches.value.forEach((branch, index) => {
+        branch.order = index
+        updateBranchStatus(branch)
+      })
+      cleanupEdges()
+    }
+
+    function deleteBranchIfEmpty(branchId: string) {
+      const branch = getBranch(branchId)
+      if (branch && branch.milestones.length === 0) {
+        deleteBranch(branchId)
+      }
     }
 
     function updateMilestoneStatus(milestone: Milestone) {
@@ -249,13 +324,12 @@ export const useBranchesStore = defineStore(
         return
       }
       edges.value.push({ ...edge, type: edge.type || 'smoothstep', style: edge.style || edgeStyle })
-      refreshAllBranches()
-      cleanupEdges()
+      normalizeBoard()
     }
 
     function removeEdge(edgeId: string) {
       edges.value = edges.value.filter((edge) => edge.id !== edgeId)
-      refreshAllBranches()
+      normalizeBoard()
     }
 
     function disconnectEdge(edgeOrId: string | Pick<Edge, 'id' | 'source' | 'target'>) {
@@ -265,31 +339,14 @@ export const useBranchesStore = defineStore(
           : edgeOrId
       if (!edge) return
 
-      const sourceBranch = findBranchByMilestone(edge.source)
-      const targetBranch = findBranchByMilestone(edge.target)
-      const affectedBranchIds = new Set(
-        [sourceBranch?.id, targetBranch?.id].filter(Boolean) as string[]
-      )
-
       edges.value = edges.value.filter((item) => item.id !== edge.id)
-
-      if (sourceBranch) {
-        detachMilestoneFromBranch(edge.source, false)
-      } else if (targetBranch) {
-        detachMilestoneFromBranch(edge.target, false)
-      } else {
-        cleanupEdges()
-      }
-
-      affectedBranchIds.forEach((branchId) => refreshBranch(branchId))
-      refreshAllBranches()
+      normalizeBoard()
     }
 
     function updateEdge(updatedEdge: Edge) {
       const index = edges.value.findIndex((edge) => edge.id === updatedEdge.id)
       if (index !== -1) edges.value[index] = updatedEdge
-      refreshAllBranches()
-      cleanupEdges()
+      normalizeBoard()
     }
 
     function addBranch(
@@ -311,6 +368,7 @@ export const useBranchesStore = defineStore(
         position: { x: lastPosition.x, y: lastPosition.y + 180 },
       }
       branches.value.push(newBranch)
+      normalizeBoard()
     }
 
     function updateBranch(branchId: string, updates: Partial<Branch>) {
@@ -320,7 +378,7 @@ export const useBranchesStore = defineStore(
       branch.milestones.forEach((milestone) => {
         milestone.icon = branch.icon
       })
-      updateBranchStatus(branch)
+      normalizeBoard()
     }
 
     function updateBranchPosition(branchId: string, position: { x: number; y: number }) {
@@ -333,8 +391,7 @@ export const useBranchesStore = defineStore(
       edges.value = edges.value.filter(
         (edge) => edge.source !== branchId && edge.target !== branchId
       )
-      refreshAllBranches()
-      cleanupEdges()
+      normalizeBoard()
     }
 
     function addMilestoneWithoutEdge(
@@ -363,7 +420,7 @@ export const useBranchesStore = defineStore(
           },
       }
       branch?.milestones.push(milestone)
-      if (branch) updateBranchStatus(branch)
+      normalizeBoard()
       return milestone
     }
 
@@ -382,12 +439,45 @@ export const useBranchesStore = defineStore(
       return milestone
     }
 
+    function createMilestoneFromSource(
+      sourceId: string,
+      data: Partial<Milestone>
+    ): Milestone | null {
+      const sourceKind = getNodeKind(sourceId)
+      const sourceLocation =
+        sourceKind === 'milestone' ? getMilestoneLocation(sourceId) : undefined
+      const branch =
+        sourceKind === 'branch' ? getBranch(sourceId) : sourceLocation?.branch
+      if (!branch) return null
+
+      const milestone: Milestone = {
+        id: uuidv4(),
+        name: data.name || 'Новый этап',
+        icon: branch.icon,
+        description: data.description || '',
+        requiredXP: data.requiredXP || 500,
+        currentXP: data.currentXP || 0,
+        status: data.status || 'pending',
+        taskIds: data.taskIds || [],
+        position:
+          data.position ||
+          {
+            x: (branch.position?.x || 100) + 320 + branch.milestones.length * 260,
+            y: branch.position?.y || 100,
+          },
+      }
+
+      branch.milestones.push(milestone)
+      edges.value.push(createEdge(sourceId, milestone.id))
+      normalizeBoard()
+      return milestone
+    }
+
     function updateMilestone(milestoneId: string, updates: Partial<Milestone>) {
       const milestone = findMilestone(milestoneId)
       if (!milestone) return
       Object.assign(milestone, updates)
-      const branch = findBranchByMilestone(milestoneId)
-      if (branch) updateBranchStatus(branch)
+      normalizeBoard()
     }
 
     function deleteMilestone(milestoneId: string) {
@@ -400,8 +490,7 @@ export const useBranchesStore = defineStore(
       if (branch.milestones.length === 0) {
         deleteBranch(branch.id)
       } else {
-        updateBranchStatus(branch)
-        cleanupEdges()
+        normalizeBoard()
       }
     }
 
@@ -410,55 +499,65 @@ export const useBranchesStore = defineStore(
       branchId: string,
       attachAfterMilestoneId?: string
     ) {
-      const sourceBranch = findBranchByMilestone(milestoneId)
-      const targetBranch = branches.value.find((branch) => branch.id === branchId)
-      if (!sourceBranch || !targetBranch) return
+      const location = getMilestoneLocation(milestoneId)
+      const targetBranch = getBranch(branchId)
+      if (!location || !targetBranch) return
 
-      const sourceIndex = sourceBranch.milestones.findIndex(
-        (milestone) => milestone.id === milestoneId
+      const sourceBranch = location.branch
+      const chainIds = collectReachableMilestoneIds(milestoneId)
+      chainIds.add(milestoneId)
+      const movedIds = new Set(
+        [...chainIds].filter((id) => getMilestoneLocation(id)?.branch.id === sourceBranch.id)
       )
-      if (sourceIndex === -1) return
+      if (movedIds.size === 0) return
 
-      const [milestone] = sourceBranch.milestones.splice(sourceIndex, 1)
-      milestone.icon = targetBranch.icon
-
-      const insertAfterIndex = attachAfterMilestoneId
-        ? targetBranch.milestones.findIndex(
-            (item) => item.id === attachAfterMilestoneId
-          )
-        : -1
-      const insertIndex = insertAfterIndex === -1 ? targetBranch.milestones.length : insertAfterIndex + 1
-      targetBranch.milestones.splice(insertIndex, 0, milestone)
-
-      edges.value = edges.value.filter(
-        (edge) => edge.source !== milestoneId && edge.target !== milestoneId
+      const movedMilestones = sourceBranch.milestones.filter((milestone) =>
+        movedIds.has(milestone.id)
       )
+      movedMilestones.forEach((milestone) => {
+        milestone.icon = targetBranch.icon
+      })
 
-      const source =
-        insertIndex === 0 ? targetBranch.id : targetBranch.milestones[insertIndex - 1].id
-      addEdge(createEdge(source, milestone.id))
+      if (sourceBranch.id !== targetBranch.id) {
+        sourceBranch.milestones = sourceBranch.milestones.filter(
+          (milestone) => !movedIds.has(milestone.id)
+        )
 
-      if (sourceBranch.id !== targetBranch.id && sourceBranch.milestones.length === 0) {
-        deleteBranch(sourceBranch.id)
-      } else {
-        updateBranchStatus(sourceBranch)
+        const insertAfterIndex = attachAfterMilestoneId
+          ? targetBranch.milestones.findIndex(
+              (item) => item.id === attachAfterMilestoneId
+            )
+          : -1
+        const insertIndex =
+          insertAfterIndex === -1 ? targetBranch.milestones.length : insertAfterIndex + 1
+        targetBranch.milestones.splice(insertIndex, 0, ...movedMilestones)
       }
-      updateBranchStatus(targetBranch)
-      cleanupEdges()
+
+      edges.value = edges.value.filter((edge) => {
+        const sourceMoved = movedIds.has(edge.source)
+        const targetMoved = movedIds.has(edge.target)
+        return sourceMoved === targetMoved
+      })
+
+      const source = attachAfterMilestoneId || targetBranch.id
+      edges.value.push(createEdge(source, milestoneId))
+
+      if (sourceBranch.id !== targetBranch.id) {
+        deleteBranchIfEmpty(sourceBranch.id)
+      }
+      normalizeBoard()
     }
 
     function attachMilestoneToBranch(milestoneId: string, branchId: string) {
       moveMilestoneToBranch(milestoneId, branchId)
     }
 
-    function detachMilestoneFromBranch(milestoneId: string, connectToNewBranch = true) {
-      const sourceBranch = findBranchByMilestone(milestoneId)
-      const milestone = findMilestone(milestoneId)
-      if (!sourceBranch || !milestone) return
+    function detachMilestoneFromBranch(milestoneId: string) {
+      const location = getMilestoneLocation(milestoneId)
+      if (!location) return
 
-      sourceBranch.milestones = sourceBranch.milestones.filter(
-        (item) => item.id !== milestoneId
-      )
+      const sourceBranch = location.branch
+      const [milestone] = sourceBranch.milestones.splice(location.index, 1)
       edges.value = edges.value.filter(
         (edge) => edge.source !== milestoneId && edge.target !== milestoneId
       )
@@ -476,23 +575,52 @@ export const useBranchesStore = defineStore(
         position: { x: Math.max(40, milestone.position.x - 280), y: milestone.position.y },
       }
       branches.value.push(newBranch)
-      if (connectToNewBranch) {
-        addEdge(createEdge(newBranchId, milestone.id))
+      edges.value.push(createEdge(newBranchId, milestone.id))
+
+      deleteBranchIfEmpty(sourceBranch.id)
+      normalizeBoard()
+    }
+
+    function connectNodes(sourceId: string, targetId: string): BoardActionResult {
+      if (sourceId === targetId) {
+        return { ok: false, reason: 'Нельзя связать узел с самим собой' }
       }
 
-      if (sourceBranch.milestones.length === 0) {
-        deleteBranch(sourceBranch.id)
-      } else {
-        updateBranchStatus(sourceBranch)
+      const sourceKind = getNodeKind(sourceId)
+      const targetKind = getNodeKind(targetId)
+      if (edges.value.some((edge) => edge.source === sourceId && edge.target === targetId)) {
+        return { ok: false, reason: 'Такая связь уже существует' }
       }
-      updateBranchStatus(newBranch)
-      cleanupEdges()
+      if (sourceKind !== 'milestone' || !targetKind) {
+        return { ok: false, reason: 'Источник связи должен быть этапом' }
+      }
+
+      const sourceBranch = findBranchByMilestone(sourceId)
+      if (!sourceBranch) return { ok: false, reason: 'Этап не найден' }
+
+      if (targetKind === 'branch') {
+        moveMilestoneToBranch(sourceId, targetId)
+        return { ok: true }
+      }
+
+      const targetBranch = findBranchByMilestone(targetId)
+      if (collectReachableMilestoneIds(targetId).has(sourceId)) {
+        return { ok: false, reason: 'Нельзя создавать циклическую связь' }
+      }
+      if (!targetBranch) return { ok: false, reason: 'Целевой этап не найден' }
+
+      if (sourceBranch.id === targetBranch.id) {
+        addEdge(createEdge(sourceId, targetId))
+        return { ok: true }
+      }
+
+      moveMilestoneToBranch(sourceId, targetBranch.id, targetId)
+      return { ok: true }
     }
 
     function replaceEdges(nextEdges: Edge[]) {
       edges.value = nextEdges
-      refreshAllBranches()
-      cleanupEdges()
+      normalizeBoard()
     }
 
     if (import.meta.client) {
@@ -509,6 +637,7 @@ export const useBranchesStore = defineStore(
       deleteBranch,
       addMilestone,
       addMilestoneWithoutEdge,
+      createMilestoneFromSource,
       updateMilestone,
       deleteMilestone,
       addEdge,
@@ -523,6 +652,7 @@ export const useBranchesStore = defineStore(
       refreshMilestonesByTaskId,
       syncMilestoneIcon,
       attachMilestoneToBranch,
+      connectNodes,
       moveMilestoneToBranch,
       detachMilestoneFromBranch,
       refreshBranch,

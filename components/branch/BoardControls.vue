@@ -40,10 +40,11 @@
       <button
         v-if="hasSelection"
         @click="$emit('delete-selected')"
-        title="Удалить выбранное"
+        :title="selectionType === 'edge' ? 'Разорвать связь' : 'Удалить выбранное'"
         class="delete-btn"
       >
-        <Trash2 :size="18" />
+        <Unlink2 v-if="selectionType === 'edge'" :size="18" />
+        <Trash2 v-else :size="18" />
       </button>
       <div v-if="hasSelection" class="divider"></div>
 
@@ -67,6 +68,7 @@ import {
   Plus,
   PlusCircle,
   Trash2,
+  Unlink2,
   Undo,
   Redo,
   RefreshCw,
@@ -78,6 +80,7 @@ defineProps<{
   canAddBranch?: boolean
   canAddMilestone?: boolean
   hasSelection?: boolean
+  selectionType?: 'node' | 'edge' | 'none'
 }>()
 
 defineEmits([

@@ -43,6 +43,7 @@
         :can-add-branch="canAddBranch"
         :can-add-milestone="canAddMilestone"
         :has-selection="!!selectedNodeId || !!selectedEdgeId"
+        :selection-type="selectedEdgeId ? 'edge' : selectedNodeId ? 'node' : 'none'"
         @fit-view="fitView"
         @zoom-in="zoomIn"
         @zoom-out="zoomOut"
@@ -139,6 +140,8 @@ const edges = ref<Edge[]>([])
 const isMobile = ref(false)
 const selectedNodeId = ref<string | null>(null)
 const selectedEdgeId = ref<string | null>(null)
+const selectedEdge = ref<Edge | null>(null)
+const edgeSnapshot = ref<Edge[]>([])
 const isSyncingFlow = ref(false)
 const editingMilestone = ref<Milestone | null>(null)
 const creatingMilestone = ref(false)
@@ -238,66 +241,37 @@ function syncNodesAndEdges() {
   edges.value = branchesStore.edges.filter(
     (edge) => existingIds.has(edge.source) && existingIds.has(edge.target)
   )
+  edgeSnapshot.value = JSON.parse(JSON.stringify(edges.value))
   nextTick(() => {
     isSyncingFlow.value = false
   })
 }
 
-function styledEdge(source: string, target: string): Edge {
-  return {
-    id: `edge-${source}-${target}-${Date.now()}`,
-    source,
-    target,
-    type: 'smoothstep',
-    animated: false,
-    style: { stroke: 'var(--accent)', strokeWidth: 1 },
-  }
-}
-
 function onConnect(connection: Connection) {
   if (!connection.source || !connection.target) return
 
-  const sourceNode = nodes.value.find((node) => node.id === connection.source)
-  const targetNode = nodes.value.find((node) => node.id === connection.target)
-
-  if (sourceNode?.type !== 'milestone-node') return
-
-  if (targetNode?.type === 'branch-node') {
-    branchesStore.moveMilestoneToBranch(connection.source, targetNode.data.branchId)
-    saveToHistory()
+  const result = branchesStore.connectNodes(connection.source, connection.target)
+  if (!result.ok) {
+    addNotification({ type: 'warning', message: result.reason || 'Связь недоступна' })
     return
   }
-
-  if (targetNode?.type === 'milestone-node') {
-    if (sourceNode.data.branchId === targetNode.data.branchId) {
-      branchesStore.addEdge(styledEdge(connection.source, connection.target))
-    } else {
-      branchesStore.moveMilestoneToBranch(
-        connection.source,
-        targetNode.data.branchId,
-        connection.target
-      )
-    }
-    saveToHistory()
-  }
-}
-
-function isValidConnection(connection: Connection) {
-  if (!connection.source || !connection.target) return false
-  const sourceNode = nodes.value.find((node) => node.id === connection.source)
-  const targetNode = nodes.value.find((node) => node.id === connection.target)
-  return sourceNode?.type === 'milestone-node' && !!targetNode
+  saveToHistory()
 }
 
 function onEdgeUpdate({ edge, connection }: { edge: Edge; connection: Connection }) {
-  if (!isValidConnection(connection)) {
+  if (!connection.source || !connection.target) {
     branchesStore.disconnectEdge(edge)
     saveToHistory()
     return
   }
 
   branchesStore.removeEdge(edge.id)
-  onConnect(connection)
+  const result = branchesStore.connectNodes(connection.source, connection.target)
+  if (!result.ok) {
+    branchesStore.addEdge(edge)
+    addNotification({ type: 'warning', message: result.reason || 'Связь недоступна' })
+  }
+  saveToHistory()
 }
 
 function onEdgesChange(changes: any[]) {
@@ -308,7 +282,8 @@ function onEdgesChange(changes: any[]) {
     .map((change) => change.id as string)
     .map((edgeId) =>
       branchesStore.edges.find((edge) => edge.id === edgeId) ||
-      edges.value.find((edge) => edge.id === edgeId)
+      edges.value.find((edge) => edge.id === edgeId) ||
+      edgeSnapshot.value.find((edge) => edge.id === edgeId)
     )
     .filter((edge): edge is Edge => !!edge)
 
@@ -316,6 +291,7 @@ function onEdgesChange(changes: any[]) {
 
   removedEdges.forEach((edge) => branchesStore.disconnectEdge(edge))
   selectedEdgeId.value = null
+  selectedEdge.value = null
   saveToHistory()
 }
 
@@ -339,12 +315,15 @@ async function deleteSelectedEdge() {
   if (!ok) return
 
   const edge =
+    selectedEdge.value ||
     branchesStore.edges.find((item) => item.id === edgeId) ||
-    edges.value.find((item) => item.id === edgeId)
+    edges.value.find((item) => item.id === edgeId) ||
+    edgeSnapshot.value.find((item) => item.id === edgeId)
   if (!edge) return
 
   branchesStore.disconnectEdge(edge)
   selectedEdgeId.value = null
+  selectedEdge.value = null
   saveToHistory()
 }
 
@@ -385,7 +364,6 @@ function alignLayout() {
   const milestoneGapX = 260
   const startX = 100
   const startY = 100
-  const nextEdges: Edge[] = []
 
   branchesStore.branches.forEach((branch, index) => {
     const col = index % cols
@@ -403,14 +381,9 @@ function alignLayout() {
           y: branchPosition.y,
         },
       })
-
-      const source =
-        milestoneIndex === 0 ? branch.id : branch.milestones[milestoneIndex - 1].id
-      nextEdges.push(styledEdge(source, milestone.id))
     })
   })
 
-  branchesStore.replaceEdges(nextEdges)
   syncNodesAndEdges()
   saveToHistory()
   addNotification({ type: 'success', message: 'Доска выровнена' })
@@ -446,6 +419,7 @@ function addMilestoneToSelectedBranch(sourceNodeId?: string) {
   if (sourceNodeId) {
     selectedNodeId.value = sourceNodeId
     selectedEdgeId.value = null
+    selectedEdge.value = null
   }
 
   if (!selectedNodeId.value) {
@@ -459,31 +433,14 @@ function addMilestoneToSelectedBranch(sourceNodeId?: string) {
 function selectMobileNode(nodeId: string | null) {
   selectedNodeId.value = nodeId
   selectedEdgeId.value = null
+  selectedEdge.value = null
 }
 
 function handleCreateMilestone(data: Partial<Milestone>) {
   if (!selectedNodeId.value) return
 
-  const sourceNode = nodes.value.find((node) => node.id === selectedNodeId.value)
-  if (!sourceNode) return
-
-  const targetBranch = branchesStore.branches.find(
-    (branch) => branch.id === sourceNode.data.branchId
-  )
-  if (!targetBranch) return
-
-  const sourceId =
-    sourceNode.type === 'branch-node' ? targetBranch.id : sourceNode.id
-  const newMilestone = branchesStore.addMilestoneWithoutEdge(
-    targetBranch.id,
-    data.name || 'Новый этап'
-  )
-  branchesStore.updateMilestone(newMilestone.id, {
-    description: data.description,
-    icon: targetBranch.icon,
-    taskIds: data.taskIds || [],
-  })
-  branchesStore.addEdge(styledEdge(sourceId, newMilestone.id))
+  const newMilestone = branchesStore.createMilestoneFromSource(selectedNodeId.value, data)
+  if (!newMilestone) return
 
   creatingMilestone.value = false
   saveToHistory()
@@ -578,16 +535,19 @@ async function handleDeleteMilestoneFromMobile(milestoneId: string) {
 function onNodeClick({ node }: { node: Node }) {
   selectedNodeId.value = node.id
   selectedEdgeId.value = null
+  selectedEdge.value = null
 }
 
 function onEdgeClick({ edge }: { edge: Edge }) {
   selectedEdgeId.value = edge.id
+  selectedEdge.value = { ...edge }
   selectedNodeId.value = null
 }
 
 function onPaneClick() {
   selectedNodeId.value = null
   selectedEdgeId.value = null
+  selectedEdge.value = null
 }
 
 function onNodeDragStop({ node }: { node: Node }) {
