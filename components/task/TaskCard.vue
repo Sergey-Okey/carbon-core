@@ -28,7 +28,7 @@
           class="complete-btn"
           :class="{ done: task.done }"
           @click="handleToggle"
-          :disabled="task.type !== 'HABIT' && task.done"
+          :disabled="disableToggle || (task.type !== 'HABIT' && task.done)"
         >
           <CheckCircle v-if="task.done" :size="22" />
           <Circle v-else :size="22" />
@@ -53,7 +53,7 @@ import { useTagsStore } from '~/stores/tags.store'
 import { useNotification } from '~/composables/useNotification'
 import { useConfirm } from '~/composables/useConfirm'
 
-const props = defineProps<{ task: Task }>()
+const props = defineProps<{ task: Task; disableToggle?: boolean }>()
 const emit = defineEmits<{
   (e: 'toggle', id: string): void
   (e: 'delete', id: string): void
@@ -91,6 +91,8 @@ const isOverdue = computed(() => {
 })
 
 function handleToggle() {
+  if (props.disableToggle) return
+
   addNotification({
     type: 'success',
     message:
@@ -115,12 +117,26 @@ async function handleDelete() {
 
 <style scoped lang="scss">
 .task-card {
-  padding: 16px;
-  transition: all var(--transition-standard);
+  padding: 14px;
+  background: color-mix(in srgb, var(--surface) 74%, transparent);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition:
+    background var(--transition-standard),
+    border-color var(--transition-standard),
+    box-shadow var(--transition-standard),
+    transform var(--transition-standard);
+
+  &:hover {
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
 
   &.completed {
     filter: grayscale(1);
-    opacity: 0.5;
+    opacity: 0.62;
   }
 
   &.overdue {
@@ -131,7 +147,8 @@ async function handleDelete() {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    gap: 10px;
+    margin-bottom: 10px;
   }
 
   .tags {
@@ -142,19 +159,21 @@ async function handleDelete() {
 
   .tag {
     font-size: 0.7rem;
-    padding: 2px 6px;
-    background: var(--surface);
+    padding: 3px 8px;
+    background: color-mix(in srgb, var(--surface) 86%, transparent);
+    border: 1px solid var(--border);
     border-radius: 12px;
     color: var(--accent);
   }
 
   .task-type {
     font-size: 0.7rem;
-    padding: 2px 8px;
+    padding: 4px 8px;
     border-radius: 12px;
-    background: var(--border);
+    background: color-mix(in srgb, var(--border) 72%, transparent);
     text-transform: uppercase;
     color: var(--accent);
+    white-space: nowrap;
     &.HABIT {
       background: color-mix(in srgb, var(--success) 15%, transparent);
     }
@@ -164,8 +183,9 @@ async function handleDelete() {
   }
 
   h4 {
-    margin: 8px 0 4px;
+    margin: 0 0 5px;
     font-size: 1rem;
+    font-weight: 600;
     color: var(--accent);
     word-break: break-word;
   }
@@ -181,6 +201,8 @@ async function handleDelete() {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
+    margin-top: 12px;
   }
 
   .due-date {
@@ -193,8 +215,28 @@ async function handleDelete() {
 
   .actions {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     margin-left: auto;
+  }
+
+  .actions button {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--dim);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition:
+      background var(--transition-standard),
+      color var(--transition-standard);
+
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--surface) 90%, transparent);
+    }
   }
 
   .complete-btn {
@@ -220,6 +262,31 @@ async function handleDelete() {
   }
   .delete-btn:hover {
     color: var(--error);
+  }
+}
+
+@media (max-width: 480px) {
+  .task-card {
+    padding: 12px;
+
+    .task-header {
+      align-items: flex-start;
+    }
+
+    .task-type {
+      align-self: flex-start;
+    }
+
+    .task-footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .actions {
+      width: 100%;
+      justify-content: flex-end;
+      margin-left: 0;
+    }
   }
 }
 </style>

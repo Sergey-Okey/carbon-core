@@ -3,32 +3,32 @@
     <div class="list-header">
       <div class="title-wrapper">
         <h3>{{ title }}</h3>
-        <div v-if="taskType !== 'HABITS'" class="info-badge" :title="ruleHint">
+        <div v-if="taskType !== 'HABITS' && !hideRuleHint" class="info-badge" :title="ruleHint">
           <Info :size="14" />
           <span class="tooltip">{{ ruleHint }}</span>
         </div>
       </div>
-      <button class="add-btn" @click="handleAddClick">
+      <button v-if="!hideAdd" class="add-btn" @click="handleAddClick">
         <Plus :size="20" />
       </button>
     </div>
-    <!-- ✅ ДОБАВЛЕНЫ АНИМАЦИИ: TransitionGroup для плавного появления/удаления -->
     <TransitionGroup name="task-list" class="tasks" tag="div">
       <TaskCard
         v-for="task in tasks"
         :key="task.id"
         :task="task"
+        :disable-toggle="disableToggle"
         @toggle="handleToggle"
         @delete="handleDelete"
         @edit="handleEdit"
       />
       <p v-if="tasks.length === 0" key="empty-state" class="empty">
-        {{ emptyMessage }}
+        {{ emptyText || emptyMessage }}
       </p>
     </TransitionGroup>
     <Teleport to="body">
       <TaskForm
-        v-if="showForm"
+        v-if="showForm && !externalForm"
         :task="editingTask"
         :default-type="defaultType"
         @close="closeForm"
@@ -52,6 +52,17 @@ const props = defineProps<{
   taskType: TaskType | 'HABITS'
   title: string
   defaultType?: TaskType
+  tasksOverride?: Task[]
+  hideAdd?: boolean
+  hideRuleHint?: boolean
+  emptyText?: string
+  externalForm?: boolean
+  disableToggle?: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: 'add', type: TaskType): void
+  (e: 'edit', task: Task): void
 }>()
 
 const tasksStore = useTasksStore()
@@ -61,6 +72,7 @@ const showForm = ref(false)
 const editingTask = ref<Task | undefined>(undefined)
 
 const tasks = computed(() => {
+  if (props.tasksOverride) return props.tasksOverride
   if (props.taskType === 'HABITS') {
     return tasksStore.getHabits()
   }
@@ -84,14 +96,15 @@ const emptyMessage = computed(() => {
 })
 
 function handleAddClick() {
+  const type = props.defaultType || (props.taskType as TaskType)
+
   if (props.taskType === 'HABITS') {
-    showForm.value = true
+    if (props.externalForm) emit('add', type)
+    else showForm.value = true
     return
   }
 
-  const type = props.defaultType || (props.taskType as TaskType)
-  const activeCount = tasksStore.getTasksByType(type).length
-  if (activeCount >= 3) {
+  if (!tasksStore.canAddTask(type)) {
     addNotification({
       type: 'warning',
       message: `Достигнут лимит: 3 активные задачи на ${props.title.toLowerCase()}. Завершите что-то, чтобы добавить новое.`,
@@ -99,10 +112,21 @@ function handleAddClick() {
     })
     return
   }
+
+  if (props.externalForm) {
+    emit('add', type)
+    return
+  }
+
   showForm.value = true
 }
 
 function handleEdit(task: Task) {
+  if (props.externalForm) {
+    emit('edit', task)
+    return
+  }
+
   editingTask.value = task
   showForm.value = true
 }
@@ -164,16 +188,18 @@ function handleSave(taskData: any) {
 
   closeForm()
 }
-
 </script>
 
 <style scoped lang="scss">
 .task-list {
+  padding: 4px 0 0;
+
   .list-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    min-height: 44px;
+    margin-bottom: 16px;
   }
 
   .title-wrapper {
@@ -186,6 +212,7 @@ function handleSave(taskData: any) {
     font-weight: 600;
     font-size: 1.1rem;
     color: var(--accent);
+    letter-spacing: -0.01em;
   }
 
   .info-badge {
@@ -199,6 +226,7 @@ function handleSave(taskData: any) {
     &:hover .tooltip {
       opacity: 1;
       visibility: visible;
+      transform: translateX(-50%) translateY(-4px);
     }
   }
 
@@ -209,30 +237,48 @@ function handleSave(taskData: any) {
     transform: translateX(-50%);
     background: var(--surface);
     color: var(--accent);
-    padding: 6px 10px;
-    border-radius: var(--border-radius-sm);
+    padding: 6px 12px;
+    border-radius: var(--border-radius-md);
     font-size: 0.75rem;
-    white-space: nowrap;
+    font-weight: 400;
+    line-height: 1.4;
+    white-space: normal;
+    width: max-content;
+    max-width: 240px;
     border: 1px solid var(--border);
     box-shadow: var(--shadow-md);
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, transform 0.2s;
     pointer-events: none;
-    z-index: 10;
+    z-index: 100;
+    backdrop-filter: blur(4px);
+    background: color-mix(in srgb, var(--surface) 95%, transparent);
   }
 
   .add-btn {
     @include glass;
-    width: 32px;
-    height: 32px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--accent);
+    background: color-mix(in srgb, var(--surface) 80%, transparent);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all var(--transition-standard);
+
     &:hover {
       background: var(--surface);
+      transform: scale(1.02);
+      box-shadow: var(--shadow-md);
+      border-color: var(--accent);
+    }
+
+    &:active {
+      transform: scale(0.96);
     }
   }
 
@@ -245,31 +291,35 @@ function handleSave(taskData: any) {
   .empty {
     text-align: center;
     color: var(--dim);
-    padding: 16px;
+    padding: 24px 16px;
     font-size: 0.9rem;
+    border: 1px dashed var(--border);
+    border-radius: var(--border-radius-lg);
+    background: color-mix(in srgb, var(--surface) 40%, transparent);
+    backdrop-filter: blur(2px);
   }
 
-  /* ✅ АНИМАЦИИ ДЛЯ СПИСКА ЗАДАЧ */
+  /* Анимации списка */
   .task-list-enter-active,
   .task-list-leave-active {
-    transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
   }
 
   .task-list-enter-from {
     opacity: 0;
-    transform: translateX(-20px);
+    transform: translateX(-16px);
   }
 
   .task-list-leave-to {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(16px);
   }
 
   .task-list-move {
-    transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1);
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
   }
 
-  /* ✅ АДАПТИВНОСТЬ ДЛЯ ПЛАНШЕТОВ И МОБИЛЬНЫХ */
+  /* Адаптивность */
   @media (max-width: 768px) {
     .list-header {
       gap: 12px;
@@ -283,11 +333,17 @@ function handleSave(taskData: any) {
     .add-btn {
       width: 36px;
       height: 36px;
-      flex-shrink: 0;
     }
 
     .tasks {
       gap: 10px;
+    }
+
+    .tooltip {
+      max-width: 200px;
+      white-space: normal;
+      font-size: 0.7rem;
+      padding: 4px 8px;
     }
   }
 
@@ -303,7 +359,6 @@ function handleSave(taskData: any) {
 
     h3 {
       font-size: 0.95rem;
-      font-weight: 600;
     }
 
     .info-badge {
@@ -313,10 +368,8 @@ function handleSave(taskData: any) {
     }
 
     .add-btn {
-      width: 32px;
-      height: 32px;
-      min-width: 32px;
-      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
     }
 
     .tasks {
@@ -324,7 +377,7 @@ function handleSave(taskData: any) {
     }
 
     .empty {
-      padding: 12px;
+      padding: 16px 12px;
       font-size: 0.85rem;
     }
   }
@@ -334,12 +387,8 @@ function handleSave(taskData: any) {
       font-size: 0.9rem;
     }
 
-    .info-badge {
+    .tooltip {
       display: none;
-    }
-
-    .tasks {
-      gap: 6px;
     }
   }
 }
