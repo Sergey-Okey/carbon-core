@@ -1,26 +1,40 @@
 <template>
   <Teleport to="body">
     <div class="modal-overlay" @click.self="emit('close')">
-      <div class="modal">
-        <div class="modal-header">
-          <h3>{{ branch ? 'Редактировать ветку' : 'Новая ветка' }}</h3>
-          <button class="close-btn" @click="emit('close')">
+      <form class="modal" @submit.prevent="handleSubmit">
+        <header class="modal-header">
+          <div>
+            <span class="modal-kicker">Ветка</span>
+            <h3>{{ branch ? 'Редактировать ветку' : 'Новая ветка' }}</h3>
+          </div>
+          <button type="button" class="icon-btn" title="Закрыть" @click="emit('close')">
             <X :size="20" />
           </button>
-        </div>
+        </header>
 
-        <form @submit.prevent="handleSubmit">
+        <div class="modal-body">
           <div class="form-group">
-            <label>Название</label>
-            <input v-model="form.name" type="text" required />
+            <label for="branch-name">Название</label>
+            <input
+              id="branch-name"
+              v-model.trim="form.name"
+              type="text"
+              placeholder="Название ветки"
+              :class="{ invalid: nameTouched && !canSubmit }"
+              @blur="nameTouched = true"
+            />
+            <span v-if="nameTouched && !canSubmit" class="field-error">
+              Укажите название ветки
+            </span>
           </div>
 
           <div class="form-group">
-            <label>Описание</label>
+            <label for="branch-description">Описание</label>
             <textarea
+              id="branch-description"
               v-model="form.description"
               placeholder="Опишите направление..."
-              rows="2"
+              rows="3"
             />
           </div>
 
@@ -29,15 +43,16 @@
             <div class="icon-section">
               <button
                 type="button"
-                class="toggle-icons-btn"
+                class="toggle-btn"
                 @click="iconsExpanded = !iconsExpanded"
               >
-                <div class="selected-icon">
+                <span class="selected-icon">
                   <component :is="iconComponent(form.icon)" :size="20" />
-                  <span>{{ form.icon }}</span>
-                </div>
+                  <span>Иконка</span>
+                </span>
                 <ChevronDown :size="16" :class="{ rotated: iconsExpanded }" />
               </button>
+
               <Transition name="expand">
                 <div v-if="iconsExpanded" class="icons-grid">
                   <button
@@ -46,6 +61,7 @@
                     type="button"
                     class="icon-option"
                     :class="{ active: form.icon === icon }"
+                    :title="icon"
                     @click="form.icon = icon"
                   >
                     <component :is="iconComponent(icon)" :size="20" />
@@ -56,57 +72,60 @@
           </div>
 
           <div class="form-group">
-            <label>Привязанные задачи (исключая привычки)</label>
+            <label>Привязанные задачи</label>
             <div class="tasks-section">
               <button
                 type="button"
-                class="toggle-tasks-btn"
+                class="toggle-btn"
                 @click="tasksExpanded = !tasksExpanded"
               >
                 <span>Выбрать задачи ({{ form.taskIds.length }})</span>
                 <ChevronDown :size="16" :class="{ rotated: tasksExpanded }" />
               </button>
+
               <Transition name="expand">
                 <div v-if="tasksExpanded" class="tasks-list">
                   <label
                     v-for="task in activeTasks"
                     :key="task.id"
-                    class="task-checkbox"
+                    class="task-row"
+                    :class="{ selected: form.taskIds.includes(task.id) }"
                   >
                     <span class="custom-checkbox">
-                      <input
-                        type="checkbox"
-                        :value="task.id"
-                        v-model="form.taskIds"
-                      />
+                      <input v-model="form.taskIds" type="checkbox" :value="task.id" />
                       <span class="checkmark"></span>
                     </span>
                     <span class="task-title">{{ task.title }}</span>
                     <span class="task-xp">+{{ task.xpReward || 50 }} XP</span>
                   </label>
+                  <div v-if="activeTasks.length === 0" class="empty-list">
+                    Нет доступных задач
+                  </div>
                 </div>
               </Transition>
             </div>
           </div>
+        </div>
 
-          <div class="form-actions">
+        <footer class="modal-footer">
+          <button
+            v-if="branch"
+            type="button"
+            class="btn-danger"
+            @click="emit('delete')"
+          >
+            Удалить
+          </button>
+          <div class="footer-actions">
             <button type="button" class="btn-secondary" @click="emit('close')">
               Отмена
             </button>
-            <button
-              v-if="branch"
-              type="button"
-              class="btn-danger"
-              @click="deleteBranch"
-            >
-              Удалить
-            </button>
-            <button type="submit" class="btn-primary">
+            <button type="submit" class="btn-primary" :disabled="!canSubmit">
               {{ branch ? 'Сохранить' : 'Создать' }}
             </button>
           </div>
-        </form>
-      </div>
+        </footer>
+      </form>
     </div>
   </Teleport>
 </template>
@@ -132,8 +151,6 @@ import {
   Code,
 } from 'lucide-vue-next'
 import { useTasksStore } from '~/stores/tasks.store'
-import { useBranchesStore } from '~/stores/branches.store'
-import { useConfirm } from '~/composables/useConfirm'
 import type { Branch } from '~/types/branch.types'
 
 const props = defineProps<{ branch?: Branch | null }>()
@@ -147,10 +164,9 @@ const emit = defineEmits<{
 }>()
 
 const tasksStore = useTasksStore()
-const branchesStore = useBranchesStore()
-const { confirm } = useConfirm()
 const iconsExpanded = ref(false)
 const tasksExpanded = ref(false)
+const nameTouched = ref(false)
 
 const iconOptions = [
   'trending-up',
@@ -189,9 +205,8 @@ const iconComponent = (name: string) => {
   return map[name] || Target
 }
 
-const activeTasks = computed(() => {
-  return tasksStore.tasks.filter((t) => t.type !== 'HABIT')
-})
+const activeTasks = computed(() => tasksStore.tasks.filter((task) => task.type !== 'HABIT'))
+const canSubmit = computed(() => form.name.trim().length > 0)
 
 const form = reactive({
   name: '',
@@ -203,6 +218,10 @@ const form = reactive({
 watch(
   () => props.branch,
   (newBranch) => {
+    nameTouched.value = false
+    iconsExpanded.value = false
+    tasksExpanded.value = false
+
     if (newBranch) {
       form.name = newBranch.displayName
       form.icon = newBranch.icon
@@ -219,12 +238,9 @@ watch(
 )
 
 function handleSubmit() {
-  emit('save', { ...form })
-}
-
-async function deleteBranch() {
-  if (!props.branch) return
-  emit('delete')
+  nameTouched.value = true
+  if (!canSubmit.value) return
+  emit('save', { ...form, name: form.name.trim() })
 }
 </script>
 
@@ -240,52 +256,91 @@ async function deleteBranch() {
   z-index: 1000;
   padding: 16px;
 }
+
 .modal {
-  width: 100%;
-  max-width: 420px;
-  max-height: 80vh;
-  overflow-y: auto;
   @include glass;
-  border-radius: var(--border-radius-lg);
+  width: min(460px, 100%);
+  max-height: min(86vh, 760px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   border: 1px solid var(--border);
+  border-radius: var(--border-radius-lg);
   color: var(--accent);
+  overflow: hidden;
 }
-.modal-header {
+
+.modal-header,
+.modal-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 20px 0;
+  gap: 16px;
+  padding: 16px 18px;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border);
+
   h3 {
+    margin: 2px 0 0;
+    font-size: 1.05rem;
     font-weight: 600;
   }
-  .close-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    color: var(--dim);
-    &:hover {
-      background: var(--surface);
-      color: var(--accent);
-    }
+}
+
+.modal-kicker {
+  display: block;
+  color: var(--dim);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.modal-body {
+  padding: 18px;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border);
+}
+
+.footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--dim);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--surface);
+    color: var(--accent);
   }
 }
-form {
-  padding: 20px;
-}
+
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
+
   label {
     display: block;
-    margin-bottom: 8px;
-    font-size: 0.85rem;
+    margin-bottom: 7px;
+    color: var(--dim);
+    font-size: 0.78rem;
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--dim);
   }
+
   input,
   textarea {
     width: 100%;
@@ -294,225 +349,239 @@ form {
     border: 1px solid var(--border);
     border-radius: var(--border-radius-sm);
     color: var(--accent);
-    font-size: 1rem;
+    font-size: 0.95rem;
+
     &:focus {
       border-color: var(--accent);
       outline: none;
     }
+
+    &.invalid {
+      border-color: var(--error);
+    }
   }
+
   textarea {
+    min-height: 76px;
     resize: vertical;
-    min-height: 60px;
   }
 }
-.icon-section {
-  .toggle-icons-btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-sm);
-    color: var(--accent);
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: border-color 0.1s;
-    &:hover {
-      border-color: var(--accent);
-    }
-    .rotated {
-      transform: rotate(180deg);
-    }
-    .selected-icon {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-  }
-  .icons-grid {
-    margin-top: 8px;
-    padding: 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-sm);
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  .icon-option {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    border-radius: var(--border-radius-sm);
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--dim);
-    cursor: pointer;
-    transition: all 0.1s;
-    &:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-    &.active {
-      border-color: var(--accent);
-      background: var(--accent);
-      color: var(--bg);
-    }
-  }
+
+.field-error {
+  display: block;
+  margin-top: 6px;
+  color: var(--error);
+  font-size: 0.78rem;
 }
-.tasks-section {
-  .toggle-tasks-btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-sm);
-    color: var(--accent);
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: border-color 0.1s;
-    &:hover {
-      border-color: var(--accent);
-    }
-    .rotated {
-      transform: rotate(180deg);
-    }
-  }
-  .tasks-list {
-    margin-top: 8px;
-    padding: 4px 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-sm);
-    max-height: 260px;
-    overflow-y: auto;
 
-    .task-checkbox {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 12px;
-      margin: 0;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.15s;
-
-      &:last-child {
-        border-bottom: none;
-      }
-
-      &:hover {
-        background: var(--border);
-      }
-
-      .custom-checkbox {
-        position: relative;
-        display: inline-block;
-        width: 18px;
-        height: 18px;
-        flex-shrink: 0;
-        input {
-          position: absolute;
-          opacity: 0;
-          cursor: pointer;
-          width: 100%;
-          height: 100%;
-          margin: 0;
-        }
-        .checkmark {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 18px;
-          height: 18px;
-          background: var(--bg);
-          border: 1px solid var(--border);
-          border-radius: 4px;
-          transition: all 0.1s;
-        }
-        input:checked + .checkmark {
-          background: var(--accent);
-          border-color: var(--accent);
-          &::after {
-            content: '';
-            position: absolute;
-            left: 5px;
-            top: 2px;
-            width: 5px;
-            height: 10px;
-            border: solid var(--bg);
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-          }
-        }
-      }
-
-      .task-title {
-        flex: 1;
-        font-size: 0.9rem;
-        line-height: 1.4;
-        color: var(--accent);
-      }
-
-      .task-xp {
-        font-size: 0.8rem;
-        color: var(--dim);
-        flex-shrink: 0;
-      }
-    }
-  }
-}
-.form-actions {
+.toggle-btn {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-  button {
-    padding: 10px 20px;
-    border-radius: var(--border-radius-sm);
-    border: none;
-    cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-sm);
+  color: var(--accent);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--accent);
   }
-  .btn-secondary {
-    background: transparent;
-    color: var(--dim);
-    &:hover {
-      background: var(--surface);
-    }
-  }
-  .btn-primary {
-    background: var(--accent);
-    color: var(--bg);
-    &:hover {
-      opacity: 0.9;
-    }
-  }
-  .btn-danger {
-    background: transparent;
-    color: var(--error);
-    border: 1px solid var(--error);
-    margin-right: auto;
-    &:hover {
-      background: var(--error);
-      color: var(--bg);
-    }
+
+  .rotated {
+    transform: rotate(180deg);
   }
 }
+
+.selected-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icons-grid {
+  margin-top: 8px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-sm);
+}
+
+.icon-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  cursor: pointer;
+
+  &:hover,
+  &.active {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  &.active {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+  }
+}
+
+.tasks-list {
+  margin-top: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-sm);
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover,
+  &.selected {
+    background: color-mix(in srgb, var(--surface) 65%, var(--border));
+  }
+}
+
+.custom-checkbox {
+  position: relative;
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+
+  input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+}
+
+.checkmark {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+input:checked + .checkmark {
+  background: var(--accent);
+  border-color: var(--accent);
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid var(--bg);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+}
+
+.task-title {
+  flex: 1;
+  min-width: 0;
+  color: var(--accent);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.task-xp,
+.empty-list {
+  color: var(--dim);
+  font-size: 0.78rem;
+}
+
+.empty-list {
+  padding: 14px 12px;
+}
+
+.btn-secondary,
+.btn-primary,
+.btn-danger {
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--dim);
+
+  &:hover {
+    color: var(--accent);
+    background: var(--surface);
+  }
+}
+
+.btn-primary {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--bg);
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.btn-danger {
+  margin-right: auto;
+  background: transparent;
+  border: 1px solid var(--error);
+  color: var(--error);
+
+  &:hover {
+    background: var(--error);
+    color: var(--bg);
+  }
+}
+
 .expand-enter-active,
 .expand-leave-active {
   transition: all 0.1s;
 }
+
 .expand-enter-from,
 .expand-leave-to {
   opacity: 0;
   transform: translateY(-8px);
+}
+
+@media (max-width: 768px) {
+  .modal-overlay {
+    align-items: stretch;
+    padding: 8px;
+  }
+
+  .modal {
+    max-height: none;
+  }
 }
 </style>

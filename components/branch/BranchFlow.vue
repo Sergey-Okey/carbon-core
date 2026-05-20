@@ -162,7 +162,7 @@ const emptyMilestone: Milestone = {
   position: { x: 0, y: 0 },
 }
 
-const canAddBranch = computed(() => true)
+const canAddBranch = computed(() => !selectedNodeId.value && !selectedEdgeId.value)
 const canAddMilestone = computed(() => selectedNodeId.value !== null)
 const selectedControlType = computed<'branch' | 'milestone' | 'edge' | 'none'>(() => {
   if (selectedEdgeId.value) return 'edge'
@@ -478,6 +478,11 @@ function openBranchEditor(branchId: string) {
 }
 
 function openAddBranchModal() {
+  if (!canAddBranch.value) {
+    addNotification({ type: 'warning', message: 'Снимите выделение, чтобы создать ветку' })
+    return
+  }
+
   selectedNodeId.value = null
   selectedEdgeId.value = null
   selectedEdge.value = null

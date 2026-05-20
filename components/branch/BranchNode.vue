@@ -41,8 +41,8 @@
 
     <Transition name="expand">
       <div v-if="isExpanded" class="node-details">
-        <p v-if="data.milestone && data.milestone.description">
-          {{ data.milestone.description }}
+        <p v-if="branchDescription">
+          {{ branchDescription }}
         </p>
         <p v-else class="placeholder">Нет описания</p>
         <div class="linked-tasks">
@@ -105,6 +105,13 @@ const branchName = computed(() => {
     (b) => b.id === props.data.branchId
   )
   return branch?.displayName || 'Ветка'
+})
+
+const branchDescription = computed(() => {
+  const branch = branchesStore.branches.find(
+    (b) => b.id === props.data.branchId
+  )
+  return branch?.description?.trim() || ''
 })
 
 const iconComponent = computed(() => {
