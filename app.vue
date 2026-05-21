@@ -54,7 +54,10 @@ onMounted(async () => {
     if (data.tasks) tasksStore.$patch({ tasks: data.tasks })
     if (data.branches) branchesStore.$patch({ branches: data.branches })
     if (data.rewards) rewardsStore.$patch({ rewards: data.rewards })
-    if (data.tags) tagsStore.$patch({ tags: data.tags })
+    if (data.tags) {
+      tagsStore.$patch({ tags: data.tags })
+      tagsStore.normalizeTags(tasksStore.tasks)
+    }
     if (data.ui) uiStore.$patch(data.ui)
     if (data.settings) settingsStore.$patch(data.settings)
   } catch {
@@ -64,6 +67,7 @@ onMounted(async () => {
   }
 
   tasksStore.resetDailyTasks()
+  tagsStore.normalizeTags(tasksStore.tasks)
   scheduleNextReset()
   window.addEventListener('beforeunload', autoBackupOnUnload)
 })

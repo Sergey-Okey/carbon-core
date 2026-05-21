@@ -47,18 +47,21 @@
           <div class="form-group">
             <label>Теги</label>
             <div class="tags-cloud">
-              <template v-for="tag in tagsStore.tags" :key="tag.id">
+              <template v-for="tag in visibleTags" :key="tag.id">
                 <div class="tag-wrapper">
                   <button
                     type="button"
                     class="tag-btn"
                     :class="{ active: form.tagIds.includes(tag.id) }"
+                    :style="{ '--tag-color': tag.color || 'var(--accent)' }"
+                    :aria-pressed="form.tagIds.includes(tag.id)"
                     @click="toggleTag(tag.id)"
                   >
-                    {{ tag.name }}
+                    <span class="tag-dot" />
+                    <span class="tag-name">{{ tag.name }}</span>
                   </button>
                   <button
-                    v-if="!tag.isSystem"
+                    type="button"
                     class="tag-delete"
                     @click.stop="deleteTag(tag.id)"
                     title="Удалить тег"
@@ -70,10 +73,12 @@
               <button
                 type="button"
                 class="tag-btn add-tag-btn"
+                style="--tag-color: var(--accent)"
                 @click="openAddTagModal"
                 title="Добавить тег"
               >
-                <Plus :size="16" /> Добавить
+                <Plus :size="16" />
+                <span class="tag-name">Добавить</span>
               </button>
             </div>
           </div>
@@ -117,7 +122,7 @@
               <input
                 v-model="newTagName"
                 type="text"
-                placeholder="#важно"
+                placeholder="Важно"
                 required
               />
             </div>
@@ -129,6 +134,10 @@
                 :disabled="branchOptions.length === 0"
                 placeholder="Сначала создайте ветку"
               />
+            </div>
+            <div class="form-group">
+              <label>Цвет</label>
+              <AppColorPicker v-model="newTagColor" />
             </div>
             <div class="form-actions">
               <button
@@ -159,9 +168,11 @@ import { X, Calendar, Plus } from 'lucide-vue-next'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useTagsStore } from '~/stores/tags.store'
 import { useNotification } from '~/composables/useNotification'
+import AppColorPicker from '~/components/ui/AppColorPicker.vue'
 import AppSelect from '~/components/ui/AppSelect.vue'
 import type { AppSelectOption } from '~/types/ui.types'
 import type { BranchId } from '~/types/branch.types'
+import type { TagScope } from '~/types/tag.types'
 import type { Task } from '~/types/task.types'
 
 const props = defineProps<{
@@ -192,6 +203,10 @@ const branchOptions = computed<AppSelectOption[]>(() =>
     value: branch.id,
   }))
 )
+const currentTagScope = computed<TagScope>(() =>
+  form.type === 'HABIT' ? 'habit' : 'task'
+)
+const visibleTags = computed(() => tagsStore.getTagsByScope(currentTagScope.value))
 
 const form = reactive({
   title: '',
@@ -259,21 +274,25 @@ function toggleTag(tagId: string) {
 
 function handleSubmit() {
   if (!form.title.trim()) return
+  const existingTagIds = new Set(visibleTags.value.map((tag) => tag.id))
 
   emit('save', {
     ...form,
     title: form.title.trim(),
     description: form.description.trim(),
+    tagIds: form.tagIds.filter((tagId) => existingTagIds.has(tagId)),
     createBranch: !editing.value && createBranch.value,
   })
 }
 const showAddTagModal = ref(false)
 const newTagName = ref('')
 const newTagBranchId = ref<BranchId | ''>('')
+const newTagColor = ref('var(--success)')
 
 function openAddTagModal() {
   newTagName.value = ''
   newTagBranchId.value = branchesStore.branches[0]?.id || ''
+  newTagColor.value = 'var(--success)'
   showAddTagModal.value = true
 }
 
@@ -288,18 +307,29 @@ function createTag() {
     return
   }
 
-  let name = newTagName.value.trim()
-  if (!name.startsWith('#')) name = '#' + name
+  const name = newTagName.value.trim()
 
   const existing = tagsStore.tags.find(
-    (t) => t.name.toLowerCase() === name.toLowerCase()
+    (t) =>
+      t.scope === currentTagScope.value &&
+      t.name.toLowerCase() === name.toLowerCase()
   )
   if (existing) {
     addNotification({ type: 'warning', message: 'Такой тег уже существует' })
     return
   }
 
-  tagsStore.addTag({ name, branchId: newTagBranchId.value, order: 999 })
+  const tag = tagsStore.addTag({
+    name,
+    branchId: newTagBranchId.value,
+    color: newTagColor.value,
+    scope: currentTagScope.value,
+    order: 999,
+  })
+  if (!form.tagIds.includes(tag.id)) {
+    form.tagIds.push(tag.id)
+  }
+
   addNotification({ type: 'success', message: `Тег «${name}» добавлен` })
   closeAddTagModal()
 }
@@ -311,7 +341,7 @@ function deleteTag(tagId: string) {
     const index = form.tagIds.indexOf(tagId)
     if (index !== -1) form.tagIds.splice(index, 1)
   } else {
-    addNotification({ type: 'error', message: 'Нельзя удалить системный тег' })
+    addNotification({ type: 'error', message: 'Не удалось удалить тег' })
   }
 }
 </script>
@@ -561,26 +591,54 @@ form {
   }
 
   .tag-btn {
-    padding: 8px 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 7px 11px;
+    background:
+      linear-gradient(color-mix(in srgb, var(--tag-color) 8%, transparent), color-mix(in srgb, var(--tag-color) 8%, transparent)),
+      var(--surface);
+    border: 1px solid color-mix(in srgb, var(--tag-color) 30%, var(--border));
     border-radius: var(--border-radius-sm);
-    color: var(--dim);
+    color: var(--accent);
     font-size: 0.85rem;
     font-weight: 500;
     transition: all var(--transition-standard);
     cursor: pointer;
 
     &:hover {
-      background: var(--border);
+      background:
+        linear-gradient(color-mix(in srgb, var(--tag-color) 12%, transparent), color-mix(in srgb, var(--tag-color) 12%, transparent)),
+        var(--surface);
+      border-color: color-mix(in srgb, var(--tag-color) 55%, var(--border));
       color: var(--accent);
     }
 
     &.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: var(--bg);
+      background:
+        linear-gradient(color-mix(in srgb, var(--tag-color) 16%, transparent), color-mix(in srgb, var(--tag-color) 16%, transparent)),
+        var(--surface);
+      border-color: var(--tag-color);
+      color: var(--accent);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--tag-color) 12%, transparent);
     }
+  }
+
+  .tag-dot {
+    flex: 0 0 auto;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--tag-color);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--tag-color) 18%, transparent);
+  }
+
+  .tag-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .tag-delete {
@@ -616,7 +674,7 @@ form {
     gap: 4px;
 
     &:hover {
-      background: var(--surface);
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
       border-style: solid;
     }
   }

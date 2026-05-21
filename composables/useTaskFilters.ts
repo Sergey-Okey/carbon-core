@@ -19,7 +19,11 @@ export function useTaskFilters() {
   const showCompletedSection = computed(() => taskView.value !== 'active')
   const tagOptions = computed<AppSelectOption[]>(() => [
     { label: 'Все теги', value: 'all' },
-    ...tagsStore.tags.map((tag) => ({ label: tag.name, value: tag.id })),
+    ...tagsStore.tags.map((tag) => ({
+      label: `${tag.name} · ${tag.scope === 'habit' ? 'привычки' : 'задачи'}`,
+      value: tag.id,
+      color: tag.color,
+    })),
   ])
 
   const visibleHabits = computed(() =>

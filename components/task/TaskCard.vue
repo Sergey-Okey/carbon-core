@@ -22,8 +22,10 @@
             :key="tag.id"
             class="tag"
             :title="tag.name"
+            :style="{ '--tag-color': tag.color || 'var(--accent)' }"
           >
-            {{ tag.name }}
+            <span class="tag-dot" />
+            <span class="tag-name">{{ tag.name }}</span>
           </span>
         </div>
       </div>
@@ -209,12 +211,33 @@ async function handleDelete() {
   }
 
   .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 160px;
     font-size: 0.7rem;
-    padding: 3px 8px;
-    background: color-mix(in srgb, var(--surface) 86%, transparent);
-    border: 1px solid var(--border);
+    padding: 3px 7px;
+    background:
+      linear-gradient(color-mix(in srgb, var(--tag-color) 8%, transparent), color-mix(in srgb, var(--tag-color) 8%, transparent)),
+      var(--surface);
+    border: 1px solid color-mix(in srgb, var(--tag-color) 32%, var(--border));
     border-radius: 12px;
     color: var(--accent);
+  }
+
+  .tag-dot {
+    flex: 0 0 auto;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--tag-color);
+  }
+
+  .tag-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .task-type {

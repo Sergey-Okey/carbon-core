@@ -1,18 +1,17 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
-import type { Tag } from '~/types/tag.types'
+import type { Task } from '~/types/task.types'
+import type { Tag, TagScope } from '~/types/tag.types'
 import { v4 as uuidv4 } from 'uuid'
 
 type InternalTag = Tag & { isSystem?: boolean }
 
-const DEFAULT_TAGS: (Omit<Tag, 'id'> & { isSystem: boolean })[] = [
-  { name: 'Дизайн', branchId: 'COF', order: 1, isSystem: true },
-  { name: 'Управление', branchId: 'COF', order: 2, isSystem: true },
-  { name: 'Frontend', branchId: 'COF', order: 3, isSystem: true },
-  { name: 'Backend', branchId: 'COF', order: 4, isSystem: true },
-  { name: 'База данных', branchId: 'COF', order: 5, isSystem: true },
-  { name: 'Тестирование', branchId: 'COF', order: 6, isSystem: true },
-  { name: 'DevOps', branchId: 'COF', order: 7, isSystem: true },
+const TAG_COLORS = [
+  'var(--success)',
+  'var(--warning)',
+  'var(--error)',
+  'var(--gold)',
+  'var(--accent)',
 ]
 
 export const useTagsStore = defineStore(
@@ -20,28 +19,80 @@ export const useTagsStore = defineStore(
   () => {
     const tags = ref<InternalTag[]>([])
 
-    ensureSystemTags()
+    normalizeTags()
 
     async function initTagsAfterHydration() {
       const store = useTagsStore()
       if (store.$persistedState) {
         await store.$persistedState.isReady
       }
-      ensureSystemTags()
+      normalizeTags()
     }
 
-    function ensureSystemTags() {
-      const systemNames = DEFAULT_TAGS.map((t) => t.name)
-      const existingNames = tags.value.map((t) => t.name)
-      const missing = systemNames.filter((name) => !existingNames.includes(name))
-
-      if (missing.length > 0) {
-        const restored = DEFAULT_TAGS.filter((t) => missing.includes(t.name)).map((t) => ({
-          ...t,
-          id: uuidv4(),
-        }))
-        tags.value.push(...restored)
+    function normalizeTags(tasks?: Task[]) {
+      const userTags = tags.value.filter((tag) => !tag.isSystem)
+      if (userTags.length !== tags.value.length) {
+        tags.value = userTags
       }
+
+      if (tasks) {
+        splitLegacyTagsByScope(tasks)
+      }
+
+      tags.value.forEach((tag, index) => {
+        if (!tag.color) tag.color = TAG_COLORS[index % TAG_COLORS.length]
+      })
+    }
+
+    function splitLegacyTagsByScope(tasks: Task[]) {
+      const nextTags: InternalTag[] = []
+      const replacements = new Map<string, Partial<Record<TagScope, string>>>()
+
+      tags.value.forEach((tag) => {
+        if (tag.scope) {
+          nextTags.push(tag)
+          return
+        }
+
+        const scopes = getScopesUsingTag(tag.id, tasks)
+        const targetScopes = scopes.length ? scopes : ['task']
+
+        targetScopes.forEach((scope, index) => {
+          const scopedTag: InternalTag = {
+            ...tag,
+            id: index === 0 ? tag.id : uuidv4(),
+            scope,
+            isSystem: false,
+          }
+          nextTags.push(scopedTag)
+          replacements.set(tag.id, {
+            ...replacements.get(tag.id),
+            [scope]: scopedTag.id,
+          })
+        })
+      })
+
+      if (replacements.size === 0) return
+
+      tags.value = nextTags
+      tasks.forEach((task) => {
+        const scope = getScopeForTask(task)
+        task.tagIds = task.tagIds
+          .map((tagId) => replacements.get(tagId)?.[scope] || tagId)
+          .filter((tagId, index, ids) => ids.indexOf(tagId) === index)
+      })
+    }
+
+    function getScopesUsingTag(tagId: string, tasks: Task[]): TagScope[] {
+      const scopes = new Set<TagScope>()
+      tasks.forEach((task) => {
+        if (task.tagIds.includes(tagId)) scopes.add(getScopeForTask(task))
+      })
+      return [...scopes]
+    }
+
+    function getScopeForTask(task: Pick<Task, 'type'>): TagScope {
+      return task.type === 'HABIT' ? 'habit' : 'task'
     }
 
     function getTagById(id: string): InternalTag | undefined {
@@ -50,6 +101,10 @@ export const useTagsStore = defineStore(
 
     function getTagsByIds(ids: string[]): InternalTag[] {
       return tags.value.filter((t) => ids.includes(t.id))
+    }
+
+    function getTagsByScope(scope: TagScope): InternalTag[] {
+      return tags.value.filter((tag) => tag.scope === scope)
     }
 
     function addTag(tagData: Omit<Tag, 'id'>) {
@@ -61,7 +116,6 @@ export const useTagsStore = defineStore(
     function deleteTag(id: string): boolean {
       const index = tags.value.findIndex((t) => t.id === id)
       if (index === -1) return false
-      if (tags.value[index].isSystem) return false
       tags.value.splice(index, 1)
       return true
     }
@@ -69,7 +123,7 @@ export const useTagsStore = defineStore(
     watch(
       tags,
       () => {
-        ensureSystemTags()
+        normalizeTags()
       },
       { deep: true }
     )
@@ -77,8 +131,10 @@ export const useTagsStore = defineStore(
     return {
       tags,
       initTagsAfterHydration,
+      normalizeTags,
       getTagById,
       getTagsByIds,
+      getTagsByScope,
       addTag,
       deleteTag,
     }

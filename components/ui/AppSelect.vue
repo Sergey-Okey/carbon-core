@@ -18,6 +18,11 @@
       @click="toggle"
     >
       <slot name="icon" />
+      <span
+        v-if="selectedOption?.color"
+        class="option-dot"
+        :style="{ '--option-color': selectedOption.color }"
+      />
       <span class="select-value" :class="{ muted: !selectedOption }">
         {{ selectedOption?.label || placeholder }}
       </span>
@@ -43,13 +48,18 @@
               active: option.value === modelValue,
               highlighted: index === highlightedIndex,
             }"
+            :style="{ '--option-color': option.color || 'var(--accent)' }"
             :disabled="option.disabled"
             role="option"
             :aria-selected="option.value === modelValue"
             @mouseenter="highlightedIndex = index"
             @click="selectOption(option)"
           >
-            <span>{{ option.label }}</span>
+            <span
+              v-if="option.color"
+              class="option-dot"
+            />
+            <span class="option-label">{{ option.label }}</span>
             <Check v-if="option.value === modelValue" :size="15" />
           </button>
         </div>
@@ -240,6 +250,7 @@ onBeforeUnmount(() => {
 }
 
 .select-value {
+  flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -248,6 +259,15 @@ onBeforeUnmount(() => {
   &.muted {
     color: var(--dim);
   }
+}
+
+.option-dot {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--option-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--option-color) 18%, transparent);
 }
 
 .select-arrow {
@@ -298,12 +318,13 @@ onBeforeUnmount(() => {
     background var(--transition-standard),
     color var(--transition-standard);
 
-  span {
+.option-label {
+    flex: 1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
+}
 
   &:disabled {
     cursor: not-allowed;
@@ -311,11 +332,11 @@ onBeforeUnmount(() => {
 
   &.highlighted,
   &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    background: color-mix(in srgb, var(--option-color) 9%, transparent);
   }
 
   &.active {
-    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    background: color-mix(in srgb, var(--option-color) 14%, transparent);
     font-weight: 600;
   }
 }
