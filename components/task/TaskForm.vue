@@ -32,15 +32,7 @@
           <div class="form-row" v-if="!hideType && form.type !== 'HABIT'">
             <div class="form-group">
               <label>Тип</label>
-              <div class="select-wrapper">
-                <select v-model="form.type">
-                  <option value="TASK_DAY">На день</option>
-                  <option value="TASK_WEEK">На неделю</option>
-                  <option value="TASK_MONTH">На месяц</option>
-                  <option value="TASK_YEAR">На год</option>
-                </select>
-                <ChevronDown :size="16" class="select-icon" />
-              </div>
+              <AppSelect v-model="form.type" :options="taskTypeOptions" />
             </div>
 
             <div class="form-group">
@@ -131,15 +123,12 @@
             </div>
             <div class="form-group">
               <label>Ветка</label>
-              <div class="select-wrapper">
-                <select v-model="newTagBranchId" required>
-                  <option value="FIN">Финансы</option>
-                  <option value="BODY">Тело</option>
-                  <option value="MIND">Интеллект</option>
-                  <option value="LDR">Лидерство</option>
-                </select>
-                <ChevronDown :size="16" class="select-icon" />
-              </div>
+              <AppSelect
+                v-model="newTagBranchId"
+                :options="branchOptions"
+                :disabled="branchOptions.length === 0"
+                placeholder="Сначала создайте ветку"
+              />
             </div>
             <div class="form-actions">
               <button
@@ -149,7 +138,13 @@
               >
                 Отмена
               </button>
-              <button type="submit" class="btn-primary">Создать</button>
+              <button
+                type="submit"
+                class="btn-primary"
+                :disabled="branchOptions.length === 0"
+              >
+                Создать
+              </button>
             </div>
           </form>
         </div>
@@ -160,9 +155,13 @@
 
 <script setup lang="ts">
 import { reactive, watch, ref, computed } from 'vue'
-import { X, ChevronDown, Calendar, Plus } from 'lucide-vue-next'
+import { X, Calendar, Plus } from 'lucide-vue-next'
+import { useBranchesStore } from '~/stores/branches.store'
 import { useTagsStore } from '~/stores/tags.store'
 import { useNotification } from '~/composables/useNotification'
+import AppSelect from '~/components/ui/AppSelect.vue'
+import type { AppSelectOption } from '~/types/ui.types'
+import type { BranchId } from '~/types/branch.types'
 import type { Task } from '~/types/task.types'
 
 const props = defineProps<{
@@ -177,9 +176,22 @@ const emit = defineEmits<{
 }>()
 
 const tagsStore = useTagsStore()
+const branchesStore = useBranchesStore()
 const { addNotification } = useNotification()
 const editing = computed(() => !!props.task)
 const createBranch = ref(false)
+const taskTypeOptions: AppSelectOption[] = [
+  { label: 'На день', value: 'TASK_DAY' },
+  { label: 'На неделю', value: 'TASK_WEEK' },
+  { label: 'На месяц', value: 'TASK_MONTH' },
+  { label: 'На год', value: 'TASK_YEAR' },
+]
+const branchOptions = computed<AppSelectOption[]>(() =>
+  branchesStore.branches.map((branch) => ({
+    label: branch.displayName,
+    value: branch.id,
+  }))
+)
 
 const form = reactive({
   title: '',
@@ -257,11 +269,11 @@ function handleSubmit() {
 }
 const showAddTagModal = ref(false)
 const newTagName = ref('')
-const newTagBranchId = ref<'FIN' | 'BODY' | 'MIND' | 'LDR'>('FIN')
+const newTagBranchId = ref<BranchId | ''>('')
 
 function openAddTagModal() {
   newTagName.value = ''
-  newTagBranchId.value = 'FIN'
+  newTagBranchId.value = branchesStore.branches[0]?.id || ''
   showAddTagModal.value = true
 }
 
@@ -271,6 +283,11 @@ function closeAddTagModal() {
 
 function createTag() {
   if (!newTagName.value.trim()) return
+  if (!newTagBranchId.value || !branchesStore.branches.some((branch) => branch.id === newTagBranchId.value)) {
+    addNotification({ type: 'warning', message: 'Сначала создайте ветку для тега' })
+    return
+  }
+
   let name = newTagName.value.trim()
   if (!name.startsWith('#')) name = '#' + name
 

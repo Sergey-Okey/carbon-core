@@ -30,12 +30,12 @@
         </div>
         <div class="form-group">
           <label>Ветка</label>
-          <select v-model="form.branchId">
-            <option value="FIN">Финансы</option>
-            <option value="BODY">Тело</option>
-            <option value="MIND">Интеллект</option>
-            <option value="LDR">Лидерство</option>
-          </select>
+          <AppSelect
+            v-model="form.branchId"
+            :options="branchOptions"
+            :disabled="branchOptions.length === 0"
+            placeholder="Сначала создайте ветку"
+          />
         </div>
         <div class="form-group">
           <label>XP награда</label>
@@ -52,7 +52,9 @@
         </div>
         <div class="form-actions">
           <button type="button" @click="emit('close')">Отмена</button>
-          <button type="submit" class="primary">Создать</button>
+          <button type="submit" class="primary" :disabled="branchOptions.length === 0">
+            Создать
+          </button>
         </div>
       </form>
     </GlassCard>
@@ -60,11 +62,22 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import GlassCard from '~/components/base/GlassCard.vue'
+import AppSelect from '~/components/ui/AppSelect.vue'
+import { useBranchesStore } from '~/stores/branches.store'
+import type { AppSelectOption } from '~/types/ui.types'
 import type { QuestType, BranchId } from '~/types/quest.types'
 
 const emit = defineEmits<{ (e: 'close'): void; (e: 'save', data: Omit<Quest, 'done' | 'createdAt'>): void }>()
+
+const branchesStore = useBranchesStore()
+const branchOptions = computed<AppSelectOption[]>(() =>
+  branchesStore.branches.map((branch) => ({
+    label: branch.displayName,
+    value: branch.id,
+  }))
+)
 
 const form = reactive({
   title: '',
@@ -75,7 +88,18 @@ const form = reactive({
   goldReward: undefined as number | undefined,
 })
 
+watch(
+  () => branchesStore.branches.map((branch) => branch.id),
+  (branchIds) => {
+    if (!branchIds.includes(form.branchId)) {
+      form.branchId = (branchIds[0] || '') as BranchId
+    }
+  },
+  { immediate: true }
+)
+
 function handleSubmit() {
+  if (!form.branchId || !branchesStore.branches.some((branch) => branch.id === form.branchId)) return
   emit('save', { ...form })
 }
 </script>

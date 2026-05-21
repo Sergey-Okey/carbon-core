@@ -33,16 +33,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { HelpCircle, Plus, UserCircle } from 'lucide-vue-next'
-import { useNotification } from '~/composables/useNotification'
+import { useTaskActions } from '~/composables/useTaskActions'
 import TaskForm from '~/components/task/TaskForm.vue'
-import { useTasksStore } from '~/stores/tasks.store'
-import { useBranchesStore } from '~/stores/branches.store'
 import { useUserStore } from '~/stores/user.store'
 
 const userStore = useUserStore()
-const tasksStore = useTasksStore()
-const branchesStore = useBranchesStore()
-const { addNotification } = useNotification()
+const { saveTask } = useTaskActions()
 const showTaskForm = ref(false)
 
 function openTaskForm() {
@@ -58,33 +54,8 @@ function openOnboarding() {
 }
 
 function handleTaskSave(taskData: any) {
-  const { createBranch, ...cleanTaskData } = taskData
-  const result = tasksStore.addTask(cleanTaskData)
-
-  if (result) {
-    if (createBranch && result.type !== 'HABIT') {
-      branchesStore.addBranch(result.title, 'help-circle', result.description || '', [result.id])
-      addNotification({
-        type: 'success',
-        message: `Ветка «${result.title}» создана в доске`,
-      })
-    } else {
-      addNotification({
-        type: 'success',
-        message:
-          result.type === 'HABIT'
-            ? `Привычка «${result.title}» добавлена`
-            : `«${result.title}» добавлено`,
-      })
-    }
-    showTaskForm.value = false
-    return
-  }
-
-  addNotification({
-    type: 'warning',
-    message: 'Лимит задач на этот период исчерпан',
-  })
+  const saved = saveTask(taskData)
+  if (saved) showTaskForm.value = false
 }
 
 </script>

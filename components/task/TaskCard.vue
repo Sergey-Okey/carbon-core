@@ -1,43 +1,48 @@
 <template>
   <GlassCard
     class="task-card"
-    :class="{ completed: task.done, overdue: isOverdue }"
+    :class="{ completed: isCompleted, overdue: isOverdue }"
   >
     <div class="task-header">
-      <div class="tags">
-        <span
-          v-for="tag in taskTags"
-          :key="tag.id"
-          class="tag"
-          :title="tag.name"
-        >
-          {{ tag.name }}
-        </span>
-      </div>
+      <h4>{{ task.title }}</h4>
       <span class="task-type" :class="task.type">{{ typeLabel }}</span>
     </div>
-    <h4>{{ task.title }}</h4>
+
     <p v-if="task.description">{{ task.description }}</p>
+
     <div class="task-footer">
-      <div v-if="task.type !== 'HABIT' && task.targetDate" class="due-date">
-        <Calendar :size="14" />
-        {{ formattedDate }}
+      <div class="task-meta">
+        <div v-if="task.type !== 'HABIT' && task.targetDate" class="due-date">
+          <Calendar :size="14" />
+          {{ formattedDate }}
+        </div>
+        <div v-if="taskTags.length" class="tags">
+          <span
+            v-for="tag in taskTags"
+            :key="tag.id"
+            class="tag"
+            :title="tag.name"
+          >
+            {{ tag.name }}
+          </span>
+        </div>
       </div>
       <div class="actions">
         <button
           class="complete-btn"
-          :class="{ done: task.done }"
+          :class="{ done: isCompleted }"
           @click="handleToggle"
           :disabled="disableToggle || (task.type !== 'HABIT' && task.done)"
+          title="Выполнить"
         >
-          <CheckCircle v-if="task.done" :size="22" />
+          <CheckCircle v-if="isCompleted" :size="22" />
           <Circle v-else :size="22" />
         </button>
-        <button class="delete-btn" @click.stop="handleDelete">
-          <Trash2 :size="18" />
-        </button>
-        <button class="edit-btn" @click.stop="emit('edit', task)">
+        <button class="edit-btn" title="Редактировать" @click.stop="emit('edit', task)">
           <Edit :size="18" />
+        </button>
+        <button class="delete-btn" title="Удалить" @click.stop="handleDelete">
+          <Trash2 :size="18" />
         </button>
       </div>
     </div>
@@ -84,8 +89,15 @@ const formattedDate = computed(() => {
   return d.toLocaleDateString('ru', { day: 'numeric', month: 'short' })
 })
 
+const isCompleted = computed(() => {
+  if (props.task.done) return true
+  if (props.task.type !== 'HABIT' || !props.task.lastCompletedAt) return false
+  return new Date(props.task.lastCompletedAt).toISOString().split('T')[0] ===
+    new Date().toISOString().split('T')[0]
+})
+
 const isOverdue = computed(() => {
-  if (props.task.done) return false
+  if (isCompleted.value) return false
   if (!props.task.targetDate) return false
   return props.task.targetDate < new Date().toISOString().split('T')[0]
 })
@@ -117,7 +129,9 @@ async function handleDelete() {
 
 <style scoped lang="scss">
 .task-card {
-  padding: 14px;
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
   background: color-mix(in srgb, var(--surface) 74%, transparent);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
@@ -135,26 +149,63 @@ async function handleDelete() {
   }
 
   &.completed {
-    filter: grayscale(1);
-    opacity: 0.62;
+    background: color-mix(in srgb, var(--surface) 58%, transparent);
+    opacity: 0.7;
+
+    h4 {
+      text-decoration: line-through;
+      text-decoration-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    }
   }
 
   &.overdue {
-    border-left: 4px solid var(--error);
+    &::before {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: var(--error);
+      content: '';
+    }
   }
 
   .task-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    gap: 10px;
+    align-items: flex-start;
+    gap: 12px;
     margin-bottom: 10px;
+  }
+
+  h4 {
+    min-width: 0;
+    margin: 0;
+    color: var(--accent);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
+  p {
+    margin: 0 0 14px;
+    color: var(--dim);
+    font-size: 0.86rem;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+
+  .task-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-width: 0;
   }
 
   .tags {
     display: flex;
-    gap: 4px;
     flex-wrap: wrap;
+    gap: 4px;
   }
 
   .tag {
@@ -167,6 +218,7 @@ async function handleDelete() {
   }
 
   .task-type {
+    flex-shrink: 0;
     font-size: 0.7rem;
     padding: 4px 8px;
     border-radius: 12px;
@@ -182,21 +234,6 @@ async function handleDelete() {
     }
   }
 
-  h4 {
-    margin: 0 0 5px;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--accent);
-    word-break: break-word;
-  }
-
-  p {
-    font-size: 0.85rem;
-    color: var(--dim);
-    margin-bottom: 12px;
-    word-break: break-word;
-  }
-
   .task-footer {
     display: flex;
     justify-content: space-between;
@@ -209,13 +246,16 @@ async function handleDelete() {
     display: flex;
     align-items: center;
     gap: 4px;
+    min-height: 24px;
     font-size: 0.8rem;
     color: var(--dim);
+    white-space: nowrap;
   }
 
   .actions {
     display: flex;
     gap: 4px;
+    flex-shrink: 0;
     margin-left: auto;
   }
 
@@ -269,10 +309,6 @@ async function handleDelete() {
   .task-card {
     padding: 12px;
 
-    .task-header {
-      align-items: flex-start;
-    }
-
     .task-type {
       align-self: flex-start;
     }
@@ -280,6 +316,7 @@ async function handleDelete() {
     .task-footer {
       align-items: flex-start;
       flex-direction: column;
+      gap: 10px;
     }
 
     .actions {

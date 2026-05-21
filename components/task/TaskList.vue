@@ -1,14 +1,23 @@
 <template>
   <div class="task-list">
     <div class="list-header">
-      <div class="title-wrapper">
-        <h3>{{ title }}</h3>
-        <div v-if="taskType !== 'HABITS' && !hideRuleHint" class="info-badge" :title="ruleHint">
-          <Info :size="14" />
-          <span class="tooltip">{{ ruleHint }}</span>
+      <div class="title-group">
+        <div class="title-wrapper">
+          <h3>{{ title }}</h3>
+          <div v-if="taskType !== 'HABITS' && !hideRuleHint" class="info-badge" :title="ruleHint">
+            <Info :size="14" />
+            <span class="tooltip">{{ ruleHint }}</span>
+          </div>
         </div>
+        <span class="list-hint">{{ listHint }}</span>
       </div>
-      <button v-if="!hideAdd" class="add-btn" @click="handleAddClick">
+      <button
+        v-if="!hideAdd"
+        class="add-btn"
+        :class="{ limited: isAddLimited }"
+        :title="addButtonTitle"
+        @click="handleAddClick"
+      >
         <Plus :size="20" />
       </button>
     </div>
@@ -41,8 +50,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useTasksStore } from '~/stores/tasks.store'
-import { useBranchesStore } from '~/stores/branches.store'
 import { useNotification } from '~/composables/useNotification'
+import { useTaskActions } from '~/composables/useTaskActions'
 import TaskCard from './TaskCard.vue'
 import TaskForm from './TaskForm.vue'
 import { Plus, Info } from 'lucide-vue-next'
@@ -66,8 +75,8 @@ const emit = defineEmits<{
 }>()
 
 const tasksStore = useTasksStore()
-const branchesStore = useBranchesStore()
 const { addNotification } = useNotification()
+const { saveTask, toggleTask, removeTask } = useTaskActions()
 const showForm = ref(false)
 const editingTask = ref<Task | undefined>(undefined)
 
@@ -94,6 +103,27 @@ const emptyMessage = computed(() => {
   if (props.taskType === 'HABITS') return 'Нет привычек. Добавьте первую.'
   return 'Нет активных задач. Можно добавить до 3.'
 })
+
+const listHint = computed(() => {
+  if (props.hideAdd && props.hideRuleHint) {
+    return `${tasks.value.length} завершено`
+  }
+
+  if (props.taskType === 'HABITS') {
+    return tasks.value.length === 1 ? '1 привычка' : `${tasks.value.length} привычек`
+  }
+
+  return `${tasks.value.length} из 3 активных`
+})
+
+const isAddLimited = computed(() => {
+  const type = props.defaultType || (props.taskType as TaskType)
+  return props.taskType !== 'HABITS' && !tasksStore.canAddTask(type)
+})
+
+const addButtonTitle = computed(() =>
+  isAddLimited.value ? 'Завершите одну задачу, чтобы добавить новую' : 'Добавить'
+)
 
 function handleAddClick() {
   const type = props.defaultType || (props.taskType as TaskType)
@@ -132,11 +162,11 @@ function handleEdit(task: Task) {
 }
 
 function handleToggle(taskId: string) {
-  tasksStore.completeTask(taskId)
+  toggleTask(taskId)
 }
 
 function handleDelete(taskId: string) {
-  tasksStore.deleteTask(taskId)
+  removeTask(taskId)
 }
 
 function closeForm() {
@@ -145,48 +175,11 @@ function closeForm() {
 }
 
 function handleSave(taskData: any) {
-  const { createBranch, ...cleanTaskData } = taskData
-
-  if (editingTask.value) {
-    tasksStore.updateTask(editingTask.value.id, cleanTaskData)
-    addNotification({
-      type: 'success',
-      message: 'Задача обновлена',
-    })
-    closeForm()
-    return
-  }
-
-  const result = tasksStore.addTask({
-    ...cleanTaskData,
-    type: props.defaultType || (props.taskType as TaskType),
+  const saved = saveTask(taskData, {
+    editingTask: editingTask.value,
+    fallbackType: props.defaultType || (props.taskType as TaskType),
   })
-
-  if (!result) {
-    addNotification({
-      type: 'error',
-      message: 'Не удалось добавить задачу',
-    })
-    return
-  }
-
-  if (createBranch && result.type !== 'HABIT') {
-    branchesStore.addBranch(result.title, 'help-circle', result.description || '', [result.id])
-    addNotification({
-      type: 'success',
-      message: `Ветка «${result.title}» создана в доске`,
-    })
-  } else {
-    addNotification({
-      type: 'success',
-      message:
-        result.type === 'HABIT'
-          ? `Привычка «${result.title}» добавлена`
-          : `«${result.title}» добавлено`,
-    })
-  }
-
-  closeForm()
+  if (saved) closeForm()
 }
 </script>
 
@@ -197,9 +190,14 @@ function handleSave(taskData: any) {
   .list-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 12px;
     min-height: 44px;
     margin-bottom: 16px;
+  }
+
+  .title-group {
+    min-width: 0;
   }
 
   .title-wrapper {
@@ -213,6 +211,14 @@ function handleSave(taskData: any) {
     font-size: 1.1rem;
     color: var(--accent);
     letter-spacing: -0.01em;
+  }
+
+  .list-hint {
+    display: block;
+    margin-top: 3px;
+    color: var(--dim);
+    font-size: 0.78rem;
+    line-height: 1.3;
   }
 
   .info-badge {
@@ -280,6 +286,12 @@ function handleSave(taskData: any) {
     &:active {
       transform: scale(0.96);
     }
+
+    &.limited {
+      color: var(--dim);
+      border-style: dashed;
+      box-shadow: none;
+    }
   }
 
   .tasks {
@@ -302,17 +314,19 @@ function handleSave(taskData: any) {
   /* Анимации списка */
   .task-list-enter-active,
   .task-list-leave-active {
-    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    transition:
+      opacity 0.2s cubic-bezier(0.2, 0, 0, 1),
+      transform 0.2s cubic-bezier(0.2, 0, 0, 1);
   }
 
   .task-list-enter-from {
     opacity: 0;
-    transform: translateX(-16px);
+    transform: translateY(8px);
   }
 
   .task-list-leave-to {
     opacity: 0;
-    transform: translateX(16px);
+    transform: translateY(-8px);
   }
 
   .task-list-move {

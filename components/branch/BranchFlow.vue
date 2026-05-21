@@ -613,7 +613,7 @@ watch(
 <style scoped lang="scss">
 .branch-flow-wrapper {
   width: 100%;
-  height: 110%;
+  height: 100%;
   border: 1px solid var(--border);
   border-radius: var(--border-radius-lg);
   background: var(--bg);
