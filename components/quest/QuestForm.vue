@@ -1,69 +1,72 @@
 <template>
-  <div class="modal-overlay" @click.self="emit('close')">
-    <GlassCard class="modal">
-      <h3>Новый квест</h3>
-      <form @submit.prevent="handleSubmit">
-        <div class="form-group">
-          <label>Название</label>
-          <input v-model="form.title" required />
+  <AppModal title="Новый квест" as-form @close="emit('close')" @submit="handleSubmit">
+    <div class="modal-form">
+      <AppFormField label="Название">
+        <AppInput v-model="form.title" required />
+      </AppFormField>
+
+      <AppFormField label="Описание">
+        <AppInput v-model="form.description" placeholder="Опционально" />
+      </AppFormField>
+
+      <AppFormField label="Тип">
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" value="DAILY" v-model="form.type" />
+            <span>Ежедневный</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" value="HABIT" v-model="form.type" />
+            <span>Привычка</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" value="EPIC" v-model="form.type" />
+            <span>Эпический</span>
+          </label>
         </div>
-        <div class="form-group">
-          <label>Описание (опционально)</label>
-          <input v-model="form.description" />
-        </div>
-        <div class="form-group">
-          <label>Тип</label>
-          <div class="radio-group">
-            <label
-              ><input type="radio" value="DAILY" v-model="form.type" />
-              Ежедневный</label
-            >
-            <label
-              ><input type="radio" value="HABIT" v-model="form.type" />
-              Привычка</label
-            >
-            <label
-              ><input type="radio" value="EPIC" v-model="form.type" />
-              Эпический</label
-            >
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Ветка</label>
-          <AppSelect
-            v-model="form.branchId"
-            :options="branchOptions"
-            :disabled="branchOptions.length === 0"
-            placeholder="Сначала создайте ветку"
-          />
-        </div>
-        <div class="form-group">
-          <label>XP награда</label>
-          <input
-            type="number"
-            v-model.number="form.xpReward"
-            min="1"
-            required
-          />
-        </div>
-        <div class="form-group">
-          <label>Золото (по умолчанию XP * 0.1)</label>
-          <input type="number" v-model.number="form.goldReward" min="0" />
-        </div>
-        <div class="form-actions">
-          <button type="button" @click="emit('close')">Отмена</button>
-          <button type="submit" class="primary" :disabled="branchOptions.length === 0">
-            Создать
-          </button>
-        </div>
-      </form>
-    </GlassCard>
-  </div>
+      </AppFormField>
+
+      <AppFormField label="Ветка">
+        <AppSelect
+          v-model="form.branchId"
+          :options="branchOptions"
+          :disabled="branchOptions.length === 0"
+          placeholder="Сначала создайте ветку"
+        />
+      </AppFormField>
+
+      <div class="form-row">
+        <AppFormField label="XP награда">
+          <AppInput v-model="form.xpReward" type="number" min="1" required />
+        </AppFormField>
+
+        <AppFormField label="Золото">
+          <AppInput v-model="form.goldReward" type="number" min="0" />
+        </AppFormField>
+      </div>
+    </div>
+
+    <template #footer>
+      <div class="modal-actions">
+        <AppButton variant="secondary" @click="emit('close')">Отмена</AppButton>
+        <AppButton
+          type="submit"
+          variant="primary"
+          :disabled="branchOptions.length === 0"
+        >
+          Создать
+        </AppButton>
+      </div>
+    </template>
+  </AppModal>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue'
-import GlassCard from '~/components/base/GlassCard.vue'
+import AppButton from '~/components/ui/AppButton.vue'
+import AppFormField from '~/components/ui/AppFormField.vue'
+import AppInput from '~/components/ui/AppInput.vue'
+import AppModal from '~/components/ui/AppModal.vue'
 import AppSelect from '~/components/ui/AppSelect.vue'
 import { useBranchesStore } from '~/stores/branches.store'
 import type { AppSelectOption } from '~/types/ui.types'
@@ -105,78 +108,64 @@ function handleSubmit() {
 </script>
 
 <style scoped lang="scss">
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: color-mix(in srgb, var(--bg) 70%, transparent);
-  backdrop-filter: blur(4px);
+.modal-form {
   display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.radio-option {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
-}
-.modal {
-  width: 100%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-md);
+  background: var(--surface);
   color: var(--accent);
-}
-.form-group {
-  margin-bottom: 20px;
-  label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 0.9rem;
-    color: var(--dim);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition:
+    background var(--transition-standard),
+    border-color var(--transition-standard);
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
   }
-  input,
-  select {
-    width: 100%;
-    padding: 10px 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-sm);
-    color: var(--accent);
-    &:focus {
-      border-color: var(--accent);
-      outline: none;
-    }
-  }
-  .radio-group {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--accent);
-      cursor: pointer;
-    }
+
+  input {
+    accent-color: var(--accent);
   }
 }
-.form-actions {
+
+.modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  button {
-    padding: 10px 20px;
-    border-radius: var(--border-radius-sm);
-    background: var(--surface);
-    color: var(--accent);
-    &:hover {
-      background: var(--border);
-    }
-    &.primary {
-      background: var(--accent);
-      color: var(--bg);
-      font-weight: 500;
-      &:hover {
-        opacity: 0.9;
-      }
-    }
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
   }
 }
 </style>

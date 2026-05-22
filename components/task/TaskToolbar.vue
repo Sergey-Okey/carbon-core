@@ -4,9 +4,9 @@
       <label for="task-search">Поиск</label>
       <div class="control-wrapper">
         <Search :size="16" class="control-icon" />
-        <input
+        <AppInput
           id="task-search"
-          v-model.trim="searchModel"
+          v-model="searchModel"
           type="search"
           placeholder="Название или описание"
         />
@@ -47,6 +47,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Search, Tags } from 'lucide-vue-next'
+import AppInput from '~/components/ui/AppInput.vue'
 import AppSelect from '~/components/ui/AppSelect.vue'
 import type { AppSelectOption } from '~/types/ui.types'
 
@@ -73,7 +74,7 @@ const viewOptions: { label: string; value: TaskView }[] = [
 
 const searchModel = computed({
   get: () => props.search,
-  set: (value: string) => emit('update:search', value),
+  set: (value: string) => emit('update:search', value.trim()),
 })
 
 const tagModel = computed({
@@ -126,35 +127,9 @@ label,
   display: flex;
   align-items: center;
 
-  input {
-    width: 100%;
-    height: 40px;
-    padding: 0 12px 0 34px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-md);
-    color: var(--accent);
+  :deep(.app-input) {
+    padding-left: 34px;
     font-size: 0.9rem;
-    transition:
-      border-color var(--transition-standard),
-      box-shadow var(--transition-standard),
-      background var(--transition-standard);
-
-    &:hover {
-      border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-      background: color-mix(in srgb, var(--surface) 92%, transparent);
-    }
-
-    &:focus {
-      border-color: var(--accent);
-      outline: none;
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 14%, transparent);
-    }
-
-    &::placeholder {
-      color: var(--dim);
-      opacity: 0.7;
-    }
   }
 }
 
@@ -179,7 +154,7 @@ label,
     margin: 0;
     padding: 0 8px;
     border: none;
-    border-radius: calc(var(--border-radius-sm) - 2px);
+    border-radius: var(--border-radius-sm);
     background: transparent;
     color: var(--dim);
     font-size: 0.85rem;

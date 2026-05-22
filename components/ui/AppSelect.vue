@@ -318,13 +318,13 @@ onBeforeUnmount(() => {
     background var(--transition-standard),
     color var(--transition-standard);
 
-.option-label {
+  .option-label {
     flex: 1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
+  }
 
   &:disabled {
     cursor: not-allowed;

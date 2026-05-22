@@ -399,7 +399,7 @@ function alignLayout() {
 function handleKeyDown(event: KeyboardEvent) {
   const target = event.target as HTMLElement | null
   const isTyping =
-    target?.closest('input, textarea, select, [contenteditable="true"], .modal-overlay')
+    target?.closest('input, textarea, select, [contenteditable="true"], .app-modal-overlay')
 
   if (isTyping) return
 
