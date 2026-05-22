@@ -140,8 +140,7 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
 
   @include desktop {
     padding-bottom: 0;
-    height: 100vh;
-    overflow-y: auto;
+    min-height: 100%;
   }
 
   &.is-board {
@@ -153,11 +152,18 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
   }
 }
 
+.dashboard-section {
+  animation: page-block-in 380ms ease-out both;
+
+  &:nth-child(2) {
+    animation-delay: 70ms;
+  }
+}
+
 .content-section {
   min-height: 400px;
   @include desktop {
-    height: calc(100vh - 180px);
-    overflow-y: auto;
+    min-height: 0;
   }
 
   &.is-board {
@@ -172,6 +178,18 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
   display: flex;
   flex-direction: column;
   gap: 24px;
+
+  > * {
+    animation: page-block-in 360ms ease-out both;
+  }
+
+  > *:nth-child(2) {
+    animation-delay: 55ms;
+  }
+
+  > *:nth-child(3) {
+    animation-delay: 95ms;
+  }
 }
 
 /* Пустое состояние задач */
@@ -196,6 +214,25 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
     color: var(--dim);
     font-size: 0.9rem;
     line-height: 1.5;
+  }
+}
+
+@keyframes page-block-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-section,
+  .tasks-dashboard > * {
+    animation: none;
   }
 }
 

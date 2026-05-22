@@ -91,9 +91,6 @@ const viewModel = computed({
 <style scoped lang="scss">
 .tasks-toolbar {
   @include glass;
-  position: sticky;
-  top: 0;
-  z-index: 30;
   display: grid;
   grid-template-columns: minmax(220px, 1.25fr) minmax(180px, 0.85fr) minmax(292px, auto);
   gap: 20px;
