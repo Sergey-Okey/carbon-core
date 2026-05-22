@@ -30,6 +30,7 @@ withDefaults(
 
 <style scoped lang="scss">
 .app-button {
+  @include glass;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -92,18 +93,18 @@ withDefaults(
 }
 
 .variant-secondary {
-  background: transparent;
+  background: color-mix(in srgb, var(--surface) 42%, transparent);
   border-color: var(--border);
   color: var(--dim);
 
   &:hover:not(:disabled) {
-    background: var(--surface);
+    background: color-mix(in srgb, var(--surface) 64%, transparent);
     color: var(--accent);
   }
 }
 
 .variant-danger {
-  background: transparent;
+  background: color-mix(in srgb, var(--surface) 34%, transparent);
   border-color: var(--error);
   color: var(--error);
 
@@ -118,7 +119,7 @@ withDefaults(
   color: var(--dim);
 
   &:hover:not(:disabled) {
-    background: var(--surface);
+    background: color-mix(in srgb, var(--surface) 60%, transparent);
     color: var(--accent);
   }
 }

@@ -10,7 +10,7 @@
           <component
             :is="asForm ? 'form' : 'div'"
             class="app-modal"
-            :class="[`size-${size}`]"
+            :class="[`size-${size}`, { 'allow-overflow': allowOverflow }]"
             @submit.prevent="emit('submit')"
             @keydown.stop
           >
@@ -30,7 +30,7 @@
               </AppButton>
             </header>
 
-            <section class="app-modal-body">
+            <section class="app-modal-body" :class="{ 'allow-overflow': allowOverflow }">
               <slot />
             </section>
 
@@ -58,6 +58,7 @@ const props = withDefaults(
     closeOnBackdrop?: boolean
     closeTitle?: string
     zIndex?: number
+    allowOverflow?: boolean
   }>(),
   {
     kicker: undefined,
@@ -66,7 +67,8 @@ const props = withDefaults(
     closable: true,
     closeOnBackdrop: true,
     closeTitle: 'Закрыть',
-    zIndex: 1000,
+    zIndex: 999,
+    allowOverflow: false,
   }
 )
 
@@ -89,7 +91,7 @@ function handleBackdrop() {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: color-mix(in srgb, var(--bg) 68%, transparent);
+  background: color-mix(in srgb, var(--bg) 46%, transparent);
   backdrop-filter: blur(12px);
 }
 
@@ -102,9 +104,13 @@ function handleBackdrop() {
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--border-radius-lg);
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  background: color-mix(in srgb, var(--surface) 38%, transparent);
   box-shadow: var(--shadow-lg);
   color: var(--accent);
+
+  &.allow-overflow {
+    overflow: visible;
+  }
 
   &.size-sm {
     width: min(100%, 390px);
@@ -126,7 +132,8 @@ function handleBackdrop() {
 
 .app-modal-header {
   border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 58%, transparent);
+  background: color-mix(in srgb, var(--surface) 28%, transparent);
+  backdrop-filter: blur(18px);
 }
 
 .title-block {
@@ -156,6 +163,10 @@ function handleBackdrop() {
   padding: 18px;
   overflow-y: auto;
 
+  &.allow-overflow {
+    overflow: visible;
+  }
+
   &::-webkit-scrollbar {
     width: 4px;
   }
@@ -172,7 +183,8 @@ function handleBackdrop() {
 
 .app-modal-footer {
   border-top: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 52%, transparent);
+  background: color-mix(in srgb, var(--surface) 28%, transparent);
+  backdrop-filter: blur(18px);
 }
 
 .modal-fade-enter-active,

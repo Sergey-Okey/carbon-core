@@ -211,26 +211,26 @@ async function handleDelete() {
   }
 
   .tag {
+    @include glass;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     max-width: 160px;
     font-size: 0.7rem;
-    padding: 3px 7px;
-    background:
-      linear-gradient(color-mix(in srgb, var(--tag-color) 8%, transparent), color-mix(in srgb, var(--tag-color) 8%, transparent)),
-      var(--surface);
-    border: 1px solid color-mix(in srgb, var(--tag-color) 32%, var(--border));
-    border-radius: 12px;
+    padding: 4px 8px;
+    background: color-mix(in srgb, var(--surface) 30%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tag-color) 28%, var(--border));
+    border-radius: var(--border-radius-sm);
     color: var(--accent);
   }
 
   .tag-dot {
     flex: 0 0 auto;
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: var(--tag-color);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--tag-color) 12%, transparent);
   }
 
   .tag-name {

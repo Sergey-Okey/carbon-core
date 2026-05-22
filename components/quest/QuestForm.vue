@@ -127,6 +127,7 @@ function handleSubmit() {
 }
 
 .radio-option {
+  @include glass;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -134,7 +135,7 @@ function handleSubmit() {
   padding: 0 12px;
   border: 1px solid var(--border);
   border-radius: var(--border-radius-md);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 42%, transparent);
   color: var(--accent);
   font-size: 0.9rem;
   cursor: pointer;

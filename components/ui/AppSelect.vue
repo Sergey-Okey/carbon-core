@@ -131,6 +131,7 @@ function updateMenuPosition() {
   const availableAbove = rect.top - gap
   const openUp = availableBelow < 180 && availableAbove > availableBelow
   const menuHeight = Math.min(maxHeight, openUp ? availableAbove : availableBelow)
+  const isInsideModal = Boolean(root.closest('.app-modal'))
 
   menuPlacement.value = openUp ? 'top' : 'bottom'
   menuStyle.value = {
@@ -138,6 +139,7 @@ function updateMenuPosition() {
     top: openUp ? `${rect.top - gap}px` : `${rect.bottom + gap}px`,
     width: `${rect.width}px`,
     maxHeight: `${Math.max(140, menuHeight)}px`,
+    zIndex: isInsideModal ? '1000' : '998',
   }
 }
 
@@ -210,6 +212,7 @@ onBeforeUnmount(() => {
 }
 
 .select-trigger {
+  @include glass;
   position: relative;
   display: flex;
   align-items: center;
@@ -218,7 +221,7 @@ onBeforeUnmount(() => {
   height: 40px;
   padding: 0 34px 0 12px;
   overflow: hidden;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 58%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--border-radius-md);
   color: var(--accent);
@@ -234,7 +237,7 @@ onBeforeUnmount(() => {
   &:hover:not(:disabled),
   .app-select.open & {
     border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    background: color-mix(in srgb, var(--surface) 68%, transparent);
   }
 
   &:focus-visible {
@@ -283,11 +286,11 @@ onBeforeUnmount(() => {
 }
 
 .select-menu {
+  @include glass;
   position: fixed;
-  z-index: 3000;
   padding: 6px;
   overflow-y: auto;
-  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--border-radius-md);
   box-shadow: var(--shadow-lg);

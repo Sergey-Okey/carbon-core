@@ -363,12 +363,13 @@ function deleteTag(tagId: string) {
   }
 
   .checkmark {
+    @include glass;
     position: relative;
     display: inline-block;
     width: 20px;
     height: 20px;
     flex-shrink: 0;
-    background: var(--surface);
+    background: color-mix(in srgb, var(--surface) 42%, transparent);
     border: 2px solid var(--border);
     border-radius: var(--border-radius-sm);
     transition: all var(--transition-standard);
@@ -409,16 +410,16 @@ function deleteTag(tagId: string) {
   }
 
   .tag-btn {
+    @include glass;
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    min-height: 34px;
-    padding: 7px 11px;
-    background:
-      linear-gradient(color-mix(in srgb, var(--tag-color) 8%, transparent), color-mix(in srgb, var(--tag-color) 8%, transparent)),
-      var(--surface);
-    border: 1px solid color-mix(in srgb, var(--tag-color) 30%, var(--border));
-    border-radius: var(--border-radius-sm);
+    gap: 8px;
+    min-height: 36px;
+    padding: 7px 12px 7px 10px;
+    background: color-mix(in srgb, var(--surface) 32%, transparent);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius-md);
     color: var(--accent);
     font-size: 0.85rem;
     font-weight: 500;
@@ -426,30 +427,26 @@ function deleteTag(tagId: string) {
     cursor: pointer;
 
     &:hover {
-      background:
-        linear-gradient(color-mix(in srgb, var(--tag-color) 12%, transparent), color-mix(in srgb, var(--tag-color) 12%, transparent)),
-        var(--surface);
-      border-color: color-mix(in srgb, var(--tag-color) 55%, var(--border));
+      background: color-mix(in srgb, var(--surface) 44%, transparent);
+      border-color: color-mix(in srgb, var(--tag-color) 42%, var(--border));
       color: var(--accent);
     }
 
     &.active {
-      background:
-        linear-gradient(color-mix(in srgb, var(--tag-color) 16%, transparent), color-mix(in srgb, var(--tag-color) 16%, transparent)),
-        var(--surface);
-      border-color: var(--tag-color);
+      background: color-mix(in srgb, var(--tag-color) 9%, transparent);
+      border-color: color-mix(in srgb, var(--tag-color) 72%, var(--border));
       color: var(--accent);
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--tag-color) 12%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tag-color) 18%, transparent);
     }
   }
 
   .tag-dot {
     flex: 0 0 auto;
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     background: var(--tag-color);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--tag-color) 18%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tag-color) 12%, transparent);
   }
 
   .tag-name {
@@ -460,16 +457,17 @@ function deleteTag(tagId: string) {
   }
 
   .tag-delete {
+    @include glass;
     position: absolute;
-    top: -6px;
-    right: -6px;
+    top: -7px;
+    right: -7px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
+    width: 19px;
+    height: 19px;
     border-radius: 50%;
-    background: var(--surface);
+    background: color-mix(in srgb, var(--surface) 52%, transparent);
     border: 1px solid var(--border);
     color: var(--dim);
     cursor: pointer;
@@ -484,7 +482,7 @@ function deleteTag(tagId: string) {
   }
 
   .add-tag-btn {
-    background: transparent;
+    background: color-mix(in srgb, var(--surface) 24%, transparent);
     border: 1px dashed var(--border);
     color: var(--dim);
     display: flex;
@@ -492,7 +490,7 @@ function deleteTag(tagId: string) {
     gap: 4px;
 
     &:hover {
-      background: color-mix(in srgb, var(--accent) 8%, transparent);
+      background: color-mix(in srgb, var(--accent) 7%, transparent);
       border-style: solid;
     }
   }

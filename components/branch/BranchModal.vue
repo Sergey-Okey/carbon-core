@@ -4,6 +4,7 @@
     kicker="Ветка"
     as-form
     size="md"
+    allow-overflow
     @close="emit('close')"
     @submit="handleSubmit"
   >
@@ -233,12 +234,14 @@ function handleSubmit() {
 
 .icon-section,
 .tasks-section {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
 .toggle-btn {
+  @include glass;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -247,7 +250,7 @@ function handleSubmit() {
   min-height: 42px;
   padding: 0 14px;
   color: var(--accent);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 48%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--border-radius-md);
   cursor: pointer;
@@ -277,12 +280,13 @@ function handleSubmit() {
 }
 
 .icon-option {
+  @include glass;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   aspect-ratio: 1;
   color: var(--dim);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 46%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--border-radius-md);
   cursor: pointer;
@@ -303,21 +307,33 @@ function handleSubmit() {
 }
 
 .tasks-list {
+  @include glass;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 20;
   display: flex;
   flex-direction: column;
   gap: 8px;
   max-height: 220px;
+  padding: 8px;
   overflow-y: auto;
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
 }
 
 .task-row {
+  @include glass;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
   color: var(--accent);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 48%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--border-radius-md);
   cursor: pointer;
@@ -345,7 +361,7 @@ function handleSubmit() {
   height: 18px;
   border: 1px solid var(--border);
   border-radius: var(--border-radius-sm);
-  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 52%, transparent);
 
   input:checked + & {
     background: var(--accent);
@@ -369,7 +385,7 @@ function handleSubmit() {
 .empty-list {
   padding: 12px;
   text-align: center;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 46%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--border-radius-md);
 }

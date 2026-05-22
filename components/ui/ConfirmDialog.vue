@@ -3,7 +3,6 @@
     v-if="confirmState.state.value.isOpen"
     title="Подтверждение"
     size="sm"
-    :z-index="2200"
     @close="confirmState.handleCancel"
   >
     <p class="confirm-message">{{ confirmState.state.value.message }}</p>

@@ -10,6 +10,8 @@
     :required="required"
     :disabled="disabled"
     :min="min"
+    :maxlength="maxlength"
+    :autocomplete="autocomplete"
     :rows="multiline ? rows : undefined"
     @input="handleInput"
   />
@@ -26,6 +28,8 @@ const props = withDefaults(
     disabled?: boolean
     invalid?: boolean
     min?: string | number
+    maxlength?: string | number
+    autocomplete?: string
     multiline?: boolean
     rows?: number
   }>(),
@@ -38,6 +42,8 @@ const props = withDefaults(
     disabled: false,
     invalid: false,
     min: undefined,
+    maxlength: undefined,
+    autocomplete: undefined,
     multiline: false,
     rows: 3,
   }
@@ -59,10 +65,11 @@ function handleInput(event: Event) {
 
 <style scoped lang="scss">
 .app-input {
+  @include glass;
   width: 100%;
   min-height: 40px;
   padding: 0 14px;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 58%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--border-radius-md);
   color: var(--accent);
@@ -80,7 +87,7 @@ function handleInput(event: Event) {
 
   &:hover:not(:disabled) {
     border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    background: color-mix(in srgb, var(--surface) 68%, transparent);
   }
 
   &:focus {
