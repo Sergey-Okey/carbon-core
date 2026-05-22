@@ -384,6 +384,7 @@ declare global {
   const useSwipe: typeof import('@vueuse/core').useSwipe
   const useTagsStore: typeof import('../../stores/tags.store').useTagsStore
   const useTaskActions: typeof import('../../composables/useTaskActions').useTaskActions
+  const useTaskFilters: typeof import('../../composables/useTaskFilters').useTaskFilters
   const useTasksStore: typeof import('../../stores/tasks.store').useTasksStore
   const useTemplateRef: typeof import('../../node_modules/vue').useTemplateRef
   const useTemplateRefsList: typeof import('@vueuse/core').useTemplateRefsList
@@ -452,6 +453,9 @@ declare global {
   // @ts-ignore
   export type { NotificationType, NotificationAction, Notification } from '../../composables/useNotification'
   import('../../composables/useNotification')
+  // @ts-ignore
+  export type { TaskView } from '../../composables/useTaskFilters'
+  import('../../composables/useTaskFilters')
   // @ts-ignore
   export type { BackupPayload } from '../../utils/backup'
   import('../../utils/backup')
@@ -849,6 +853,7 @@ declare module 'vue' {
     readonly useSwipe: UnwrapRef<typeof import('@vueuse/core')['useSwipe']>
     readonly useTagsStore: UnwrapRef<typeof import('../../stores/tags.store')['useTagsStore']>
     readonly useTaskActions: UnwrapRef<typeof import('../../composables/useTaskActions')['useTaskActions']>
+    readonly useTaskFilters: UnwrapRef<typeof import('../../composables/useTaskFilters')['useTaskFilters']>
     readonly useTasksStore: UnwrapRef<typeof import('../../stores/tasks.store')['useTasksStore']>
     readonly useTemplateRef: UnwrapRef<typeof import('../../node_modules/vue')['useTemplateRef']>
     readonly useTemplateRefsList: UnwrapRef<typeof import('@vueuse/core')['useTemplateRefsList']>

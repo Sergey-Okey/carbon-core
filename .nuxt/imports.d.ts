@@ -38,6 +38,7 @@ export { useLevel } from '../composables/useLevel';
 export { useLocalStorage } from '../composables/useLocalStorage';
 export { useNotification, NotificationType, NotificationAction, Notification } from '../composables/useNotification';
 export { useTaskActions } from '../composables/useTaskActions';
+export { useTaskFilters, TaskView } from '../composables/useTaskFilters';
 export { AUTO_BACKUP_KEY, buildBackupPayload, saveAutoBackup, readAutoBackup, restoreBackupPayload, BackupPayload } from '../utils/backup';
 export { getTodayDateString, isDateBeforeToday } from '../utils/dateHelpers';
 export { calculateLevel, calculateTasksForNextLevel, calculateBonusXPForMilestone } from '../utils/levelCalculator';
