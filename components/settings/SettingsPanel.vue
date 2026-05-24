@@ -1,23 +1,42 @@
 <template>
   <div class="settings-page">
-    <div class="settings-tabs">
-      <button
-        v-for="tab in tabs"
-        :key="tab.key"
-        class="tab-btn"
-        :class="{ active: activeTab === tab.key }"
-        @click="activeTab = tab.key"
-      >
-        {{ tab.label }}
-      </button>
+    <div class="settings-head">
+      <div>
+        <h2>Настройки</h2>
+        <p>Интерфейс, звуковые сигналы и локальные данные приложения.</p>
+      </div>
+      <div class="settings-status">
+        <Database :size="16" />
+        <span>Локальное хранение</span>
+      </div>
     </div>
 
-    <div class="settings-content">
-      <!-- Внешний вид -->
+    <div class="settings-layout">
+      <aside class="settings-nav" aria-label="Разделы настроек">
+        <button
+          v-for="tab in tabs"
+          :key="tab.key"
+          type="button"
+          class="nav-option"
+          :class="{ active: activeTab === tab.key }"
+          :aria-label="tab.label"
+          :title="tab.label"
+          @click="activeTab = tab.key"
+        >
+          <component :is="tab.icon" :size="18" />
+          <span class="nav-label">{{ tab.label }}</span>
+        </button>
+      </aside>
+
+      <div class="settings-content">
+      <!-- Интерфейс -->
       <section v-if="activeTab === 'appearance'" class="settings-group">
         <div class="group-header">
-          <Palette :size="22" />
-          <h3>Внешний вид</h3>
+          <div>
+            <Palette :size="22" />
+            <h3>Интерфейс</h3>
+          </div>
+          <span>{{ themeLabel }} тема</span>
         </div>
         <div class="group-body">
           <div class="setting-row">
@@ -28,15 +47,19 @@
             <div class="theme-toggle">
               <button
                 :class="['theme-option', { active: settingsStore.theme === 'dark' }]"
+                type="button"
                 @click="setTheme('dark')"
               >
                 <Moon :size="18" />
+                <span>Тёмная</span>
               </button>
               <button
                 :class="['theme-option', { active: settingsStore.theme === 'light' }]"
+                type="button"
                 @click="setTheme('light')"
               >
                 <Sun :size="18" />
+                <span>Светлая</span>
               </button>
             </div>
           </div>
@@ -55,10 +78,10 @@
                   :style="{ '--dot-color': color.value }"
                   :class="{ active: settingsStore.accentColor === color.value }"
                   :title="color.name"
+                  type="button"
                   @click="setAccentColor(color.value, color.name)"
                 />
               </div>
-              <div class="accent-preview" :style="{ backgroundColor: settingsStore.accentColor }"></div>
             </div>
           </div>
 
@@ -84,29 +107,36 @@
             </div>
             <div class="slider-container">
               <input
+                class="speed-slider"
                 type="range"
                 min="0.5"
                 max="2"
                 step="0.1"
                 :value="settingsStore.animationSpeed"
                 @input="setAnimationSpeed"
-                class="speed-slider"
               />
+              <div class="slider-labels">
+                <span>Медленно</span>
+                <span>Быстро</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Уведомления -->
+      <!-- Сигналы -->
       <section v-if="activeTab === 'notifications'" class="settings-group">
         <div class="group-header">
-          <Bell :size="22" />
-          <h3>Уведомления</h3>
+          <div>
+            <Volume2 :size="22" />
+            <h3>Сигналы</h3>
+          </div>
+          <span>{{ signalStatusLabel }}</span>
         </div>
         <div class="group-body">
           <div class="setting-row">
             <div class="setting-info">
-              <span class="label">Всплывающие сообщения</span>
+              <span class="label">Сообщения</span>
               <span class="desc">Тосты при действиях</span>
             </div>
             <label class="switch">
@@ -121,17 +151,34 @@
 
           <div class="setting-row">
             <div class="setting-info">
-              <span class="label">Звук</span>
-              <span class="desc">Короткий сигнал на события</span>
+              <span class="label">Звуковые уведомления</span>
+              <span class="desc">Короткий сигнал на важные события</span>
             </div>
             <label class="switch">
               <input
                 type="checkbox"
                 :checked="settingsStore.soundEnabled"
+                :disabled="!settingsStore.notificationsEnabled"
                 @change="toggleSound"
               />
               <span class="slider"></span>
             </label>
+          </div>
+
+          <div class="sound-check">
+            <div class="setting-info">
+              <span class="label">Проверка сигнала</span>
+              <span class="desc">Нажмите, чтобы услышать текущий звук уведомления.</span>
+            </div>
+            <button
+              class="action-btn"
+              type="button"
+              :disabled="!settingsStore.notificationsEnabled || !settingsStore.soundEnabled"
+              @click="previewSound"
+            >
+              <Volume2 :size="16" />
+              Проверить звук
+            </button>
           </div>
         </div>
       </section>
@@ -139,8 +186,11 @@
       <!-- Данные -->
       <section v-if="activeTab === 'data'" class="settings-group">
         <div class="group-header">
-          <Database :size="22" />
-          <h3>Данные</h3>
+          <div>
+            <Database :size="22" />
+            <h3>Данные</h3>
+          </div>
+          <span>{{ settingsStore.autoBackup ? 'Авто-бэкап включён' : 'Авто-бэкап отключён' }}</span>
         </div>
         <div class="group-body">
           <div class="setting-row">
@@ -158,35 +208,49 @@
             </label>
           </div>
 
-          <div v-if="settingsStore.lastBackupDate" class="backup-info">
+          <div class="backup-info">
             <Clock :size="14" />
-            Последний бэкап: {{ lastBackupText }}
+            <span>
+              {{
+                settingsStore.lastBackupDate
+                  ? `Последний бэкап: ${lastBackupText}`
+                  : 'Резервная копия ещё не создавалась'
+              }}
+            </span>
           </div>
 
           <div class="action-group">
-            <button class="action-btn" @click="createBackup">
+            <button class="action-btn" type="button" @click="createBackup">
               <Download :size="16" />
               Создать бэкап
             </button>
-            <button class="action-btn" @click="exportData">
+            <button class="action-btn" type="button" @click="exportData">
               <FileJson :size="16" />
               Экспорт JSON
             </button>
-            <button class="action-btn" @click="importData">
+            <button class="action-btn" type="button" @click="importData">
               <Upload :size="16" />
               Импорт JSON
             </button>
-            <button class="action-btn" @click="restoreAutoBackup">
+            <button class="action-btn" type="button" @click="restoreAutoBackup">
               <RotateCcw :size="16" />
               Восстановить
             </button>
-            <button class="action-btn danger" @click="resetAllData">
+          </div>
+
+          <div class="danger-zone">
+            <div class="setting-info">
+              <span class="label">Сброс данных</span>
+              <span class="desc">Удаляет профиль, задачи, прогресс и настройки.</span>
+            </div>
+            <button class="action-btn danger" type="button" @click="resetAllData">
               <Trash2 :size="16" />
               Сбросить всё
             </button>
           </div>
         </div>
       </section>
+      </div>
     </div>
   </div>
 </template>
@@ -194,7 +258,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import {
-  Bell,
   Clock,
   Database,
   Download,
@@ -205,6 +268,7 @@ import {
   Sun,
   Trash2,
   Upload,
+  Volume2,
 } from 'lucide-vue-next'
 import { useNotification } from '~/composables/useNotification'
 import { ACCENT_COLORS, useSettingsStore } from '~/stores/settings.store'
@@ -220,9 +284,9 @@ const { addNotification } = useNotification()
 const activeTab = ref<'appearance' | 'notifications' | 'data'>('appearance')
 
 const tabs = [
-  { key: 'appearance', label: 'Внешний вид' },
-  { key: 'notifications', label: 'Уведомления' },
-  { key: 'data', label: 'Данные' },
+  { key: 'appearance', label: 'Интерфейс', icon: Palette },
+  { key: 'notifications', label: 'Сигналы', icon: Volume2 },
+  { key: 'data', label: 'Данные', icon: Database },
 ]
 
 const themeLabel = computed(() =>
@@ -246,6 +310,11 @@ const animationSpeedLabel = computed(() => {
 const lastBackupText = computed(() => {
   if (!settingsStore.lastBackupDate) return ''
   return new Date(settingsStore.lastBackupDate).toLocaleString('ru-RU')
+})
+
+const signalStatusLabel = computed(() => {
+  if (!settingsStore.notificationsEnabled) return 'Отключены'
+  return settingsStore.soundEnabled ? 'Тосты и звук' : 'Только тосты'
 })
 
 function setTheme(theme: 'dark' | 'light') {
@@ -295,6 +364,10 @@ function toggleSound(event: Event) {
     type: 'info',
     message: target.checked ? 'Звук включён' : 'Звук отключён',
   })
+}
+
+function previewSound() {
+  addNotification({ type: 'success', message: 'Звуковой сигнал работает' })
 }
 
 function toggleAutoBackup(event: Event) {
@@ -390,86 +463,32 @@ function resetAllData() {
 
 <style scoped lang="scss">
 .settings-page {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
+  display: grid;
+  gap: 18px;
+  padding-bottom: 24px;
 
-.settings-tabs {
-  display: flex;
-  gap: 8px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 8px;
-}
-
-.tab-btn {
-  padding: 8px 16px;
-  border: 1px solid transparent;
-  border-radius: var(--border-radius-sm);
-  background: transparent;
-  color: var(--dim);
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-standard);
-
-  &:hover {
-    background: var(--surface);
-    color: var(--text, var(--accent));
-  }
-
-  &.active {
-    background: var(--accent);
-    color: var(--bg);
-    border-color: var(--accent);
+  @include mobile {
+    padding-bottom: 112px;
   }
 }
 
-.settings-content {
+.settings-head {
   display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.settings-group {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--border-radius-lg);
-  overflow: hidden;
-}
-
-.group-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 20px 24px 0;
-  margin-bottom: 16px;
-  color: var(--accent);
-
-  h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-
-  svg {
-    opacity: 0.7;
-  }
-}
-
-.group-body {
-  padding: 0 24px 24px;
-}
-
-.setting-row {
-  display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(var(--dim-rgb, 136, 136, 136), 0.08);
 
-  &:last-of-type {
-    border-bottom: none;
+  h2 {
+    margin: 0 0 6px;
+    color: var(--accent);
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    color: var(--dim);
+    line-height: 1.5;
   }
 
   @include mobile {
@@ -478,35 +497,233 @@ function resetAllData() {
   }
 }
 
+.settings-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-md);
+  background: var(--surface);
+  color: var(--dim);
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  svg {
+    color: var(--accent);
+  }
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+
+  @include mobile {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+.settings-nav {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+
+  @include mobile {
+    display: inline-grid;
+    grid-template-columns: repeat(3, 44px);
+    justify-content: start;
+    gap: 6px;
+    width: fit-content;
+    padding: 6px;
+    border-radius: 40px;
+  }
+}
+
+.nav-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  color: var(--dim);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-standard);
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: var(--bg);
+    color: var(--accent);
+  }
+
+  &.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  @include mobile {
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    border-radius: 50%;
+  }
+}
+
+.nav-label {
+  @include mobile {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+  }
+}
+
+.settings-content {
+  min-width: 0;
+}
+
+.settings-group {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--border);
+  color: var(--accent);
+
+  > div {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  span {
+    color: var(--dim);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  svg {
+    opacity: 0.7;
+  }
+
+  @include mobile {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 20px;
+
+    span {
+      text-align: left;
+    }
+  }
+}
+
+.group-body {
+  padding: 6px 24px 24px;
+
+  @include mobile {
+    padding: 4px 20px 22px;
+  }
+}
+
+.setting-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, auto);
+  align-items: center;
+  gap: 20px;
+  min-height: 78px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(var(--dim-rgb, 136, 136, 136), 0.08);
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  @include mobile {
+    align-items: flex-start;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    min-height: 0;
+  }
+}
+
 .setting-info {
+  min-width: 0;
+
   .label {
     display: block;
     color: var(--accent);
-    font-weight: 500;
+    font-weight: 600;
   }
 
   .desc {
-    margin-top: 2px;
+    display: block;
+    margin-top: 4px;
     color: var(--dim);
     font-size: 0.85rem;
+    line-height: 1.45;
   }
 }
 
 .theme-toggle {
   display: flex;
-  gap: 6px;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .theme-option {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  gap: 8px;
+  min-width: 112px;
+  min-height: 42px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius-md);
   background: var(--surface);
   color: var(--dim);
+  font-size: 0.88rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-standard);
 
@@ -520,24 +737,34 @@ function resetAllData() {
     border-color: var(--accent);
     color: var(--bg);
   }
+
+  @include mobile {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .accent-picker {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .color-dots {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 10px;
+
+  @include mobile {
+    justify-content: flex-start;
+  }
 }
 
 .color-dot {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   border: 2px solid transparent;
   border-radius: 50%;
@@ -556,19 +783,12 @@ function resetAllData() {
   }
 }
 
-.accent-preview {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  transition: background-color 0.2s;
-}
-
 .switch {
   position: relative;
   width: 44px;
   height: 24px;
   flex-shrink: 0;
+  justify-self: end;
 
   input {
     width: 0;
@@ -605,13 +825,26 @@ function resetAllData() {
     transform: translateX(20px);
     background: var(--bg);
   }
+
+  input:disabled + .slider {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  @include mobile {
+    justify-self: start;
+  }
 }
 
 .slider-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 120px;
+  display: grid;
+  gap: 8px;
+  min-width: 220px;
+
+  @include mobile {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 .speed-slider {
@@ -651,42 +884,69 @@ function resetAllData() {
   }
 }
 
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--dim);
+  font-size: 0.76rem;
+}
+
 .backup-info {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin: 12px 0 16px;
-  padding: 8px 12px;
+  gap: 8px;
+  margin: 12px 0 18px;
+  padding: 12px 14px;
   border: 1px solid var(--border);
-  border-radius: var(--border-radius-sm);
-  background: var(--surface);
+  border-radius: var(--border-radius-md);
+  background: var(--bg);
   color: var(--dim);
   font-size: 0.85rem;
+
+  svg {
+    flex-shrink: 0;
+    color: var(--accent);
+  }
 }
 
 .action-group {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
 }
 
 .action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 18px;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 14px;
   border: 1px solid var(--border);
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius-md);
   background: var(--surface);
   color: var(--accent);
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-standard);
 
   &:hover {
     transform: translateY(-1px);
-    background: var(--border);
+    border-color: var(--accent);
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+
+  &:disabled {
+    transform: none;
+    border-color: var(--border);
+    background: var(--surface);
+    box-shadow: none;
   }
 
   &.danger {
@@ -696,6 +956,34 @@ function resetAllData() {
     &:hover {
       background: rgba(var(--error-rgb, 255, 77, 77), 0.1);
     }
+  }
+}
+
+.sound-check {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  margin-top: 6px;
+  padding: 16px 0 0;
+  border-top: 1px solid rgba(var(--dim-rgb, 136, 136, 136), 0.08);
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.danger-zone {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+
+  @include mobile {
+    grid-template-columns: 1fr;
   }
 }
 </style>

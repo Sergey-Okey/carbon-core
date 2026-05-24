@@ -18,8 +18,8 @@
         v-for="task in tasks"
         :key="task.id"
         :task="task"
-        @toggle="tasksStore.completeTask"
-        @delete="tasksStore.deleteTask"
+        @toggle="handleToggle"
+        @delete="handleDelete"
         @edit="handleEdit"
       />
       <p v-if="tasks.length === 0" key="empty-state" class="empty">
@@ -41,6 +41,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useTasksStore } from '~/stores/tasks.store'
+import { useBranchesStore } from '~/stores/branches.store'
 import { useNotification } from '~/composables/useNotification'
 import TaskCard from './TaskCard.vue'
 import TaskForm from './TaskForm.vue'
@@ -54,6 +55,7 @@ const props = defineProps<{
 }>()
 
 const tasksStore = useTasksStore()
+const branchesStore = useBranchesStore()
 const { addNotification } = useNotification()
 const showForm = ref(false)
 const editingTask = ref<Task | undefined>(undefined)
@@ -110,6 +112,14 @@ function closeForm() {
   editingTask.value = undefined
 }
 
+function handleToggle(taskId: string) {
+  tasksStore.completeTask(taskId)
+}
+
+function handleDelete(taskId: string) {
+  tasksStore.deleteTask(taskId)
+}
+
 function handleSave(taskData: any) {
   if (editingTask.value) {
     tasksStore.updateTask(editingTask.value.id, taskData)
@@ -119,11 +129,20 @@ function handleSave(taskData: any) {
     })
     closeForm()
   } else {
+    const { createBranch, ...newTaskData } = taskData
     const result = tasksStore.addTask({
-      ...taskData,
+      ...newTaskData,
       type: props.defaultType || (props.taskType as TaskType),
     })
     if (result) {
+      if (createBranch) {
+        branchesStore.addBranch(
+          result.title,
+          'help-circle',
+          result.description || '',
+          [result.id]
+        )
+      }
       addNotification({
         type: 'success',
         message: `«${result.title}» добавлено`,

@@ -2,6 +2,8 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-04-08',
   devtools: { enabled: true },
   devServer: { host: '0.0.0.0', port: 3000 },
+  buildDir: 'C:/Users/Public/carbon-core-nuxt',
+  experimental: { appManifest: false },
   modules: [
     '@pinia/nuxt',
     '@vueuse/nuxt',

@@ -232,7 +232,11 @@ export const useTasksStore = defineStore(
 
     function deleteTask(id: string) {
       const index = tasks.value.findIndex((t) => t.id === id)
-      if (index !== -1) tasks.value.splice(index, 1)
+      if (index !== -1) {
+        tasks.value.splice(index, 1)
+        const branchesStore = useBranchesStore()
+        branchesStore.removeTaskReferences(id)
+      }
     }
 
     function updateTask(id: string, updates: Partial<Task>) {

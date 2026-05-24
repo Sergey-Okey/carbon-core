@@ -11,24 +11,27 @@
         <div class="modal-content">
           <div class="info-row">
             <span class="label">Ветка</span>
-            <span class="value">{{ branch?.displayName }}</span>
+            <span class="value">{{ branch?.displayName || 'Не выбрана' }}</span>
           </div>
           <div class="info-row">
             <span class="label">Прогресс</span>
-            <span class="value"
-              >{{ branch?.totalXP || 0 }} / {{ milestone.requiredXP }} XP</span
-            >
+            <span class="value">
+              {{ milestone.currentXP }} / {{ milestone.requiredXP }} XP
+            </span>
           </div>
           <div class="info-row">
             <span class="label">Статус</span>
-            <span class="value" :class="{ achieved: milestone.achieved }">
-              {{ milestone.achieved ? 'Достигнут' : 'В процессе' }}
+            <span
+              class="value"
+              :class="{ achieved: milestone.status === 'completed' }"
+            >
+              {{ statusLabel }}
             </span>
           </div>
-          <div v-if="milestone.sourceTaskIds.length" class="tasks-section">
+          <div v-if="milestone.taskIds.length" class="tasks-section">
             <h4>Связанные задачи</h4>
             <ul>
-              <li v-for="taskId in milestone.sourceTaskIds" :key="taskId">
+              <li v-for="taskId in milestone.taskIds" :key="taskId">
                 {{ getTaskTitle(taskId) }}
               </li>
             </ul>
@@ -44,6 +47,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { X } from 'lucide-vue-next'
 import { useTasksStore } from '~/stores/tasks.store'
 import type { Branch, Milestone } from '~/types/branch.types'
@@ -56,6 +60,12 @@ const props = defineProps<{
 defineEmits(['close'])
 
 const tasksStore = useTasksStore()
+
+const statusLabel = computed(() => {
+  if (props.milestone.status === 'completed') return 'Достигнут'
+  if (props.milestone.status === 'active') return 'В процессе'
+  return 'Ожидает'
+})
 
 function getTaskTitle(taskId: string): string {
   const task = tasksStore.tasks.find((t) => t.id === taskId)

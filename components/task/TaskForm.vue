@@ -162,8 +162,6 @@
 import { reactive, watch, ref, computed } from 'vue'
 import { X, ChevronDown, Calendar, Plus } from 'lucide-vue-next'
 import { useTagsStore } from '~/stores/tags.store'
-import { useTasksStore } from '~/stores/tasks.store'
-import { useBranchesStore } from '~/stores/branches.store'
 import { useNotification } from '~/composables/useNotification'
 import type { Task } from '~/types/task.types'
 
@@ -179,8 +177,6 @@ const emit = defineEmits<{
 }>()
 
 const tagsStore = useTagsStore()
-const tasksStore = useTasksStore()
-const branchesStore = useBranchesStore()
 const { addNotification } = useNotification()
 const editing = computed(() => !!props.task)
 const createBranch = ref(false)
@@ -242,6 +238,13 @@ function toggleTag(tagId: string) {
 }
 
 function handleSubmit() {
+  emit('save', {
+    ...form,
+    createBranch: !editing.value && createBranch.value,
+  })
+  return
+  /*
+
   if (editing.value) {
     emit('save', { ...form })
   } else {
@@ -277,6 +280,7 @@ function handleSubmit() {
       })
     }
   }
+  */
 }
 
 const showAddTagModal = ref(false)

@@ -13,23 +13,23 @@
       </button>
       <div class="divider"></div>
 
-      <!-- Группа 2: выравнивание -->
-      <button @click="$emit('align-layout')" title="Выровнить положение (сетка + авто-раскладка)">
+      <!-- Группа 2: выравнивание (только по кнопке) -->
+      <button @click="$emit('align-layout')" title="Выровнить положение">
         <RefreshCw :size="18" />
       </button>
       <div class="divider"></div>
 
       <!-- Группа 3: создание элементов -->
-      <button 
-        @click="$emit('add-branch')" 
-        title="Добавить ветку" 
+      <button
+        @click="$emit('add-branch')"
+        title="Добавить ветку"
         :disabled="!canAddBranch"
       >
         <Plus :size="18" />
       </button>
-      <button 
-        @click="$emit('add-milestone')" 
-        title="Добавить этап" 
+      <button
+        @click="$emit('add-milestone')"
+        title="Добавить этап"
         :disabled="!canAddMilestone"
       >
         <PlusCircle :size="18" />
@@ -38,14 +38,22 @@
 
       <!-- Группа 4: действия с выбранным элементом -->
       <button
-        v-if="hasSelection"
+        v-if="selectedEdgeId"
+        @click="$emit('delete-selected')"
+        title="Разорвать связь"
+        class="unlink-btn"
+      >
+        <Unlink :size="18" />
+      </button>
+      <button
+        v-else-if="selectedNodeId"
         @click="$emit('delete-selected')"
         title="Удалить выбранное"
         class="delete-btn"
       >
         <Trash2 :size="18" />
       </button>
-      <div v-if="hasSelection" class="divider"></div>
+      <div v-if="selectedEdgeId || selectedNodeId" class="divider"></div>
 
       <!-- Группа 5: история -->
       <button @click="$emit('undo')" title="Отменить" :disabled="!canUndo">
@@ -67,6 +75,7 @@ import {
   Plus,
   PlusCircle,
   Trash2,
+  Unlink,
   Undo,
   Redo,
   RefreshCw,
@@ -77,7 +86,8 @@ defineProps<{
   canRedo?: boolean
   canAddBranch?: boolean
   canAddMilestone?: boolean
-  hasSelection?: boolean
+  selectedNodeId?: string | null
+  selectedEdgeId?: string | null
 }>()
 
 defineEmits([
@@ -145,7 +155,13 @@ defineEmits([
     color: var(--error);
     &:hover {
       background: transparent;
-      transform: scale(1.08);
+    }
+  }
+
+  .unlink-btn {
+    color: var(--warning);
+    &:hover {
+      background: transparent;
     }
   }
 

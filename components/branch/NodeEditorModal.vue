@@ -101,7 +101,9 @@ const { confirm } = useConfirm()
 const tasksExpanded = ref(false)
 
 const activeTasks = computed(() => {
-  return tasksStore.tasks.filter((t) => !t.done)
+  return tasksStore.tasks.filter(
+    (t) => !t.done || form.taskIds.includes(t.id)
+  )
 })
 
 const form = reactive({

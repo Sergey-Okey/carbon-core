@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard">
     <section
-      v-if="uiStore.activeNav !== 'board'"
+      v-if="uiStore.activeNav !== 'board' && uiStore.activeNav !== 'settings'"
       class="dashboard-section stats"
     >
       <StatsOverview />

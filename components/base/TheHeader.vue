@@ -36,10 +36,12 @@ import { HelpCircle, Plus, UserCircle } from 'lucide-vue-next'
 import { useNotification } from '~/composables/useNotification'
 import TaskForm from '~/components/task/TaskForm.vue'
 import { useTasksStore } from '~/stores/tasks.store'
+import { useBranchesStore } from '~/stores/branches.store'
 import { useUserStore } from '~/stores/user.store'
 
 const userStore = useUserStore()
 const tasksStore = useTasksStore()
+const branchesStore = useBranchesStore()
 const { addNotification } = useNotification()
 const showTaskForm = ref(false)
 
@@ -56,8 +58,17 @@ function openOnboarding() {
 }
 
 function handleTaskSave(taskData: any) {
-  const result = tasksStore.addTask(taskData)
+  const { createBranch, ...newTaskData } = taskData
+  const result = tasksStore.addTask(newTaskData)
   if (result) {
+    if (createBranch) {
+      branchesStore.addBranch(
+        result.title,
+        'help-circle',
+        result.description || '',
+        [result.id]
+      )
+    }
     addNotification({
       type: 'success',
       message: `"${result.title}" добавлено`,
