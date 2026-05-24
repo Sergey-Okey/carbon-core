@@ -30,6 +30,7 @@ export function useTaskActions() {
       ...cleanTaskData,
       type: (cleanTaskData.type as TaskType) || options.fallbackType || 'TASK_DAY',
       tagIds: cleanTaskData.tagIds || [],
+      tags: cleanTaskData.tags || [],
     } as Omit<Task, 'id' | 'createdAt' | 'done'>)
 
     if (!result) {

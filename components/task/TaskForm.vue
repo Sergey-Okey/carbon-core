@@ -1,7 +1,7 @@
-<template>
+﻿<template>
   <AppModal :title="modalTitle" as-form @close="emit('close')" @submit="handleSubmit">
     <div class="modal-form">
-      <AppFormField label="Название">
+      <AppFormField label="РќР°Р·РІР°РЅРёРµ">
         <AppInput
           v-model="form.title"
           :placeholder="titlePlaceholder"
@@ -9,19 +9,19 @@
         />
       </AppFormField>
 
-      <AppFormField label="Описание">
+      <AppFormField label="РћРїРёСЃР°РЅРёРµ">
         <AppInput
           v-model="form.description"
-          placeholder="Дополнительные детали (необязательно)"
+          placeholder="Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ РґРµС‚Р°Р»Рё (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)"
         />
       </AppFormField>
 
       <div v-if="!hideType && form.type !== 'HABIT'" class="form-row">
-        <AppFormField label="Тип">
+        <AppFormField label="РўРёРї">
           <AppSelect v-model="form.type" :options="taskTypeOptions" />
         </AppFormField>
 
-        <AppFormField label="Срок">
+        <AppFormField label="РЎСЂРѕРє">
           <div class="date-wrapper">
             <AppInput v-model="form.targetDate" type="date" />
             <Calendar :size="16" class="date-icon" />
@@ -29,17 +29,15 @@
         </AppFormField>
       </div>
 
-      <AppFormField label="Теги">
+      <AppFormField label="РўРµРіРё">
         <div class="tags-cloud">
-          <template v-for="tag in visibleTags" :key="tag.id">
+          <template v-for="tag in form.tags" :key="tag.id">
             <div class="tag-wrapper">
               <button
                 type="button"
-                class="tag-btn"
-                :class="{ active: form.tagIds.includes(tag.id) }"
+                class="tag-btn active"
                 :style="{ '--tag-color': tag.color || 'var(--accent)' }"
-                :aria-pressed="form.tagIds.includes(tag.id)"
-                @click="toggleTag(tag.id)"
+                aria-pressed="true"
               >
                 <span class="tag-dot" />
                 <span class="tag-name">{{ tag.name }}</span>
@@ -48,7 +46,7 @@
                 type="button"
                 class="tag-delete"
                 @click.stop="deleteTag(tag.id)"
-                title="Удалить тег"
+                title="РЈРґР°Р»РёС‚СЊ С‚РµРі"
               >
                 <X :size="14" />
               </button>
@@ -59,10 +57,10 @@
             class="tag-btn add-tag-btn"
             style="--tag-color: var(--accent)"
             @click="openAddTagModal"
-            title="Добавить тег"
+            title="Р”РѕР±Р°РІРёС‚СЊ С‚РµРі"
           >
             <Plus :size="16" />
-            <span class="tag-name">Добавить</span>
+            <span class="tag-name">Р”РѕР±Р°РІРёС‚СЊ</span>
           </button>
         </div>
       </AppFormField>
@@ -70,15 +68,15 @@
       <label v-if="!editing && form.type !== 'HABIT'" class="checkbox-label">
         <input type="checkbox" v-model="createBranch" />
         <span class="checkmark"></span>
-        <span class="checkbox-text">Создать ветку из задачи</span>
+        <span class="checkbox-text">РЎРѕР·РґР°С‚СЊ РІРµС‚РєСѓ РёР· Р·Р°РґР°С‡Рё</span>
       </label>
     </div>
 
     <template #footer>
       <div class="modal-actions">
-        <AppButton variant="secondary" @click="emit('close')">Отмена</AppButton>
+        <AppButton variant="secondary" @click="emit('close')">РћС‚РјРµРЅР°</AppButton>
         <AppButton type="submit" variant="primary">
-          {{ editing ? 'Сохранить' : submitButtonText }}
+          {{ editing ? 'РЎРѕС…СЂР°РЅРёС‚СЊ' : submitButtonText }}
         </AppButton>
       </div>
     </template>
@@ -86,40 +84,40 @@
 
   <AppModal
     v-if="showAddTagModal"
-    title="Новый тег"
+    title="РќРѕРІС‹Р№ С‚РµРі"
     size="sm"
     as-form
     @close="closeAddTagModal"
     @submit="createTag"
   >
     <div class="modal-form">
-      <AppFormField label="Название">
-        <AppInput v-model="newTagName" placeholder="Важно" required />
+      <AppFormField label="РќР°Р·РІР°РЅРёРµ">
+        <AppInput v-model="newTagName" placeholder="Р’Р°Р¶РЅРѕ" required />
       </AppFormField>
 
-      <AppFormField label="Ветка">
+      <AppFormField label="Р’РµС‚РєР°">
         <AppSelect
           v-model="newTagBranchId"
           :options="branchOptions"
           :disabled="branchOptions.length === 0"
-          placeholder="Сначала создайте ветку"
+          placeholder="РЎРЅР°С‡Р°Р»Р° СЃРѕР·РґР°Р№С‚Рµ РІРµС‚РєСѓ"
         />
       </AppFormField>
 
-      <AppFormField label="Цвет">
+      <AppFormField label="Р¦РІРµС‚">
         <AppColorPicker v-model="newTagColor" />
       </AppFormField>
     </div>
 
     <template #footer>
       <div class="modal-actions">
-        <AppButton variant="secondary" @click="closeAddTagModal">Отмена</AppButton>
+        <AppButton variant="secondary" @click="closeAddTagModal">РћС‚РјРµРЅР°</AppButton>
         <AppButton
           type="submit"
           variant="primary"
           :disabled="branchOptions.length === 0"
         >
-          Создать
+          РЎРѕР·РґР°С‚СЊ
         </AppButton>
       </div>
     </template>
@@ -129,6 +127,7 @@
 <script setup lang="ts">
 import { reactive, watch, ref, computed } from 'vue'
 import { X, Calendar, Plus } from 'lucide-vue-next'
+import { v4 as uuidv4 } from 'uuid'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useTagsStore } from '~/stores/tags.store'
 import { useNotification } from '~/composables/useNotification'
@@ -140,8 +139,7 @@ import AppModal from '~/components/ui/AppModal.vue'
 import AppSelect from '~/components/ui/AppSelect.vue'
 import type { AppSelectOption } from '~/types/ui.types'
 import type { BranchId } from '~/types/branch.types'
-import type { TagScope } from '~/types/tag.types'
-import type { Task } from '~/types/task.types'
+import type { Task, TaskTag } from '~/types/task.types'
 
 const props = defineProps<{
   task?: Task
@@ -160,10 +158,10 @@ const { addNotification } = useNotification()
 const editing = computed(() => !!props.task)
 const createBranch = ref(false)
 const taskTypeOptions: AppSelectOption[] = [
-  { label: 'На день', value: 'TASK_DAY' },
-  { label: 'На неделю', value: 'TASK_WEEK' },
-  { label: 'На месяц', value: 'TASK_MONTH' },
-  { label: 'На год', value: 'TASK_YEAR' },
+  { label: 'РќР° РґРµРЅСЊ', value: 'TASK_DAY' },
+  { label: 'РќР° РЅРµРґРµР»СЋ', value: 'TASK_WEEK' },
+  { label: 'РќР° РјРµСЃСЏС†', value: 'TASK_MONTH' },
+  { label: 'РќР° РіРѕРґ', value: 'TASK_YEAR' },
 ]
 const branchOptions = computed<AppSelectOption[]>(() =>
   branchesStore.branches.map((branch) => ({
@@ -171,32 +169,28 @@ const branchOptions = computed<AppSelectOption[]>(() =>
     value: branch.id,
   }))
 )
-const currentTagScope = computed<TagScope>(() =>
-  form.type === 'HABIT' ? 'habit' : 'task'
-)
-const visibleTags = computed(() => tagsStore.getTagsByScope(currentTagScope.value))
-
 const form = reactive({
   title: '',
   description: '',
   type: props.defaultType || 'HABIT',
   targetDate: '',
   tagIds: [] as string[],
+  tags: [] as TaskTag[],
 })
 
 const modalTitle = computed(() => {
-  if (editing.value) return 'Редактирование'
-  return form.type === 'HABIT' ? 'Новая привычка' : 'Новая задача'
+  if (editing.value) return 'Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ'
+  return form.type === 'HABIT' ? 'РќРѕРІР°СЏ РїСЂРёРІС‹С‡РєР°' : 'РќРѕРІР°СЏ Р·Р°РґР°С‡Р°'
 })
 
 const submitButtonText = computed(() => {
-  return form.type === 'HABIT' ? 'Добавить привычку' : 'Создать задачу'
+  return form.type === 'HABIT' ? 'Р”РѕР±Р°РІРёС‚СЊ РїСЂРёРІС‹С‡РєСѓ' : 'РЎРѕР·РґР°С‚СЊ Р·Р°РґР°С‡Сѓ'
 })
 
 const titlePlaceholder = computed(() => {
   return form.type === 'HABIT'
-    ? 'Например: Пить воду'
-    : 'Например: Прочитать 20 страниц'
+    ? 'РќР°РїСЂРёРјРµСЂ: РџРёС‚СЊ РІРѕРґСѓ'
+    : 'РќР°РїСЂРёРјРµСЂ: РџСЂРѕС‡РёС‚Р°С‚СЊ 20 СЃС‚СЂР°РЅРёС†'
 })
 
 watch(
@@ -208,6 +202,7 @@ watch(
       form.type = newTask.type
       form.targetDate = newTask.targetDate || ''
       form.tagIds = [...newTask.tagIds]
+      form.tags = getTaskTags(newTask)
       createBranch.value = false
     } else {
       form.title = ''
@@ -215,6 +210,7 @@ watch(
       form.type = props.defaultType || 'HABIT'
       form.targetDate = ''
       form.tagIds = []
+      form.tags = []
       createBranch.value = false
     }
   },
@@ -231,24 +227,15 @@ watch(
   { immediate: true }
 )
 
-function toggleTag(tagId: string) {
-  const index = form.tagIds.indexOf(tagId)
-  if (index === -1) {
-    form.tagIds.push(tagId)
-  } else {
-    form.tagIds.splice(index, 1)
-  }
-}
-
 function handleSubmit() {
   if (!form.title.trim()) return
-  const existingTagIds = new Set(visibleTags.value.map((tag) => tag.id))
 
   emit('save', {
     ...form,
     title: form.title.trim(),
     description: form.description.trim(),
-    tagIds: form.tagIds.filter((tagId) => existingTagIds.has(tagId)),
+    tagIds: [],
+    tags: form.tags.map((tag, index) => ({ ...tag, order: index })),
     createBranch: !editing.value && createBranch.value,
   })
 }
@@ -271,46 +258,53 @@ function closeAddTagModal() {
 function createTag() {
   if (!newTagName.value.trim()) return
   if (!newTagBranchId.value || !branchesStore.branches.some((branch) => branch.id === newTagBranchId.value)) {
-    addNotification({ type: 'warning', message: 'Сначала создайте ветку для тега' })
+    addNotification({ type: 'warning', message: 'РЎРЅР°С‡Р°Р»Р° СЃРѕР·РґР°Р№С‚Рµ РІРµС‚РєСѓ РґР»СЏ С‚РµРіР°' })
     return
   }
 
   const name = newTagName.value.trim()
 
-  const existing = tagsStore.tags.find(
-    (t) =>
-      t.scope === currentTagScope.value &&
-      t.name.toLowerCase() === name.toLowerCase()
+  const existing = form.tags.find(
+    (tag) => tag.name.toLowerCase() === name.toLowerCase()
   )
   if (existing) {
-    addNotification({ type: 'warning', message: 'Такой тег уже существует' })
+    addNotification({ type: 'warning', message: 'РўР°РєРѕР№ С‚РµРі СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚' })
     return
   }
 
-  const tag = tagsStore.addTag({
+  const tag: TaskTag = {
+    id: uuidv4(),
     name,
     branchId: newTagBranchId.value,
     color: newTagColor.value,
-    scope: currentTagScope.value,
-    order: 999,
-  })
-  if (!form.tagIds.includes(tag.id)) {
-    form.tagIds.push(tag.id)
+    order: form.tags.length,
   }
+  form.tags.push(tag)
 
-  addNotification({ type: 'success', message: `Тег «${name}» добавлен` })
+  addNotification({ type: 'success', message: `РўРµРі В«${name}В» РґРѕР±Р°РІР»РµРЅ` })
   closeAddTagModal()
 }
 
 function deleteTag(tagId: string) {
-  const success = tagsStore.deleteTag(tagId)
-  if (success) {
-    addNotification({ type: 'success', message: 'Тег удалён' })
-    const index = form.tagIds.indexOf(tagId)
-    if (index !== -1) form.tagIds.splice(index, 1)
-  } else {
-    addNotification({ type: 'error', message: 'Не удалось удалить тег' })
+  const index = form.tags.findIndex((tag) => tag.id === tagId)
+  if (index === -1) return
+  form.tags.splice(index, 1)
+  form.tagIds = form.tagIds.filter((id) => id !== tagId)
+  addNotification({ type: 'success', message: 'Тег удален' })
+}
+
+function getTaskTags(task: Task): TaskTag[] {
+  if (task.tags?.length) {
+    return task.tags.map((tag, index) => ({ ...tag, order: tag.order ?? index }))
   }
+
+  return tagsStore.getTagsByIds(task.tagIds).map((tag, index) => ({
+    id: uuidv4(),
+    name: tag.name,
+    branchId: tag.branchId,
+    color: tag.color,
+    order: index,
+  }))
 }
 </script>
 

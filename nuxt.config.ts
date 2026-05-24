@@ -1,15 +1,17 @@
+const isProduction = process.env.NODE_ENV === 'production'
+
 export default defineNuxtConfig({
   compatibilityDate: '2026-04-08',
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NUXT_DEVTOOLS === 'true' },
+  telemetry: false,
   devServer: { host: '0.0.0.0', port: 3000 },
   buildDir: 'C:/Users/Public/carbon-core-nuxt',
   experimental: { appManifest: false },
   modules: [
     '@pinia/nuxt',
     '@vueuse/nuxt',
-    '@vercel/speed-insights',
-    '@vercel/analytics',
     '@vueuse/motion',
+    ...(isProduction ? ['@vercel/speed-insights', '@vercel/analytics'] : []),
   ],
   css: ['~/assets/styles/reset.scss', '~/assets/styles/global.scss'],
   nitro: { preset: 'vercel' },
@@ -20,6 +22,12 @@ export default defineNuxtConfig({
         '@vue-flow/background',
         '@vue-flow/controls',
         '@vue-flow/minimap',
+        'chart.js',
+        'dagre',
+        'lucide-vue-next',
+        'pinia-plugin-persistedstate',
+        'uuid',
+        'vue-chartjs',
       ],
     },
     css: {

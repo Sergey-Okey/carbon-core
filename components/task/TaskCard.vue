@@ -34,7 +34,7 @@
           class="complete-btn"
           :class="{ done: isCompleted }"
           @click="handleToggle"
-          :disabled="disableToggle || (task.type !== 'HABIT' && task.done)"
+          :disabled="disableToggle || isCompleted"
           title="Выполнить"
         >
           <CheckCircle v-if="isCompleted" :size="22" />
@@ -71,7 +71,10 @@ const tagsStore = useTagsStore()
 const { addNotification } = useNotification()
 const { confirm } = useConfirm()
 
-const taskTags = computed(() => tagsStore.getTagsByIds(props.task.tagIds))
+const taskTags = computed(() => {
+  if (props.task.tags?.length) return props.task.tags
+  return tagsStore.getTagsByIds(props.task.tagIds)
+})
 
 const typeLabel = computed(() => {
   const map: Record<string, string> = {
@@ -105,7 +108,7 @@ const isOverdue = computed(() => {
 })
 
 function handleToggle() {
-  if (props.disableToggle) return
+  if (props.disableToggle || isCompleted.value) return
 
   addNotification({
     type: 'success',

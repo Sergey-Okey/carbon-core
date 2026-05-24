@@ -14,29 +14,45 @@ export interface Notification {
   message: string
   duration?: number
   action?: NotificationAction
+  createdAt?: string
 }
 
 const notifications = ref<Notification[]>([])
+const notificationHistory = ref<Notification[]>([])
 
 export function useNotification() {
   const settingsStore = useSettingsStore()
 
-  function addNotification(notification: Omit<Notification, 'id'>) {
+  function addNotification(
+    notification: Omit<Notification, 'id' | 'createdAt'> & {
+      silent?: boolean
+    }
+  ) {
     if (!settingsStore.notificationsEnabled) return
 
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 5)
     const newNotification: Notification = {
       ...notification,
       id,
-      duration: notification.duration ?? 4000,
+      createdAt: new Date().toISOString(),
+      duration: notification.duration ?? settingsStore.toastDuration * 1000,
     }
-    notifications.value.push(newNotification)
+    notificationHistory.value.unshift(newNotification)
+    notificationHistory.value = notificationHistory.value.slice(0, 30)
 
-    if (settingsStore.soundEnabled) {
-      playNotificationSound(notification.type)
+    if (!notification.silent) {
+      notifications.value.push(newNotification)
     }
 
-    if (newNotification.duration > 0) {
+    if (!notification.silent && settingsStore.soundEnabled) {
+      playNotificationSound(
+        notification.type,
+        settingsStore.soundVolume,
+        settingsStore.soundTone
+      )
+    }
+
+    if (!notification.silent && newNotification.duration > 0) {
       setTimeout(() => {
         removeNotification(id)
       }, newNotification.duration)
@@ -48,14 +64,30 @@ export function useNotification() {
     if (index !== -1) notifications.value.splice(index, 1)
   }
 
+  function removeHistoryItem(id: string) {
+    const index = notificationHistory.value.findIndex((n) => n.id === id)
+    if (index !== -1) notificationHistory.value.splice(index, 1)
+  }
+
+  function clearNotificationHistory() {
+    notificationHistory.value = []
+  }
+
   return {
     notifications,
+    notificationHistory,
     addNotification,
     removeNotification,
+    removeHistoryItem,
+    clearNotificationHistory,
   }
 }
 
-function playNotificationSound(type: NotificationType) {
+function playNotificationSound(
+  type: NotificationType,
+  volume: number,
+  tone: 'soft' | 'bright'
+) {
   try {
     const ctx = new (
       window.AudioContext || (window as any).webkitAudioContext
@@ -65,14 +97,22 @@ function playNotificationSound(type: NotificationType) {
     osc.connect(gain)
     gain.connect(ctx.destination)
 
-    const freqs: Record<NotificationType, number> = {
-      success: 880,
-      error: 220,
-      warning: 440,
-      info: 660,
-    }
+    const freqs: Record<NotificationType, number> =
+      tone === 'soft'
+        ? {
+            success: 620,
+            error: 180,
+            warning: 330,
+            info: 480,
+          }
+        : {
+            success: 880,
+            error: 220,
+            warning: 440,
+            info: 660,
+          }
     osc.frequency.value = freqs[type] || 660
-    gain.gain.setValueAtTime(0.08, ctx.currentTime)
+    gain.gain.setValueAtTime(volume, ctx.currentTime)
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15)
     osc.start(ctx.currentTime)
     osc.stop(ctx.currentTime + 0.15)

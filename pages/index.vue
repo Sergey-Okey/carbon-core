@@ -1,7 +1,10 @@
 <template>
   <div class="dashboard" :class="{ 'is-board': uiStore.activeNav === 'board' }">
     <section
-      v-if="uiStore.activeNav !== 'board' && uiStore.activeNav !== 'settings'"
+      v-if="
+        uiStore.activeNav !== 'board' &&
+        (uiStore.activeNav !== 'settings' || settingsStore.showSettingsStats)
+      "
       class="dashboard-section stats"
     >
       <StatsOverview />
@@ -59,6 +62,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useSettingsStore } from '~/stores/settings.store'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useUIStore } from '~/stores/ui.store'
 import { useNotification } from '~/composables/useNotification'
@@ -75,6 +79,7 @@ import SettingsPanel from '~/components/settings/SettingsPanel.vue'
 import type { Task, TaskType } from '~/types/task.types'
 
 const uiStore = useUIStore()
+const settingsStore = useSettingsStore()
 const tasksStore = useTasksStore()
 const { addNotification } = useNotification()
 const { saveTask } = useTaskActions()

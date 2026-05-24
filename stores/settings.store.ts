@@ -35,7 +35,12 @@ export const useSettingsStore = defineStore(
     const animationsEnabled = ref<boolean>(true)
     const animationSpeed = ref<number>(1) // multiplier, 0.5 = slower, 2 = faster
     const soundEnabled = ref<boolean>(false)
+    const soundVolume = ref<number>(0.08)
+    const soundTone = ref<'soft' | 'bright'>('bright')
     const notificationsEnabled = ref<boolean>(true)
+    const toastDuration = ref<number>(4)
+    const showSettingsStats = ref<boolean>(false)
+    const confirmDangerActions = ref<boolean>(true)
     const autoBackup = ref<boolean>(true)
     const lastBackupDate = ref<string | null>(null)
 
@@ -104,8 +109,23 @@ export const useSettingsStore = defineStore(
     function setSoundEnabled(val: boolean) {
       soundEnabled.value = val
     }
+    function setSoundVolume(val: number) {
+      soundVolume.value = Math.min(0.12, Math.max(0.02, val))
+    }
+    function setSoundTone(val: 'soft' | 'bright') {
+      soundTone.value = val
+    }
     function setNotificationsEnabled(val: boolean) {
       notificationsEnabled.value = val
+    }
+    function setToastDuration(val: number) {
+      toastDuration.value = Math.min(8, Math.max(2, val))
+    }
+    function setShowSettingsStats(val: boolean) {
+      showSettingsStats.value = val
+    }
+    function setConfirmDangerActions(val: boolean) {
+      confirmDangerActions.value = val
     }
     function setAutoBackup(val: boolean) {
       autoBackup.value = val
@@ -134,7 +154,12 @@ export const useSettingsStore = defineStore(
       animationsEnabled,
       animationSpeed,
       soundEnabled,
+      soundVolume,
+      soundTone,
       notificationsEnabled,
+      toastDuration,
+      showSettingsStats,
+      confirmDangerActions,
       autoBackup,
       lastBackupDate,
       ready,
@@ -143,7 +168,12 @@ export const useSettingsStore = defineStore(
       setAnimationsEnabled,
       setAnimationSpeed,
       setSoundEnabled,
+      setSoundVolume,
+      setSoundTone,
       setNotificationsEnabled,
+      setToastDuration,
+      setShowSettingsStats,
+      setConfirmDangerActions,
       setAutoBackup,
       recordBackup,
     }

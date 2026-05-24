@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Task, TaskType } from '~/types/task.types'
+import type { Task, TaskTag, TaskType } from '~/types/task.types'
 import { v4 as uuidv4 } from 'uuid'
 import { useUserStore } from './user.store'
 import { useBranchesStore } from './branches.store'
@@ -63,11 +63,15 @@ export const useTasksStore = defineStore(
 
       const userStore = useUserStore()
       const branchesStore = useBranchesStore()
-      const tagsStore = useTagsStore()
       const rewardsStore = useRewardsStore()
-      const tags = tagsStore.getTagsByIds(task.tagIds)
+      const tags = getTaskTags(task)
 
       if (task.type === 'HABIT') {
+        if (task.lastCompletedAt) {
+          const lastCompletedDate = new Date(task.lastCompletedAt).toISOString().split('T')[0]
+          if (lastCompletedDate === getTodayDateString()) return
+        }
+
         task.lastCompletedAt = Date.now()
 
         const xpPerTag = 50
@@ -139,13 +143,14 @@ export const useTasksStore = defineStore(
     }
 
     function getHabits(): Task[] {
-      const today = getTodayDateString()
-      return tasks.value.filter(
-        (task) =>
-          task.type === 'HABIT' &&
-          (!task.lastCompletedAt ||
-            new Date(task.lastCompletedAt).toISOString().split('T')[0] !== today)
-      )
+      return tasks.value.filter((task) => task.type === 'HABIT')
+    }
+
+    function getTaskTags(task: Task): TaskTag[] {
+      if (task.tags?.length) return task.tags
+
+      const tagsStore = useTagsStore()
+      return tagsStore.getTagsByIds(task.tagIds)
     }
 
     return {

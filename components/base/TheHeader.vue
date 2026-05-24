@@ -22,15 +22,7 @@
       >
         <HelpCircle :size="20" />
       </button>
-      <button
-        class="action-btn action-btn--primary"
-        type="button"
-        title="Добавить задачу"
-        aria-label="Добавить задачу"
-        @click="openTaskForm"
-      >
-        <Plus :size="20" />
-      </button>
+      <NotificationCenter />
       <button
         class="profile-btn"
         type="button"
@@ -44,29 +36,18 @@
         <UserCircle v-else :size="20" />
       </button>
     </div>
-
-    <Teleport to="body">
-      <TaskForm
-        v-if="showTaskForm"
-        @close="showTaskForm = false"
-        @save="handleTaskSave"
-      />
-    </Teleport>
   </header>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { HelpCircle, Plus, UserCircle } from 'lucide-vue-next'
-import { useTaskActions } from '~/composables/useTaskActions'
-import TaskForm from '~/components/task/TaskForm.vue'
+import { computed } from 'vue'
+import { HelpCircle, UserCircle } from 'lucide-vue-next'
+import NotificationCenter from '~/components/base/NotificationCenter.vue'
 import { useUserStore } from '~/stores/user.store'
 import { useUIStore, type NavSection } from '~/stores/ui.store'
 
 const userStore = useUserStore()
 const uiStore = useUIStore()
-const { saveTask } = useTaskActions()
-const showTaskForm = ref(false)
 
 const sectionTitles: Record<NavSection, string> = {
   board: 'Доска',
@@ -78,10 +59,6 @@ const sectionTitles: Record<NavSection, string> = {
 
 const currentSectionTitle = computed(() => sectionTitles[uiStore.activeNav])
 
-function openTaskForm() {
-  showTaskForm.value = true
-}
-
 function openProfile() {
   navigateTo('/profile')
 }
@@ -89,12 +66,6 @@ function openProfile() {
 function openOnboarding() {
   navigateTo('/onboarding')
 }
-
-function handleTaskSave(taskData: any) {
-  const saved = saveTask(taskData)
-  if (saved) showTaskForm.value = false
-}
-
 </script>
 
 <style scoped lang="scss">
@@ -102,19 +73,23 @@ function handleTaskSave(taskData: any) {
   position: sticky;
   top: 0;
   z-index: 50;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
   margin: 12px 12px 4px;
   padding: 8px 14px;
   border: 1px solid var(--border);
   border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   @include glass;
 
   @include mobile {
-    margin: 8px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    margin: 8px 8px 0;
     padding: 8px 10px;
+    border-radius: 40px;
   }
 }
 
@@ -136,6 +111,7 @@ function handleTaskSave(taskData: any) {
   @include mobile {
     width: 30px;
     height: 30px;
+    border-radius: 50%;
   }
 }
 
@@ -168,31 +144,30 @@ function handleTaskSave(taskData: any) {
 }
 
 .section-title {
-  position: absolute;
-  left: 50%;
-  max-width: 36%;
+  justify-self: center;
+  max-width: min(320px, 40vw);
   overflow: hidden;
   color: var(--accent);
   font-size: 0.9rem;
   font-weight: 600;
   text-overflow: ellipsis;
-  transform: translateX(-50%);
   white-space: nowrap;
 
   @include mobile {
-    position: static;
-    max-width: none;
-    margin-left: 10px;
-    margin-right: auto;
-    transform: none;
+    display: none;
   }
 }
 
 .actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
-  margin-left: auto;
+  min-width: 0;
+
+  @include mobile {
+    gap: 4px;
+  }
 }
 
 .action-btn,
@@ -202,19 +177,15 @@ function handleTaskSave(taskData: any) {
   justify-content: center;
   width: 34px;
   height: 34px;
-  border: 1px solid transparent;
+  border: none;
   border-radius: var(--border-radius-md);
-  background: color-mix(in srgb, var(--surface) 26%, transparent);
+  background: transparent;
   color: var(--dim);
   cursor: pointer;
-  transition:
-    background var(--transition-standard),
-    border-color var(--transition-standard),
-    color var(--transition-standard),
-    transform var(--transition-standard);
+  transition: all var(--transition-standard);
 
   &:hover {
-    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    background: var(--surface);
     color: var(--accent);
   }
 
@@ -225,16 +196,11 @@ function handleTaskSave(taskData: any) {
   &:focus-visible {
     box-shadow: 0 0 0 2px var(--accent);
   }
-}
 
-.action-btn--primary {
-  border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-
-  &:hover {
-    background: color-mix(in srgb, var(--accent) 16%, transparent);
-    border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  @include mobile {
+    width: 36px;
+    height: 36px;
+    border-radius: 40px;
   }
 }
 
