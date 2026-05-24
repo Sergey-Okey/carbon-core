@@ -49,6 +49,14 @@ interface _GlobalComponents {
   TaskCard: typeof import("../../components/task/TaskCard.vue")['default']
   TaskForm: typeof import("../../components/task/TaskForm.vue")['default']
   TaskList: typeof import("../../components/task/TaskList.vue")['default']
+  TaskSections: typeof import("../../components/task/TaskSections.vue")['default']
+  TaskToolbar: typeof import("../../components/task/TaskToolbar.vue")['default']
+  UiAppButton: typeof import("../../components/ui/AppButton.vue")['default']
+  UiAppColorPicker: typeof import("../../components/ui/AppColorPicker.vue")['default']
+  UiAppFormField: typeof import("../../components/ui/AppFormField.vue")['default']
+  UiAppInput: typeof import("../../components/ui/AppInput.vue")['default']
+  UiAppModal: typeof import("../../components/ui/AppModal.vue")['default']
+  UiAppSelect: typeof import("../../components/ui/AppSelect.vue")['default']
   UiConfirmDialog: typeof import("../../components/ui/ConfirmDialog.vue")['default']
   NuxtWelcome: typeof import("../../node_modules/nuxt/dist/app/components/welcome.vue")['default']
   NuxtLayout: typeof import("../../node_modules/nuxt/dist/app/components/nuxt-layout")['default']
@@ -110,6 +118,14 @@ interface _GlobalComponents {
   LazyTaskCard: LazyComponent<typeof import("../../components/task/TaskCard.vue")['default']>
   LazyTaskForm: LazyComponent<typeof import("../../components/task/TaskForm.vue")['default']>
   LazyTaskList: LazyComponent<typeof import("../../components/task/TaskList.vue")['default']>
+  LazyTaskSections: LazyComponent<typeof import("../../components/task/TaskSections.vue")['default']>
+  LazyTaskToolbar: LazyComponent<typeof import("../../components/task/TaskToolbar.vue")['default']>
+  LazyUiAppButton: LazyComponent<typeof import("../../components/ui/AppButton.vue")['default']>
+  LazyUiAppColorPicker: LazyComponent<typeof import("../../components/ui/AppColorPicker.vue")['default']>
+  LazyUiAppFormField: LazyComponent<typeof import("../../components/ui/AppFormField.vue")['default']>
+  LazyUiAppInput: LazyComponent<typeof import("../../components/ui/AppInput.vue")['default']>
+  LazyUiAppModal: LazyComponent<typeof import("../../components/ui/AppModal.vue")['default']>
+  LazyUiAppSelect: LazyComponent<typeof import("../../components/ui/AppSelect.vue")['default']>
   LazyUiConfirmDialog: LazyComponent<typeof import("../../components/ui/ConfirmDialog.vue")['default']>
   LazyNuxtWelcome: LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/welcome.vue")['default']>
   LazyNuxtLayout: LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/nuxt-layout")['default']>

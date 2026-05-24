@@ -1,127 +1,89 @@
 <template>
-  <Teleport to="body">
-    <div class="modal-overlay" @click.self="emit('close')">
-      <div class="modal">
-        <div class="modal-header">
-          <h3>Профиль</h3>
-          <button class="close-btn" @click="emit('close')">
-            <X :size="20" />
-          </button>
-        </div>
+  <AppModal title="Профиль" as-form size="md" @close="emit('close')" @submit="saveProfile">
+    <div class="avatar-section">
+      <button type="button" class="avatar" @click="triggerFileInput">
+        <img v-if="form.avatar" :src="form.avatar" alt="avatar" />
+        <UserCircle v-else :size="48" />
+        <span class="avatar-overlay">
+          <Camera :size="20" />
+        </span>
+      </button>
 
-        <form @submit.prevent="saveProfile">
-          <div class="avatar-section">
-            <div class="avatar" @click="triggerFileInput">
-              <img
-                v-if="userStore.profile.avatar"
-                :src="userStore.profile.avatar"
-                alt="avatar"
-              />
-              <UserCircle v-else :size="48" />
-              <div class="avatar-overlay">
-                <Camera :size="20" />
-              </div>
-            </div>
-            <input
-              ref="fileInput"
-              type="file"
-              accept="image/*"
-              style="display: none"
-              @change="handleFileChange"
-            />
-            <button
-              type="button"
-              class="change-avatar-btn"
-              @click="triggerFileInput"
-            >
-              {{ userStore.profile.avatar ? 'Сменить фото' : 'Добавить фото' }}
-            </button>
-            <button
-              v-if="userStore.profile.avatar"
-              type="button"
-              class="remove-avatar-btn"
-              @click="removeAvatar"
-            >
-              Удалить
-            </button>
-          </div>
+      <input
+        ref="fileInput"
+        type="file"
+        accept="image/*"
+        class="file-input"
+        @change="handleFileChange"
+      />
 
-          <div class="form-group">
-            <label>Имя</label>
-            <input
-              v-model="form.name"
-              type="text"
-              placeholder="Ваше имя"
-              maxlength="30"
-            />
-          </div>
-
-          <div class="form-group">
-            <label>О себе</label>
-            <textarea
-              v-model="form.bio"
-              placeholder="Расскажите о себе или своих целях"
-              rows="3"
-              maxlength="150"
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Email (опционально)</label>
-            <input
-              v-model="form.email"
-              type="email"
-              placeholder="email@example.com"
-            />
-          </div>
-
-          <div class="stats-info">
-            <div class="stat-item">
-              <Zap :size="18" />
-              <span
-                >Уровень {{ userStore.level }} ({{
-                  userStore.totalXP
-                }}
-                XP)</span
-              >
-            </div>
-            <div class="stat-item">
-              <component :is="leagueIcon" :size="18" :class="leagueClass" />
-              <span>{{ userStore.league }}</span>
-            </div>
-            <div class="stat-item">
-              <Coins :size="18" />
-              <span>{{ userStore.gold }} золота</span>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn-secondary" @click="emit('close')">
-              Отмена
-            </button>
-            <button type="submit" class="btn-primary">Сохранить</button>
-          </div>
-        </form>
+      <div class="avatar-actions">
+        <AppButton type="button" variant="ghost" size="sm" @click="triggerFileInput">
+          {{ form.avatar ? 'Сменить фото' : 'Добавить фото' }}
+        </AppButton>
+        <AppButton
+          v-if="form.avatar"
+          type="button"
+          variant="danger"
+          size="sm"
+          @click="removeAvatar"
+        >
+          Удалить
+        </AppButton>
       </div>
     </div>
-  </Teleport>
+
+    <AppFormField label="Имя">
+      <AppInput v-model="form.name" placeholder="Ваше имя" maxlength="30" />
+    </AppFormField>
+
+    <AppFormField label="О себе">
+      <AppInput
+        v-model="form.bio"
+        multiline
+        placeholder="Расскажите о себе или своих целях"
+        rows="3"
+        maxlength="150"
+      />
+    </AppFormField>
+
+    <AppFormField label="Email">
+      <AppInput v-model="form.email" type="email" placeholder="email@example.com" />
+    </AppFormField>
+
+    <div class="stats-info">
+      <div class="stat-item">
+        <Zap :size="18" />
+        <span>Уровень {{ userStore.level }} ({{ userStore.totalXP }} XP)</span>
+      </div>
+      <div class="stat-item">
+        <component :is="leagueIcon" :size="18" :class="leagueClass" />
+        <span>{{ userStore.league }}</span>
+      </div>
+      <div class="stat-item">
+        <Coins :size="18" />
+        <span>{{ userStore.gold }} золота</span>
+      </div>
+    </div>
+
+    <template #footer>
+      <AppButton type="button" variant="secondary" @click="emit('close')">
+        Отмена
+      </AppButton>
+      <AppButton type="submit" variant="primary">Сохранить</AppButton>
+    </template>
+  </AppModal>
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, ref } from 'vue'
-import {
-  X,
-  UserCircle,
-  Zap,
-  Coins,
-  Medal,
-  Award,
-  Gem,
-  Crown,
-  Camera,
-} from 'lucide-vue-next'
-import { useUserStore } from '~/stores/user.store'
+import { computed, reactive, ref } from 'vue'
+import { Award, Camera, Coins, Crown, Gem, Medal, UserCircle, Zap } from 'lucide-vue-next'
+import AppButton from '~/components/ui/AppButton.vue'
+import AppFormField from '~/components/ui/AppFormField.vue'
+import AppInput from '~/components/ui/AppInput.vue'
+import AppModal from '~/components/ui/AppModal.vue'
 import { useNotification } from '~/composables/useNotification'
+import { useUserStore } from '~/stores/user.store'
 
 const emit = defineEmits<{ (e: 'close'): void }>()
 
@@ -144,7 +106,13 @@ const leagueIcon = computed(() => {
   return Crown
 })
 
-const leagueClass = computed(() => userStore.league.toLowerCase())
+const leagueClass = computed(() => {
+  const league = userStore.league
+  if (league === 'Бронза') return 'bronze'
+  if (league === 'Серебро') return 'silver'
+  if (league === 'Золото') return 'gold'
+  return 'platinum'
+})
 
 function triggerFileInput() {
   fileInput.value?.click()
@@ -157,8 +125,7 @@ function handleFileChange(event: Event) {
 
   const reader = new FileReader()
   reader.onload = (e) => {
-    const base64 = e.target?.result as string
-    form.avatar = base64
+    form.avatar = e.target?.result as string
   }
   reader.readAsDataURL(file)
 }
@@ -175,256 +142,114 @@ function saveProfile() {
     email: form.email,
     avatar: form.avatar,
   })
-  addNotification({ type: 'success', message: 'Профиль обновлён' })
+  addNotification({ type: 'success', message: 'Профиль обновлен' })
   emit('close')
 }
 </script>
 
 <style scoped lang="scss">
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
-  background: color-mix(in srgb, var(--bg) 70%, transparent);
-  backdrop-filter: blur(6px);
-}
-
-.modal {
-  width: 100%;
-  max-width: 420px;
-  max-height: 90vh;
-  overflow-y: auto;
-  border-radius: var(--border-radius-lg);
-  border: 1px solid var(--border);
-  background: var(--bg);
-  @include glass;
-  color: var(--accent);
-
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 2px;
-  }
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px 0;
-
-  h3 {
-    font-weight: 600;
-    font-size: 1.3rem;
-    letter-spacing: -0.01em;
-  }
-
-  .close-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    color: var(--dim);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition: all var(--transition-standard);
-
-    &:hover {
-      background: var(--surface);
-      color: var(--accent);
-    }
-  }
-}
-
-form {
-  padding: 20px 24px 24px;
-}
-
 .avatar-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
+}
 
-  .avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: var(--surface);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--border);
-    color: var(--dim);
-    position: relative;
-    cursor: pointer;
-    overflow: hidden;
+.avatar {
+  @include glass;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  overflow: hidden;
+  color: var(--dim);
+  background: color-mix(in srgb, var(--surface) 42%, transparent);
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-color var(--transition-standard), transform var(--transition-standard);
 
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .avatar-overlay {
-      position: absolute;
-      inset: 0;
-      background: color-mix(in srgb, var(--bg) 40%, transparent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.2s;
-      color: var(--surface);
-    }
-
-    &:hover .avatar-overlay {
-      opacity: 1;
-    }
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
-  .change-avatar-btn,
-  .remove-avatar-btn {
-    font-size: 0.85rem;
-    color: var(--dim);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 16px;
-    transition: all 0.1s;
-    &:hover {
-      background: var(--surface);
-      color: var(--accent);
-    }
+  &:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
   }
 
-  .remove-avatar-btn {
-    color: var(--error);
-    &:hover {
-      background: color-mix(in srgb, var(--error) 10%, transparent);
-    }
+  &:hover .avatar-overlay {
+    opacity: 1;
   }
 }
 
-.form-group {
-  margin-bottom: 20px;
+.avatar-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--surface);
+  background: color-mix(in srgb, var(--bg) 42%, transparent);
+  opacity: 0;
+  transition: opacity var(--transition-standard);
+}
 
-  label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--dim);
-  }
+.avatar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
 
-  input,
-  textarea {
-    width: 100%;
-    padding: 12px 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-md);
-    color: var(--accent);
-    font-size: 1rem;
-    transition: border-color var(--transition-standard);
-
-    &::placeholder {
-      color: var(--dim);
-      opacity: 0.6;
-    }
-
-    &:focus {
-      border-color: var(--accent);
-      outline: none;
-    }
-  }
-
-  textarea {
-    resize: vertical;
-  }
+.file-input {
+  display: none;
 }
 
 .stats-info {
+  @include glass;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 24px;
   padding: 16px;
-  background: var(--surface);
-  border-radius: var(--border-radius-md);
+  background: color-mix(in srgb, var(--surface) 42%, transparent);
   border: 1px solid var(--border);
+  border-radius: var(--border-radius-md);
+}
 
-  .stat-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.95rem;
-    color: var(--accent);
-  }
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+  font-size: 0.95rem;
 
-  .бронза {
+  .bronze {
     color: var(--bronze);
   }
-  .серебро {
+
+  .silver {
     color: var(--silver);
   }
-  .золото {
+
+  .gold {
     color: var(--gold);
   }
-  .платина {
+
+  .platinum {
     color: var(--platinum);
   }
 }
 
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 28px;
-
-  button {
-    padding: 12px 24px;
-    border-radius: var(--border-radius-md);
-    font-weight: 500;
-    font-size: 0.95rem;
-    transition: all var(--transition-standard);
-    cursor: pointer;
-    border: none;
-  }
-
-  .btn-secondary {
-    background: transparent;
-    color: var(--dim);
-    &:hover {
-      background: var(--surface);
-      color: var(--accent);
-    }
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: var(--bg);
-    &:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-sm);
-    }
+@media (max-width: 420px) {
+  .avatar {
+    width: 88px;
+    height: 88px;
   }
 }
 </style>

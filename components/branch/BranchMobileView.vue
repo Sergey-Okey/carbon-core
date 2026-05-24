@@ -60,6 +60,7 @@
               :key="milestone.id"
               class="milestone-item"
               :class="milestone.status"
+              @click="selectNode(milestone.id)"
             >
               <!-- Декоративный маркер этапа (круг) -->
               <div class="node-marker milestone-marker"></div>
@@ -161,10 +162,14 @@ import {
 } from 'lucide-vue-next'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useTasksStore } from '~/stores/tasks.store'
-import { useConfirm } from '~/composables/useConfirm'
 import type { Milestone } from '~/types/branch.types'
 
+const props = defineProps<{
+  selectedNodeId?: string | null
+}>()
+
 const emit = defineEmits<{
+  (e: 'select-node', nodeId: string | null): void
   (e: 'edit-milestone', milestone: Milestone): void
   (e: 'add-milestone', branchId?: string): void
   (e: 'add-branch'): void
@@ -175,7 +180,6 @@ const emit = defineEmits<{
 
 const branchesStore = useBranchesStore()
 const tasksStore = useTasksStore()
-const { confirm } = useConfirm()
 const expandedBranch = ref<string | null>(null)
 
 const branches = computed(() => branchesStore.branches)
@@ -203,20 +207,23 @@ function getMilestoneTasks(milestone: Milestone) {
 }
 
 function toggleBranch(branchId: string) {
+  const isClosingSelectedBranch =
+    expandedBranch.value === branchId && props.selectedNodeId === branchId
+
   expandedBranch.value = expandedBranch.value === branchId ? null : branchId
+  emit('select-node', isClosingSelectedBranch ? null : branchId)
+}
+
+function selectNode(nodeId: string) {
+  emit('select-node', nodeId)
 }
 
 function editMilestone(milestone: Milestone) {
   emit('edit-milestone', milestone)
 }
 
-async function deleteMilestone(milestoneId: string) {
-  const milestone = branches.value.flatMap(b => b.milestones).find(m => m.id === milestoneId)
-  if (!milestone) return
-  const ok = await confirm(`Удалить этап «${milestone.name}»?`)
-  if (ok) {
-    emit('delete-milestone', milestoneId)
-  }
+function deleteMilestone(milestoneId: string) {
+  emit('delete-milestone', milestoneId)
 }
 
 function addMilestone(branchId: string) {
@@ -224,24 +231,21 @@ function addMilestone(branchId: string) {
 }
 
 function addBranch() {
+  if (props.selectedNodeId) return
   emit('add-branch')
 }
 
 function addMilestoneToSelectedBranch() {
-  emit('add-milestone')
+  if (!props.selectedNodeId) return
+  emit('add-milestone', props.selectedNodeId)
 }
 
 function editBranch(branchId: string) {
   emit('edit-branch', branchId)
 }
 
-async function deleteBranch(branchId: string) {
-  const branch = branches.value.find(b => b.id === branchId)
-  if (!branch) return
-  const ok = await confirm(`Удалить ветку «${branch.displayName}»?`)
-  if (ok) {
-    emit('delete-branch', branchId)
-  }
+function deleteBranch(branchId: string) {
+  emit('delete-branch', branchId)
 }
 
 function getIconComponent(iconName: string) {

@@ -1,7 +1,6 @@
 <template>
   <Panel position="bottom-center" class="board-controls-panel">
     <div class="board-controls">
-      <!-- Группа 1: вид и зум -->
       <button @click="$emit('fit-view')" title="Сбросить вид">
         <Maximize :size="18" />
       </button>
@@ -13,13 +12,11 @@
       </button>
       <div class="divider"></div>
 
-      <!-- Группа 2: выравнивание (только по кнопке) -->
-      <button @click="$emit('align-layout')" title="Выровнить положение">
-        <RefreshCw :size="18" />
+      <button @click="$emit('align-layout')" title="Выровнять доску">
+        <LayoutGrid :size="18" />
       </button>
       <div class="divider"></div>
 
-      <!-- Группа 3: создание элементов -->
       <button
         @click="$emit('add-branch')"
         title="Добавить ветку"
@@ -29,33 +26,24 @@
       </button>
       <button
         @click="$emit('add-milestone')"
-        title="Добавить этап"
+        :title="canAddMilestone ? 'Добавить этап' : 'Выберите ветку или этап'"
         :disabled="!canAddMilestone"
       >
         <PlusCircle :size="18" />
       </button>
       <div class="divider"></div>
 
-      <!-- Группа 4: действия с выбранным элементом -->
       <button
-        v-if="selectedEdgeId"
+        v-if="hasSelection"
         @click="$emit('delete-selected')"
-        title="Разорвать связь"
-        class="unlink-btn"
-      >
-        <Unlink :size="18" />
-      </button>
-      <button
-        v-else-if="selectedNodeId"
-        @click="$emit('delete-selected')"
-        title="Удалить выбранное"
+        :title="selectionType === 'edge' ? 'Разорвать связь' : 'Удалить выбранное'"
         class="delete-btn"
       >
-        <Trash2 :size="18" />
+        <Unlink2 v-if="selectionType === 'edge'" :size="18" />
+        <Trash2 v-else :size="18" />
       </button>
-      <div v-if="selectedEdgeId || selectedNodeId" class="divider"></div>
+      <div v-if="hasSelection" class="divider"></div>
 
-      <!-- Группа 5: история -->
       <button @click="$emit('undo')" title="Отменить" :disabled="!canUndo">
         <Undo :size="18" />
       </button>
@@ -75,19 +63,19 @@ import {
   Plus,
   PlusCircle,
   Trash2,
-  Unlink,
+  Unlink2,
   Undo,
   Redo,
-  RefreshCw,
+  LayoutGrid,
 } from 'lucide-vue-next'
 
-defineProps<{
+const props = defineProps<{
   canUndo?: boolean
   canRedo?: boolean
   canAddBranch?: boolean
   canAddMilestone?: boolean
-  selectedNodeId?: string | null
-  selectedEdgeId?: string | null
+  hasSelection?: boolean
+  selectionType?: 'branch' | 'milestone' | 'edge' | 'none'
 }>()
 
 defineEmits([
@@ -153,15 +141,10 @@ defineEmits([
 
   .delete-btn {
     color: var(--error);
-    &:hover {
-      background: transparent;
-    }
-  }
 
-  .unlink-btn {
-    color: var(--warning);
     &:hover {
       background: transparent;
+      transform: scale(1.08);
     }
   }
 

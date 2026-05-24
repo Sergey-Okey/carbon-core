@@ -1,20 +1,45 @@
 <template>
   <header class="header">
-    <div class="logo">
-      <span class="logo-text">CORE OF LIFE</span>
-      <span class="logo-icon">COF</span>
+    <div class="brand">
+      <img class="brand-mark" src="/favicon.svg" alt="" aria-hidden="true" />
+      <div class="brand-text">
+        <span class="logo-text">CORE OF LIFE</span>
+        <span class="logo-icon">COF</span>
+      </div>
+    </div>
+
+    <div class="section-title" aria-live="polite">
+      {{ currentSectionTitle }}
     </div>
 
     <div class="actions">
-      <button class="action-btn" title="Обучение" @click="openOnboarding">
+      <button
+        class="action-btn"
+        type="button"
+        title="Обучение"
+        aria-label="Открыть обучение"
+        @click="openOnboarding"
+      >
         <HelpCircle :size="20" />
       </button>
-      <button class="action-btn" title="Добавить задачу" @click="openTaskForm">
+      <button
+        class="action-btn action-btn--primary"
+        type="button"
+        title="Добавить задачу"
+        aria-label="Добавить задачу"
+        @click="openTaskForm"
+      >
         <Plus :size="20" />
       </button>
-      <button class="profile-btn" title="Профиль" @click="openProfile">
+      <button
+        class="profile-btn"
+        type="button"
+        title="Профиль"
+        aria-label="Открыть профиль"
+        @click="openProfile"
+      >
         <div v-if="userStore.profile.avatar" class="avatar-small">
-          <img :src="userStore.profile.avatar" alt="avatar" />
+          <img :src="userStore.profile.avatar" alt="" />
         </div>
         <UserCircle v-else :size="20" />
       </button>
@@ -31,19 +56,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { HelpCircle, Plus, UserCircle } from 'lucide-vue-next'
-import { useNotification } from '~/composables/useNotification'
+import { useTaskActions } from '~/composables/useTaskActions'
 import TaskForm from '~/components/task/TaskForm.vue'
-import { useTasksStore } from '~/stores/tasks.store'
-import { useBranchesStore } from '~/stores/branches.store'
 import { useUserStore } from '~/stores/user.store'
+import { useUIStore, type NavSection } from '~/stores/ui.store'
 
 const userStore = useUserStore()
-const tasksStore = useTasksStore()
-const branchesStore = useBranchesStore()
-const { addNotification } = useNotification()
+const uiStore = useUIStore()
+const { saveTask } = useTaskActions()
 const showTaskForm = ref(false)
+
+const sectionTitles: Record<NavSection, string> = {
+  board: 'Доска',
+  tasks: 'Задачи',
+  shop: 'Магазин',
+  analytics: 'Аналитика',
+  settings: 'Настройки',
+}
+
+const currentSectionTitle = computed(() => sectionTitles[uiStore.activeNav])
 
 function openTaskForm() {
   showTaskForm.value = true
@@ -58,30 +91,10 @@ function openOnboarding() {
 }
 
 function handleTaskSave(taskData: any) {
-  const { createBranch, ...newTaskData } = taskData
-  const result = tasksStore.addTask(newTaskData)
-  if (result) {
-    if (createBranch) {
-      branchesStore.addBranch(
-        result.title,
-        'help-circle',
-        result.description || '',
-        [result.id]
-      )
-    }
-    addNotification({
-      type: 'success',
-      message: `"${result.title}" добавлено`,
-    })
-    showTaskForm.value = false
-    return
-  }
-
-  addNotification({
-    type: 'warning',
-    message: 'Лимит задач на этот период исчерпан',
-  })
+  const saved = saveTask(taskData)
+  if (saved) showTaskForm.value = false
 }
+
 </script>
 
 <style scoped lang="scss">
@@ -93,24 +106,45 @@ function handleTaskSave(taskData: any) {
   align-items: center;
   justify-content: space-between;
   margin: 12px 12px 4px;
-  padding: 8px 20px;
+  padding: 8px 14px;
   border: 1px solid var(--border);
-  border-radius: 24px;
+  border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-sm);
   @include glass;
 
   @include mobile {
     margin: 8px;
-    padding: 8px 16px;
-    border-radius: 20px;
+    padding: 8px 10px;
   }
 }
 
-.logo {
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+
+  @include mobile {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+.brand-text {
+  min-width: 0;
   color: var(--accent);
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 
   .logo-text {
     display: inline;
@@ -127,16 +161,38 @@ function handleTaskSave(taskData: any) {
 
     .logo-icon {
       display: inline;
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       font-weight: 700;
     }
+  }
+}
+
+.section-title {
+  position: absolute;
+  left: 50%;
+  max-width: 36%;
+  overflow: hidden;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  transform: translateX(-50%);
+  white-space: nowrap;
+
+  @include mobile {
+    position: static;
+    max-width: none;
+    margin-left: 10px;
+    margin-right: auto;
+    transform: none;
   }
 }
 
 .actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  margin-left: auto;
 }
 
 .action-btn,
@@ -144,18 +200,41 @@ function handleTaskSave(taskData: any) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 10px;
-  background: transparent;
+  width: 34px;
+  height: 34px;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-md);
+  background: color-mix(in srgb, var(--surface) 26%, transparent);
   color: var(--dim);
   cursor: pointer;
-  transition: all var(--transition-standard);
+  transition:
+    background var(--transition-standard),
+    border-color var(--transition-standard),
+    color var(--transition-standard),
+    transform var(--transition-standard);
 
   &:hover {
-    background: var(--surface);
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
     color: var(--accent);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+}
+
+.action-btn--primary {
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
   }
 }
 

@@ -41,8 +41,8 @@
 
     <Transition name="expand">
       <div v-if="isExpanded" class="node-details">
-        <p v-if="data.milestone && data.milestone.description">
-          {{ data.milestone.description }}
+        <p v-if="branchDescription">
+          {{ branchDescription }}
         </p>
         <p v-else class="placeholder">Нет описания</p>
         <div class="linked-tasks">
@@ -56,9 +56,7 @@
     </Transition>
 
     <!-- Хендлы -->
-    <Handle type="source" :position="Position.Right" class="handle handle-right" />
-    <Handle type="target" :position="Position.Top" class="handle handle-top" />
-    <Handle type="source" :position="Position.Bottom" class="handle handle-bottom" />
+    <Handle type="target" :position="Position.Right" class="handle handle-right" />
   </GlassCard>
 </template>
 
@@ -109,6 +107,13 @@ const branchName = computed(() => {
   return branch?.displayName || 'Ветка'
 })
 
+const branchDescription = computed(() => {
+  const branch = branchesStore.branches.find(
+    (b) => b.id === props.data.branchId
+  )
+  return branch?.description?.trim() || ''
+})
+
 const iconComponent = computed(() => {
   const branch = branchesStore.branches.find(
     (b) => b.id === props.data.branchId
@@ -152,15 +157,8 @@ const completedIndicatorTasks = computed(() =>
 )
 
 const linkedTasks = computed(() => {
-  const branch = branchesStore.branches.find(
-    (b) => b.id === props.data.branchId
-  )
-  if (!branch) return []
-  const allTaskIds = new Set<string>()
-  branch.milestones.forEach((m) =>
-    m.taskIds.forEach((id) => allTaskIds.add(id))
-  )
-  return tasksStore.tasks.filter((t) => allTaskIds.has(t.id))
+  const taskIds = branchesStore.getBranchTaskIds(props.data.branchId)
+  return tasksStore.tasks.filter((task) => taskIds.includes(task.id))
 })
 
 function togglePinned() {
@@ -397,30 +395,13 @@ top: 45px;           /* фиксированный отступ от верхн�
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    top: 60px !important;
+    top: 55px !important;
     right: -5px !important;
     transform: none !important;
   }
 
-  .handle-top {
-    width: 12px;
-    height: 6px;
-    border-radius: 2px;
-    top: -3px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-  }
-
-  .handle-bottom {
-    width: 12px;
-    height: 6px;
-    border-radius: 2px;
-    bottom: -3px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-  }
-
-  &:hover .handle {
+  &:hover .handle,
+  &.selected .handle {
     opacity: 1;
     transform: scale(1.05);
   }

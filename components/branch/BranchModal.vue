@@ -1,139 +1,137 @@
 <template>
-  <Teleport to="body">
-    <div class="modal-overlay" @click.self="emit('close')">
-      <div class="modal">
-        <div class="modal-header">
-          <h3>{{ branch ? 'Редактировать ветку' : 'Новая ветка' }}</h3>
-          <button class="close-btn" @click="emit('close')">
-            <X :size="20" />
+  <AppModal
+    :title="branch ? 'Редактировать ветку' : 'Новая ветка'"
+    kicker="Ветка"
+    as-form
+    size="md"
+    allow-overflow
+    @close="emit('close')"
+    @submit="handleSubmit"
+  >
+    <div class="board-form">
+      <AppFormField
+        label="Название"
+        for-id="branch-name"
+        :error="nameTouched && !canSubmit ? 'Укажите название ветки' : undefined"
+      >
+        <AppInput
+          id="branch-name"
+          v-model="form.name"
+          placeholder="Название ветки"
+          :invalid="nameTouched && !canSubmit"
+          @blur="nameTouched = true"
+        />
+      </AppFormField>
+
+      <AppFormField label="Описание" for-id="branch-description">
+        <AppInput
+          id="branch-description"
+          v-model="form.description"
+          multiline
+          placeholder="Опишите направление..."
+          rows="3"
+        />
+      </AppFormField>
+
+      <AppFormField label="Иконка">
+        <div class="icon-section">
+          <button type="button" class="toggle-btn" @click="iconsExpanded = !iconsExpanded">
+            <span class="selected-icon">
+              <component :is="iconComponent(form.icon)" :size="20" />
+            </span>
+            <ChevronDown :size="16" :class="{ rotated: iconsExpanded }" />
           </button>
+
+          <Transition name="expand">
+            <div v-if="iconsExpanded" class="icons-grid">
+              <button
+                v-for="icon in iconOptions"
+                :key="icon"
+                type="button"
+                class="icon-option"
+                :class="{ active: form.icon === icon }"
+                :title="icon"
+                @click="form.icon = icon"
+              >
+                <component :is="iconComponent(icon)" :size="20" />
+              </button>
+            </div>
+          </Transition>
         </div>
+      </AppFormField>
 
-        <form @submit.prevent="handleSubmit">
-          <div class="form-group">
-            <label>Название</label>
-            <input v-model="form.name" type="text" required />
-          </div>
+      <AppFormField label="Привязанные задачи">
+        <div class="tasks-section">
+          <button type="button" class="toggle-btn" @click="tasksExpanded = !tasksExpanded">
+            <span>Выбрать задачи ({{ form.taskIds.length }})</span>
+            <ChevronDown :size="16" :class="{ rotated: tasksExpanded }" />
+          </button>
 
-          <div class="form-group">
-            <label>Описание</label>
-            <textarea
-              v-model="form.description"
-              placeholder="Опишите направление..."
-              rows="2"
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Иконка</label>
-            <div class="icon-section">
-              <button
-                type="button"
-                class="toggle-icons-btn"
-                @click="iconsExpanded = !iconsExpanded"
+          <Transition name="expand">
+            <div v-if="tasksExpanded" class="tasks-list">
+              <label
+                v-for="task in activeTasks"
+                :key="task.id"
+                class="task-row"
+                :class="{ selected: form.taskIds.includes(task.id) }"
               >
-                <div class="selected-icon">
-                  <component :is="iconComponent(form.icon)" :size="20" />
-                  <span>{{ form.icon }}</span>
-                </div>
-                <ChevronDown :size="16" :class="{ rotated: iconsExpanded }" />
-              </button>
-              <Transition name="expand">
-                <div v-if="iconsExpanded" class="icons-grid">
-                  <button
-                    v-for="icon in iconOptions"
-                    :key="icon"
-                    type="button"
-                    class="icon-option"
-                    :class="{ active: form.icon === icon }"
-                    @click="form.icon = icon"
-                  >
-                    <component :is="iconComponent(icon)" :size="20" />
-                  </button>
-                </div>
-              </Transition>
-            </div>
-          </div>
+                <span class="custom-checkbox">
+                  <input v-model="form.taskIds" type="checkbox" :value="task.id" />
+                  <span class="checkmark"></span>
+                </span>
+                <span class="task-title">{{ task.title }}</span>
+                <span class="task-xp">+{{ task.xpReward || 50 }} XP</span>
+              </label>
 
-          <div class="form-group">
-            <label>Привязанные задачи (исключая привычки)</label>
-            <div class="tasks-section">
-              <button
-                type="button"
-                class="toggle-tasks-btn"
-                @click="tasksExpanded = !tasksExpanded"
-              >
-                <span>Выбрать задачи ({{ form.taskIds.length }})</span>
-                <ChevronDown :size="16" :class="{ rotated: tasksExpanded }" />
-              </button>
-              <Transition name="expand">
-                <div v-if="tasksExpanded" class="tasks-list">
-                  <label
-                    v-for="task in activeTasks"
-                    :key="task.id"
-                    class="task-checkbox"
-                  >
-                    <span class="custom-checkbox">
-                      <input
-                        type="checkbox"
-                        :value="task.id"
-                        v-model="form.taskIds"
-                      />
-                      <span class="checkmark"></span>
-                    </span>
-                    <span class="task-title">{{ task.title }}</span>
-                    <span class="task-xp">+{{ task.xpReward || 50 }} XP</span>
-                  </label>
-                </div>
-              </Transition>
+              <div v-if="activeTasks.length === 0" class="empty-list">
+                Нет доступных задач
+              </div>
             </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn-secondary" @click="emit('close')">
-              Отмена
-            </button>
-            <button
-              v-if="branch"
-              type="button"
-              class="btn-danger"
-              @click="deleteBranch"
-            >
-              Удалить
-            </button>
-            <button type="submit" class="btn-primary">
-              {{ branch ? 'Сохранить' : 'Создать' }}
-            </button>
-          </div>
-        </form>
-      </div>
+          </Transition>
+        </div>
+      </AppFormField>
     </div>
-  </Teleport>
+
+    <template #footer>
+      <AppButton v-if="branch" type="button" variant="danger" @click="emit('delete')">
+        Удалить
+      </AppButton>
+      <div class="footer-actions">
+        <AppButton type="button" variant="secondary" @click="emit('close')">
+          Отмена
+        </AppButton>
+        <AppButton type="submit" variant="primary" :disabled="!canSubmit">
+          {{ branch ? 'Сохранить' : 'Создать' }}
+        </AppButton>
+      </div>
+    </template>
+  </AppModal>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import {
-  X,
-  ChevronDown,
-  TrendingUp,
-  Dumbbell,
-  Brain,
-  Users,
-  Target,
-  Briefcase,
-  Heart,
-  BookOpen,
-  Globe,
   Award,
-  Coffee,
-  Music,
+  BookOpen,
+  Brain,
+  Briefcase,
   Camera,
+  ChevronDown,
   Code,
+  Coffee,
+  Dumbbell,
+  Globe,
+  Heart,
+  Music,
+  Target,
+  TrendingUp,
+  Users,
 } from 'lucide-vue-next'
+import AppButton from '~/components/ui/AppButton.vue'
+import AppFormField from '~/components/ui/AppFormField.vue'
+import AppInput from '~/components/ui/AppInput.vue'
+import AppModal from '~/components/ui/AppModal.vue'
 import { useTasksStore } from '~/stores/tasks.store'
-import { useBranchesStore } from '~/stores/branches.store'
-import { useConfirm } from '~/composables/useConfirm'
 import type { Branch } from '~/types/branch.types'
 
 const props = defineProps<{ branch?: Branch | null }>()
@@ -147,10 +145,9 @@ const emit = defineEmits<{
 }>()
 
 const tasksStore = useTasksStore()
-const branchesStore = useBranchesStore()
-const { confirm } = useConfirm()
 const iconsExpanded = ref(false)
 const tasksExpanded = ref(false)
+const nameTouched = ref(false)
 
 const iconOptions = [
   'trending-up',
@@ -189,9 +186,8 @@ const iconComponent = (name: string) => {
   return map[name] || Target
 }
 
-const activeTasks = computed(() => {
-  return tasksStore.tasks.filter((t) => t.type !== 'HABIT')
-})
+const activeTasks = computed(() => tasksStore.tasks.filter((task) => task.type !== 'HABIT'))
+const canSubmit = computed(() => form.name.trim().length > 0)
 
 const form = reactive({
   name: '',
@@ -203,6 +199,10 @@ const form = reactive({
 watch(
   () => props.branch,
   (newBranch) => {
+    nameTouched.value = false
+    iconsExpanded.value = false
+    tasksExpanded.value = false
+
     if (newBranch) {
       form.name = newBranch.displayName
       form.icon = newBranch.icon
@@ -219,300 +219,210 @@ watch(
 )
 
 function handleSubmit() {
-  emit('save', { ...form })
-}
-
-async function deleteBranch() {
-  if (!props.branch) return
-  emit('delete')
+  nameTouched.value = true
+  if (!canSubmit.value) return
+  emit('save', { ...form, name: form.name.trim() })
 }
 </script>
 
 <style scoped lang="scss">
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: color-mix(in srgb, var(--bg) 70%, transparent);
-  backdrop-filter: blur(6px);
+.board-form {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
+  flex-direction: column;
+  gap: 18px;
 }
-.modal {
-  width: 100%;
-  max-width: 420px;
-  max-height: 80vh;
-  overflow-y: auto;
+
+.icon-section,
+.tasks-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toggle-btn {
   @include glass;
-  border-radius: var(--border-radius-lg);
-  border: 1px solid var(--border);
-  color: var(--accent);
-}
-.modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 20px 0;
-  h3 {
-    font-weight: 600;
+  gap: 12px;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 14px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--surface) 48%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-standard),
+    background var(--transition-standard);
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
   }
-  .close-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    color: var(--dim);
-    &:hover {
-      background: var(--surface);
-      color: var(--accent);
-    }
+
+  .rotated {
+    transform: rotate(180deg);
   }
 }
-form {
-  padding: 20px;
+
+.selected-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
 }
-.form-group {
-  margin-bottom: 20px;
-  label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--dim);
-  }
-  input,
-  textarea {
-    width: 100%;
-    padding: 10px 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-sm);
+
+.icons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+  gap: 8px;
+}
+
+.icon-option {
+  @include glass;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  color: var(--dim);
+  background: color-mix(in srgb, var(--surface) 46%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition:
+    color var(--transition-standard),
+    border-color var(--transition-standard),
+    transform var(--transition-standard);
+
+  &:hover,
+  &.active {
     color: var(--accent);
-    font-size: 1rem;
-    &:focus {
-      border-color: var(--accent);
-      outline: none;
-    }
+    border-color: var(--accent);
   }
-  textarea {
-    resize: vertical;
-    min-height: 60px;
+
+  &.active {
+    transform: translateY(-1px);
   }
 }
-.icon-section {
-  .toggle-icons-btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-sm);
-    color: var(--accent);
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: border-color 0.1s;
-    &:hover {
-      border-color: var(--accent);
-    }
-    .rotated {
-      transform: rotate(180deg);
-    }
-    .selected-icon {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-  }
-  .icons-grid {
-    margin-top: 8px;
-    padding: 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-sm);
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  .icon-option {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    border-radius: var(--border-radius-sm);
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--dim);
-    cursor: pointer;
-    transition: all 0.1s;
-    &:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-    &.active {
-      border-color: var(--accent);
-      background: var(--accent);
-      color: var(--bg);
-    }
+
+.tasks-list {
+  @include glass;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  padding: 8px;
+  overflow-y: auto;
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.task-row {
+  @include glass;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--surface) 48%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+
+  &.selected {
+    border-color: var(--accent);
   }
 }
-.tasks-section {
-  .toggle-tasks-btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-sm);
-    color: var(--accent);
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: border-color 0.1s;
-    &:hover {
-      border-color: var(--accent);
-    }
-    .rotated {
-      transform: rotate(180deg);
-    }
-  }
-  .tasks-list {
-    margin-top: 8px;
-    padding: 4px 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-sm);
-    max-height: 260px;
-    overflow-y: auto;
 
-    .task-checkbox {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 12px;
-      margin: 0;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.15s;
+.custom-checkbox {
+  position: relative;
+  width: 18px;
+  height: 18px;
 
-      &:last-child {
-        border-bottom: none;
-      }
-
-      &:hover {
-        background: var(--border);
-      }
-
-      .custom-checkbox {
-        position: relative;
-        display: inline-block;
-        width: 18px;
-        height: 18px;
-        flex-shrink: 0;
-        input {
-          position: absolute;
-          opacity: 0;
-          cursor: pointer;
-          width: 100%;
-          height: 100%;
-          margin: 0;
-        }
-        .checkmark {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 18px;
-          height: 18px;
-          background: var(--bg);
-          border: 1px solid var(--border);
-          border-radius: 4px;
-          transition: all 0.1s;
-        }
-        input:checked + .checkmark {
-          background: var(--accent);
-          border-color: var(--accent);
-          &::after {
-            content: '';
-            position: absolute;
-            left: 5px;
-            top: 2px;
-            width: 5px;
-            height: 10px;
-            border: solid var(--bg);
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-          }
-        }
-      }
-
-      .task-title {
-        flex: 1;
-        font-size: 0.9rem;
-        line-height: 1.4;
-        color: var(--accent);
-      }
-
-      .task-xp {
-        font-size: 0.8rem;
-        color: var(--dim);
-        flex-shrink: 0;
-      }
-    }
+  input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
   }
 }
-.form-actions {
+
+.checkmark {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-sm);
+  background: color-mix(in srgb, var(--bg) 52%, transparent);
+
+  input:checked + & {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+}
+
+.task-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-xp,
+.empty-list {
+  color: var(--dim);
+  font-size: 0.85rem;
+}
+
+.empty-list {
+  padding: 12px;
+  text-align: center;
+  background: color-mix(in srgb, var(--surface) 46%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-md);
+}
+
+.footer-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-  button {
-    padding: 10px 20px;
-    border-radius: var(--border-radius-sm);
-    border: none;
-    cursor: pointer;
-  }
-  .btn-secondary {
-    background: transparent;
-    color: var(--dim);
-    &:hover {
-      background: var(--surface);
-    }
-  }
-  .btn-primary {
-    background: var(--accent);
-    color: var(--bg);
-    &:hover {
-      opacity: 0.9;
-    }
-  }
-  .btn-danger {
-    background: transparent;
-    color: var(--error);
-    border: 1px solid var(--error);
-    margin-right: auto;
-    &:hover {
-      background: var(--error);
-      color: var(--bg);
-    }
-  }
+  gap: 10px;
+  margin-left: auto;
 }
+
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.1s;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
 }
+
 .expand-enter-from,
 .expand-leave-to {
   opacity: 0;
-  transform: translateY(-8px);
+  transform: translateY(-4px);
+}
+
+@media (max-width: 640px) {
+  .footer-actions {
+    width: 100%;
+    flex-direction: column;
+    margin-left: 0;
+  }
+
+  .task-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .task-xp {
+    grid-column: 2;
+  }
 }
 </style>

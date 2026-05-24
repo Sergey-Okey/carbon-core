@@ -45,56 +45,51 @@
           </div>
 
           <form class="auth-form" @submit.prevent="submit">
-            <label v-if="isRegister" class="field">
-              <span>Имя</span>
-              <input
-                v-model.trim="form.name"
-                type="text"
+            <AppFormField v-if="isRegister" label="Имя">
+              <AppInput
+                v-model="form.name"
                 placeholder="Ваше имя"
                 autocomplete="name"
               />
-            </label>
+            </AppFormField>
 
-            <label class="field">
-              <span>Email</span>
-              <input
-                v-model.trim="form.email"
+            <AppFormField label="Email">
+              <AppInput
+                v-model="form.email"
                 type="email"
                 placeholder="email@example.com"
                 autocomplete="email"
               />
-            </label>
+            </AppFormField>
 
-            <label class="field">
-              <span>Пароль</span>
-              <input
+            <AppFormField label="Пароль">
+              <AppInput
                 v-model="form.password"
                 type="password"
                 placeholder="Не менее 6 символов"
                 :autocomplete="isRegister ? 'new-password' : 'current-password'"
               />
-            </label>
+            </AppFormField>
 
-            <label v-if="isRegister" class="field">
-              <span>Подтверждение</span>
-              <input
+            <AppFormField v-if="isRegister" label="Подтверждение">
+              <AppInput
                 v-model="form.confirmPassword"
                 type="password"
                 placeholder="Повторите пароль"
                 autocomplete="new-password"
               />
-            </label>
+            </AppFormField>
 
             <p v-if="error" class="error-text">{{ error }}</p>
 
-            <button
-              class="submit-btn"
+            <AppButton
               type="submit"
+              variant="primary"
               :disabled="authStore.isLoading"
             >
               <span v-if="authStore.isLoading" class="spinner"></span>
               <span>{{ submitLabel }}</span>
-            </button>
+            </AppButton>
           </form>
 
           <div class="card-footer">
@@ -110,6 +105,9 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { Shield, Download, UserCircle } from 'lucide-vue-next'
+import AppButton from '~/components/ui/AppButton.vue'
+import AppFormField from '~/components/ui/AppFormField.vue'
+import AppInput from '~/components/ui/AppInput.vue'
 import GlassCard from '~/components/base/GlassCard.vue'
 import { useNotification } from '~/composables/useNotification'
 import { useAuthStore } from '~/stores/auth.store'
@@ -155,6 +153,8 @@ const switchLink = computed(() => (isRegister.value ? '/auth' : '/register'))
 
 async function submit() {
   error.value = ''
+  form.name = form.name.trim()
+  form.email = form.email.trim()
 
   if (!form.email || !form.password || (isRegister.value && !form.name)) {
     error.value = 'Заполните обязательные поля'
@@ -300,11 +300,12 @@ async function submit() {
 }
 
 .feature-card {
+  @include glass;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: color-mix(in srgb, var(--accent) 4%, transparent);
+  background: color-mix(in srgb, var(--surface) 42%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--border-radius-sm);
   color: var(--accent);
@@ -318,10 +319,11 @@ async function submit() {
 }
 
 .auth-card {
+  @include glass;
   padding: 32px;
   border: 1px solid var(--border);
   backdrop-filter: blur(24px);
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  background: color-mix(in srgb, var(--surface) 52%, transparent);
   box-shadow: var(--shadow-lg);
 
   @media (max-width: 480px) {
@@ -359,75 +361,17 @@ async function submit() {
   gap: 14px;
 }
 
-.field {
-  display: grid;
-  gap: 4px;
-
-  span {
-    font-family: 'Manrope', sans-serif;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--dim);
-  }
-
-  input {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-sm);
-    background: var(--surface);
-    color: var(--accent);
-    font-size: 0.95rem;
-    transition: border-color var(--transition-standard);
-
-    &::placeholder {
-      color: var(--dim);
-    }
-
-    &:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-  }
-}
-
 .error-text {
   color: var(--error);
   font-size: 0.85rem;
   margin: -2px 0;
 }
 
-.submit-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+.auth-form :deep(.app-button) {
   width: 100%;
-  padding: 12px 20px;
-  border: none;
-  border-radius: var(--border-radius-sm);
-  background: var(--accent);
-  color: var(--bg);
-  font-family: 'Manrope', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
   margin-top: 4px;
-  transition:
-    transform var(--transition-standard),
-    box-shadow var(--transition-standard);
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: wait;
-  }
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
 }
 
 .spinner {
