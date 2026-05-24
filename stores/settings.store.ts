@@ -89,9 +89,10 @@ export const useSettingsStore = defineStore(
       if (import.meta.client) {
         const baseDuration = 0.1 // base duration in seconds
         const duration = enabled ? baseDuration / animationSpeed.value : 0
+        document.documentElement.classList.toggle('no-animations', !enabled)
         document.documentElement.style.setProperty(
           '--transition-standard',
-          `${duration}s cubic-bezier(0.2, 0, 0, 1)`
+          enabled ? `${duration}s cubic-bezier(0.2, 0, 0, 1)` : '0s linear'
         )
       }
     }

@@ -32,9 +32,24 @@
           </AppButton>
         </header>
 
-        <div v-if="notificationHistory.length" class="history-list">
+        <div v-if="notificationHistory.length" class="notification-tabs">
+          <button
+            v-for="tab in tabs"
+            :key="tab.id"
+            type="button"
+            class="tab-btn"
+            :class="{ active: activeTab === tab.id }"
+            @click="activeTab = tab.id"
+          >
+            <component :is="tab.icon" :size="16" />
+            <span>{{ tab.label }}</span>
+            <b>{{ tab.count }}</b>
+          </button>
+        </div>
+
+        <div v-if="visibleHistory.length" class="history-list">
           <article
-            v-for="item in notificationHistory"
+            v-for="item in visibleHistory"
             :key="item.id"
             class="history-item"
             :class="item.type"
@@ -58,7 +73,7 @@
 
         <div v-else class="empty-state">
           <BellOff :size="20" />
-          <span>История пока пустая</span>
+          <span>{{ emptyText }}</span>
         </div>
       </section>
     </Transition>
@@ -67,7 +82,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { Bell, BellOff, Trash2 } from 'lucide-vue-next'
+import { Bell, BellOff, Shield, Trash2, UserCircle } from 'lucide-vue-next'
 import AppButton from '~/components/ui/AppButton.vue'
 import { useNotification } from '~/composables/useNotification'
 
@@ -78,14 +93,45 @@ const {
 } = useNotification()
 const isOpen = ref(false)
 const root = ref<HTMLElement | null>(null)
+const activeTab = ref<'system' | 'user'>('system')
+
+const systemHistory = computed(() =>
+  notificationHistory.value.filter((item) => item.category === 'system')
+)
+const userHistory = computed(() =>
+  notificationHistory.value.filter((item) => item.category === 'user')
+)
+const visibleHistory = computed(() =>
+  activeTab.value === 'system' ? systemHistory.value : userHistory.value
+)
+const tabs = computed(() => [
+  {
+    id: 'system' as const,
+    label: 'Системные',
+    icon: Shield,
+    count: systemHistory.value.length,
+  },
+  {
+    id: 'user' as const,
+    label: 'Личные',
+    icon: UserCircle,
+    count: userHistory.value.length,
+  },
+])
 
 const historyLabel = computed(() => {
   const count = notificationHistory.value.length
-  if (!count) return 'Нет событий'
-  if (count === 1) return '1 событие'
-  if (count < 5) return `${count} события`
-  return `${count} событий`
+  if (!count) return 'Нет важных событий'
+  if (count === 1) return '1 важное событие'
+  if (count < 5) return `${count} важных события`
+  return `${count} важных событий`
 })
+
+const emptyText = computed(() =>
+  notificationHistory.value.length
+    ? 'В этом разделе пока пусто'
+    : 'История пока пустая'
+)
 
 function formatTime(value?: string) {
   if (!value) return ''
@@ -142,11 +188,11 @@ onBeforeUnmount(() => {
 }
 
 .notification-panel {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
+  position: fixed;
+  top: 72px;
+  right: 12px;
   z-index: 100;
-  width: min(360px, calc(100vw - 24px));
+  width: min(380px, calc(100vw - 24px));
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--border-radius-lg);
@@ -174,6 +220,47 @@ onBeforeUnmount(() => {
   span {
     color: var(--dim);
     font-size: 0.82rem;
+  }
+}
+
+.notification-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: none;
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  color: var(--dim);
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: all var(--transition-standard);
+
+  b {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 78%, transparent);
+    color: var(--accent);
+    font-size: 0.7rem;
+    line-height: 18px;
+  }
+
+  &:hover,
+  &.active {
+    background: var(--surface);
+    color: var(--accent);
   }
 }
 
@@ -264,7 +351,6 @@ onBeforeUnmount(() => {
 
 @media (max-width: 640px) {
   .notification-panel {
-    position: fixed;
     top: 70px;
     left: 12px;
     right: 12px;

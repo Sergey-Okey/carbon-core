@@ -11,11 +11,13 @@ type NewTaskData = Omit<Task, 'id' | 'createdAt' | 'done'> & {
   id?: string
   createdAt?: number
 }
+export type DeletedTask = Task & { deletedAt: number }
 
 export const useTasksStore = defineStore(
   'tasks',
   () => {
     const tasks = ref<Task[]>([])
+    const deletedTasks = ref<DeletedTask[]>([])
     const completedTasksHistory = ref<{ date: string; count: number }[]>([])
 
     function getTodayDateString(): string {
@@ -103,9 +105,35 @@ export const useTasksStore = defineStore(
       const index = tasks.value.findIndex((task) => task.id === id)
       if (index === -1) return
 
-      tasks.value.splice(index, 1)
+      const [deletedTask] = tasks.value.splice(index, 1)
+      deletedTasks.value.unshift({
+        ...deletedTask,
+        deletedAt: Date.now(),
+      })
+      deletedTasks.value = deletedTasks.value.slice(0, 30)
       const branchesStore = useBranchesStore()
       branchesStore.removeTaskFromMilestones(id)
+    }
+
+    function restoreTask(id: string): Task | null {
+      const index = deletedTasks.value.findIndex((task) => task.id === id)
+      if (index === -1) return null
+
+      const task = deletedTasks.value[index]
+      if (!canAddTask(task.type)) return null
+
+      deletedTasks.value.splice(index, 1)
+      const restoredTask: Task = {
+        ...task,
+        updatedAt: Date.now(),
+      }
+      delete (restoredTask as Partial<DeletedTask>).deletedAt
+      tasks.value.push(restoredTask)
+      return restoredTask
+    }
+
+    function clearDeletedTasks() {
+      deletedTasks.value = []
     }
 
     function updateTask(id: string, updates: Partial<Task>) {
@@ -155,10 +183,13 @@ export const useTasksStore = defineStore(
 
     return {
       tasks,
+      deletedTasks,
       completedTasksHistory,
       addTask,
       completeTask,
       deleteTask,
+      restoreTask,
+      clearDeletedTasks,
       updateTask,
       resetDailyTasks,
       getTasksByType,

@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { useSettingsStore } from '~/stores/settings.store'
 
 export type NotificationType = 'info' | 'success' | 'warning' | 'error'
+export type NotificationCategory = 'system' | 'user'
 
 export interface NotificationAction {
   label: string
@@ -11,6 +12,7 @@ export interface NotificationAction {
 export interface Notification {
   id: string
   type: NotificationType
+  category: NotificationCategory
   message: string
   duration?: number
   action?: NotificationAction
@@ -24,8 +26,10 @@ export function useNotification() {
   const settingsStore = useSettingsStore()
 
   function addNotification(
-    notification: Omit<Notification, 'id' | 'createdAt'> & {
+    notification: Omit<Notification, 'id' | 'createdAt' | 'category'> & {
+      category?: NotificationCategory
       silent?: boolean
+      history?: boolean
     }
   ) {
     if (!settingsStore.notificationsEnabled) return
@@ -34,17 +38,29 @@ export function useNotification() {
     const newNotification: Notification = {
       ...notification,
       id,
+      category: notification.category ?? 'system',
       createdAt: new Date().toISOString(),
       duration: notification.duration ?? settingsStore.toastDuration * 1000,
     }
-    notificationHistory.value.unshift(newNotification)
-    notificationHistory.value = notificationHistory.value.slice(0, 30)
+
+    const shouldSaveToHistory =
+      notification.history ?? ['warning', 'error'].includes(notification.type)
+
+    if (shouldSaveToHistory) {
+      notificationHistory.value.unshift(newNotification)
+      notificationHistory.value = notificationHistory.value.slice(0, 30)
+    }
 
     if (!notification.silent) {
       notifications.value.push(newNotification)
     }
 
-    if (!notification.silent && settingsStore.soundEnabled) {
+    const shouldPlaySound =
+      !notification.silent &&
+      settingsStore.soundEnabled &&
+      ['warning', 'error'].includes(notification.type)
+
+    if (shouldPlaySound) {
       playNotificationSound(
         notification.type,
         settingsStore.soundVolume,
