@@ -61,11 +61,7 @@ export function useNotification() {
       ['warning', 'error'].includes(notification.type)
 
     if (shouldPlaySound) {
-      playNotificationSound(
-        notification.type,
-        settingsStore.soundVolume,
-        settingsStore.soundTone
-      )
+      playNotificationSound(notification.type)
     }
 
     if (!notification.silent && newNotification.duration > 0) {
@@ -99,11 +95,7 @@ export function useNotification() {
   }
 }
 
-function playNotificationSound(
-  type: NotificationType,
-  volume: number,
-  tone: 'soft' | 'bright'
-) {
+function playNotificationSound(type: NotificationType) {
   try {
     const ctx = new (
       window.AudioContext || (window as any).webkitAudioContext
@@ -113,22 +105,14 @@ function playNotificationSound(
     osc.connect(gain)
     gain.connect(ctx.destination)
 
-    const freqs: Record<NotificationType, number> =
-      tone === 'soft'
-        ? {
-            success: 620,
-            error: 180,
-            warning: 330,
-            info: 480,
-          }
-        : {
-            success: 880,
-            error: 220,
-            warning: 440,
-            info: 660,
-          }
+    const freqs: Record<NotificationType, number> = {
+      success: 620,
+      error: 180,
+      warning: 330,
+      info: 480,
+    }
     osc.frequency.value = freqs[type] || 660
-    gain.gain.setValueAtTime(volume, ctx.currentTime)
+    gain.gain.setValueAtTime(0.08, ctx.currentTime)
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15)
     osc.start(ctx.currentTime)
     osc.stop(ctx.currentTime + 0.15)
