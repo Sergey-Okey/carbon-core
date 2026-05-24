@@ -21,7 +21,14 @@ export const useTasksStore = defineStore(
     const completedTasksHistory = ref<{ date: string; count: number }[]>([])
 
     function getTodayDateString(): string {
-      return new Date().toISOString().split('T')[0]
+      return getLocalDateKey(new Date())
+    }
+
+    function getLocalDateKey(date: Date): string {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
     }
 
     function getActiveTasksByType(type: TaskType): Task[] {
@@ -70,7 +77,7 @@ export const useTasksStore = defineStore(
 
       if (task.type === 'HABIT') {
         if (task.lastCompletedAt) {
-          const lastCompletedDate = new Date(task.lastCompletedAt).toISOString().split('T')[0]
+          const lastCompletedDate = getLocalDateKey(new Date(task.lastCompletedAt))
           if (lastCompletedDate === getTodayDateString()) return
         }
 

@@ -1,7 +1,7 @@
 <template>
   <GlassCard
     class="task-card"
-    :class="{ completed: isCompleted, overdue: isOverdue }"
+    :class="{ completed: isVisuallyCompleted, 'habit-checked': isHabitDoneToday, overdue: isOverdue }"
   >
     <div class="task-header">
       <h4>{{ task.title }}</h4>
@@ -97,12 +97,20 @@ const formattedDate = computed(() => {
 const isCompleted = computed(() => {
   if (props.task.done) return true
   if (props.task.type !== 'HABIT' || !props.task.lastCompletedAt) return false
-  return new Date(props.task.lastCompletedAt).toISOString().split('T')[0] ===
-    new Date().toISOString().split('T')[0]
+  return getLocalDateKey(new Date(props.task.lastCompletedAt)) ===
+    getLocalDateKey(new Date())
 })
 
+const isHabitDoneToday = computed(() => {
+  if (props.task.type !== 'HABIT' || !props.task.lastCompletedAt) return false
+  return getLocalDateKey(new Date(props.task.lastCompletedAt)) ===
+    getLocalDateKey(new Date())
+})
+
+const isVisuallyCompleted = computed(() => props.task.type !== 'HABIT' && props.task.done)
+
 const isOverdue = computed(() => {
-  if (isCompleted.value) return false
+  if (isVisuallyCompleted.value) return false
   if (!props.task.targetDate) return false
   return props.task.targetDate < new Date().toISOString().split('T')[0]
 })
@@ -118,6 +126,13 @@ function handleToggle() {
         : `Задача «${props.task.title}» выполнена`,
   })
   emit('toggle', props.task.id)
+}
+
+function getLocalDateKey(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 async function handleDelete() {
@@ -160,6 +175,15 @@ async function handleDelete() {
     h4 {
       text-decoration: line-through;
       text-decoration-color: color-mix(in srgb, var(--accent) 55%, transparent);
+      text-decoration-thickness: 2px;
+    }
+  }
+
+  &.habit-checked {
+    border-color: color-mix(in srgb, var(--success) 24%, var(--border));
+
+    .task-type.HABIT {
+      background: color-mix(in srgb, var(--success) 22%, transparent);
     }
   }
 

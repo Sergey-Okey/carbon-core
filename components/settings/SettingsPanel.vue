@@ -3,7 +3,7 @@
     <header class="settings-head">
       <div>
         <h2>Настройки</h2>
-        <p>То, что реально влияет на работу: внешний вид, спокойствие интерфейса, безопасность данных и восстановление.</p>
+        <p>Коротко и по делу: внешний вид, поведение интерфейса, восстановление удалённого и резервные копии.</p>
       </div>
     </header>
 
@@ -20,230 +20,264 @@
           @click="activeTab = tab.key"
         >
           <component :is="tab.icon" :size="18" />
-          <span class="nav-label">{{ tab.label }}</span>
+          <span>{{ tab.label }}</span>
         </button>
       </aside>
 
-      <div class="settings-content">
-        <section v-if="activeTab === 'appearance'" class="settings-group">
-          <GroupHeader :icon="Palette" title="Внешний вид" :caption="themeLabel" />
-
-          <div class="group-body">
-            <SettingRow title="Тема" :description="themeLabel">
-              <div class="segmented">
-                <button
-                  type="button"
-                  :class="{ active: settingsStore.theme === 'dark' }"
-                  @click="setTheme('dark', $event)"
-                >
-                  <Moon :size="18" />
-                  <span>Тёмная</span>
-                </button>
-                <button
-                  type="button"
-                  :class="{ active: settingsStore.theme === 'light' }"
-                  @click="setTheme('light', $event)"
-                >
-                  <Sun :size="18" />
-                  <span>Светлая</span>
-                </button>
-              </div>
-            </SettingRow>
-
-            <SettingRow title="Акцент" :description="accentLabel">
-              <div class="accent-controls">
-                <AppColorPicker
-                  :model-value="settingsStore.accentColor"
-                  :options="accentOptions"
-                  label="Акцент интерфейса"
-                  @update:model-value="setAccentColor"
-                />
-                <label class="custom-color">
-                  <span>Свой</span>
-                  <input
-                    type="color"
-                    :value="settingsStore.accentColor"
-                    aria-label="Выбрать свой цвет акцента"
-                    @input="setCustomAccent"
-                  />
-                </label>
-              </div>
-            </SettingRow>
-
-            <SettingRow
-              title="Анимации"
-              description="Полностью отключает переходы, всплытия и анимацию смены темы."
-            >
-              <ToggleSwitch
-                :checked="settingsStore.animationsEnabled"
-                @change="toggleAnimations"
-              />
-            </SettingRow>
+      <section v-if="activeTab === 'appearance'" class="settings-panel">
+        <div class="panel-head">
+          <div>
+            <Palette :size="22" />
+            <h3>Внешний вид</h3>
           </div>
-        </section>
+          <span>{{ themeLabel }}</span>
+        </div>
 
-        <section v-if="activeTab === 'behavior'" class="settings-group">
-          <GroupHeader
-            :icon="SlidersHorizontal"
-            title="Поведение"
-            :caption="settingsStore.notificationsEnabled ? 'Уведомления включены' : 'Тихий режим'"
-          />
-
-          <div class="group-body">
-            <SettingRow
-              title="Уведомления"
-              description="Показывать краткие сообщения после действий и ошибок."
-            >
-              <ToggleSwitch
-                :checked="settingsStore.notificationsEnabled"
-                @change="toggleNotifications"
-              />
-            </SettingRow>
-
-            <SettingRow
-              title="Звук важных событий"
-              description="Один короткий сигнал только для ошибок и предупреждений."
-            >
-              <ToggleSwitch
-                :checked="settingsStore.soundEnabled"
-                :disabled="!settingsStore.notificationsEnabled"
-                @change="toggleSound"
-              />
-            </SettingRow>
-
-            <SettingRow
-              title="Опасные действия"
-              description="Спрашивать подтверждение перед сбросом данных."
-            >
-              <ToggleSwitch
-                :checked="settingsStore.confirmDangerActions"
-                @change="toggleDangerConfirm"
-              />
-            </SettingRow>
-
-            <SettingRow
-              title="Прогресс в настройках"
-              description="Показывать верхнюю панель статистики на странице настроек."
-            >
-              <ToggleSwitch
-                :checked="settingsStore.showSettingsStats"
-                @change="toggleSettingsStats"
-              />
-            </SettingRow>
+        <div class="setting-row">
+          <div>
+            <strong>Тема</strong>
+            <span>Переключение с мягкой анимацией из точки клика.</span>
           </div>
-        </section>
-
-        <section v-if="activeTab === 'recovery'" class="settings-group">
-          <GroupHeader
-            :icon="History"
-            title="Восстановление"
-            :caption="deletedCaption"
-          />
-
-          <div class="group-body">
-            <div v-if="deletedTasks.length" class="recovery-list">
-              <article
-                v-for="task in deletedTasks"
-                :key="task.id"
-                class="recovery-item"
-              >
-                <div>
-                  <strong>{{ task.title }}</strong>
-                  <span>{{ task.type === 'HABIT' ? 'Привычка' : 'Задача' }} · удалено {{ formatDate(task.deletedAt) }}</span>
-                </div>
-                <AppButton
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  @click="restoreDeletedTask(task.id)"
-                >
-                  <RotateCcw :size="15" />
-                  Вернуть
-                </AppButton>
-              </article>
-            </div>
-
-            <div v-else class="empty-recovery">
-              <History :size="22" />
-              <span>Удалённых задач и привычек пока нет.</span>
-            </div>
-
-            <div v-if="deletedTasks.length" class="recovery-footer">
-              <AppButton type="button" variant="ghost" size="sm" @click="clearDeletedTasks">
-                Очистить список
-              </AppButton>
-            </div>
-          </div>
-        </section>
-
-        <section v-if="activeTab === 'data'" class="settings-group">
-          <GroupHeader
-            :icon="Database"
-            title="Данные"
-            :caption="settingsStore.autoBackup ? 'Авто-бэкап включён' : 'Авто-бэкап отключён'"
-          />
-
-          <div class="group-body">
-            <div class="data-note">
-              <Database :size="16" />
-              <span>Данные приложения хранятся на этом устройстве. Бэкап нужен перед очисткой браузера или переносом.</span>
-            </div>
-
-            <SettingRow
-              title="Авто-бэкап"
-              description="Сохранять резервную копию при важных изменениях."
+          <div class="segmented">
+            <button
+              type="button"
+              :class="{ active: settingsStore.theme === 'dark' }"
+              @click="setTheme('dark', $event)"
             >
-              <ToggleSwitch
-                :checked="settingsStore.autoBackup"
-                @change="toggleAutoBackup"
-              />
-            </SettingRow>
-
-            <div class="backup-info">
-              <Clock :size="14" />
-              <span>{{ lastBackupText }}</span>
-            </div>
-
-            <div class="action-group">
-              <AppButton type="button" variant="secondary" @click="createBackup">
-                <Download :size="16" />
-                Создать бэкап
-              </AppButton>
-              <AppButton type="button" variant="secondary" @click="exportData">
-                <FileJson :size="16" />
-                Экспорт JSON
-              </AppButton>
-              <AppButton type="button" variant="secondary" @click="importData">
-                <Upload :size="16" />
-                Импорт JSON
-              </AppButton>
-              <AppButton type="button" variant="secondary" @click="restoreAutoBackup">
-                <RotateCcw :size="16" />
-                Восстановить
-              </AppButton>
-            </div>
-
-            <div class="danger-zone">
-              <div>
-                <strong>Сброс данных</strong>
-                <span>Удаляет профиль, задачи, прогресс, историю и настройки.</span>
-              </div>
-              <AppButton type="button" variant="danger" @click="resetAllData">
-                <Trash2 :size="16" />
-                Сбросить всё
-              </AppButton>
-            </div>
+              <Moon :size="18" />
+              Тёмная
+            </button>
+            <button
+              type="button"
+              :class="{ active: settingsStore.theme === 'light' }"
+              @click="setTheme('light', $event)"
+            >
+              <Sun :size="18" />
+              Светлая
+            </button>
           </div>
-        </section>
-      </div>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <strong>Цвет пользователя</strong>
+            <span>{{ accentLabel }}</span>
+          </div>
+          <div class="accent-controls">
+            <AppColorPicker
+              :model-value="settingsStore.accentColor"
+              :options="accentOptions"
+              label="Акцент интерфейса"
+              @update:model-value="setAccentColor"
+            />
+            <label class="custom-color">
+              <span>Свой</span>
+              <input
+                type="color"
+                :value="settingsStore.accentColor"
+                aria-label="Выбрать свой цвет"
+                @input="setCustomAccent"
+              />
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <strong>Анимации</strong>
+            <span>Отключает переходы, всплытия и анимацию смены темы.</span>
+          </div>
+          <label class="switch">
+            <input
+              type="checkbox"
+              :checked="settingsStore.animationsEnabled"
+              @change="toggleAnimations"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <section v-if="activeTab === 'behavior'" class="settings-panel">
+        <div class="panel-head">
+          <div>
+            <SlidersHorizontal :size="22" />
+            <h3>Поведение</h3>
+          </div>
+          <span>{{ settingsStore.notificationsEnabled ? 'Обычный режим' : 'Тихий режим' }}</span>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <strong>Уведомления</strong>
+            <span>Показывать только нужные сообщения и ошибки.</span>
+          </div>
+          <label class="switch">
+            <input
+              type="checkbox"
+              :checked="settingsStore.notificationsEnabled"
+              @change="toggleNotifications"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <strong>Звук важных событий</strong>
+            <span>Один короткий сигнал только для ошибок и предупреждений.</span>
+          </div>
+          <label class="switch">
+            <input
+              type="checkbox"
+              :checked="settingsStore.soundEnabled"
+              :disabled="!settingsStore.notificationsEnabled"
+              @change="toggleSound"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <strong>Защита от случайного сброса</strong>
+            <span>Перед удалением всех данных приложение спросит подтверждение.</span>
+          </div>
+          <label class="switch">
+            <input
+              type="checkbox"
+              :checked="settingsStore.confirmDangerActions"
+              @change="toggleDangerConfirm"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <strong>Статистика в настройках</strong>
+            <span>Показывать верхнюю панель прогресса, если хочется видеть контекст.</span>
+          </div>
+          <label class="switch">
+            <input
+              type="checkbox"
+              :checked="settingsStore.showSettingsStats"
+              @change="toggleSettingsStats"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <section v-if="activeTab === 'recovery'" class="settings-panel">
+        <div class="panel-head">
+          <div>
+            <History :size="22" />
+            <h3>Восстановление</h3>
+          </div>
+          <span>{{ deletedCaption }}</span>
+        </div>
+
+        <div v-if="deletedTasks.length" class="recovery-list">
+          <article
+            v-for="task in deletedTasks"
+            :key="task.id"
+            class="recovery-item"
+          >
+            <div>
+              <strong>{{ task.title }}</strong>
+              <span>{{ task.type === 'HABIT' ? 'Привычка' : 'Задача' }} · удалено {{ formatDate(task.deletedAt) }}</span>
+            </div>
+            <AppButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              @click="restoreDeletedTask(task.id)"
+            >
+              <RotateCcw :size="15" />
+              Вернуть
+            </AppButton>
+          </article>
+        </div>
+
+        <div v-else class="empty-state">
+          <History :size="22" />
+          <span>Удалённых задач и привычек пока нет.</span>
+        </div>
+
+        <div v-if="deletedTasks.length" class="panel-footer">
+          <AppButton type="button" variant="ghost" size="sm" @click="clearDeletedTasks">
+            Очистить список восстановления
+          </AppButton>
+        </div>
+      </section>
+
+      <section v-if="activeTab === 'data'" class="settings-panel">
+        <div class="panel-head">
+          <div>
+            <Database :size="22" />
+            <h3>Данные</h3>
+          </div>
+          <span>{{ settingsStore.autoBackup ? 'Авто-бэкап включён' : 'Авто-бэкап отключён' }}</span>
+        </div>
+
+        <div class="data-note">
+          <Database :size="16" />
+          <span>Данные хранятся на этом устройстве. Бэкап нужен перед очисткой браузера или переносом.</span>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <strong>Авто-бэкап</strong>
+            <span>{{ lastBackupText }}</span>
+          </div>
+          <label class="switch">
+            <input
+              type="checkbox"
+              :checked="settingsStore.autoBackup"
+              @change="toggleAutoBackup"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="action-grid">
+          <AppButton type="button" variant="secondary" @click="createBackup">
+            <Download :size="16" />
+            Создать бэкап
+          </AppButton>
+          <AppButton type="button" variant="secondary" @click="exportData">
+            <FileJson :size="16" />
+            Экспорт JSON
+          </AppButton>
+          <AppButton type="button" variant="secondary" @click="importData">
+            <Upload :size="16" />
+            Импорт JSON
+          </AppButton>
+          <AppButton type="button" variant="secondary" @click="restoreAutoBackup">
+            <RotateCcw :size="16" />
+            Восстановить
+          </AppButton>
+        </div>
+
+        <div class="danger-zone">
+          <div>
+            <strong>Сброс данных</strong>
+            <span>Удаляет профиль, задачи, прогресс, историю и настройки.</span>
+          </div>
+          <AppButton type="button" variant="danger" @click="resetAllData">
+            <Trash2 :size="16" />
+            Сбросить всё
+          </AppButton>
+        </div>
+      </section>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h, ref } from 'vue'
+import { computed, ref } from 'vue'
 import {
-  Clock,
   Database,
   Download,
   FileJson,
@@ -267,58 +301,6 @@ import {
   restoreBackupPayload,
   saveAutoBackup,
 } from '~/utils/backup'
-
-const GroupHeader = defineComponent({
-  props: {
-    icon: { type: Object, required: true },
-    title: { type: String, required: true },
-    caption: { type: String, required: true },
-  },
-  setup(props) {
-    return () =>
-      h('div', { class: 'group-header' }, [
-        h('div', [h(props.icon as any, { size: 22 }), h('h3', props.title)]),
-        h('span', props.caption),
-      ])
-  },
-})
-
-const SettingRow = defineComponent({
-  props: {
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-  },
-  setup(props, { slots }) {
-    return () =>
-      h('div', { class: 'setting-row' }, [
-        h('div', { class: 'setting-info' }, [
-          h('span', { class: 'label' }, props.title),
-          h('span', { class: 'desc' }, props.description),
-        ]),
-        h('div', { class: 'setting-control' }, slots.default?.()),
-      ])
-  },
-})
-
-const ToggleSwitch = defineComponent({
-  props: {
-    checked: { type: Boolean, required: true },
-    disabled: { type: Boolean, default: false },
-  },
-  emits: ['change'],
-  setup(props, { emit }) {
-    return () =>
-      h('label', { class: 'switch' }, [
-        h('input', {
-          type: 'checkbox',
-          checked: props.checked,
-          disabled: props.disabled,
-          onChange: (event: Event) => emit('change', event),
-        }),
-        h('span', { class: 'slider' }),
-      ])
-  },
-})
 
 const settingsStore = useSettingsStore()
 const tasksStore = useTasksStore()
@@ -589,9 +571,8 @@ function formatDate(value: number) {
 
   &:hover,
   &.active {
-    background: var(--surface);
+    background: var(--bg);
     color: var(--accent);
-    box-shadow: inset 0 0 0 1px var(--border);
   }
 
   &.active {
@@ -604,25 +585,20 @@ function formatDate(value: number) {
     height: 44px;
     padding: 0;
     border-radius: 50%;
+
+    span {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      white-space: nowrap;
+      clip-path: inset(50%);
+    }
   }
 }
 
-.nav-label {
-  @include mobile {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    white-space: nowrap;
-    clip-path: inset(50%);
-  }
-}
-
-.settings-content {
+.settings-panel {
   min-width: 0;
-}
-
-.settings-group {
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--border-radius-lg);
@@ -630,14 +606,13 @@ function formatDate(value: number) {
   box-shadow: var(--shadow-md);
 }
 
-.group-header {
+.panel-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   padding: 22px 24px;
   border-bottom: 1px solid var(--border);
-  color: var(--accent);
 
   > div {
     display: flex;
@@ -647,6 +622,7 @@ function formatDate(value: number) {
 
   h3 {
     margin: 0;
+    color: var(--accent);
     font-size: 1.1rem;
   }
 
@@ -668,52 +644,41 @@ function formatDate(value: number) {
   }
 }
 
-.group-body {
-  padding: 6px 24px 24px;
-
-  @include mobile {
-    padding: 4px 20px 22px;
-  }
-}
-
 .setting-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(190px, auto);
   align-items: center;
   gap: 20px;
   min-height: 78px;
-  padding: 16px 0;
+  padding: 16px 24px;
   border-bottom: 1px solid rgba(var(--dim-rgb, 136, 136, 136), 0.08);
 
-  @include mobile {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    text-align: center;
+  > div:first-child {
+    min-width: 0;
   }
-}
 
-.setting-info {
-  .label {
+  strong,
+  span {
     display: block;
+  }
+
+  strong {
     color: var(--accent);
     font-weight: 600;
   }
 
-  .desc {
-    display: block;
+  span {
     margin-top: 4px;
     color: var(--dim);
     font-size: 0.85rem;
     line-height: 1.45;
   }
-}
-
-.setting-control {
-  display: flex;
-  justify-content: flex-end;
 
   @include mobile {
-    justify-content: center;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px 20px;
+    text-align: center;
   }
 }
 
@@ -726,7 +691,6 @@ function formatDate(value: number) {
 
   @include mobile {
     justify-content: center;
-    width: 100%;
   }
 }
 
@@ -781,6 +745,7 @@ function formatDate(value: number) {
   position: relative;
   width: 44px;
   height: 24px;
+  justify-self: end;
   cursor: pointer;
 
   input {
@@ -823,14 +788,18 @@ function formatDate(value: number) {
     opacity: 0.45;
     cursor: not-allowed;
   }
+
+  @include mobile {
+    justify-self: center;
+  }
 }
 
 .data-note,
-.backup-info {
+.empty-state {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 12px 0 18px;
+  margin: 16px 24px;
   padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: var(--border-radius-md);
@@ -839,10 +808,16 @@ function formatDate(value: number) {
   font-size: 0.85rem;
 }
 
-.action-group {
+.empty-state {
+  justify-content: center;
+  min-height: 120px;
+}
+
+.action-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  padding: 16px 24px 0;
 
   @include mobile {
     grid-template-columns: 1fr;
@@ -852,7 +827,7 @@ function formatDate(value: number) {
 .recovery-list {
   display: grid;
   gap: 8px;
-  padding-top: 16px;
+  padding: 16px 24px 0;
 }
 
 .recovery-item {
@@ -886,17 +861,9 @@ function formatDate(value: number) {
   }
 }
 
-.empty-recovery {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  padding: 34px 16px;
-  color: var(--dim);
-}
-
-.recovery-footer,
+.panel-footer,
 .danger-zone {
-  margin-top: 18px;
+  margin: 18px 24px 24px;
   padding-top: 18px;
   border-top: 1px solid var(--border);
 }

@@ -72,8 +72,8 @@ export function useTaskFilters() {
 
   function isHabitCompletedToday(task: Task): boolean {
     if (task.type !== 'HABIT' || !task.lastCompletedAt) return false
-    return new Date(task.lastCompletedAt).toISOString().split('T')[0] ===
-      new Date().toISOString().split('T')[0]
+    return getLocalDateKey(new Date(task.lastCompletedAt)) ===
+      getLocalDateKey(new Date())
   }
 
   function getCompletedTime(task: Task): number {
@@ -87,6 +87,13 @@ export function useTaskFilters() {
 
   function getTagFilterKey(tag: Pick<TaskTag, 'branchId' | 'name'>): string {
     return `${tag.branchId}:${tag.name.trim().toLowerCase()}`
+  }
+
+  function getLocalDateKey(date: Date): string {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
   }
 
   return {

@@ -1,4 +1,5 @@
 <template>
+  <div class="task-sections">
   <template v-if="showActiveSections">
     <TaskList
       task-type="HABITS"
@@ -63,6 +64,7 @@
     empty-text="Завершённых задач пока нет."
     @edit="emit('edit', $event)"
   />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -87,6 +89,17 @@ const emit = defineEmits<{
 </script>
 
 <style scoped lang="scss">
+.task-sections {
+  display: grid;
+  gap: 24px;
+  padding-bottom: 24px;
+
+  @include mobile {
+    gap: 16px;
+    padding-bottom: 112px;
+  }
+}
+
 .task-section-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
