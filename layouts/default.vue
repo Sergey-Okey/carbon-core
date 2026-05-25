@@ -19,12 +19,22 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
 
 <style scoped lang="scss">
 .layout {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   color: var(--accent);
-  transition: background 0.3s ease;
+  isolation: isolate;
+  transition: background var(--transition-standard);
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 .layout-content {
@@ -57,8 +67,16 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
   padding: 16px;
   scroll-behavior: smooth;
 
+  html.compact-ui & {
+    padding: 12px;
+  }
+
   @include desktop {
     padding: 20px 24px;
+
+    html.compact-ui & {
+      padding: 14px 18px;
+    }
   }
 
   &::-webkit-scrollbar {

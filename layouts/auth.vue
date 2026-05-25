@@ -18,10 +18,7 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  background:
-    radial-gradient(circle at top left, rgba(var(--accent-rgb, 214, 214, 214), 0.1), transparent 35%),
-    radial-gradient(circle at bottom right, rgba(var(--accent-rgb, 214, 214, 214), 0.08), transparent 30%),
-    var(--bg);
+  background: transparent;
 }
 
 .auth-layout__content {
@@ -34,7 +31,7 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
   position: absolute;
   width: 32rem;
   height: 32rem;
-  border-radius: 999px;
+  border-radius: var(--border-radius-pill);
   filter: blur(90px);
   pointer-events: none;
   opacity: 0.55;
@@ -43,12 +40,12 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
 .auth-layout__glow--left {
   top: -10rem;
   left: -8rem;
-  background: rgba(var(--accent-rgb, 214, 214, 214), 0.14);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .auth-layout__glow--right {
   right: -12rem;
   bottom: -12rem;
-  background: rgba(var(--accent-rgb, 214, 214, 214), 0.1);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 </style>

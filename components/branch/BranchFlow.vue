@@ -1,5 +1,5 @@
 <template>
-  <div class="branch-flow-wrapper">
+  <div ref="boardWrapper" class="branch-flow-wrapper" tabindex="-1">
     <BranchMobileView
       v-if="isMobile"
       :selected-node-id="selectedNodeId"
@@ -110,6 +110,7 @@ import {
 } from '@vue-flow/core'
 import { Background, BackgroundVariant } from '@vue-flow/background'
 import { useBranchesStore } from '~/stores/branches.store'
+import { useSettingsStore } from '~/stores/settings.store'
 import { useConfirm } from '~/composables/useConfirm'
 import { useNotification } from '~/composables/useNotification'
 import BranchNode from './BranchNode.vue'
@@ -124,6 +125,7 @@ import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 
 const branchesStore = useBranchesStore()
+const settingsStore = useSettingsStore()
 const { fitView, zoomIn: vfZoomIn, zoomOut: vfZoomOut } = useVueFlow()
 const { confirm } = useConfirm()
 const { addNotification } = useNotification()
@@ -149,6 +151,7 @@ const branchModal = ref<{ visible: boolean; branch: Branch | null }>({
   visible: false,
   branch: null,
 })
+const boardWrapper = ref<HTMLElement | null>(null)
 
 const emptyMilestone: Milestone = {
   id: '',
@@ -318,8 +321,10 @@ async function deleteSelectedEdge() {
   const edgeId = selectedEdgeId.value
   if (!edgeId) return
 
-  const ok = await confirm('Разорвать связь?')
-  if (!ok) return
+  if (settingsStore.boardConfirmEdgeDelete) {
+    const ok = await confirm('Разорвать связь?')
+    if (!ok) return
+  }
 
   const edge =
     selectedEdge.value ||
@@ -341,8 +346,10 @@ async function deleteSelectedBranch() {
   const branch = branchesStore.branches.find((item) => item.id === node.data.branchId)
   if (!branch) return
 
-  const ok = await confirm(`Удалить ветку «${branch.displayName}»?`)
-  if (!ok) return
+  if (settingsStore.boardConfirmBranchDelete) {
+    const ok = await confirm(`Удалить ветку «${branch.displayName}»?`)
+    if (!ok) return
+  }
 
   branchesStore.deleteBranch(branch.id)
   selectedNodeId.value = null
@@ -364,11 +371,16 @@ async function deleteSelectedMilestone() {
 function alignLayout() {
   if (branchesStore.branches.length === 0) return
 
-  const cols = 4
-  const branchGapX = 980
-  const branchGapY = 260
+  const density = {
+    compact: { branchGapX: 760, branchGapY: 220, milestoneGapX: 220 },
+    normal: { branchGapX: 980, branchGapY: 260, milestoneGapX: 260 },
+    wide: { branchGapX: 1180, branchGapY: 320, milestoneGapX: 320 },
+  }[settingsStore.boardLayoutDensity]
+  const cols = settingsStore.boardColumns
+  const branchGapX = density.branchGapX
+  const branchGapY = density.branchGapY
   const milestoneStartX = 300
-  const milestoneGapX = 260
+  const milestoneGapX = density.milestoneGapX
   const startX = 100
   const startY = 100
 
@@ -393,6 +405,7 @@ function alignLayout() {
 
   syncNodesAndEdges()
   saveToHistory()
+  refocusBoard()
   addNotification({ type: 'success', message: 'Доска выровнена' })
 }
 
@@ -457,6 +470,7 @@ function handleCreateMilestone(data: Partial<Milestone>) {
 
   creatingMilestone.value = false
   saveToHistory()
+  refocusBoard()
 }
 
 function handleSaveMilestone(updates: Partial<Milestone>) {
@@ -464,18 +478,22 @@ function handleSaveMilestone(updates: Partial<Milestone>) {
   branchesStore.updateMilestone(editingMilestone.value.id, updates)
   editingMilestone.value = null
   saveToHistory()
+  refocusBoard()
 }
 
 async function handleDeleteMilestone() {
   const milestone = editingMilestone.value
   if (!milestone) return
 
-  const ok = await confirm(`Удалить этап «${milestone.name}»?`)
-  if (!ok) return
+  if (settingsStore.confirmDangerActions) {
+    const ok = await confirm(`Удалить этап «${milestone.name}»?`)
+    if (!ok) return
+  }
 
   branchesStore.deleteMilestone(milestone.id)
   editingMilestone.value = null
   saveToHistory()
+  refocusBoard()
 }
 
 function openBranchEditor(branchId: string) {
@@ -513,21 +531,26 @@ async function handleDeleteBranch() {
   const branch = branchModal.value.branch
   if (!branch) return
 
-  const ok = await confirm(`Удалить ветку «${branch.displayName}»?`)
-  if (!ok) return
+  if (settingsStore.boardConfirmBranchDelete) {
+    const ok = await confirm(`Удалить ветку «${branch.displayName}»?`)
+    if (!ok) return
+  }
 
   branchesStore.deleteBranch(branch.id)
   branchModal.value.visible = false
   selectedNodeId.value = null
   saveToHistory()
+  refocusBoard()
 }
 
 async function handleDeleteBranchFromMobile(branchId: string) {
   const branch = branchesStore.branches.find((item) => item.id === branchId)
   if (!branch) return
 
-  const ok = await confirm(`Удалить ветку «${branch.displayName}»?`)
-  if (!ok) return
+  if (settingsStore.boardConfirmBranchDelete) {
+    const ok = await confirm(`Удалить ветку «${branch.displayName}»?`)
+    if (!ok) return
+  }
 
   branchesStore.deleteBranch(branchId)
   saveToHistory()
@@ -539,8 +562,10 @@ async function handleDeleteMilestoneFromMobile(milestoneId: string) {
     .find((item) => item.id === milestoneId)
   if (!milestone) return
 
-  const ok = await confirm(`Удалить этап «${milestone.name}»?`)
-  if (!ok) return
+  if (settingsStore.confirmDangerActions) {
+    const ok = await confirm(`Удалить этап «${milestone.name}»?`)
+    if (!ok) return
+  }
 
   branchesStore.deleteMilestone(milestoneId)
   saveToHistory()
@@ -572,6 +597,12 @@ function onNodeDragStop({ node }: { node: Node }) {
     branchesStore.updateMilestone(node.id, { position: node.position })
   }
   saveToHistory()
+  refocusBoard()
+}
+
+function refocusBoard() {
+  if (!settingsStore.boardFocusAfterAction) return
+  nextTick(() => boardWrapper.value?.focus({ preventScroll: true }))
 }
 
 function zoomIn() {
@@ -593,7 +624,12 @@ onMounted(() => {
   window.addEventListener('keydown', handleKeyDown)
   nextTick(() => {
     syncNodesAndEdges()
-    if (!isMobile.value) setTimeout(() => fitView(), 100)
+    if (!isMobile.value) {
+      setTimeout(() => {
+        fitView()
+        if (settingsStore.boardAutoFocus) boardWrapper.value?.focus({ preventScroll: true })
+      }, 100)
+    }
     saveToHistory()
   })
 })
@@ -612,11 +648,11 @@ watch(
 
 <style scoped lang="scss">
 .branch-flow-wrapper {
+  @include glass;
   width: 100%;
   height: 100%;
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-lg);
-  background: var(--bg);
   position: relative;
   overflow: hidden;
 
@@ -628,13 +664,13 @@ watch(
 }
 
 :deep(.vue-flow) {
-  background: var(--bg);
+  background: transparent;
   width: 100%;
   height: 100%;
 }
 
 :deep(.vue-flow__background) {
-  background-color: var(--bg);
+  background-color: transparent;
 
   .vue-flow__background-pattern {
     stroke: var(--border);
@@ -647,7 +683,7 @@ watch(
 }
 
 :deep(.vue-flow__node.selected .branch-node, .vue-flow__node.selected .milestone-node) {
-  border: 1px solid #ffffff !important;
+  border: 1px solid var(--accent) !important;
 }
 
 :deep(.vue-flow__edge.selected .vue-flow__edge-path) {

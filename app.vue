@@ -59,7 +59,10 @@ onMounted(async () => {
       tagsStore.normalizeTags(tasksStore.tasks)
     }
     if (data.ui) uiStore.$patch(data.ui)
-    if (data.settings) settingsStore.$patch(data.settings)
+    if (data.settings) {
+      settingsStore.$patch(data.settings)
+      settingsStore.applyRuntimeSettings()
+    }
   } catch {
     console.warn(
       'Облачная синхронизация недоступна, используются локальные данные'

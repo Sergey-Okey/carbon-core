@@ -76,13 +76,12 @@ h4 {
   button,
   .import-btn {
     padding: 10px 16px;
-    background: var(--surface);
+    @include glass;
     border-radius: var(--border-radius-sm);
     cursor: pointer;
     color: var(--accent);
-    border: 1px solid var(--border);
+    border: 1px solid var(--glass-border);
     &:hover {
-      background: var(--border);
     }
     &.danger {
       color: var(--error);

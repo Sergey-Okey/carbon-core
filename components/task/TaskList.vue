@@ -1,5 +1,5 @@
 <template>
-  <div class="task-list">
+  <div class="task-list" :class="{ 'task-list--habits': taskType === 'HABITS' }">
     <div class="list-header">
       <div class="title-group">
         <div class="title-wrapper">
@@ -241,7 +241,7 @@ function handleSave(taskData: any) {
     bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--surface);
+    @include glass;
     color: var(--accent);
     padding: 6px 12px;
     border-radius: var(--border-radius-md);
@@ -251,35 +251,28 @@ function handleSave(taskData: any) {
     white-space: normal;
     width: max-content;
     max-width: 240px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-md);
+    border: 1px solid var(--glass-border);
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s, transform 0.2s;
     pointer-events: none;
     z-index: 100;
-    backdrop-filter: blur(4px);
-    background: color-mix(in srgb, var(--surface) 95%, transparent);
   }
 
   .add-btn {
     @include glass;
     width: 38px;
     height: 38px;
-    border-radius: 50%;
+    border-radius: var(--border-radius-pill);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--accent);
-    background: color-mix(in srgb, var(--surface) 80%, transparent);
-    border: 1px solid var(--border);
     cursor: pointer;
     transition: all var(--transition-standard);
 
     &:hover {
-      background: var(--surface);
       transform: scale(1.02);
-      box-shadow: var(--shadow-md);
       border-color: var(--accent);
     }
 
@@ -290,7 +283,6 @@ function handleSave(taskData: any) {
     &.limited {
       color: var(--dim);
       border-style: dashed;
-      box-shadow: none;
     }
   }
 
@@ -300,15 +292,26 @@ function handleSave(taskData: any) {
     gap: 12px;
   }
 
+  &.task-list--habits {
+    .tasks {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+    }
+  }
+
   .empty {
+    @include glass;
     text-align: center;
     color: var(--dim);
     padding: 24px 16px;
     font-size: 0.9rem;
     border: 1px dashed var(--border);
     border-radius: var(--border-radius-lg);
-    background: color-mix(in srgb, var(--surface) 40%, transparent);
-    backdrop-filter: blur(2px);
   }
 
   /* Анимации списка */
@@ -353,6 +356,10 @@ function handleSave(taskData: any) {
       gap: 10px;
     }
 
+    &.task-list--habits .tasks {
+      grid-template-columns: 1fr;
+    }
+
     .tooltip {
       max-width: 200px;
       white-space: normal;
@@ -390,6 +397,10 @@ function handleSave(taskData: any) {
       gap: 8px;
     }
 
+    &.task-list--habits .tasks {
+      grid-template-columns: 1fr;
+    }
+
     .empty {
       padding: 16px 12px;
       font-size: 0.85rem;
@@ -403,6 +414,10 @@ function handleSave(taskData: any) {
 
     .tooltip {
       display: none;
+    }
+
+    &.task-list--habits .tasks {
+      grid-template-columns: 1fr;
     }
   }
 }

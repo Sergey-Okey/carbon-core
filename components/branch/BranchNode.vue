@@ -198,8 +198,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   transition:
     border-color 0.2s,
     background 0.2s;
-  background: var(--surface);
-  border: 1px solid transparent;
+  border: 1px solid var(--glass-border);
 
   &.selected {
     border-color: var(--accent);
@@ -207,7 +206,6 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
   &.completed {
     border-color: var(--success);
-    background: color-mix(in srgb, var(--success) 8%, var(--surface));
   }
 
   .node-main {
@@ -237,8 +235,8 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     width: 10px;
     height: 10px;
     background: var(--accent);
-    border-radius: 2px;
-    border: 1px solid var(--bg);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--glass-border);
     transition: opacity 0.2s;
     z-index: 2;
   }
@@ -257,7 +255,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
+    border-radius: var(--border-radius-sm);
     background: transparent;
     border: none;
     color: var(--dim);
@@ -269,7 +267,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
       background 0.2s,
       color 0.2s;
     &:hover {
-      background: var(--surface);
+      background: var(--glass-surface);
       color: var(--accent);
     }
   }
@@ -295,7 +293,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     flex: 1;
     height: 3px;
     background: var(--border);
-    border-radius: 2px;
+    border-radius: var(--border-radius-sm);
     transition: background 0.2s;
     &.filled {
       background: var(--accent);
@@ -323,7 +321,7 @@ top: 45px;           /* фиксированный отступ от верхн�
     justify-content: center;
     width: 20px;
     height: 20px;
-    border-radius: 4px;
+    border-radius: var(--border-radius-sm);
     background: transparent;
     border: none;
     color: var(--dim);
@@ -331,7 +329,7 @@ top: 45px;           /* фиксированный отступ от верхн�
     transition: all 0.2s;
     z-index: 5;
     &:hover {
-      background: var(--surface);
+      background: var(--glass-surface);
       color: var(--accent);
     }
     .rotated {
@@ -342,7 +340,7 @@ top: 45px;           /* фиксированный отступ от верхн�
   .node-details {
     margin-top: 12px;
     padding-top: 12px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--glass-border);
     font-size: 0.85rem;
     word-wrap: break-word;
     p {
@@ -386,7 +384,7 @@ top: 45px;           /* фиксированный отступ от верхн�
   .handle {
     transition: opacity 0.2s ease, transform 0.2s ease;
     background: var(--accent);
-    border: 1px solid var(--bg);
+    border: 1px solid var(--glass-border);
     opacity: 0;
     z-index: 10;
   }

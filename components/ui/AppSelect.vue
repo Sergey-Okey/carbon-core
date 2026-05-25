@@ -221,8 +221,7 @@ onBeforeUnmount(() => {
   height: 40px;
   padding: 0 34px 0 12px;
   overflow: hidden;
-  background: color-mix(in srgb, var(--surface) 58%, transparent);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-md);
   color: var(--accent);
   font: inherit;
@@ -237,7 +236,6 @@ onBeforeUnmount(() => {
   &:hover:not(:disabled),
   .app-select.open & {
     border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-    background: color-mix(in srgb, var(--surface) 68%, transparent);
   }
 
   &:focus-visible {
@@ -290,11 +288,7 @@ onBeforeUnmount(() => {
   position: fixed;
   padding: 6px;
   overflow-y: auto;
-  background: color-mix(in srgb, var(--surface) 62%, transparent);
-  border: 1px solid var(--border);
   border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(12px);
 
   &.top {
     transform: translateY(-100%);
@@ -310,7 +304,7 @@ onBeforeUnmount(() => {
   min-height: 36px;
   padding: 0 10px;
   border: none;
-  border-radius: var(--border-radius-sm);
+  border-radius: calc(var(--border-radius-md) - 4px);
   background: transparent;
   color: var(--accent);
   font: inherit;

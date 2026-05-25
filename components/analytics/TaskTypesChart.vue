@@ -113,8 +113,8 @@ const chartOptions = {
       justify-content: space-between;
       align-items: center;
       padding: 8px 12px;
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
       border-radius: var(--border-radius-sm);
       font-size: 0.85rem;
 

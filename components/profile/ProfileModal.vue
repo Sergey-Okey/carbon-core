@@ -166,7 +166,6 @@ function saveProfile() {
   height: 100px;
   overflow: hidden;
   color: var(--dim);
-  background: color-mix(in srgb, var(--surface) 42%, transparent);
   border: 2px solid var(--border);
   border-radius: 50%;
   cursor: pointer;
@@ -217,8 +216,7 @@ function saveProfile() {
   flex-direction: column;
   gap: 8px;
   padding: 16px;
-  background: color-mix(in srgb, var(--surface) 42%, transparent);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-md);
 }
 

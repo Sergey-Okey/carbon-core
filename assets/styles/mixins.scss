@@ -1,8 +1,11 @@
 @mixin glass {
-  background: color-mix(in srgb, var(--surface) 72%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
+  background: var(--glass-surface);
+  background-clip: padding-box;
+  backdrop-filter: var(--glass-filter) !important;
+  -webkit-backdrop-filter: var(--glass-filter) !important;
+  border: 1px solid var(--glass-border);
+  box-shadow: none;
+  transform: translateZ(0);
 }
 
 @mixin desktop {

@@ -69,8 +69,7 @@ function handleInput(event: Event) {
   width: 100%;
   min-height: 40px;
   padding: 0 14px;
-  background: color-mix(in srgb, var(--surface) 58%, transparent);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-md);
   color: var(--accent);
   font: inherit;
@@ -87,7 +86,6 @@ function handleInput(event: Event) {
 
   &:hover:not(:disabled) {
     border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-    background: color-mix(in srgb, var(--surface) 68%, transparent);
   }
 
   &:focus {

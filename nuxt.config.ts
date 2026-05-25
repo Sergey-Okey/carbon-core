@@ -65,6 +65,42 @@ export default defineNuxtConfig({
           href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap',
         },
       ],
+      script: [
+        {
+          innerHTML: `(() => {
+try {
+  const raw = localStorage.getItem('carbon-settings')
+  if (!raw) return
+  const settings = JSON.parse(raw)
+  const root = document.documentElement
+  const mode = settings.themeMode || settings.theme || 'dark'
+  const minutes = (value) => {
+    const parts = String(value || '00:00').split(':')
+    return Number(parts[0] || 0) * 60 + Number(parts[1] || 0)
+  }
+  let theme = settings.theme || 'dark'
+  if (mode === 'light' || mode === 'dark') theme = mode
+  if (mode === 'system') theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+  if (mode === 'schedule') {
+    const now = new Date()
+    const current = now.getHours() * 60 + now.getMinutes()
+    const light = minutes(settings.lightThemeFrom || '08:00')
+    const dark = minutes(settings.darkThemeFrom || '20:00')
+    theme = light < dark
+      ? (current >= light && current < dark ? 'light' : 'dark')
+      : (current >= light || current < dark ? 'light' : 'dark')
+  }
+  root.classList.toggle('light-theme', theme === 'light')
+  root.classList.toggle('compact-ui', settings.uiDensity === 'compact')
+  root.dataset.backgroundMode = settings.appBackgroundMode || 'default'
+  root.dataset.backgroundIntensity = settings.backgroundIntensity || 'normal'
+  if (settings.appBackgroundMode === 'image' && settings.customBackgroundImage) {
+    root.style.setProperty('--custom-bg-image', 'url("' + settings.customBackgroundImage + '")')
+  }
+} catch {}
+})()`,
+        },
+      ],
     },
   },
 })

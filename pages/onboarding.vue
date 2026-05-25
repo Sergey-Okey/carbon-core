@@ -1069,7 +1069,7 @@ onUnmounted(() => {
     color-mix(in srgb, var(--bg) 44%, transparent) 0%,
     var(--bg) 100%
   );
-  backdrop-filter: blur(18px);
+  backdrop-filter: var(--glass-filter);
 }
 
 .fixed-header,
@@ -1094,7 +1094,7 @@ onUnmounted(() => {
     color-mix(in srgb, var(--bg) 95%, transparent),
     transparent
   );
-  backdrop-filter: blur(10px);
+  backdrop-filter: var(--glass-filter);
 }
 .logo {
   font-family: 'Space Grotesk', sans-serif;
@@ -1249,7 +1249,6 @@ onUnmounted(() => {
   transition: all 0.3s;
   &:hover {
     transform: scale(1.02);
-    box-shadow: var(--shadow-lg);
     .btn-icon {
       transform: translateX(5px);
     }

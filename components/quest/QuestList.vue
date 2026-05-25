@@ -54,13 +54,12 @@ function handleSave(questData: any) {
     @include glass;
     width: 36px;
     height: 36px;
-    border-radius: 50%;
+    border-radius: var(--border-radius-pill);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--accent);
     &:hover {
-      background: var(--surface);
     }
   }
   .quests {

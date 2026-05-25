@@ -5,7 +5,7 @@ export type TagScope = 'habit' | 'task'
 export interface Tag {
   id: string
   name: string
-  branchId: BranchId
+  branchId?: BranchId | ''
   color?: string
   scope?: TagScope
   order: number

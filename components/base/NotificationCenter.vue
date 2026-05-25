@@ -15,68 +15,70 @@
       </span>
     </AppButton>
 
-    <Transition name="panel">
-      <section v-if="isOpen" class="notification-panel">
-        <header class="panel-header">
-          <div>
-            <h3>Уведомления</h3>
-            <span>{{ historyLabel }}</span>
-          </div>
-          <AppButton
-            v-if="notificationHistory.length"
-            variant="ghost"
-            size="sm"
-            @click="clearNotificationHistory"
-          >
-            Очистить
-          </AppButton>
-        </header>
-
-        <div v-if="notificationHistory.length" class="notification-tabs">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            type="button"
-            class="tab-btn"
-            :class="{ active: activeTab === tab.id }"
-            @click="activeTab = tab.id"
-          >
-            <component :is="tab.icon" :size="16" />
-            <span>{{ tab.label }}</span>
-            <b>{{ tab.count }}</b>
-          </button>
-        </div>
-
-        <div v-if="visibleHistory.length" class="history-list">
-          <article
-            v-for="item in visibleHistory"
-            :key="item.id"
-            class="history-item"
-            :class="item.type"
-          >
-            <span class="indicator"></span>
-            <div class="history-copy">
-              <strong>{{ item.message }}</strong>
-              <span>{{ formatTime(item.createdAt) }}</span>
+    <Teleport to="body">
+      <Transition name="panel">
+        <section v-if="isOpen" ref="panel" class="notification-panel" @click.stop>
+          <header class="panel-header">
+            <div>
+              <h3>Уведомления</h3>
+              <span>{{ historyLabel }}</span>
             </div>
             <AppButton
+              v-if="notificationHistory.length"
               variant="ghost"
-              icon-only
-              title="Удалить уведомление"
-              aria-label="Удалить уведомление"
-              @click="removeHistoryItem(item.id)"
+              size="sm"
+              @click="clearNotificationHistory"
             >
-              <Trash2 :size="16" />
+              Очистить
             </AppButton>
-          </article>
-        </div>
+          </header>
 
-        <div v-else class="empty-state">
-          <BellOff :size="20" />
-          <span>{{ emptyText }}</span>
-        </div>
-      </section>
-    </Transition>
+          <div v-if="notificationHistory.length" class="notification-tabs">
+            <button
+              v-for="tab in tabs"
+              :key="tab.id"
+              type="button"
+              class="tab-btn"
+              :class="{ active: activeTab === tab.id }"
+              @click="activeTab = tab.id"
+            >
+              <component :is="tab.icon" :size="16" />
+              <span>{{ tab.label }}</span>
+              <b>{{ tab.count }}</b>
+            </button>
+          </div>
+
+          <div v-if="visibleHistory.length" class="history-list">
+            <article
+              v-for="item in visibleHistory"
+              :key="item.id"
+              class="history-item"
+              :class="item.type"
+            >
+              <span class="indicator"></span>
+              <div class="history-copy">
+                <strong>{{ item.message }}</strong>
+                <span>{{ formatTime(item.createdAt) }}</span>
+              </div>
+              <AppButton
+                variant="ghost"
+                icon-only
+                title="Удалить уведомление"
+                aria-label="Удалить уведомление"
+                @click="removeHistoryItem(item.id)"
+              >
+                <Trash2 :size="16" />
+              </AppButton>
+            </article>
+          </div>
+
+          <div v-else class="empty-state">
+            <BellOff :size="20" />
+            <span>{{ emptyText }}</span>
+          </div>
+        </section>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -93,6 +95,7 @@ const {
 } = useNotification()
 const isOpen = ref(false)
 const root = ref<HTMLElement | null>(null)
+const panel = ref<HTMLElement | null>(null)
 const activeTab = ref<'system' | 'user'>('system')
 
 const systemHistory = computed(() =>
@@ -142,7 +145,8 @@ function formatTime(value?: string) {
 }
 
 function handleDocumentClick(event: MouseEvent) {
-  if (!root.value?.contains(event.target as Node)) {
+  const target = event.target as Node
+  if (!root.value?.contains(target) && !panel.value?.contains(target)) {
     isOpen.value = false
   }
 }
@@ -188,18 +192,16 @@ onBeforeUnmount(() => {
 }
 
 .notification-panel {
+  @include glass;
   position: fixed;
   top: 72px;
   right: 12px;
-  z-index: 100;
+  z-index: 2500;
   width: min(380px, calc(100vw - 24px));
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-lg);
   color: var(--accent);
-  @include glass;
-  background: color-mix(in srgb, var(--surface) 84%, transparent);
 }
 
 .panel-header {
@@ -208,8 +210,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 14px;
   padding: 14px;
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 64%, transparent);
+  border-bottom: 1px solid var(--glass-border);
 
   h3 {
     margin: 0 0 2px;
@@ -228,7 +229,7 @@ onBeforeUnmount(() => {
   grid-template-columns: 1fr 1fr;
   gap: 6px;
   padding: 10px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .tab-btn {
@@ -251,7 +252,7 @@ onBeforeUnmount(() => {
     height: 18px;
     padding: 0 5px;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--surface) 78%, transparent);
+    background: var(--glass-surface);
     color: var(--accent);
     font-size: 0.7rem;
     line-height: 18px;
@@ -259,7 +260,7 @@ onBeforeUnmount(() => {
 
   &:hover,
   &.active {
-    background: var(--surface);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
     color: var(--accent);
   }
 }
@@ -276,7 +277,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(var(--dim-rgb, 136, 136, 136), 0.08);
+  border-bottom: 1px solid color-mix(in srgb, var(--dim) 8%, transparent);
 
   &:last-child {
     border-bottom: none;

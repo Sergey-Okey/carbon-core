@@ -1,7 +1,7 @@
 <template>
   <GlassCard
     class="task-card"
-    :class="{ completed: isVisuallyCompleted, 'habit-checked': isHabitDoneToday, overdue: isOverdue }"
+    :class="[task.type, { completed: isVisuallyCompleted, 'habit-checked': isHabitDoneToday, overdue: isOverdue }]"
   >
     <div class="task-header">
       <h4>{{ task.title }}</h4>
@@ -15,6 +15,10 @@
         <div v-if="task.type !== 'HABIT' && task.targetDate" class="due-date">
           <Calendar :size="14" />
           {{ formattedDate }}
+        </div>
+        <div v-if="isHabitDoneToday" class="habit-status">
+          <CheckCircle :size="13" />
+          Сегодня выполнена
         </div>
         <div v-if="taskTags.length" class="tags">
           <span
@@ -35,7 +39,7 @@
           :class="{ done: isCompleted }"
           @click="handleToggle"
           :disabled="disableToggle || isCompleted"
-          title="Выполнить"
+          :title="completeButtonTitle"
         >
           <CheckCircle v-if="isCompleted" :size="22" />
           <Circle v-else :size="22" />
@@ -96,9 +100,7 @@ const formattedDate = computed(() => {
 
 const isCompleted = computed(() => {
   if (props.task.done) return true
-  if (props.task.type !== 'HABIT' || !props.task.lastCompletedAt) return false
-  return getLocalDateKey(new Date(props.task.lastCompletedAt)) ===
-    getLocalDateKey(new Date())
+  return false
 })
 
 const isHabitDoneToday = computed(() => {
@@ -115,8 +117,13 @@ const isOverdue = computed(() => {
   return props.task.targetDate < new Date().toISOString().split('T')[0]
 })
 
+const completeButtonTitle = computed(() => {
+  if (props.task.type === 'HABIT' && isHabitDoneToday.value) return 'Выполнить ещё раз'
+  return 'Выполнить'
+})
+
 function handleToggle() {
-  if (props.disableToggle || isCompleted.value) return
+  if (props.disableToggle || (props.task.type !== 'HABIT' && isCompleted.value)) return
 
   addNotification({
     type: 'success',
@@ -152,24 +159,16 @@ async function handleDelete() {
   position: relative;
   overflow: hidden;
   padding: 16px;
-  background: color-mix(in srgb, var(--surface) 74%, transparent);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
   transition:
-    background var(--transition-standard),
     border-color var(--transition-standard),
-    box-shadow var(--transition-standard),
     transform var(--transition-standard);
 
   &:hover {
-    background: color-mix(in srgb, var(--surface) 88%, transparent);
     border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
-    box-shadow: var(--shadow-md);
     transform: translateY(-1px);
   }
 
   &.completed {
-    background: color-mix(in srgb, var(--surface) 58%, transparent);
     opacity: 0.7;
 
     h4 {
@@ -180,11 +179,13 @@ async function handleDelete() {
   }
 
   &.habit-checked {
-    border-color: color-mix(in srgb, var(--success) 24%, var(--border));
-
     .task-type.HABIT {
       background: color-mix(in srgb, var(--success) 22%, transparent);
     }
+  }
+
+  &.HABIT {
+    min-height: 132px;
   }
 
   &.overdue {
@@ -245,7 +246,6 @@ async function handleDelete() {
     max-width: 160px;
     font-size: 0.7rem;
     padding: 4px 8px;
-    background: color-mix(in srgb, var(--surface) 30%, transparent);
     border: 1px solid color-mix(in srgb, var(--tag-color) 28%, var(--border));
     border-radius: var(--border-radius-sm);
     color: var(--accent);
@@ -271,16 +271,35 @@ async function handleDelete() {
     flex-shrink: 0;
     font-size: 0.7rem;
     padding: 4px 8px;
-    border-radius: 12px;
+    border-radius: var(--border-radius-sm);
     background: color-mix(in srgb, var(--border) 72%, transparent);
     text-transform: uppercase;
     color: var(--accent);
     white-space: nowrap;
+
     &.HABIT {
       background: color-mix(in srgb, var(--success) 15%, transparent);
+      color: var(--success);
+    }
+    &.TASK_DAY {
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      color: var(--accent);
+    }
+    &.TASK_WEEK {
+      background: color-mix(in srgb, var(--silver) 16%, transparent);
+      color: var(--silver);
+    }
+    &.TASK_MONTH {
+      background: color-mix(in srgb, var(--gold) 15%, transparent);
+      color: var(--gold);
+    }
+    &.TASK_YEAR {
+      background: color-mix(in srgb, var(--platinum) 16%, transparent);
+      color: var(--platinum);
     }
     &.PURCHASE {
       background: color-mix(in srgb, var(--gold) 15%, transparent);
+      color: var(--gold);
     }
   }
 
@@ -299,6 +318,20 @@ async function handleDelete() {
     min-height: 24px;
     font-size: 0.8rem;
     color: var(--dim);
+    white-space: nowrap;
+  }
+
+  .habit-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 24px;
+    padding: 3px 7px;
+    border-radius: var(--border-radius-sm);
+    background: color-mix(in srgb, var(--success) 10%, transparent);
+    color: var(--success);
+    font-size: 0.72rem;
+    font-weight: 600;
     white-space: nowrap;
   }
 
@@ -325,7 +358,7 @@ async function handleDelete() {
       color var(--transition-standard);
 
     &:hover:not(:disabled) {
-      background: color-mix(in srgb, var(--surface) 90%, transparent);
+      color: var(--accent);
     }
   }
 
@@ -373,6 +406,37 @@ async function handleDelete() {
       width: 100%;
       justify-content: flex-end;
       margin-left: 0;
+    }
+
+    &.HABIT {
+      min-height: 116px;
+
+      .task-header {
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      h4 {
+        font-size: 0.88rem;
+        line-height: 1.25;
+      }
+
+      .task-type {
+        display: none;
+      }
+
+      .task-footer {
+        gap: 8px;
+      }
+
+      .actions {
+        gap: 2px;
+      }
+
+      .actions button {
+        width: 28px;
+        height: 28px;
+      }
     }
   }
 }

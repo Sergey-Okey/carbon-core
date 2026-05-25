@@ -395,7 +395,7 @@ function deleteAccount() {
 .profile-tabs {
   display: flex;
   gap: 8px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--glass-border);
   padding-bottom: 8px;
 }
 
@@ -411,7 +411,7 @@ function deleteAccount() {
   transition: all var(--transition-standard);
 
   &:hover {
-    background: var(--surface);
+    background: var(--glass-surface);
     color: var(--text);
   }
 
@@ -454,21 +454,14 @@ function deleteAccount() {
 }
 
 .profile-hero {
+  @include glass;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
   padding: 28px;
-  border: 1px solid var(--border);
-  border-radius: 28px;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(var(--accent-rgb, 214, 214, 214), 0.08),
-      transparent 55%
-    ),
-    color-mix(in srgb, var(--surface) 86%, transparent);
-  box-shadow: var(--shadow-md);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-lg);
 
   @media (max-width: 860px) {
     align-items: flex-start;
@@ -492,9 +485,9 @@ function deleteAccount() {
   width: 120px;
   height: 120px;
   overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 32px;
-  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-lg);
+  background: var(--glass-surface);
   color: var(--dim);
   cursor: pointer;
   transition:
@@ -520,9 +513,9 @@ function deleteAccount() {
   align-items: center;
   gap: 6px;
   padding: 7px 10px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
+  border-radius: var(--border-radius-pill);
+  background: color-mix(in srgb, var(--bg) 68%, transparent);
+  color: var(--accent);
   font-size: 0.78rem;
   font-weight: 600;
 }
@@ -555,7 +548,7 @@ function deleteAccount() {
 }
 
 .profile-card {
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
 }
 
 .section-head {
@@ -594,9 +587,9 @@ function deleteAccount() {
   textarea {
     width: 100%;
     padding: 14px 16px;
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    background: color-mix(in srgb, var(--surface) 86%, transparent);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-md);
+    background: var(--glass-surface);
     color: var(--accent);
     font-size: 1rem;
     transition: border-color var(--transition-standard);
@@ -623,9 +616,9 @@ function deleteAccount() {
   display: grid;
   gap: 8px;
   padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  background: rgba(var(--accent-rgb, 214, 214, 214), 0.04);
+  @include glass;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-md);
 
   svg {
     color: var(--accent);
@@ -653,7 +646,7 @@ function deleteAccount() {
   justify-content: space-between;
   gap: 12px;
   padding: 12px 0;
-  border-bottom: 1px solid rgba(var(--dim-rgb, 136, 136, 136), 0.12);
+  border-bottom: 1px solid color-mix(in srgb, var(--dim) 12%, transparent);
 
   &:last-child {
     border-bottom: none;
@@ -696,7 +689,7 @@ function deleteAccount() {
   justify-content: center;
   gap: 8px;
   padding: 12px 18px;
-  border-radius: 16px;
+  border-radius: var(--border-radius-md);
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -719,17 +712,17 @@ function deleteAccount() {
 .ghost-btn,
 .nav-chip,
 .back-btn {
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-surface);
   color: var(--accent);
 
   &:hover {
-    background: var(--surface);
+    background: var(--glass-surface);
   }
 }
 
 .ghost-btn.danger {
   color: var(--error);
-  border-color: rgba(255, 77, 77, 0.35);
+  border-color: color-mix(in srgb, var(--error) 35%, var(--border));
 }
 </style>

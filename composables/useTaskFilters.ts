@@ -45,7 +45,7 @@ export function useTaskFilters() {
   const visibleYearTasks = computed(() => getVisibleTasksByType('TASK_YEAR'))
   const visibleCompletedTasks = computed(() =>
     tasksStore.tasks
-      .filter((task) => task.done || isHabitCompletedToday(task))
+      .filter((task) => task.type !== 'HABIT' && task.done)
       .filter((task) => matchesTaskFilters(task))
       .sort((a, b) => getCompletedTime(b) - getCompletedTime(a))
   )
@@ -70,12 +70,6 @@ export function useTaskFilters() {
     )
   }
 
-  function isHabitCompletedToday(task: Task): boolean {
-    if (task.type !== 'HABIT' || !task.lastCompletedAt) return false
-    return getLocalDateKey(new Date(task.lastCompletedAt)) ===
-      getLocalDateKey(new Date())
-  }
-
   function getCompletedTime(task: Task): number {
     return task.completedAt || task.lastCompletedAt || task.updatedAt || task.createdAt
   }
@@ -87,13 +81,6 @@ export function useTaskFilters() {
 
   function getTagFilterKey(tag: Pick<TaskTag, 'branchId' | 'name'>): string {
     return `${tag.branchId}:${tag.name.trim().toLowerCase()}`
-  }
-
-  function getLocalDateKey(date: Date): string {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
   }
 
   return {

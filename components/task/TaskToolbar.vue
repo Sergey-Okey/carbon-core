@@ -29,17 +29,11 @@
 
     <div class="view-switch" aria-label="Режим задач">
       <span class="control-label">Режим</span>
-      <div class="segment-row">
-        <button
-          v-for="option in viewOptions"
-          :key="option.value"
-          type="button"
-          :class="{ active: viewModel === option.value }"
-          @click="viewModel = option.value"
-        >
-          {{ option.label }}
-        </button>
-      </div>
+      <AppSegmentedControl
+        v-model="viewModel"
+        :options="viewOptions"
+        label="Режим задач"
+      />
     </div>
   </div>
 </template>
@@ -49,6 +43,7 @@ import { computed } from 'vue'
 import { Search, Tags } from 'lucide-vue-next'
 import AppInput from '~/components/ui/AppInput.vue'
 import AppSelect from '~/components/ui/AppSelect.vue'
+import AppSegmentedControl from '~/components/ui/AppSegmentedControl.vue'
 import type { AppSelectOption } from '~/types/ui.types'
 
 type TaskView = 'active' | 'all' | 'completed'
@@ -66,7 +61,7 @@ const emit = defineEmits<{
   (e: 'update:view', value: TaskView): void
 }>()
 
-const viewOptions: { label: string; value: TaskView }[] = [
+const viewOptions = [
   { label: 'Активные', value: 'active' },
   { label: 'Все', value: 'all' },
   { label: 'Завершённые', value: 'completed' },
@@ -84,7 +79,7 @@ const tagModel = computed({
 
 const viewModel = computed({
   get: () => props.view,
-  set: (value: TaskView) => emit('update:view', value),
+  set: (value: string) => emit('update:view', value as TaskView),
 })
 </script>
 
@@ -96,10 +91,8 @@ const viewModel = computed({
   gap: 20px;
   align-items: end;
   padding: 20px 24px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-lg);
-  background: color-mix(in srgb, var(--surface) 70%, transparent);
-  backdrop-filter: blur(12px);
 
   @include mobile {
     grid-template-columns: 1fr;
@@ -137,64 +130,16 @@ label,
   pointer-events: none;
 }
 
-.segment-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  height: 40px;
-  padding: 3px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--border-radius-md);
-
-  button {
-    min-width: 0;
-    margin: 0;
-    padding: 0 8px;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    background: transparent;
-    color: var(--dim);
-    font-size: 0.85rem;
-    font-weight: 500;
-    white-space: nowrap;
-    cursor: pointer;
-    transition:
-      background var(--transition-standard),
-      color var(--transition-standard),
-      box-shadow var(--transition-standard);
-
-    &:hover:not(.active) {
-      background: color-mix(in srgb, var(--accent) 10%, transparent);
-      color: var(--accent);
-    }
-
-    &.active {
-      background: var(--accent);
-      color: var(--bg);
-      box-shadow: var(--shadow-sm);
-    }
-  }
-}
-
 @media (max-width: 768px) {
   .tasks-toolbar {
     position: relative;
     gap: 14px;
-  }
-
-  .segment-row button {
-    padding: 0 6px;
-    font-size: 0.8rem;
   }
 }
 
 @media (max-width: 480px) {
   .tasks-toolbar {
     padding: 12px;
-  }
-
-  .segment-row button {
-    font-size: 0.75rem;
   }
 }
 </style>

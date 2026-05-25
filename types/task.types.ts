@@ -12,7 +12,7 @@ export type { BranchId }
 export interface TaskTag {
   id: string
   name: string
-  branchId: BranchId
+  branchId?: BranchId | ''
   color?: string
   order: number
 }

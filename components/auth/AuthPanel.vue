@@ -195,7 +195,7 @@ async function submit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg);
+  background: transparent;
   font-family: 'Inter', sans-serif;
   overflow: hidden;
   position: relative;
@@ -205,22 +205,7 @@ async function submit() {
 .bg-ambient {
   position: absolute;
   inset: -10%;
-  background:
-    radial-gradient(
-      ellipse at 30% 20%,
-      rgba(var(--accent-rgb, 214, 214, 214), 0.06) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse at 70% 80%,
-      rgba(var(--accent-rgb, 214, 214, 214), 0.08) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse at 50% 50%,
-      rgba(var(--accent-rgb, 214, 214, 214), 0.03) 0%,
-      transparent 70%
-    );
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
   z-index: 0;
   filter: blur(40px);
   animation: ambientShift 16s ease-in-out infinite alternate;
@@ -305,8 +290,7 @@ async function submit() {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: color-mix(in srgb, var(--surface) 42%, transparent);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-sm);
   color: var(--accent);
   font-family: 'Manrope', sans-serif;
@@ -321,10 +305,7 @@ async function submit() {
 .auth-card {
   @include glass;
   padding: 32px;
-  border: 1px solid var(--border);
-  backdrop-filter: blur(24px);
-  background: color-mix(in srgb, var(--surface) 52%, transparent);
-  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--glass-border);
 
   @media (max-width: 480px) {
     padding: 24px;
@@ -344,8 +325,8 @@ async function submit() {
   .badge {
     display: inline-flex;
     padding: 4px 12px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-pill);
     background: color-mix(in srgb, var(--accent) 6%, transparent);
     color: var(--accent);
     font-family: 'Manrope', sans-serif;

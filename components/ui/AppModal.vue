@@ -91,8 +91,9 @@ function handleBackdrop() {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: color-mix(in srgb, var(--bg) 46%, transparent);
-  backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--bg) 54%, transparent);
+  backdrop-filter: var(--glass-filter);
+  -webkit-backdrop-filter: var(--glass-filter);
 }
 
 .app-modal {
@@ -102,10 +103,8 @@ function handleBackdrop() {
   width: min(100%, 520px);
   max-height: min(88dvh, 760px);
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-lg);
-  background: color-mix(in srgb, var(--surface) 38%, transparent);
-  box-shadow: var(--shadow-lg);
   color: var(--accent);
 
   &.allow-overflow {
@@ -131,9 +130,7 @@ function handleBackdrop() {
 }
 
 .app-modal-header {
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 28%, transparent);
-  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .title-block {
@@ -177,14 +174,12 @@ function handleBackdrop() {
 
   &::-webkit-scrollbar-thumb {
     background: var(--border);
-    border-radius: 2px;
+    border-radius: var(--border-radius-sm);
   }
 }
 
 .app-modal-footer {
-  border-top: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 28%, transparent);
-  backdrop-filter: blur(18px);
+  border-top: 1px solid var(--glass-border);
 }
 
 .modal-fade-enter-active,

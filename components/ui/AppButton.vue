@@ -30,13 +30,12 @@ withDefaults(
 
 <style scoped lang="scss">
 .app-button {
-  @include glass;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   min-width: 0;
-  border: 1px solid transparent;
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-md);
   font: inherit;
   font-weight: 500;
@@ -83,7 +82,7 @@ withDefaults(
   height: 34px;
   min-height: 34px;
   padding: 0;
-  border-radius: 50%;
+  border-radius: var(--border-radius-pill);
 }
 
 .variant-primary {
@@ -93,18 +92,17 @@ withDefaults(
 }
 
 .variant-secondary {
-  background: color-mix(in srgb, var(--surface) 42%, transparent);
-  border-color: var(--border);
+  @include glass;
+  border-color: var(--glass-border);
   color: var(--dim);
 
   &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--surface) 64%, transparent);
     color: var(--accent);
   }
 }
 
 .variant-danger {
-  background: color-mix(in srgb, var(--surface) 34%, transparent);
+  @include glass;
   border-color: var(--error);
   color: var(--error);
 
@@ -115,11 +113,10 @@ withDefaults(
 }
 
 .variant-ghost {
-  background: transparent;
+  @include glass;
   color: var(--dim);
 
   &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--surface) 60%, transparent);
     color: var(--accent);
   }
 }

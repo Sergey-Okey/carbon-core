@@ -261,8 +261,7 @@ async function handleDelete() {
   min-height: 42px;
   padding: 0 14px;
   color: var(--accent);
-  background: color-mix(in srgb, var(--surface) 48%, transparent);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-md);
   cursor: pointer;
   transition:
@@ -297,8 +296,7 @@ async function handleDelete() {
   justify-content: center;
   aspect-ratio: 1;
   color: var(--dim);
-  background: color-mix(in srgb, var(--surface) 46%, transparent);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-md);
   cursor: pointer;
   transition:
@@ -330,10 +328,8 @@ async function handleDelete() {
   max-height: 220px;
   padding: 8px;
   overflow-y: auto;
-  background: color-mix(in srgb, var(--surface) 62%, transparent);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-lg);
 }
 
 .task-row {
@@ -344,8 +340,7 @@ async function handleDelete() {
   gap: 10px;
   padding: 10px 12px;
   color: var(--accent);
-  background: color-mix(in srgb, var(--surface) 48%, transparent);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-md);
   cursor: pointer;
 
@@ -370,9 +365,9 @@ async function handleDelete() {
   display: block;
   width: 18px;
   height: 18px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-sm);
-  background: color-mix(in srgb, var(--bg) 52%, transparent);
+  background: var(--glass-surface);
 
   input:checked + & {
     background: var(--accent);
@@ -396,8 +391,8 @@ async function handleDelete() {
 .empty-list {
   padding: 12px;
   text-align: center;
-  background: color-mix(in srgb, var(--surface) 46%, transparent);
-  border: 1px solid var(--border);
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-md);
 }
 

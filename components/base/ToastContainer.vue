@@ -59,13 +59,11 @@ const { notifications, removeNotification } = useNotification()
   padding: 10px 16px;
   border-radius: var(--border-radius-lg);
   @include glass;
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   color: var(--accent);
-  box-shadow: var(--shadow-lg);
   cursor: pointer;
   transition: all 0.1s ease;
   width: fit-content;
-  backdrop-filter: blur(12px);
   touch-action: pan-y;
 
   &:active {
@@ -73,7 +71,6 @@ const { notifications, removeNotification } = useNotification()
   }
 
   &:hover {
-    background: var(--surface);
     transform: scale(1.02);
   }
 

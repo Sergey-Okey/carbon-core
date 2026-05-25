@@ -3,6 +3,7 @@
     <section
       v-if="
         uiStore.activeNav !== 'board' &&
+        settingsStore.showTopStats &&
         (uiStore.activeNav !== 'settings' || settingsStore.showSettingsStats)
       "
       class="dashboard-section stats"
@@ -203,9 +204,7 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
   padding: 32px 24px;
   text-align: center;
   border-radius: var(--border-radius-lg);
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
 
   h3 {
     margin: 0 0 8px;

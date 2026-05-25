@@ -85,9 +85,9 @@ const branchIconComponent = computed(() => {
     margin-bottom: 12px;
   }
   .branch-icon {
-    background: var(--surface);
+    background: var(--glass-surface);
     padding: 6px;
-    border-radius: 8px;
+    border-radius: var(--border-radius-sm);
     color: var(--accent);
   }
   .quest-info {
@@ -105,7 +105,7 @@ const branchIconComponent = computed(() => {
   .quest-type {
     font-size: 0.7rem;
     padding: 2px 8px;
-    border-radius: 12px;
+    border-radius: var(--border-radius-sm);
     background: var(--border);
     text-transform: uppercase;
     color: var(--accent);

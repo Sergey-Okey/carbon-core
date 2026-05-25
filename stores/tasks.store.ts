@@ -76,15 +76,12 @@ export const useTasksStore = defineStore(
       const tags = getTaskTags(task)
 
       if (task.type === 'HABIT') {
-        if (task.lastCompletedAt) {
-          const lastCompletedDate = getLocalDateKey(new Date(task.lastCompletedAt))
-          if (lastCompletedDate === getTodayDateString()) return
-        }
-
         task.lastCompletedAt = Date.now()
 
         const xpPerTag = 50
-        tags.forEach((tag) => branchesStore.addXPToBranch(tag.branchId, xpPerTag))
+        tags.forEach((tag) => {
+          if (tag.branchId) branchesStore.addXPToBranch(tag.branchId, xpPerTag)
+        })
         userStore.addXP(xpPerTag * tags.length)
         recordCompletion()
         branchesStore.refreshMilestonesByTaskId(task.id)
@@ -97,7 +94,9 @@ export const useTasksStore = defineStore(
       task.completedAt = Date.now()
 
       const baseXP = task.type === 'PURCHASE' ? 500 : 100
-      tags.forEach((tag) => branchesStore.addXPToBranch(tag.branchId, baseXP))
+      tags.forEach((tag) => {
+        if (tag.branchId) branchesStore.addXPToBranch(tag.branchId, baseXP)
+      })
       userStore.addXP(baseXP * tags.length)
       recordCompletion()
 

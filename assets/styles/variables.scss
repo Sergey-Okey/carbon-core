@@ -28,7 +28,14 @@ $transition-standard: 0.3s cubic-bezier(0.2, 0, 0, 1);
   --border-radius-lg: #{$border-radius-lg};
   --border-radius-md: #{$border-radius-md};
   --border-radius-sm: #{$border-radius-sm};
+  --border-radius-pill: 999px;
   --transition-standard: #{$transition-standard};
+
+  --glass-filter: none;
+  --glass-surface: color-mix(in srgb, var(--surface) 92%, transparent);
+  --glass-border: var(--border);
+  --glass-highlight: transparent;
+  --glass-shadow: none;
 
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -48,6 +55,10 @@ $transition-standard: 0.3s cubic-bezier(0.2, 0, 0, 1);
   --gold: #b88700;
   --platinum: #9f9f9f;
   --accent: #2b2b2b;
+  --glass-surface: color-mix(in srgb, var(--surface) 88%, transparent);
+  --glass-border: var(--border);
+  --glass-highlight: transparent;
+  --glass-shadow: none;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08);

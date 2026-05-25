@@ -1,0 +1,256 @@
+<template>
+  <div class="date-picker" ref="rootEl">
+    <button type="button" class="date-trigger" @click="toggleOpen">
+      <span>{{ displayValue }}</span>
+      <Calendar :size="16" />
+    </button>
+
+    <div v-if="isOpen" class="date-popover">
+      <div class="date-head">
+        <button type="button" @click="shiftMonth(-1)" aria-label="Предыдущий месяц">
+          <ChevronLeft :size="16" />
+        </button>
+        <strong>{{ monthLabel }}</strong>
+        <button type="button" @click="shiftMonth(1)" aria-label="Следующий месяц">
+          <ChevronRight :size="16" />
+        </button>
+      </div>
+
+      <div class="weekdays">
+        <span v-for="day in weekdays" :key="day">{{ day }}</span>
+      </div>
+
+      <div class="days-grid">
+        <button
+          v-for="day in calendarDays"
+          :key="day.key"
+          type="button"
+          class="day-btn"
+          :class="{ muted: !day.currentMonth, today: day.isToday, active: day.value === modelValue }"
+          @click="selectDate(day.value)"
+        >
+          {{ day.label }}
+        </button>
+      </div>
+
+      <div class="date-actions">
+        <button type="button" @click="selectDate(todayValue)">Сегодня</button>
+        <button type="button" @click="clearDate">Очистить</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { Calendar, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+
+const props = withDefaults(
+  defineProps<{
+    modelValue?: string
+    placeholder?: string
+  }>(),
+  {
+    modelValue: '',
+    placeholder: 'Выберите дату',
+  }
+)
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string): void
+}>()
+
+const rootEl = ref<HTMLElement | null>(null)
+const isOpen = ref(false)
+const viewDate = ref(createDateFromValue(props.modelValue) || new Date())
+const weekdays = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС']
+
+const todayValue = computed(() => toDateValue(new Date()))
+const displayValue = computed(() => {
+  if (!props.modelValue) return props.placeholder
+  return new Date(`${props.modelValue}T00:00:00`).toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
+})
+const monthLabel = computed(() =>
+  viewDate.value.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
+)
+const calendarDays = computed(() => {
+  const year = viewDate.value.getFullYear()
+  const month = viewDate.value.getMonth()
+  const first = new Date(year, month, 1)
+  const start = new Date(first)
+  const offset = (first.getDay() + 6) % 7
+  start.setDate(first.getDate() - offset)
+
+  return Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(start)
+    date.setDate(start.getDate() + index)
+    const value = toDateValue(date)
+    return {
+      key: value,
+      value,
+      label: date.getDate(),
+      currentMonth: date.getMonth() === month,
+      isToday: value === todayValue.value,
+    }
+  })
+})
+
+watch(
+  () => props.modelValue,
+  (value) => {
+    const date = createDateFromValue(value)
+    if (date) viewDate.value = date
+  }
+)
+
+function toggleOpen() {
+  isOpen.value = !isOpen.value
+}
+
+function shiftMonth(delta: number) {
+  const next = new Date(viewDate.value)
+  next.setMonth(next.getMonth() + delta)
+  viewDate.value = next
+}
+
+function selectDate(value: string) {
+  emit('update:modelValue', value)
+  isOpen.value = false
+}
+
+function clearDate() {
+  emit('update:modelValue', '')
+  isOpen.value = false
+}
+
+function handleClickOutside(event: MouseEvent) {
+  if (!rootEl.value?.contains(event.target as Node)) isOpen.value = false
+}
+
+function toDateValue(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function createDateFromValue(value?: string) {
+  if (!value) return null
+  const date = new Date(`${value}T00:00:00`)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+onMounted(() => document.addEventListener('mousedown', handleClickOutside))
+onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
+</script>
+
+<style scoped lang="scss">
+.date-picker {
+  position: relative;
+}
+
+.date-trigger {
+  @include glass;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-md);
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+}
+
+.date-popover {
+  @include glass;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1200;
+  width: min(304px, 86vw);
+  padding: 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-lg);
+}
+
+.date-head,
+.date-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  button {
+    min-height: 30px;
+    padding: 0 9px;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-md);
+    background: var(--glass-surface);
+    color: var(--accent);
+    cursor: pointer;
+  }
+}
+
+.date-head strong {
+  color: var(--accent);
+  font-size: 0.9rem;
+  text-transform: capitalize;
+}
+
+.weekdays,
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.weekdays {
+  margin: 12px 0 6px;
+  color: var(--dim);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.day-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-pill);
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+
+  &.muted {
+    color: var(--dim);
+    opacity: 0.5;
+  }
+
+  &.today {
+    border-color: var(--border);
+  }
+
+  &.active,
+  &:hover {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--bg);
+  }
+}
+
+.date-actions {
+  margin-top: 12px;
+}
+</style>

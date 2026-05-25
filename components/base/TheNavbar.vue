@@ -95,11 +95,8 @@ function onMouseLeave() {
 <style scoped lang="scss">
 .navbar {
   color: var(--accent);
-  border: 1px solid var(--border);
   z-index: 100;
   overflow: hidden;
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(12px);
   will-change: width;
   transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);
   @include glass;
@@ -115,7 +112,7 @@ function onMouseLeave() {
     width: 64px;
     height: fit-content;
     margin: auto 12px;
-    border-radius: 20px;
+    border-radius: var(--border-radius-lg);
     display: flex;
     flex-direction: column;
     padding: 8px 0;
@@ -127,17 +124,14 @@ function onMouseLeave() {
 
   /* Мобильная версия — островок, чуть шире, с анимацией */
   @include mobile {
-     @include glass;
+    @include glass;
     position: fixed;
     bottom: 20px;
     left: 16px;
     right: 16px;
     width: auto;
     padding: 8px 16px;
-    border-radius: 40px;         
-    backdrop-filter: blur(12px);
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border);
+    border-radius: var(--border-radius-pill);
     animation: slideUp 0.3s ease-out;
     transition: transform 0.2s, box-shadow 0.2s;
 
@@ -201,7 +195,7 @@ function onMouseLeave() {
     width: calc(100% - 12px);
     margin: 0 6px;
     padding: 10px 14px;
-    border-radius: 40px;
+    border-radius: var(--border-radius-pill);
   }
 
   @include mobile {
@@ -209,11 +203,11 @@ function onMouseLeave() {
     justify-content: center;
     padding: 10px 6px;
     min-height: 52px;
-    border-radius: 40px;
+    border-radius: var(--border-radius-pill);
   }
 
   &:hover {
-    background: var(--surface);
+    background: var(--glass-surface);
     color: var(--accent);
   }
 
@@ -223,7 +217,7 @@ function onMouseLeave() {
 
   &.active {
     color: var(--accent);
-    background: var(--surface);
+    background: var(--glass-surface);
   }
 
   &:focus-visible {

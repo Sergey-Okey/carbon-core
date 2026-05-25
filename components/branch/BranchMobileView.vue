@@ -275,7 +275,7 @@ function getIconComponent(iconName: string) {
   padding: 12px;
   max-width: 100%;
   overflow-y: auto;
-  background: var(--bg);
+  background: transparent;
   min-height: 100%;
 }
 
@@ -290,9 +290,9 @@ function getIconComponent(iconName: string) {
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 40px;
+    @include glass;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-pill);
     color: var(--accent);
     font-size: 0.9rem;
     font-weight: 500;
@@ -314,15 +314,12 @@ function getIconComponent(iconName: string) {
 }
 
 .branch-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  @include glass;
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-lg);
   overflow: hidden;
   transition: all 0.2s ease;
 
-  &.expanded {
-    box-shadow: var(--shadow-md);
-  }
 }
 
 .branch-header {
@@ -334,7 +331,7 @@ function getIconComponent(iconName: string) {
   transition: background-color 0.2s;
 
   &:active {
-    background: var(--border);
+    background: var(--glass-surface);
   }
 }
 
@@ -387,7 +384,7 @@ function getIconComponent(iconName: string) {
   width: 12px;
   height: 3px;
   background: var(--border);
-  border-radius: 2px;
+  border-radius: var(--border-radius-sm);
   transition: background 0.2s;
 
   &.filled {
@@ -411,11 +408,11 @@ function getIconComponent(iconName: string) {
     cursor: pointer;
     color: var(--dim);
     padding: 6px;
-    border-radius: 50%;
+    border-radius: var(--border-radius-pill);
     transition: all 0.2s;
 
     &:active {
-      background: var(--border);
+      background: var(--glass-surface);
       color: var(--accent);
     }
   }
@@ -426,7 +423,7 @@ function getIconComponent(iconName: string) {
 }
 
 .milestones {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--glass-border);
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -438,7 +435,7 @@ function getIconComponent(iconName: string) {
   align-items: flex-start;
   gap: 8px;
   padding: 12px;
-  background: var(--bg);
+  @include glass;
   border-radius: var(--border-radius-md);
   transition: all 0.2s;
 
@@ -446,16 +443,12 @@ function getIconComponent(iconName: string) {
     margin-top: 8px;
   }
 
-  &.pending {
-    background: var(--bg);
-  }
-
   &.active {
-    background: color-mix(in srgb, var(--warning) 5%, var(--bg));
+    border-color: color-mix(in srgb, var(--warning) 42%, var(--glass-border));
   }
 
   &.completed {
-    background: color-mix(in srgb, var(--success) 5%, var(--bg));
+    border-color: color-mix(in srgb, var(--success) 42%, var(--glass-border));
   }
 }
 
@@ -465,8 +458,8 @@ function getIconComponent(iconName: string) {
   justify-content: center;
   width: 30px;
   height: 30px;
-  background: var(--surface);
-  border-radius: 50%;
+  background: var(--glass-surface);
+  border-radius: var(--border-radius-pill);
   font-weight: 600;
   font-size: 0.85rem;
   flex-shrink: 0;
@@ -540,7 +533,7 @@ function getIconComponent(iconName: string) {
     font-size: 0.8rem;
     color: var(--accent);
     padding: 4px 6px;
-    border-radius: 4px;
+    border-radius: var(--border-radius-sm);
     transition: all 0.2s;
 
     &.done {
@@ -562,11 +555,11 @@ function getIconComponent(iconName: string) {
     color: var(--dim);
     cursor: pointer;
     padding: 6px;
-    border-radius: 50%;
+    border-radius: var(--border-radius-pill);
     transition: all 0.2s;
 
     &:active {
-      background: var(--surface);
+      background: var(--glass-surface);
       color: var(--accent);
     }
   }
@@ -583,8 +576,8 @@ function getIconComponent(iconName: string) {
   gap: 8px;
   width: 100%;
   padding: 12px;
-  background: var(--bg);
-  border: 1px dashed var(--border);
+  background: var(--glass-surface);
+  border: 1px dashed var(--glass-border);
   border-radius: var(--border-radius-md);
   color: var(--dim);
   font-size: 0.85rem;
@@ -593,7 +586,7 @@ function getIconComponent(iconName: string) {
   transition: all 0.2s;
 
   &:active {
-    background: var(--surface);
+    background: var(--glass-surface);
     border-style: solid;
     color: var(--accent);
   }
@@ -605,16 +598,16 @@ function getIconComponent(iconName: string) {
   height: 10px;
   flex-shrink: 0;
   background: var(--accent);
-  border: 1px solid var(--bg);
+  border: 1px solid var(--glass-border);
   transition: opacity 0.2s;
 }
 
 .branch-marker {
-  border-radius: 2px;
+  border-radius: var(--border-radius-sm);
 }
 
 .milestone-marker {
-  border-radius: 50%;
+  border-radius: var(--border-radius-pill);
 }
 
 /* Анимации раскрытия */

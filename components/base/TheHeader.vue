@@ -79,9 +79,7 @@ function openOnboarding() {
   gap: 12px;
   margin: 12px 12px 4px;
   padding: 8px 14px;
-  border: 1px solid var(--border);
   border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-md);
   @include glass;
 
   @include mobile {
@@ -89,7 +87,7 @@ function openOnboarding() {
     gap: 8px;
     margin: 8px 8px 0;
     padding: 8px 10px;
-    border-radius: 40px;
+    border-radius: var(--border-radius-pill);
   }
 }
 
@@ -104,14 +102,14 @@ function openOnboarding() {
   width: 32px;
   height: 32px;
   flex: 0 0 auto;
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-sm);
+  background: var(--glass-surface);
 
   @include mobile {
     width: 30px;
     height: 30px;
-    border-radius: 50%;
+    border-radius: var(--border-radius-pill);
   }
 }
 
@@ -179,13 +177,13 @@ function openOnboarding() {
   height: 34px;
   border: none;
   border-radius: var(--border-radius-md);
-  background: transparent;
+  background: var(--glass-surface);
   color: var(--dim);
   cursor: pointer;
   transition: all var(--transition-standard);
 
   &:hover {
-    background: var(--surface);
+    background: var(--glass-surface);
     color: var(--accent);
   }
 
@@ -200,7 +198,7 @@ function openOnboarding() {
   @include mobile {
     width: 36px;
     height: 36px;
-    border-radius: 40px;
+    border-radius: var(--border-radius-pill);
   }
 }
 
@@ -208,8 +206,8 @@ function openOnboarding() {
   width: 28px;
   height: 28px;
   overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, var(--border));
+  border-radius: var(--border-radius-pill);
 
   img {
     width: 100%;

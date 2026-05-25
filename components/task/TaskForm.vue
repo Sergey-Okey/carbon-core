@@ -1,7 +1,7 @@
-﻿<template>
+<template>
   <AppModal :title="modalTitle" as-form @close="emit('close')" @submit="handleSubmit">
     <div class="modal-form">
-      <AppFormField label="РќР°Р·РІР°РЅРёРµ">
+      <AppFormField label="��������">
         <AppInput
           v-model="form.title"
           :placeholder="titlePlaceholder"
@@ -9,27 +9,24 @@
         />
       </AppFormField>
 
-      <AppFormField label="РћРїРёСЃР°РЅРёРµ">
+      <AppFormField label="��������">
         <AppInput
           v-model="form.description"
-          placeholder="Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ РґРµС‚Р°Р»Рё (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)"
+          placeholder="�������������� ������ (�������������)"
         />
       </AppFormField>
 
       <div v-if="!hideType && form.type !== 'HABIT'" class="form-row">
-        <AppFormField label="РўРёРї">
+        <AppFormField label="���">
           <AppSelect v-model="form.type" :options="taskTypeOptions" />
         </AppFormField>
 
-        <AppFormField label="РЎСЂРѕРє">
-          <div class="date-wrapper">
-            <AppInput v-model="form.targetDate" type="date" />
-            <Calendar :size="16" class="date-icon" />
-          </div>
+        <AppFormField label="����">
+          <AppDatePicker v-model="form.targetDate" />
         </AppFormField>
       </div>
 
-      <AppFormField label="РўРµРіРё">
+      <AppFormField label="����">
         <div class="tags-cloud">
           <template v-for="tag in form.tags" :key="tag.id">
             <div class="tag-wrapper">
@@ -46,7 +43,7 @@
                 type="button"
                 class="tag-delete"
                 @click.stop="deleteTag(tag.id)"
-                title="РЈРґР°Р»РёС‚СЊ С‚РµРі"
+                title="������� ���"
               >
                 <X :size="14" />
               </button>
@@ -57,10 +54,10 @@
             class="tag-btn add-tag-btn"
             style="--tag-color: var(--accent)"
             @click="openAddTagModal"
-            title="Р”РѕР±Р°РІРёС‚СЊ С‚РµРі"
+            title="�������� ���"
           >
             <Plus :size="16" />
-            <span class="tag-name">Р”РѕР±Р°РІРёС‚СЊ</span>
+            <span class="tag-name">��������</span>
           </button>
         </div>
       </AppFormField>
@@ -68,15 +65,15 @@
       <label v-if="!editing && form.type !== 'HABIT'" class="checkbox-label">
         <input type="checkbox" v-model="createBranch" />
         <span class="checkmark"></span>
-        <span class="checkbox-text">РЎРѕР·РґР°С‚СЊ РІРµС‚РєСѓ РёР· Р·Р°РґР°С‡Рё</span>
+        <span class="checkbox-text">������� ����� �� ������</span>
       </label>
     </div>
 
     <template #footer>
       <div class="modal-actions">
-        <AppButton variant="secondary" @click="emit('close')">РћС‚РјРµРЅР°</AppButton>
+        <AppButton variant="secondary" @click="emit('close')">������</AppButton>
         <AppButton type="submit" variant="primary">
-          {{ editing ? 'РЎРѕС…СЂР°РЅРёС‚СЊ' : submitButtonText }}
+          {{ editing ? '���������' : submitButtonText }}
         </AppButton>
       </div>
     </template>
@@ -84,40 +81,41 @@
 
   <AppModal
     v-if="showAddTagModal"
-    title="РќРѕРІС‹Р№ С‚РµРі"
+    title="����� ���"
     size="sm"
     as-form
     @close="closeAddTagModal"
     @submit="createTag"
   >
     <div class="modal-form">
-      <AppFormField label="РќР°Р·РІР°РЅРёРµ">
-        <AppInput v-model="newTagName" placeholder="Р’Р°Р¶РЅРѕ" required />
+      <AppFormField label="��������">
+        <AppInput v-model="newTagName" placeholder="�����" required />
       </AppFormField>
 
-      <AppFormField label="Р’РµС‚РєР°">
+      <AppFormField label="�����">
         <AppSelect
           v-model="newTagBranchId"
           :options="branchOptions"
-          :disabled="branchOptions.length === 0"
-          placeholder="РЎРЅР°С‡Р°Р»Р° СЃРѕР·РґР°Р№С‚Рµ РІРµС‚РєСѓ"
+          placeholder="��� �����"
         />
       </AppFormField>
 
-      <AppFormField label="Р¦РІРµС‚">
-        <AppColorPicker v-model="newTagColor" />
+      <AppFormField label="����">
+        <div class="tag-color-row">
+          <AppColorPicker v-model="newTagColor" />
+          <AppCustomColorPicker v-model="newTagColor" />
+        </div>
       </AppFormField>
     </div>
 
     <template #footer>
       <div class="modal-actions">
-        <AppButton variant="secondary" @click="closeAddTagModal">РћС‚РјРµРЅР°</AppButton>
+        <AppButton variant="secondary" @click="closeAddTagModal">������</AppButton>
         <AppButton
           type="submit"
           variant="primary"
-          :disabled="branchOptions.length === 0"
         >
-          РЎРѕР·РґР°С‚СЊ
+          �������
         </AppButton>
       </div>
     </template>
@@ -126,13 +124,15 @@
 
 <script setup lang="ts">
 import { reactive, watch, ref, computed } from 'vue'
-import { X, Calendar, Plus } from 'lucide-vue-next'
+import { X, Plus } from 'lucide-vue-next'
 import { v4 as uuidv4 } from 'uuid'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useTagsStore } from '~/stores/tags.store'
 import { useNotification } from '~/composables/useNotification'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppColorPicker from '~/components/ui/AppColorPicker.vue'
+import AppCustomColorPicker from '~/components/ui/AppCustomColorPicker.vue'
+import AppDatePicker from '~/components/ui/AppDatePicker.vue'
 import AppFormField from '~/components/ui/AppFormField.vue'
 import AppInput from '~/components/ui/AppInput.vue'
 import AppModal from '~/components/ui/AppModal.vue'
@@ -158,16 +158,19 @@ const { addNotification } = useNotification()
 const editing = computed(() => !!props.task)
 const createBranch = ref(false)
 const taskTypeOptions: AppSelectOption[] = [
-  { label: 'РќР° РґРµРЅСЊ', value: 'TASK_DAY' },
-  { label: 'РќР° РЅРµРґРµР»СЋ', value: 'TASK_WEEK' },
-  { label: 'РќР° РјРµСЃСЏС†', value: 'TASK_MONTH' },
-  { label: 'РќР° РіРѕРґ', value: 'TASK_YEAR' },
+  { label: '�� ����', value: 'TASK_DAY' },
+  { label: '�� ������', value: 'TASK_WEEK' },
+  { label: '�� �����', value: 'TASK_MONTH' },
+  { label: '�� ���', value: 'TASK_YEAR' },
 ]
 const branchOptions = computed<AppSelectOption[]>(() =>
-  branchesStore.branches.map((branch) => ({
-    label: branch.displayName,
-    value: branch.id,
-  }))
+  [
+    { label: '��� �����', value: '' },
+    ...branchesStore.branches.map((branch) => ({
+      label: branch.displayName,
+      value: branch.id,
+    })),
+  ]
 )
 const form = reactive({
   title: '',
@@ -179,18 +182,18 @@ const form = reactive({
 })
 
 const modalTitle = computed(() => {
-  if (editing.value) return 'Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ'
-  return form.type === 'HABIT' ? 'РќРѕРІР°СЏ РїСЂРёРІС‹С‡РєР°' : 'РќРѕРІР°СЏ Р·Р°РґР°С‡Р°'
+  if (editing.value) return '��������������'
+  return form.type === 'HABIT' ? '����� ��������' : '����� ������'
 })
 
 const submitButtonText = computed(() => {
-  return form.type === 'HABIT' ? 'Р”РѕР±Р°РІРёС‚СЊ РїСЂРёРІС‹С‡РєСѓ' : 'РЎРѕР·РґР°С‚СЊ Р·Р°РґР°С‡Сѓ'
+  return form.type === 'HABIT' ? '�������� ��������' : '������� ������'
 })
 
 const titlePlaceholder = computed(() => {
   return form.type === 'HABIT'
-    ? 'РќР°РїСЂРёРјРµСЂ: РџРёС‚СЊ РІРѕРґСѓ'
-    : 'РќР°РїСЂРёРјРµСЂ: РџСЂРѕС‡РёС‚Р°С‚СЊ 20 СЃС‚СЂР°РЅРёС†'
+    ? '��������: ���� ����'
+    : '��������: ��������� 20 �������'
 })
 
 watch(
@@ -246,7 +249,7 @@ const newTagColor = ref('var(--success)')
 
 function openAddTagModal() {
   newTagName.value = ''
-  newTagBranchId.value = branchesStore.branches[0]?.id || ''
+  newTagBranchId.value = ''
   newTagColor.value = 'var(--success)'
   showAddTagModal.value = true
 }
@@ -257,10 +260,7 @@ function closeAddTagModal() {
 
 function createTag() {
   if (!newTagName.value.trim()) return
-  if (!newTagBranchId.value || !branchesStore.branches.some((branch) => branch.id === newTagBranchId.value)) {
-    addNotification({ type: 'warning', message: 'РЎРЅР°С‡Р°Р»Р° СЃРѕР·РґР°Р№С‚Рµ РІРµС‚РєСѓ РґР»СЏ С‚РµРіР°' })
-    return
-  }
+  if (newTagBranchId.value && !branchesStore.branches.some((branch) => branch.id === newTagBranchId.value)) return
 
   const name = newTagName.value.trim()
 
@@ -268,7 +268,7 @@ function createTag() {
     (tag) => tag.name.toLowerCase() === name.toLowerCase()
   )
   if (existing) {
-    addNotification({ type: 'warning', message: 'РўР°РєРѕР№ С‚РµРі СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚' })
+    addNotification({ type: 'warning', message: '����� ��� ��� ����������' })
     return
   }
 
@@ -281,7 +281,7 @@ function createTag() {
   }
   form.tags.push(tag)
 
-  addNotification({ type: 'success', message: `РўРµРі В«${name}В» РґРѕР±Р°РІР»РµРЅ` })
+  addNotification({ type: 'success', message: `��� �${name}� ��������` })
   closeAddTagModal()
 }
 
@@ -290,7 +290,7 @@ function deleteTag(tagId: string) {
   if (index === -1) return
   form.tags.splice(index, 1)
   form.tagIds = form.tagIds.filter((id) => id !== tagId)
-  addNotification({ type: 'success', message: 'Тег удален' })
+  addNotification({ type: 'success', message: '��� �����' })
 }
 
 function getTaskTags(task: Task): TaskTag[] {
@@ -326,23 +326,6 @@ function getTaskTags(task: Task): TaskTag[] {
   }
 }
 
-.date-wrapper {
-  position: relative;
-
-  :deep(input[type='date']) {
-    padding-right: 42px;
-  }
-
-  .date-icon {
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--dim);
-    pointer-events: none;
-  }
-}
-
 .checkbox-label {
   display: flex;
   align-items: center;
@@ -363,7 +346,6 @@ function getTaskTags(task: Task): TaskTag[] {
     width: 20px;
     height: 20px;
     flex-shrink: 0;
-    background: color-mix(in srgb, var(--surface) 42%, transparent);
     border: 2px solid var(--border);
     border-radius: var(--border-radius-sm);
     transition: all var(--transition-standard);
@@ -392,6 +374,13 @@ function getTaskTags(task: Task): TaskTag[] {
   }
 }
 
+.tag-color-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
 .tags-cloud {
   display: flex;
   flex-wrap: wrap;
@@ -411,8 +400,7 @@ function getTaskTags(task: Task): TaskTag[] {
     gap: 8px;
     min-height: 36px;
     padding: 7px 12px 7px 10px;
-    background: color-mix(in srgb, var(--surface) 32%, transparent);
-    border: 1px solid var(--border);
+    border: 1px solid var(--glass-border);
     border-radius: var(--border-radius-md);
     color: var(--accent);
     font-size: 0.85rem;
@@ -421,7 +409,6 @@ function getTaskTags(task: Task): TaskTag[] {
     cursor: pointer;
 
     &:hover {
-      background: color-mix(in srgb, var(--surface) 44%, transparent);
       border-color: color-mix(in srgb, var(--tag-color) 42%, var(--border));
       color: var(--accent);
     }
@@ -438,7 +425,7 @@ function getTaskTags(task: Task): TaskTag[] {
     flex: 0 0 auto;
     width: 10px;
     height: 10px;
-    border-radius: 50%;
+    border-radius: var(--border-radius-pill);
     background: var(--tag-color);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--tag-color) 12%, transparent);
   }
@@ -460,9 +447,8 @@ function getTaskTags(task: Task): TaskTag[] {
     justify-content: center;
     width: 19px;
     height: 19px;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--surface) 52%, transparent);
-    border: 1px solid var(--border);
+    border-radius: var(--border-radius-pill);
+    border: 1px solid var(--glass-border);
     color: var(--dim);
     cursor: pointer;
     transition: all 0.1s;
@@ -476,7 +462,7 @@ function getTaskTags(task: Task): TaskTag[] {
   }
 
   .add-tag-btn {
-    background: color-mix(in srgb, var(--surface) 24%, transparent);
+    background: var(--glass-surface);
     border: 1px dashed var(--border);
     color: var(--dim);
     display: flex;

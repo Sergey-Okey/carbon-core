@@ -103,11 +103,9 @@ defineEmits([
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  border-radius: 40px;
-  border: 1px solid var(--border);
-  background: transparent;
+  border-radius: var(--border-radius-pill);
+  border: 1px solid var(--glass-border);
   pointer-events: auto;
-  backdrop-filter: blur(16px);
   transform: translateY(-16px);
 
   button {
@@ -116,7 +114,7 @@ defineEmits([
     justify-content: center;
     width: 32px;
     height: 32px;
-    border-radius: 50%;
+    border-radius: var(--border-radius-pill);
     color: var(--accent);
     background: transparent;
     border: none;
@@ -124,7 +122,6 @@ defineEmits([
     transition: all 0.2s ease;
 
     &:hover {
-      background: var(--surface);
       transform: scale(1.08);
     }
 

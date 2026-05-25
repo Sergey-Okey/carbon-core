@@ -46,7 +46,7 @@ const percent = computed(() => {
 
 .progress-bar {
   background: var(--border);
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm);
   overflow: hidden;
   width: 100%;
 }
@@ -54,7 +54,7 @@ const percent = computed(() => {
 .progress-fill {
   background: var(--accent);
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm);
   transition: width 0.6s cubic-bezier(0.2, 0, 0, 1);
 }
 </style>

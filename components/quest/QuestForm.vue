@@ -133,9 +133,8 @@ function handleSubmit() {
   gap: 8px;
   min-height: 36px;
   padding: 0 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-md);
-  background: color-mix(in srgb, var(--surface) 42%, transparent);
   color: var(--accent);
   font-size: 0.9rem;
   cursor: pointer;

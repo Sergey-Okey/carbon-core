@@ -7,13 +7,13 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--surface);
-  border-radius: 4px;
+  background: var(--glass-surface);
+  border-radius: var(--border-radius-sm);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--dim);
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm);
 }
 
 .fade-enter-active,
@@ -115,10 +115,98 @@ textarea {
 /* Smooth scroll behavior */
 html {
   scroll-behavior: smooth;
+  min-height: 100%;
 }
 
 /* Предотвращение мерцания при загрузке */
 body {
-  background: var(--bg);
+  position: relative;
+  min-height: 100%;
+  background: transparent;
   color: var(--accent);
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: var(--bg);
+  content: '';
+  pointer-events: none;
+}
+
+body::after {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: transparent;
+  content: '';
+  pointer-events: none;
+}
+
+#__nuxt {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+}
+
+html.compact-ui {
+  --border-radius-lg: 12px;
+}
+
+html.compact-ui body {
+  font-size: 0.95rem;
+}
+
+html[data-background-mode='glass'] body {
+  background: transparent;
+}
+
+html[data-background-mode='glass'],
+html[data-background-mode='image'] {
+  --glass-filter: blur(50px) saturate(1.75);
+  --glass-surface: color-mix(in srgb, var(--surface) 38%, transparent);
+  --glass-border: color-mix(in srgb, var(--accent) 14%, var(--border));
+  --glass-highlight: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+html.light-theme[data-background-mode='glass'],
+html.light-theme[data-background-mode='image'] {
+  --glass-filter: blur(90px) saturate(1.65);
+  --glass-surface: color-mix(in srgb, var(--surface) 42%, transparent);
+  --glass-border: color-mix(in srgb, var(--accent) 12%, var(--border));
+  --glass-highlight: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+html[data-background-mode='glass'] body::before {
+  background: var(--bg);
+}
+
+html[data-background-mode='image'] body {
+  background: transparent;
+}
+
+html[data-background-mode='image'] body::before {
+  background: var(--bg);
+}
+
+html[data-background-mode='image'] .layout {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--bg) 40%, transparent), color-mix(in srgb, var(--bg) 40%, transparent)),
+    var(--custom-bg-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+html[data-background-mode='image'][data-background-intensity='soft'] .layout {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--bg) 58%, transparent), color-mix(in srgb, var(--bg) 58%, transparent)),
+    var(--custom-bg-image);
+}
+
+html[data-background-mode='image'][data-background-intensity='contrast'] .layout {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--bg) 26%, transparent), color-mix(in srgb, var(--bg) 26%, transparent)),
+    var(--custom-bg-image);
 }
