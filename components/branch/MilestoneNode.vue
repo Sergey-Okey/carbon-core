@@ -95,7 +95,7 @@ import { useTasksStore } from '~/stores/tasks.store'
 import type { Milestone, BranchNodeData } from '~/types/branch.types'
 
 const props = defineProps<{
-  data: BranchNodeData
+  data: Extract<BranchNodeData, { type: 'milestone' }>
   selected?: boolean
 }>()
 const emit = defineEmits<{ (e: 'edit', milestone: Milestone): void }>()

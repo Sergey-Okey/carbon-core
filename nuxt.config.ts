@@ -5,7 +5,6 @@ export default defineNuxtConfig({
   devtools: { enabled: process.env.NUXT_DEVTOOLS === 'true' },
   telemetry: false,
   devServer: { host: '0.0.0.0', port: 3000 },
-  buildDir: 'C:/Users/Public/carbon-core-nuxt',
   experimental: { appManifest: false },
   modules: [
     '@pinia/nuxt',
@@ -43,14 +42,17 @@ export default defineNuxtConfig({
   ssr: false,
   app: {
     head: {
+      htmlAttrs: { lang: 'ru' },
       title: 'COF',
       meta: [
+        { charset: 'utf-8' },
         {
           name: 'viewport',
           content:
             'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
         },
-        { name: 'theme-color', content: '#050505' },
+        { name: 'description', content: 'Core of Life - Управление жизнью' },
+        { name: 'og:type', content: 'website' },
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },

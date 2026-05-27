@@ -33,7 +33,7 @@ const authStore = useAuthStore()
 
 const userId = useState<string>('user-id', () => {
   if (process.client) {
-    let id = localStorage.getItem('user-id')
+    let id = localStorage.getItem('user-id') ?? ''
     if (!id) {
       id = uuidv4()
       localStorage.setItem('user-id', id)
@@ -49,7 +49,9 @@ onMounted(async () => {
   authStore.init()
 
   try {
-    const data = await $fetch('/api/sync', { query: { userId: userId.value } })
+    const data = (await $fetch('/api/sync', {
+      query: { userId: userId.value },
+    })) as Record<string, any>
     if (data.user) userStore.$patch(data.user)
     if (data.tasks) tasksStore.$patch({ tasks: data.tasks })
     if (data.branches) branchesStore.$patch({ branches: data.branches })

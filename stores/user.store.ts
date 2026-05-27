@@ -87,6 +87,10 @@ export const useUserStore = defineStore(
       coinsHistory.value = coinsHistory.value.slice(-30)
     }
 
+    function addGold(amount: number) {
+      addCoins(amount)
+    }
+
     function reduceLeaguePoints(amount: number) {
       leaguePoints.value = Math.max(0, leaguePoints.value - amount)
     }

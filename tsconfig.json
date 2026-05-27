@@ -1,3 +1,9 @@
 ﻿{
-  "extends": "C:/Users/Public/carbon-core-nuxt/tsconfig.json"
+  "extends": "./.nuxt/tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "types": ["node", "vite/client"]
+  },
+  "include": ["./**/*", ".nuxt/**/*"],
+  "exclude": ["node_modules", ".output"]
 }

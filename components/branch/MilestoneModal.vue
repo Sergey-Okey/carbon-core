@@ -18,7 +18,7 @@
         </span>
       </div>
 
-      <section v-if="milestone.sourceTaskIds.length" class="details-section">
+      <section v-if="milestone.sourceTaskIds?.length" class="details-section">
         <h4>Связанные задачи</h4>
         <ul>
           <li v-for="taskId in milestone.sourceTaskIds" :key="taskId">

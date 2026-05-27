@@ -29,7 +29,7 @@
           v-model="form.description"
           multiline
           placeholder="Краткое описание этапа..."
-          rows="3"
+          :rows="3"
         />
       </AppFormField>
 

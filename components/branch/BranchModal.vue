@@ -29,7 +29,7 @@
           v-model="form.description"
           multiline
           placeholder="Опишите направление..."
-          rows="3"
+          :rows="3"
         />
       </AppFormField>
 

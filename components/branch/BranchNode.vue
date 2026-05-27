@@ -88,7 +88,7 @@ import { useBranchesStore } from '~/stores/branches.store'
 import type { BranchNodeData } from '~/types/branch.types'
 
 const props = defineProps<{
-  data: BranchNodeData
+  data: Extract<BranchNodeData, { type: 'branch' }>
   selected?: boolean
 }>()
 const emit = defineEmits<{ (e: 'edit', branchId: string): void }>()

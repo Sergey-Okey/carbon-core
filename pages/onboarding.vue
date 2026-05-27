@@ -554,7 +554,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, type ComponentPublicInstance } from 'vue'
 import {
   ChevronRight,
   ArrowRight,
@@ -764,7 +764,10 @@ const tagRefs = ref<(HTMLElement | null)[]>([])
 const pointer = ref({ x: 0, y: 0, active: false })
 let animationFrameId: number | null = null
 
-function setTagRef(el: Element | null, index: number) {
+function setTagRef(
+  el: Element | ComponentPublicInstance | null,
+  index: number
+) {
   tagRefs.value[index] = el as HTMLElement | null
 }
 

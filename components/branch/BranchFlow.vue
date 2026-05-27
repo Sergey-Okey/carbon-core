@@ -136,7 +136,10 @@ const isRestoring = ref(false)
 const canUndo = computed(() => historyIndex.value > 0)
 const canRedo = computed(() => historyIndex.value < history.value.length - 1)
 
-const nodeTypes = { 'branch-node': BranchNode, 'milestone-node': MilestoneNode }
+const nodeTypes = {
+  'branch-node': BranchNode as any,
+  'milestone-node': MilestoneNode as any,
+} as any
 const nodes = ref<Node<BranchNodeData>[]>([])
 const edges = ref<Edge[]>([])
 const isMobile = ref(false)
@@ -341,7 +344,7 @@ async function deleteSelectedEdge() {
 
 async function deleteSelectedBranch() {
   const node = nodes.value.find((item) => item.id === selectedNodeId.value)
-  if (!node || node.type !== 'branch-node') return
+  if (!node || node.type !== 'branch-node' || !node.data) return
 
   const branch = branchesStore.branches.find((item) => item.id === node.data.branchId)
   if (!branch) return
@@ -358,12 +361,13 @@ async function deleteSelectedBranch() {
 
 async function deleteSelectedMilestone() {
   const node = nodes.value.find((item) => item.id === selectedNodeId.value)
-  if (!node || node.type !== 'milestone-node' || !node.data.milestone) return
+  if (!node || node.type !== 'milestone-node' || !node.data?.milestone) return
 
-  const ok = await confirm(`Удалить этап «${node.data.milestone.name}»?`)
+  const milestone = node.data.milestone
+  const ok = await confirm(`Удалить этап «${milestone.name}»?`)
   if (!ok) return
 
-  branchesStore.deleteMilestone(node.data.milestone.id)
+  branchesStore.deleteMilestone(milestone.id)
   selectedNodeId.value = null
   saveToHistory()
 }

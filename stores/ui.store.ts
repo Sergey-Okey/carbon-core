@@ -26,11 +26,14 @@ export const useUIStore = defineStore(
       () => !sidebarCollapsed.value || sidebarHovered.value
     )
 
+    const panelWidth = computed(() => (sidebarCollapsed.value ? 72 : 240))
+
     return {
       activeNav,
       sidebarCollapsed,
       sidebarHovered,
       showLabels,
+      panelWidth,
       setActiveNav,
       toggleSidebar,
       setSidebarHovered,

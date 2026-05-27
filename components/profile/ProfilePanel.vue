@@ -105,7 +105,7 @@
               <span>О себе</span>
               <textarea
                 v-model.trim="form.bio"
-                rows="5"
+                :rows="5"
                 maxlength="240"
               ></textarea>
             </label>

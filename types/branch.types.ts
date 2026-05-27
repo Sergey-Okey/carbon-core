@@ -9,7 +9,9 @@ export interface Milestone {
   currentXP: number
   status: 'pending' | 'active' | 'completed'
   taskIds: string[]
+  sourceTaskIds?: string[]
   position: { x: number; y: number }
+  achieved?: boolean
 }
 
 export interface Branch {
@@ -20,12 +22,20 @@ export interface Branch {
   taskIds: string[]
   milestones: Milestone[]
   order: number
+  totalXP?: number
   position?: { x: number; y: number }
 }
 
-export type BranchNodeData = {
-  type: 'branch' | 'milestone'
-  branchId: string
-  milestone: Milestone | null
-  branchIcon?: string
-}
+export type BranchNodeData =
+  | {
+      type: 'branch'
+      branchId: string
+      milestone: null
+      branchIcon?: string
+    }
+  | {
+      type: 'milestone'
+      branchId: string
+      milestone: Milestone
+      branchIcon?: string
+    }

@@ -5,11 +5,12 @@
       <Calendar :size="16" />
     </button>
 
-    <div v-if="isOpen" class="date-popover">
-      <div class="date-head">
-        <button type="button" @click="shiftMonth(-1)" aria-label="Предыдущий месяц">
-          <ChevronLeft :size="16" />
-        </button>
+    <Teleport to="body">
+      <div v-if="isOpen" ref="popoverEl" class="date-popover" :style="popoverStyle">
+        <div class="date-head">
+          <button type="button" @click="shiftMonth(-1)" aria-label="Предыдущий месяц">
+            <ChevronLeft :size="16" />
+          </button>
         <strong>{{ monthLabel }}</strong>
         <button type="button" @click="shiftMonth(1)" aria-label="Следующий месяц">
           <ChevronRight :size="16" />
@@ -37,12 +38,13 @@
         <button type="button" @click="selectDate(todayValue)">Сегодня</button>
         <button type="button" @click="clearDate">Очистить</button>
       </div>
-    </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 
 const props = withDefaults(
@@ -61,6 +63,12 @@ const emit = defineEmits<{
 }>()
 
 const rootEl = ref<HTMLElement | null>(null)
+const popoverEl = ref<HTMLElement | null>(null)
+const popoverStyle = ref<Record<string, string>>({
+  top: '0px',
+  left: '0px',
+  width: 'min(304px, 86vw)',
+})
 const isOpen = ref(false)
 const viewDate = ref(createDateFromValue(props.modelValue) || new Date())
 const weekdays = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС']
@@ -109,6 +117,27 @@ watch(
 
 function toggleOpen() {
   isOpen.value = !isOpen.value
+  if (isOpen.value) {
+    nextTick(updatePopoverPosition)
+  }
+}
+
+function updatePopoverPosition() {
+  if (!rootEl.value) return
+
+  const rect = rootEl.value.getBoundingClientRect()
+  const maxWidth = Math.min(304, window.innerWidth * 0.86)
+  let left = rect.left
+
+  if (left + maxWidth + 12 > window.innerWidth) {
+    left = Math.max(12, window.innerWidth - maxWidth - 12)
+  }
+
+  popoverStyle.value = {
+    top: `${rect.bottom + 8}px`,
+    left: `${left}px`,
+    width: `min(304px, 86vw)`,
+  }
 }
 
 function shiftMonth(delta: number) {
@@ -128,7 +157,13 @@ function clearDate() {
 }
 
 function handleClickOutside(event: MouseEvent) {
-  if (!rootEl.value?.contains(event.target as Node)) isOpen.value = false
+  const target = event.target as Node
+  if (
+    !rootEl.value?.contains(target) &&
+    !popoverEl.value?.contains(target)
+  ) {
+    isOpen.value = false
+  }
 }
 
 function toDateValue(date: Date) {
@@ -144,8 +179,16 @@ function createDateFromValue(value?: string) {
   return Number.isNaN(date.getTime()) ? null : date
 }
 
-onMounted(() => document.addEventListener('mousedown', handleClickOutside))
-onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
+onMounted(() => {
+  document.addEventListener('mousedown', handleClickOutside)
+  window.addEventListener('resize', updatePopoverPosition)
+  window.addEventListener('scroll', updatePopoverPosition, true)
+})
+onUnmounted(() => {
+  document.removeEventListener('mousedown', handleClickOutside)
+  window.removeEventListener('resize', updatePopoverPosition)
+  window.removeEventListener('scroll', updatePopoverPosition, true)
+})
 </script>
 
 <style scoped lang="scss">
@@ -171,9 +214,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
 .date-popover {
   @include glass;
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
+  position: fixed;
   z-index: 1200;
   width: min(304px, 86vw);
   padding: 12px;

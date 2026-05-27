@@ -274,14 +274,12 @@ export const useBranchesStore = defineStore(
 
       while (queue.length) {
         const currentId = queue.shift()!
-        edges.value
-          .filter((edge) => edge.source === currentId)
-          .forEach((edge) => {
-            if (!milestoneIds.has(edge.target) || visited.has(edge.target))
-              return
-            visited.add(edge.target)
-            queue.push(edge.target)
-          })
+        for (const edge of edges.value) {
+          if (edge.source !== currentId) continue
+          if (!milestoneIds.has(edge.target) || visited.has(edge.target)) continue
+          visited.add(edge.target)
+          queue.push(edge.target)
+        }
       }
 
       return visited

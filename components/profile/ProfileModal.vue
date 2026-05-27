@@ -42,7 +42,7 @@
         v-model="form.bio"
         multiline
         placeholder="Расскажите о себе или своих целях"
-        rows="3"
+        :rows="3"
         maxlength="150"
       />
     </AppFormField>

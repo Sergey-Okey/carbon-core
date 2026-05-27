@@ -31,12 +31,12 @@ const { notifications, removeNotification } = useNotification()
 <style scoped lang="scss">
 .toast-container {
   position: fixed;
-  z-index: 2000;
+  z-index: 2500;
   display: flex;
   flex-direction: column;
   gap: 10px;
   pointer-events: none;
-  top: calc(80px + 16px);
+  top: calc(env(safe-area-inset-top, 0px) + 92px);
   right: 20px;
   left: auto;
   align-items: flex-end;

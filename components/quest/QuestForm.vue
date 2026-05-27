@@ -63,6 +63,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue'
+import type { Quest } from '~/types/quest.types'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppFormField from '~/components/ui/AppFormField.vue'
 import AppInput from '~/components/ui/AppInput.vue'
@@ -72,7 +73,7 @@ import { useBranchesStore } from '~/stores/branches.store'
 import type { AppSelectOption } from '~/types/ui.types'
 import type { QuestType, BranchId } from '~/types/quest.types'
 
-const emit = defineEmits<{ (e: 'close'): void; (e: 'save', data: Omit<Quest, 'done' | 'createdAt'>): void }>()
+const emit = defineEmits<{ (e: 'close'): void; (e: 'save', data: Omit<Quest, 'done' | 'createdAt' | 'id'>): void }>()
 
 const branchesStore = useBranchesStore()
 const branchOptions = computed<AppSelectOption[]>(() =>

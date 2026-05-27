@@ -64,10 +64,10 @@ export function useNotification() {
       playNotificationSound(notification.type)
     }
 
-    if (!notification.silent && newNotification.duration > 0) {
+    if (!notification.silent && (newNotification.duration ?? 0) > 0) {
       setTimeout(() => {
         removeNotification(id)
-      }, newNotification.duration)
+      }, newNotification.duration ?? 0)
     }
   }
 

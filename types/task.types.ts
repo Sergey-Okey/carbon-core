@@ -29,6 +29,7 @@ export interface Task {
   targetDate?: string
   lastCompletedAt?: number
   purchaseRewardId?: string
+  xpReward?: number
   createdAt: number
   updatedAt?: number
 }
