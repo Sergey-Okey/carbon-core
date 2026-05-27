@@ -4,7 +4,7 @@
   backdrop-filter: var(--glass-filter) !important;
   -webkit-backdrop-filter: var(--glass-filter) !important;
   border: 1px solid var(--glass-border);
-  box-shadow: none;
+  box-shadow: var(--glass-shadow);
   transform: translateZ(0);
 }
 

@@ -33,7 +33,6 @@
               <button
                 type="button"
                 class="tag-btn active"
-                :style="{ '--tag-color': tag.color || 'var(--accent)' }"
                 aria-pressed="true"
               >
                 <span class="tag-dot" />
@@ -52,7 +51,6 @@
           <button
             type="button"
             class="tag-btn add-tag-btn"
-            style="--tag-color: var(--accent)"
             @click="openAddTagModal"
             title="Добавить тег"
           >
@@ -409,15 +407,15 @@ function getTaskTags(task: Task): TaskTag[] {
     cursor: pointer;
 
     &:hover {
-      border-color: color-mix(in srgb, var(--tag-color) 42%, var(--border));
+      border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
       color: var(--accent);
     }
 
     &.active {
-      background: color-mix(in srgb, var(--tag-color) 9%, transparent);
-      border-color: color-mix(in srgb, var(--tag-color) 72%, var(--border));
+      background: color-mix(in srgb, var(--accent) 9%, transparent);
+      border-color: color-mix(in srgb, var(--accent) 72%, var(--border));
       color: var(--accent);
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tag-color) 18%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
     }
   }
 
@@ -426,8 +424,8 @@ function getTaskTags(task: Task): TaskTag[] {
     width: 10px;
     height: 10px;
     border-radius: var(--border-radius-pill);
-    background: var(--tag-color);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tag-color) 12%, transparent);
+    background: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
   }
 
   .tag-name {

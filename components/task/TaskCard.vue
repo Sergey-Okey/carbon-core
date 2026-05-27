@@ -8,7 +8,7 @@
       <span class="task-type" :class="task.type">{{ typeLabel }}</span>
     </div>
 
-    <p v-if="task.description">{{ task.description }}</p>
+    <p>{{ task.description?.trim() || 'Описание отсутствует' }}</p>
 
     <div class="task-footer">
       <div class="task-meta">
@@ -26,7 +26,6 @@
             :key="tag.id"
             class="tag"
             :title="tag.name"
-            :style="{ '--tag-color': tag.color || 'var(--accent)' }"
           >
             <span class="tag-dot" />
             <span class="tag-name">{{ tag.name }}</span>
@@ -158,6 +157,9 @@ async function handleDelete() {
 .task-card {
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 150px;
   padding: 16px;
   transition:
     border-color var(--transition-standard),
@@ -227,6 +229,7 @@ async function handleDelete() {
   .task-meta {
     display: flex;
     align-items: center;
+    flex: 1 1 auto;
     flex-wrap: wrap;
     gap: 8px;
     min-width: 0;
@@ -246,7 +249,7 @@ async function handleDelete() {
     max-width: 160px;
     font-size: 0.7rem;
     padding: 4px 8px;
-    border: 1px solid color-mix(in srgb, var(--tag-color) 28%, var(--border));
+    border: 1px solid var(--glass-border);
     border-radius: var(--border-radius-sm);
     color: var(--accent);
   }
@@ -256,8 +259,8 @@ async function handleDelete() {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: var(--tag-color);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--tag-color) 12%, transparent);
+    background: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 12%, transparent);
   }
 
   .tag-name {
@@ -308,7 +311,7 @@ async function handleDelete() {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    margin-top: 12px;
+    margin-top: auto;
   }
 
   .due-date {

@@ -31,7 +31,6 @@
               <Palette :size="22" />
               <h3>Оформление</h3>
             </div>
-            <span>{{ themeModeLabel }}</span>
           </div>
 
           <div class="group-body">
@@ -49,7 +48,6 @@
                   @click="setThemeMode(option.value)"
                 >
                   <component :is="option.icon" :size="16" />
-                  <span>{{ option.label }}</span>
                 </button>
               </div>
             </div>
