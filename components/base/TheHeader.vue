@@ -178,12 +178,13 @@ function openOnboarding() {
   border: none;
   border-radius: var(--border-radius-md);
   background: var(--glass-surface);
+  border: 1px solid transparent;
   color: var(--dim);
   cursor: pointer;
   transition: all var(--transition-standard);
 
   &:hover {
-    background: var(--glass-surface);
+    background: color-mix(in srgb, var(--glass-surface) 90%, transparent);
     color: var(--accent);
   }
 

@@ -181,9 +181,9 @@ function onMouseLeave() {
   min-width: 44px;
   min-height: 44px;
   padding: 10px 12px;
-  border: none;
+    border: 1px solid transparent;
   border-radius: var(--border-radius-md);
-  background: transparent;
+    background: var(--glass-surface);
   color: var(--dim);
   cursor: pointer;
   white-space: nowrap;
@@ -207,8 +207,8 @@ function onMouseLeave() {
   }
 
   &:hover {
-    background: var(--glass-surface);
     color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 20%, transparent);
   }
 
   &:active {
@@ -217,7 +217,7 @@ function onMouseLeave() {
 
   &.active {
     color: var(--accent);
-    background: var(--glass-surface);
+    background: color-mix(in srgb, var(--accent) 16%, var(--glass-surface));
   }
 
   &:focus-visible {
