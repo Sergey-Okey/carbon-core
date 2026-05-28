@@ -4,34 +4,75 @@
     :class="[task.type, { completed: isVisuallyCompleted, 'habit-checked': isHabitDoneToday, overdue: isOverdue }]"
   >
     <div class="task-header">
-      <h4>{{ task.title }}</h4>
-      <span class="task-type" :class="task.type">{{ typeLabel }}</span>
+      <div class="title-row">
+        <h4>{{ task.title }}</h4>
+        <button
+          v-if="isHabitDoneToday"
+          type="button"
+          class="habit-done-icon"
+          title="Сегодня выполнена"
+          aria-label="Сегодня выполнена"
+        >
+          <Check :size="14" />
+        </button>
+      </div>
+      <span class="task-type" :class="task.type" :title="typeTitle">{{ typeLabel }}</span>
     </div>
 
-    <p>{{ task.description?.trim() || 'Описание отсутствует' }}</p>
+    <p v-if="task.description?.trim()" class="task-desc">{{ task.description.trim() }}</p>
 
-    <div class="task-footer">
-      <div class="task-meta">
+    <div class="task-bottom">
+      <div class="task-info">
         <div v-if="task.type !== 'HABIT' && task.targetDate" class="due-date">
           <Calendar :size="14" />
           {{ formattedDate }}
         </div>
-        <div v-if="isHabitDoneToday" class="habit-status">
-          <CheckCircle :size="13" />
-          Сегодня выполнена
-        </div>
-        <div v-if="taskTags.length" class="tags">
-          <span
-            v-for="tag in taskTags"
-            :key="tag.id"
-            class="tag"
-            :title="tag.name"
+
+        <div class="tags-wrapper" v-if="taskTags.length">
+          <button
+            v-if="hasTagOverflow"
+            type="button"
+            class="scroll-btn scroll-left"
+            :disabled="!canScrollBack"
+            @click="scrollTags(-1)"
           >
-            <span class="tag-dot" />
-            <span class="tag-name">{{ tag.name }}</span>
-          </span>
+            <ChevronLeft :size="14" />
+          </button>
+
+          <div
+            ref="tagsElement"
+            class="tags"
+            :class="{
+              'is-overflowing': hasTagOverflow,
+              'can-scroll-back': canScrollBack,
+              'can-scroll-forward': canScrollForward,
+            }"
+            @scroll="updateTagShadows"
+          >
+            <span
+              v-for="tag in taskTags"
+              :key="tag.id"
+              class="tag"
+              :title="tag.name"
+              :style="{ '--tag-color': tag.color || 'var(--accent)' }"
+            >
+              <span class="tag-dot" />
+              <span class="tag-name">{{ tag.name }}</span>
+            </span>
+          </div>
+
+          <button
+            v-if="hasTagOverflow"
+            type="button"
+            class="scroll-btn scroll-right"
+            :disabled="!canScrollForward"
+            @click="scrollTags(1)"
+          >
+            <ChevronRight :size="14" />
+          </button>
         </div>
       </div>
+
       <div class="actions">
         <button
           class="complete-btn"
@@ -40,14 +81,14 @@
           :disabled="disableToggle || isCompleted"
           :title="completeButtonTitle"
         >
-          <CheckCircle v-if="isCompleted" :size="22" />
-          <Circle v-else :size="22" />
+          <CheckCircle v-if="isCompleted" :size="18" />
+          <Circle v-else :size="18" />
         </button>
         <button class="edit-btn" title="Редактировать" @click.stop="emit('edit', task)">
-          <Edit :size="18" />
+          <Edit :size="16" />
         </button>
         <button class="delete-btn" title="Удалить" @click.stop="handleDelete">
-          <Trash2 :size="18" />
+          <Trash2 :size="16" />
         </button>
       </div>
     </div>
@@ -55,10 +96,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+// (оригинальный script без изменений)
+import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import type { Task } from '~/types/task.types'
 import GlassCard from '~/components/base/GlassCard.vue'
-import { CheckCircle, Circle, Trash2, Edit, Calendar } from 'lucide-vue-next'
+import { CheckCircle, Check, Circle, Trash2, Edit, Calendar, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { useTagsStore } from '~/stores/tags.store'
 import { useNotification } from '~/composables/useNotification'
 import { useConfirm } from '~/composables/useConfirm'
@@ -79,7 +121,59 @@ const taskTags = computed(() => {
   return tagsStore.getTagsByIds(props.task.tagIds)
 })
 
+const tagsElement = ref<HTMLElement | null>(null)
+const hasTagOverflow = ref(false)
+const canScrollBack = ref(false)
+const canScrollForward = ref(false)
+
+function updateTagShadows() {
+  const el = tagsElement.value
+  if (!el) return
+  const overflow = el.scrollWidth > el.clientWidth + 1
+  hasTagOverflow.value = overflow
+  if (!overflow) {
+    canScrollBack.value = false
+    canScrollForward.value = false
+    return
+  }
+
+  canScrollBack.value = el.scrollLeft > 1
+  canScrollForward.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 1
+}
+
+function scrollTags(direction: number) {
+  const el = tagsElement.value
+  if (!el) return
+  const amount = el.clientWidth * 0.6
+  el.scrollBy({ left: direction * amount, behavior: 'smooth' })
+}
+
+watch(taskTags, () => {
+  nextTick(updateTagShadows)
+})
+
+onMounted(() => {
+  nextTick(updateTagShadows)
+  window.addEventListener('resize', updateTagShadows)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateTagShadows)
+})
+
 const typeLabel = computed(() => {
+  const map: Record<string, string> = {
+    HABIT: 'П',
+    TASK_DAY: 'Д',
+    TASK_WEEK: 'Н',
+    TASK_MONTH: 'М',
+    TASK_YEAR: 'Г',
+    PURCHASE: 'К',
+  }
+  return map[props.task.type] || props.task.type.charAt(0).toUpperCase()
+})
+
+const typeTitle = computed(() => {
   const map: Record<string, string> = {
     HABIT: 'Привычка',
     TASK_DAY: 'День',
@@ -159,287 +253,284 @@ async function handleDelete() {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 150px;
-  padding: 16px;
-  transition:
-    border-color var(--transition-standard),
-    transform var(--transition-standard);
+  min-height: 148px;
+  height: 100%;
+  padding: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius-lg);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 
-  &:hover {
-    border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
-    transform: translateY(-1px);
-  }
-
-  &.completed {
-    opacity: 0.7;
-
-    h4 {
-      text-decoration: line-through;
-      text-decoration-color: color-mix(in srgb, var(--accent) 55%, transparent);
-      text-decoration-thickness: 2px;
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+      border-color: color-mix(in srgb, var(--border) 90%, transparent);
     }
-  }
 
-  &.habit-checked {
-    .task-type.HABIT {
-      background: color-mix(in srgb, var(--success) 22%, transparent);
+    &.habit-checked {
+      border-left-color: transparent;
     }
-  }
 
-  &.HABIT {
-    min-height: 132px;
-  }
-
-  &.overdue {
-    &::before {
-      position: absolute;
-      inset: 0 auto 0 0;
-      width: 4px;
-      background: var(--error);
-      content: '';
+    &.overdue {
+      border-left: 2px solid color-mix(in srgb, var(--error) 12%, transparent);
+      background: var(--surface);
     }
-  }
 
-  .task-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 10px;
-  }
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
 
-  h4 {
-    min-width: 0;
-    margin: 0;
-    color: var(--accent);
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.35;
-    word-break: break-word;
-  }
-
-  p {
-    margin: 0 0 14px;
-    color: var(--dim);
-    font-size: 0.86rem;
-    line-height: 1.45;
-    word-break: break-word;
-  }
-
-  .task-meta {
-    display: flex;
-    align-items: center;
-    flex: 1 1 auto;
-    flex-wrap: wrap;
-    gap: 8px;
-    min-width: 0;
-  }
-
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  .tag {
-    @include glass;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    max-width: 160px;
-    font-size: 0.7rem;
-    padding: 4px 8px;
-    border: 1px solid var(--glass-border);
-    border-radius: var(--border-radius-sm);
-    color: var(--accent);
-  }
-
-  .tag-dot {
-    flex: 0 0 auto;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 12%, transparent);
-  }
-
-  .tag-name {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .task-type {
-    flex-shrink: 0;
-    font-size: 0.7rem;
-    padding: 4px 8px;
-    border-radius: var(--border-radius-sm);
-    background: color-mix(in srgb, var(--border) 72%, transparent);
-    text-transform: uppercase;
-    color: var(--accent);
-    white-space: nowrap;
-
-    &.HABIT {
+    .habit-done-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: none;
       background: color-mix(in srgb, var(--success) 15%, transparent);
       color: var(--success);
+      cursor: pointer;
+      transition: all 0.2s;
+      &:hover {
+        transform: scale(1.05);
+        background: color-mix(in srgb, var(--success) 25%, transparent);
+      }
     }
-    &.TASK_DAY {
-      background: color-mix(in srgb, var(--accent) 12%, transparent);
+
+    h4 {
+      margin: 0;
       color: var(--accent);
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.3;
+      word-break: break-word;
     }
-    &.TASK_WEEK {
-      background: color-mix(in srgb, var(--silver) 16%, transparent);
-      color: var(--silver);
+
+    .task-desc {
+      margin: 0 0 8px;
+      color: var(--dim);
+      font-size: 0.8rem;
+      line-height: 1.4;
+      word-break: break-word;
     }
-    &.TASK_MONTH {
-      background: color-mix(in srgb, var(--gold) 15%, transparent);
-      color: var(--gold);
+
+    .task-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: auto;
     }
-    &.TASK_YEAR {
-      background: color-mix(in srgb, var(--platinum) 16%, transparent);
-      color: var(--platinum);
+
+    .task-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      min-width: 0;
     }
-    &.PURCHASE {
-      background: color-mix(in srgb, var(--gold) 15%, transparent);
-      color: var(--gold);
+
+    .due-date {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--dim);
+      font-size: 0.75rem;
+      background: color-mix(in srgb, var(--surface) 90%, transparent);
+      padding: 2px 6px;
+      border-radius: var(--border-radius-sm);
+      white-space: nowrap;
     }
-  }
 
-  .task-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-top: auto;
-  }
+    .tags-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
 
-  .due-date {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    min-height: 24px;
-    font-size: 0.8rem;
-    color: var(--dim);
-    white-space: nowrap;
-  }
-
-  .habit-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    min-height: 24px;
-    padding: 3px 7px;
-    border-radius: var(--border-radius-sm);
-    background: color-mix(in srgb, var(--success) 10%, transparent);
-    color: var(--success);
-    font-size: 0.72rem;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-
-  .actions {
-    display: flex;
-    gap: 4px;
-    flex-shrink: 0;
-    margin-left: auto;
-  }
-
-  .actions button {
-    width: 32px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    color: var(--dim);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition:
-      background var(--transition-standard),
-      color var(--transition-standard);
-
-    &:hover:not(:disabled) {
+    .scroll-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
       color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      z-index: 2;
+      &:hover:not(:disabled) {
+        background: var(--accent);
+        color: var(--bg);
+        transform: translateY(-50%) scale(1.05);
+      }
+      &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
     }
-  }
 
-  .complete-btn {
-    color: var(--dim);
-    &:hover:not(:disabled) {
-      color: var(--accent);
+    .scroll-left {
+      left: 0;
     }
-    &.done {
+    .scroll-right {
+      right: 0;
+    }
+
+    .tags {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 6px;
+      flex: 1;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 4px 0;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    .tag {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      background: color-mix(in srgb, var(--tag-color, var(--accent)) 8%, var(--surface));
+      border: 1px solid color-mix(in srgb, var(--tag-color, var(--accent)) 18%, var(--border));
+      border-radius: var(--border-radius-sm);
+      font-size: 0.7rem;
+      color: var(--tag-color, var(--accent));
+      white-space: nowrap;
+      transition: all 0.1s;
+    }
+
+    .tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--tag-color, var(--accent));
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-color, var(--accent)) 20%, var(--bg));
+    }
+
+    .tag-name {
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .task-type {
+      flex-shrink: 0;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 20px;
+      background: color-mix(in srgb, var(--dim) 15%, transparent);
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: default;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .actions button {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: var(--dim);
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--surface) 80%, transparent);
+        color: var(--accent);
+      }
+    }
+
+    .complete-btn.done {
       color: var(--success);
+      &:hover {
+        background: color-mix(in srgb, var(--success) 15%, transparent);
+        color: var(--success);
+      }
     }
-    &:disabled {
+
+    .edit-btn:hover {
+      color: var(--accent);
+    }
+    .delete-btn:hover {
+      color: var(--error);
+    }
+
+    .complete-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
   }
 
-  .delete-btn,
-  .edit-btn {
-    color: var(--dim);
-    &:hover {
-      color: var(--accent);
-    }
-  }
-  .delete-btn:hover {
-    color: var(--error);
-  }
-}
-
-@media (max-width: 480px) {
+  @media (max-width: 560px) {
   .task-card {
     padding: 12px;
+    min-height: 128px;
 
-    .task-type {
-      align-self: flex-start;
+    .task-header {
+      margin-bottom: 6px;
     }
-
-    .task-footer {
-      align-items: flex-start;
-      flex-direction: column;
-      gap: 10px;
+    h4 {
+      font-size: 0.85rem;
     }
-
-    .actions {
-      width: 100%;
-      justify-content: flex-end;
-      margin-left: 0;
+    .task-desc {
+      font-size: 0.75rem;
+      margin-bottom: 6px;
     }
-
-    &.HABIT {
-      min-height: 116px;
-
-      .task-header {
-        gap: 8px;
-        margin-bottom: 8px;
+    .due-date {
+      font-size: 0.7rem;
+      padding: 1px 4px;
+    }
+    .tag {
+      padding: 1px 6px;
+      font-size: 0.65rem;
+      .tag-name {
+        max-width: 80px;
       }
-
-      h4 {
-        font-size: 0.88rem;
-        line-height: 1.25;
-      }
-
-      .task-type {
-        display: none;
-      }
-
-      .task-footer {
-        gap: 8px;
-      }
-
-      .actions {
-        gap: 2px;
-      }
-
-      .actions button {
-        width: 28px;
-        height: 28px;
-      }
+    }
+    .actions button {
+      width: 28px;
+      height: 28px;
+    }
+    .scroll-btn {
+      width: 20px;
+      height: 20px;
+    }
+    .tags {
+      padding: 2px 22px;
     }
   }
 }
