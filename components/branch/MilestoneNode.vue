@@ -57,14 +57,30 @@
     </Transition>
 
     <!-- Хендлы -->
-    <Handle type="target" :position="Position.Left" class="handle handle-left" />
-    <Handle type="target" :position="Position.Right" class="handle handle-right" />
-    <Handle type="target" :position="Position.Top" class="handle handle-top" />
-    <Handle type="target" :position="Position.Bottom" class="handle handle-bottom" />
-    <Handle type="source" :position="Position.Left" class="handle handle-left" />
-    <Handle type="source" :position="Position.Right" class="handle handle-right" />
-    <Handle type="source" :position="Position.Top" class="handle handle-top" />
-    <Handle type="source" :position="Position.Bottom" class="handle handle-bottom" />
+    <Handle
+      :id="`target-top-${data.milestone.id}`"
+      type="target"
+      :position="Position.Top"
+      class="handle handle-top handle-target"
+    />
+    <Handle
+      :id="`target-left-${data.milestone.id}`"
+      type="target"
+      :position="Position.Left"
+      class="handle handle-left handle-target"
+    />
+    <Handle
+      :id="`source-right-${data.milestone.id}`"
+      type="source"
+      :position="Position.Right"
+      class="handle handle-right handle-source"
+    />
+    <Handle
+      :id="`source-bottom-${data.milestone.id}`"
+      type="source"
+      :position="Position.Bottom"
+      class="handle handle-bottom handle-source"
+    />
   </GlassCard>
 </template>
 
@@ -354,38 +370,37 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     z-index: 10;
   }
 
-  .handle-left {
-    width: 10px;
-    height: 10px;
-    border-radius: var(--border-radius-pill);
-    top: 55px !important;
-    left: -5px !important;
-    transform: none !important;
-  }
-
-  .handle-right {
-    width: 10px;
-    height: 10px;
-    border-radius: var(--border-radius-pill);
-    top: 55px !important;
-    right: -5px !important;
-    transform: none !important;
-  }
-
   .handle-top {
     width: 12px;
     height: 6px;
     border-radius: var(--border-radius-sm);
-    top: -3px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
   }
 
+  .handle-top.handle-target {
+    top: -3px !important;
+  }
+
+  .handle-left,
+  .handle-right,
   .handle-bottom {
-    width: 12px;
-    height: 6px;
-    border-radius: var(--border-radius-sm);
-    bottom: -3px !important;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    transform: none !important;
+  }
+
+  .handle-left.handle-target {
+    left: -5px !important;
+  }
+
+  .handle-right.handle-source {
+    right: -5px !important;
+  }
+
+  .handle-bottom.handle-source {
+    bottom: -5px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
   }

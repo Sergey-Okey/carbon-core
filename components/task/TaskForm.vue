@@ -34,6 +34,7 @@
                 type="button"
                 class="tag-btn active"
                 aria-pressed="true"
+                :style="{ '--tag-color': tag.color || 'var(--accent)' }"
               >
                 <span class="tag-dot" />
                 <span class="tag-name">{{ tag.name }}</span>
@@ -57,6 +58,29 @@
             <Plus :size="16" />
             <span class="tag-name">Добавить</span>
           </button>
+        </div>
+
+          <div class="available-tags">
+          <div class="available-tags__label">Выбрать из существующих</div>
+          <div class="tags-cloud">
+            <template v-if="allTags.length">
+              <template v-if="availableTags.length">
+                <template v-for="tag in availableTags" :key="tag.id">
+                  <button
+                    type="button"
+                    class="tag-btn"
+                    :style="{ '--tag-color': tag.color || 'var(--accent)' }"
+                    @click="selectExistingTag(tag)"
+                  >
+                    <span class="tag-dot" />
+                    <span class="tag-name">{{ tag.name }}</span>
+                  </button>
+                </template>
+              </template>
+              <p v-else class="helper-text">Все теги выбраны</p>
+            </template>
+            <p v-else class="helper-text">Нет тегов</p>
+          </div>
         </div>
       </AppFormField>
 
@@ -138,6 +162,7 @@ import AppSelect from '~/components/ui/AppSelect.vue'
 import type { AppSelectOption } from '~/types/ui.types'
 import type { BranchId } from '~/types/branch.types'
 import type { Task, TaskTag } from '~/types/task.types'
+import type { Tag, TagScope } from '~/types/tag.types'
 
 const props = defineProps<{
   task?: Task
@@ -178,6 +203,15 @@ const form = reactive({
   tagIds: [] as string[],
   tags: [] as TaskTag[],
 })
+
+const currentScope = computed<TagScope>(() =>
+  form.type === 'HABIT' ? 'habit' : 'task'
+)
+
+const allTags = computed<Tag[]>(() => tagsStore.getTagsByScope(currentScope.value))
+const availableTags = computed<Tag[]>(() =>
+  allTags.value.filter((tag) => !form.tagIds.includes(tag.id))
+)
 
 const modalTitle = computed(() => {
   if (editing.value) return 'Редактирование задачи'
@@ -261,26 +295,45 @@ function createTag() {
   if (newTagBranchId.value && !branchesStore.branches.some((branch) => branch.id === newTagBranchId.value)) return
 
   const name = newTagName.value.trim()
-
-  const existing = form.tags.find(
-    (tag) => tag.name.toLowerCase() === name.toLowerCase()
+  const existingGlobal = tagsStore.tags.find(
+    (tag) => tag.name.toLowerCase() === name.toLowerCase() && tag.scope === currentScope.value
   )
-  if (existing) {
-    addNotification({ type: 'warning', message: 'Такой тег уже существует' })
+  if (existingGlobal) {
+    if (!form.tagIds.includes(existingGlobal.id)) {
+      selectExistingTag(existingGlobal)
+      addNotification({ type: 'success', message: `Тег «${name}» добавлен к задаче` })
+    } else {
+      addNotification({ type: 'warning', message: 'Такой тег уже существует' })
+    }
+    closeAddTagModal()
     return
   }
 
-  const tag: TaskTag = {
-    id: uuidv4(),
+  const tag = tagsStore.addTag({
     name,
     branchId: newTagBranchId.value,
     color: newTagColor.value,
-    order: form.tags.length,
-  }
-  form.tags.push(tag)
+    scope: currentScope.value,
+    order: tagsStore.tags.length,
+  })
+
+  form.tags.push({ ...tag, order: form.tags.length })
+  form.tagIds.push(tag.id)
 
   addNotification({ type: 'success', message: `Тег «${name}» добавлен` })
   closeAddTagModal()
+}
+
+function selectExistingTag(tag: Tag) {
+  if (form.tagIds.includes(tag.id)) return
+  form.tags.push({
+    id: tag.id,
+    name: tag.name,
+    branchId: tag.branchId,
+    color: tag.color,
+    order: form.tags.length,
+  })
+  form.tagIds.push(tag.id)
 }
 
 function deleteTag(tagId: string) {
@@ -398,24 +451,25 @@ function getTaskTags(task: Task): TaskTag[] {
     gap: 8px;
     min-height: 36px;
     padding: 7px 12px 7px 10px;
-    border: 1px solid var(--glass-border);
+    border: 1px solid color-mix(in srgb, var(--tag-color, var(--accent)) 22%, var(--border));
     border-radius: var(--border-radius-md);
-    color: var(--accent);
+    color: var(--tag-color, var(--accent));
+    background: color-mix(in srgb, var(--tag-color, var(--accent)) 6%, transparent);
     font-size: 0.85rem;
     font-weight: 500;
     transition: all var(--transition-standard);
     cursor: pointer;
 
     &:hover {
-      border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
-      color: var(--accent);
+      border-color: color-mix(in srgb, var(--tag-color, var(--accent)) 42%, var(--border));
+      color: var(--tag-color, var(--accent));
     }
 
     &.active {
-      background: color-mix(in srgb, var(--accent) 9%, transparent);
-      border-color: color-mix(in srgb, var(--accent) 72%, var(--border));
-      color: var(--accent);
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+      background: color-mix(in srgb, var(--tag-color, var(--accent)) 12%, transparent);
+      border-color: color-mix(in srgb, var(--tag-color, var(--accent)) 72%, var(--border));
+      color: var(--tag-color, var(--accent));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tag-color, var(--accent)) 18%, transparent);
     }
   }
 
@@ -424,15 +478,8 @@ function getTaskTags(task: Task): TaskTag[] {
     width: 10px;
     height: 10px;
     border-radius: var(--border-radius-pill);
-    background: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
-  }
-
-  .tag-name {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    background: var(--tag-color, var(--accent));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tag-color, var(--accent)) 12%, transparent);
   }
 
   .tag-delete {

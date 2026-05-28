@@ -120,17 +120,29 @@ function onMouseLeave() {
     &.is-expanded {
       width: 180px;
     }
+
+    &:not(.is-expanded) {
+      .nav-item {
+        width: 44px;
+        min-width: 44px;
+        height: 44px;
+        padding: 0;
+        justify-content: center;
+        border-radius: 50%;
+        gap: 0;
+      }
+    }
   }
 
-  /* Мобильная версия — островок, чуть шире, с анимацией */
+  /* Мобильная версия — компактнее островок */
   @include mobile {
     @include glass;
     position: fixed;
-    bottom: 20px;
-    left: 16px;
-    right: 16px;
+    bottom: 16px;
+    left: 12px;
+    right: 12px;
     width: auto;
-    padding: 8px 16px;
+    padding: 8px 10px;
     border-radius: var(--border-radius-pill);
     animation: slideUp 0.3s ease-out;
     transition: transform 0.2s, box-shadow 0.2s;
@@ -168,7 +180,7 @@ function onMouseLeave() {
   @include mobile {
     flex-direction: row;
     justify-content: space-around;
-    gap: 8px;
+    gap: 6px;
     width: 100%;
   }
 }
@@ -199,16 +211,19 @@ function onMouseLeave() {
   }
 
   @include mobile {
-    flex: 1;
+    flex: 0;
+    width: 42px;
+    min-width: 42px;
+    min-height: 42px;
     justify-content: center;
-    padding: 10px 6px;
-    min-height: 52px;
-    border-radius: var(--border-radius-pill);
+    padding: 0;
+    border-radius: 50%;
   }
 
   &:hover {
     color: var(--accent);
     border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
   }
 
   &:active {

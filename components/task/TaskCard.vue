@@ -20,6 +20,7 @@
     </div>
 
     <p v-if="task.description?.trim()" class="task-desc">{{ task.description.trim() }}</p>
+    <p v-else class="task-desc task-desc--empty">Нет описания</p>
 
     <div class="task-bottom">
       <div class="task-info">
@@ -71,6 +72,7 @@
             <ChevronRight :size="14" />
           </button>
         </div>
+        <p v-else class="no-tags">Нет тегов</p>
       </div>
 
       <div class="actions">
@@ -96,9 +98,9 @@
 </template>
 
 <script setup lang="ts">
-// (оригинальный script без изменений)
 import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import type { Task } from '~/types/task.types'
+// @ts-ignore: Vue SFC default export type can be missing in editor service
 import GlassCard from '~/components/base/GlassCard.vue'
 import { CheckCircle, Check, Circle, Trash2, Edit, Calendar, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { useTagsStore } from '~/stores/tags.store'
@@ -129,6 +131,7 @@ const canScrollForward = ref(false)
 function updateTagShadows() {
   const el = tagsElement.value
   if (!el) return
+
   const overflow = el.scrollWidth > el.clientWidth + 1
   hasTagOverflow.value = overflow
   if (!overflow) {
@@ -144,6 +147,7 @@ function updateTagShadows() {
 function scrollTags(direction: number) {
   const el = tagsElement.value
   if (!el) return
+
   const amount = el.clientWidth * 0.6
   el.scrollBy({ left: direction * amount, behavior: 'smooth' })
 }
@@ -170,6 +174,7 @@ const typeLabel = computed(() => {
     TASK_YEAR: 'Г',
     PURCHASE: 'К',
   }
+
   return map[props.task.type] || props.task.type.charAt(0).toUpperCase()
 })
 
@@ -182,6 +187,7 @@ const typeTitle = computed(() => {
     TASK_YEAR: 'Год',
     PURCHASE: 'Покупка',
   }
+
   return map[props.task.type] || props.task.type
 })
 
@@ -191,15 +197,11 @@ const formattedDate = computed(() => {
   return d.toLocaleDateString('ru', { day: 'numeric', month: 'short' })
 })
 
-const isCompleted = computed(() => {
-  if (props.task.done) return true
-  return false
-})
+const isCompleted = computed(() => !!props.task.done)
 
 const isHabitDoneToday = computed(() => {
   if (props.task.type !== 'HABIT' || !props.task.lastCompletedAt) return false
-  return getLocalDateKey(new Date(props.task.lastCompletedAt)) ===
-    getLocalDateKey(new Date())
+  return getLocalDateKey(new Date(props.task.lastCompletedAt)) === getLocalDateKey(new Date())
 })
 
 const isVisuallyCompleted = computed(() => props.task.type !== 'HABIT' && props.task.done)
@@ -225,6 +227,7 @@ function handleToggle() {
         ? `Привычка «${props.task.title}» выполнена`
         : `Задача «${props.task.title}» выполнена`,
   })
+
   emit('toggle', props.task.id)
 }
 
@@ -243,6 +246,7 @@ async function handleDelete() {
     type: 'info',
     message: `«${props.task.title}» удалено`,
   })
+
   emit('delete', props.task.id)
 }
 </script>
@@ -256,264 +260,319 @@ async function handleDelete() {
   min-height: 148px;
   height: 100%;
   padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-lg);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+    border-color: color-mix(in srgb, var(--border) 90%, transparent);
+  }
+
+  &.habit-checked {
+    border-left-color: transparent;
+  }
+
+  &.overdue {
+    border-left: 2px solid color-mix(in srgb, var(--error) 12%, transparent);
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius-lg);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
 
+  .task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  .habit-done-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    background: color-mix(in srgb, var(--success) 15%, transparent);
+    color: var(--success);
+    cursor: pointer;
+    transition: all 0.2s;
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
-      border-color: color-mix(in srgb, var(--border) 90%, transparent);
+      transform: scale(1.05);
+      background: color-mix(in srgb, var(--success) 25%, transparent);
     }
+  }
 
-    &.habit-checked {
-      border-left-color: transparent;
-    }
+  h4 {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.3;
+    word-break: break-word;
+  }
 
-    &.overdue {
-      border-left: 2px solid color-mix(in srgb, var(--error) 12%, transparent);
-      background: var(--surface);
-    }
+  .task-desc {
+    margin: 0 0 8px;
+    color: var(--dim);
+    font-size: 0.8rem;
+    line-height: 1.4;
+    word-break: break-word;
+  }
 
-    .title-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      min-width: 0;
-    }
+  .task-desc--empty {
+    opacity: 0.75;
+    font-style: italic;
+  }
 
-    .habit-done-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      border: none;
-      background: color-mix(in srgb, var(--success) 15%, transparent);
-      color: var(--success);
-      cursor: pointer;
-      transition: all 0.2s;
-      &:hover {
-        transform: scale(1.05);
-        background: color-mix(in srgb, var(--success) 25%, transparent);
-      }
-    }
+  .task-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: auto;
+    flex-wrap: wrap;
+  }
 
-    h4 {
-      margin: 0;
-      color: var(--accent);
-      font-size: 0.95rem;
-      font-weight: 600;
-      line-height: 1.3;
-      word-break: break-word;
-    }
+  .task-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+    flex: 1;
+  }
 
-    .task-desc {
-      margin: 0 0 8px;
-      color: var(--dim);
-      font-size: 0.8rem;
-      line-height: 1.4;
-      word-break: break-word;
-    }
+  .due-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--dim);
+    font-size: 0.75rem;
+    background: color-mix(in srgb, var(--surface) 90%, transparent);
+    padding: 2px 6px;
+    border-radius: var(--border-radius-sm);
+    white-space: nowrap;
+  }
 
-    .task-bottom {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: auto;
-    }
+  .tags-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
 
-    .task-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      min-width: 0;
-    }
+  .scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 2;
 
-    .due-date {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      color: var(--dim);
-      font-size: 0.75rem;
-      background: color-mix(in srgb, var(--surface) 90%, transparent);
-      padding: 2px 6px;
-      border-radius: var(--border-radius-sm);
-      white-space: nowrap;
+    &:hover:not(:disabled) {
+      background: var(--accent);
+      color: var(--bg);
+      transform: translateY(-50%) scale(1.05);
     }
-
-    .tags-wrapper {
-      position: relative;
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-    }
-
-    .scroll-btn {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--accent);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      z-index: 2;
-      &:hover:not(:disabled) {
-        background: var(--accent);
-        color: var(--bg);
-        transform: translateY(-50%) scale(1.05);
-      }
-      &:disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-      }
-    }
-
-    .scroll-left {
-      left: 0;
-    }
-    .scroll-right {
-      right: 0;
-    }
-
-    .tags {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 6px;
-      flex: 1;
-      overflow-x: auto;
-      overflow-y: hidden;
-      padding: 4px 0;
-      scroll-behavior: smooth;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      &::-webkit-scrollbar {
-        display: none;
-      }
-    }
-
-    .tag {
-      flex: 0 0 auto;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 2px 8px;
-      background: color-mix(in srgb, var(--tag-color, var(--accent)) 8%, var(--surface));
-      border: 1px solid color-mix(in srgb, var(--tag-color, var(--accent)) 18%, var(--border));
-      border-radius: var(--border-radius-sm);
-      font-size: 0.7rem;
-      color: var(--tag-color, var(--accent));
-      white-space: nowrap;
-      transition: all 0.1s;
-    }
-
-    .tag-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--tag-color, var(--accent));
-      box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-color, var(--accent)) 20%, var(--bg));
-    }
-
-    .tag-name {
-      max-width: 100px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .task-type {
-      flex-shrink: 0;
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 2px 6px;
-      border-radius: 20px;
-      background: color-mix(in srgb, var(--dim) 15%, transparent);
-      color: var(--dim);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      cursor: default;
-    }
-
-    .actions {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-shrink: 0;
-    }
-
-    .actions button {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: transparent;
-      border: none;
-      color: var(--dim);
-      cursor: pointer;
-      transition: all 0.2s;
-
-      &:hover:not(:disabled) {
-        background: color-mix(in srgb, var(--surface) 80%, transparent);
-        color: var(--accent);
-      }
-    }
-
-    .complete-btn.done {
-      color: var(--success);
-      &:hover {
-        background: color-mix(in srgb, var(--success) 15%, transparent);
-        color: var(--success);
-      }
-    }
-
-    .edit-btn:hover {
-      color: var(--accent);
-    }
-    .delete-btn:hover {
-      color: var(--error);
-    }
-
-    .complete-btn:disabled {
-      opacity: 0.5;
+    &:disabled {
+      opacity: 0.3;
       cursor: not-allowed;
     }
   }
 
-  @media (max-width: 560px) {
+  .scroll-left {
+    left: 0;
+  }
+  .scroll-right {
+    right: 0;
+  }
+
+  .tags {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 0;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .tag {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    background: color-mix(in srgb, var(--tag-color, var(--accent)) 8%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--tag-color, var(--accent)) 18%, var(--border));
+    border-radius: var(--border-radius-sm);
+    font-size: 0.7rem;
+    color: var(--tag-color, var(--accent));
+    white-space: nowrap;
+    transition: all 0.1s;
+  }
+
+  .tag-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--tag-color, var(--accent));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-color, var(--accent)) 20%, var(--bg));
+  }
+
+  .tag-name {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .no-tags {
+    color: var(--dim);
+    font-size: 0.75rem;
+    margin-top: 2px;
+  }
+
+  .task-type {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--dim) 15%, transparent);
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: default;
+    white-space: nowrap;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .actions button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--dim);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--surface) 80%, transparent);
+      color: var(--accent);
+    }
+  }
+
+  .complete-btn.done {
+    color: var(--success);
+    &:hover {
+      background: color-mix(in srgb, var(--success) 15%, transparent);
+      color: var(--success);
+    }
+  }
+
+  .edit-btn:hover {
+    color: var(--accent);
+  }
+  .delete-btn:hover {
+    color: var(--error);
+  }
+
+  .complete-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@media (max-width: 560px) {
   .task-card {
     padding: 12px;
-    min-height: 128px;
+    min-height: auto;
 
     .task-header {
-      margin-bottom: 6px;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
     }
+
+    .title-row {
+      flex: 1;
+    }
+
     h4 {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
     }
+
+    .task-type {
+      align-self: center;
+      margin-left: auto;
+    }
+
     .task-desc {
       font-size: 0.75rem;
-      margin-bottom: 6px;
+      margin-bottom: 10px;
     }
+
+    .task-bottom {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .task-info {
+      flex: 1;
+      gap: 8px;
+    }
+
     .due-date {
       font-size: 0.7rem;
-      padding: 1px 4px;
+      padding: 1px 6px;
     }
+
+    .tags-wrapper {
+      min-width: 0;
+    }
+
     .tag {
       padding: 1px 6px;
       font-size: 0.65rem;
@@ -521,16 +580,23 @@ async function handleDelete() {
         max-width: 80px;
       }
     }
+
+    .actions {
+      margin-left: auto;
+    }
+
     .actions button {
       width: 28px;
       height: 28px;
     }
+
     .scroll-btn {
       width: 20px;
       height: 20px;
     }
+
     .tags {
-      padding: 2px 22px;
+      padding: 2px 0;
     }
   }
 }
