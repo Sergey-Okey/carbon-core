@@ -155,6 +155,13 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
     min-height: 0;
     padding-bottom: 0;
     overflow: hidden;
+
+    @include mobile {
+      height: auto;
+      min-height: 0;
+      overflow: visible;
+      padding-bottom: 84px;
+    }
   }
 }
 
@@ -177,6 +184,12 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
     min-height: 0;
     height: 100%;
     overflow: hidden;
+
+    @include mobile {
+      flex: 0 0 auto;
+      height: auto;
+      overflow: visible;
+    }
   }
 }
 

@@ -184,6 +184,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
 <style scoped lang="scss">
 .milestone-node {
+  @include glass;
   width: 220px;
   padding: 12px;
   position: relative;
@@ -192,6 +193,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     border-color 0.2s,
     background 0.2s;
   border: 1px solid var(--glass-border);
+  background: var(--glass-surface);
 
   &.selected {
     border-color: var(--accent);
@@ -363,16 +365,27 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
   /* Хендлы */
   .handle {
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
     background: var(--accent);
     border: 1px solid var(--glass-border);
-    opacity: 0;
+    opacity: 1;
     z-index: 10;
+  }
+
+  .handle-target {
+    background: var(--surface);
+    border-color: var(--accent);
+  }
+
+  .handle-source {
+    background: var(--accent);
   }
 
   .handle-top {
     width: 12px;
-    height: 6px;
+    height: 5px;
     border-radius: var(--border-radius-sm);
     left: 50% !important;
     transform: translateX(-50%) !important;
@@ -385,18 +398,20 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   .handle-left,
   .handle-right,
   .handle-bottom {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     transform: none !important;
   }
 
   .handle-left.handle-target {
     left: -5px !important;
+    top: 54px !important;
   }
 
   .handle-right.handle-source {
     right: -5px !important;
+    top: 54px !important;
   }
 
   .handle-bottom.handle-source {
@@ -407,8 +422,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
   &:hover .handle,
   &.selected .handle {
-    opacity: 1;
-    transform: scale(1.05);
+    box-shadow: 0 0 0 2px var(--border);
   }
 
   .handle:active {

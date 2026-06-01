@@ -47,7 +47,7 @@
         @fit-view="fitView"
         @zoom-in="zoomIn"
         @zoom-out="zoomOut"
-        @align-layout="alignLayout"
+        @align-layout="alignLayoutSmart"
         @add-branch="openAddBranchModal"
         @add-milestone="addMilestoneToSelectedBranch"
         @delete-selected="deleteSelected"
@@ -111,6 +111,7 @@ import {
 import { Background, BackgroundVariant } from '@vue-flow/background'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useSettingsStore } from '~/stores/settings.store'
+import { useAutoLayout } from '~/composables/useAutoLayout'
 import { useConfirm } from '~/composables/useConfirm'
 import { useNotification } from '~/composables/useNotification'
 import BranchNode from './BranchNode.vue'
@@ -127,6 +128,7 @@ import '@vue-flow/core/dist/theme-default.css'
 const branchesStore = useBranchesStore()
 const settingsStore = useSettingsStore()
 const { fitView, zoomIn: vfZoomIn, zoomOut: vfZoomOut } = useVueFlow()
+const { applyLayout } = useAutoLayout()
 const { confirm } = useConfirm()
 const { addNotification } = useNotification()
 
@@ -260,10 +262,32 @@ function syncNodesAndEdges() {
   })
 }
 
+function normalizeConnection(connection: Connection): Connection {
+  const shouldSwap =
+    connection.sourceHandle?.startsWith('target-') ||
+    connection.targetHandle?.startsWith('source-')
+
+  if (!shouldSwap) return connection
+
+  return {
+    ...connection,
+    source: connection.target,
+    target: connection.source,
+    sourceHandle: connection.targetHandle,
+    targetHandle: connection.sourceHandle,
+  }
+}
+
 function onConnect(connection: Connection) {
   if (!connection.source || !connection.target) return
 
-  const result = branchesStore.connectNodes(connection.source, connection.target)
+  const normalizedConnection = normalizeConnection(connection)
+  const result = branchesStore.connectNodes(
+    normalizedConnection.source,
+    normalizedConnection.target,
+    normalizedConnection.sourceHandle,
+    normalizedConnection.targetHandle
+  )
   if (!result.ok) {
     addNotification({ type: 'warning', message: result.reason || 'Связь недоступна' })
     return
@@ -279,7 +303,13 @@ function onEdgeUpdate({ edge, connection }: { edge: Edge; connection: Connection
   }
 
   branchesStore.removeEdge(edge.id)
-  const result = branchesStore.connectNodes(connection.source, connection.target)
+  const normalizedConnection = normalizeConnection(connection)
+  const result = branchesStore.connectNodes(
+    normalizedConnection.source,
+    normalizedConnection.target,
+    normalizedConnection.sourceHandle,
+    normalizedConnection.targetHandle
+  )
   if (!result.ok) {
     branchesStore.addEdge(edge)
     addNotification({ type: 'warning', message: result.reason || 'Связь недоступна' })
@@ -346,7 +376,8 @@ async function deleteSelectedBranch() {
   const node = nodes.value.find((item) => item.id === selectedNodeId.value)
   if (!node || node.type !== 'branch-node' || !node.data) return
 
-  const branch = branchesStore.branches.find((item) => item.id === node.data.branchId)
+  const branchData = node.data as Extract<BranchNodeData, { type: 'branch' }>
+  const branch = branchesStore.branches.find((item) => item.id === branchData.branchId)
   if (!branch) return
 
   if (settingsStore.boardConfirmBranchDelete) {
@@ -411,6 +442,47 @@ function alignLayout() {
   saveToHistory()
   refocusBoard()
   addNotification({ type: 'success', message: 'Доска выровнена' })
+}
+
+function alignLayoutSmart() {
+  if (branchesStore.branches.length === 0) return
+
+  const density = {
+    compact: { rankSep: 130, nodeSep: 54 },
+    normal: { rankSep: 170, nodeSep: 78 },
+    wide: { rankSep: 220, nodeSep: 110 },
+  }[settingsStore.boardLayoutDensity]
+
+  syncNodesAndEdges()
+
+  const nodeIds = new Set(nodes.value.map((node) => node.id))
+  const layoutEdges = branchesStore.edges.filter(
+    (edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target)
+  )
+  const layoutedNodes = applyLayout(nodes.value, layoutEdges, 'LR', {
+    rankSep: density.rankSep,
+    nodeSep: density.nodeSep,
+    marginX: 80,
+    marginY: 80,
+    snapGrid: 20,
+  })
+
+  layoutedNodes.forEach((node) => {
+    if (node.type === 'branch-node') {
+      branchesStore.updateBranchPosition(node.id, node.position)
+      return
+    }
+
+    if (node.type === 'milestone-node') {
+      branchesStore.updateMilestone(node.id, { position: node.position })
+    }
+  })
+
+  syncNodesAndEdges()
+  saveToHistory()
+  refocusBoard()
+  nextTick(() => fitView())
+  addNotification({ type: 'success', message: 'Доска выровнена по связям' })
 }
 
 function handleKeyDown(event: KeyboardEvent) {
@@ -659,11 +731,15 @@ watch(
   border-radius: var(--border-radius-lg);
   position: relative;
   overflow: hidden;
+  min-height: 520px;
 
   @include mobile {
     width: 100%;
-    height: 100%;
+    height: auto;
+    min-height: 0;
     margin: 0;
+    border-radius: var(--border-radius-lg);
+    overflow: visible;
   }
 }
 
@@ -682,8 +758,8 @@ watch(
 }
 
 :deep(.vue-flow__edge-path) {
-  stroke: var(--accent);
-  stroke-width: 1;
+  stroke: var(--dim);
+  stroke-width: 1.15;
 }
 
 :deep(.vue-flow__node.selected .branch-node, .vue-flow__node.selected .milestone-node) {
@@ -692,6 +768,6 @@ watch(
 
 :deep(.vue-flow__edge.selected .vue-flow__edge-path) {
   stroke: var(--accent);
-  stroke-width: 3;
+  stroke-width: 2.4;
 }
 </style>

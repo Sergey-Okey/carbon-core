@@ -82,23 +82,18 @@
                 <span class="label">Быстрая смена темы</span>
                 <span class="desc">{{ themeLabel }}</span>
               </div>
-              <label class="theme-slider" :class="{ light: settingsStore.theme === 'light' }">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.theme === 'light'"
-                  aria-label="Сменить тему"
-                  @change="toggleTheme"
-                />
-                <span class="theme-slider__track">
-                  <span class="theme-slider__icon dark">
-                    <Moon :size="15" />
-                  </span>
-                  <span class="theme-slider__icon light">
-                    <Sun :size="15" />
-                  </span>
-                  <span class="theme-slider__thumb" />
-                </span>
-              </label>
+              <AppSwitch
+                :model-value="settingsStore.theme === 'light'"
+                aria-label="Сменить тему"
+                @update:model-value="toggleTheme"
+              >
+                <template #off>
+                  <Moon :size="14" />
+                </template>
+                <template #on>
+                  <Sun :size="14" />
+                </template>
+              </AppSwitch>
             </div>
 
             <div class="setting-row">
@@ -259,14 +254,10 @@
                 <span class="label">Верхняя статистика</span>
                 <span class="desc">Показывать панель уровня, лиги, активности и счётчиков задач.</span>
               </div>
-              <label class="switch">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.showTopStats"
-                  @change="toggleTopStats"
-                />
-                <span class="slider"></span>
-              </label>
+              <AppSwitch
+                :model-value="settingsStore.showTopStats"
+                @update:model-value="toggleTopStats"
+              />
             </div>
 
             <div class="setting-row">
@@ -274,14 +265,10 @@
                 <span class="label">Прогресс в настройках</span>
                 <span class="desc">Показывать верхнюю статистику и на странице настроек.</span>
               </div>
-              <label class="switch">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.showSettingsStats"
-                  @change="toggleSettingsStats"
-                />
-                <span class="slider"></span>
-              </label>
+              <AppSwitch
+                :model-value="settingsStore.showSettingsStats"
+                @update:model-value="toggleSettingsStats"
+              />
             </div>
 
             <div class="setting-row">
@@ -289,14 +276,10 @@
                 <span class="label">Подтверждать опасные действия</span>
                 <span class="desc">Перед сбросом данных приложение спросит подтверждение.</span>
               </div>
-              <label class="switch">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.confirmDangerActions"
-                  @change="toggleDangerConfirm"
-                />
-                <span class="slider"></span>
-              </label>
+              <AppSwitch
+                :model-value="settingsStore.confirmDangerActions"
+                @update:model-value="toggleDangerConfirm"
+              />
             </div>
 
             <div class="mode-summary">
@@ -324,14 +307,10 @@
                 <span class="label">Фокус доски при открытии</span>
                 <span class="desc">Доска сразу готова к горячим клавишам и созданию веток.</span>
               </div>
-              <label class="switch">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.boardAutoFocus"
-                  @change="toggleBoardAutoFocus"
-                />
-                <span class="slider"></span>
-              </label>
+              <AppSwitch
+                :model-value="settingsStore.boardAutoFocus"
+                @update:model-value="toggleBoardAutoFocus"
+              />
             </div>
 
             <div class="setting-row">
@@ -339,14 +318,10 @@
                 <span class="label">Возвращать фокус после действий</span>
                 <span class="desc">После создания, редактирования и удаления фокус снова возвращается на доску.</span>
               </div>
-              <label class="switch">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.boardFocusAfterAction"
-                  @change="toggleBoardFocusAfterAction"
-                />
-                <span class="slider"></span>
-              </label>
+              <AppSwitch
+                :model-value="settingsStore.boardFocusAfterAction"
+                @update:model-value="toggleBoardFocusAfterAction"
+              />
             </div>
 
             <div class="setting-row">
@@ -354,14 +329,10 @@
                 <span class="label">Подтверждать разрыв связи</span>
                 <span class="desc">Защита от случайного отсоединения цепочки этапов.</span>
               </div>
-              <label class="switch">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.boardConfirmEdgeDelete"
-                  @change="toggleBoardConfirmEdgeDelete"
-                />
-                <span class="slider"></span>
-              </label>
+              <AppSwitch
+                :model-value="settingsStore.boardConfirmEdgeDelete"
+                @update:model-value="toggleBoardConfirmEdgeDelete"
+              />
             </div>
 
             <div class="setting-row">
@@ -369,14 +340,10 @@
                 <span class="label">Подтверждать удаление ветки</span>
                 <span class="desc">Особенно важно, если в ветке есть этапы и связанные задачи.</span>
               </div>
-              <label class="switch">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.boardConfirmBranchDelete"
-                  @change="toggleBoardConfirmBranchDelete"
-                />
-                <span class="slider"></span>
-              </label>
+              <AppSwitch
+                :model-value="settingsStore.boardConfirmBranchDelete"
+                @update:model-value="toggleBoardConfirmBranchDelete"
+              />
             </div>
 
             <div class="setting-row">
@@ -432,14 +399,10 @@
                 <span class="label">Обозначения узлов</span>
                 <span class="desc">Показывать подписи типа “ветка” и “этап”, если они нужны для ориентира.</span>
               </div>
-              <label class="switch">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.boardShowNodeTypes"
-                  @change="toggleBoardShowNodeTypes"
-                />
-                <span class="slider"></span>
-              </label>
+              <AppSwitch
+                :model-value="settingsStore.boardShowNodeTypes"
+                @update:model-value="toggleBoardShowNodeTypes"
+              />
             </div>
 
             <div class="mode-summary">
@@ -471,14 +434,10 @@
                 <span class="label">Авто-бэкап при выходе</span>
                 <span class="desc">Сохраняет профиль, авторизацию и прогресс.</span>
               </div>
-              <label class="switch">
-                <input
-                  type="checkbox"
-                  :checked="settingsStore.autoBackup"
-                  @change="toggleAutoBackup"
-                />
-                <span class="slider"></span>
-              </label>
+              <AppSwitch
+                :model-value="settingsStore.autoBackup"
+                @update:model-value="toggleAutoBackup"
+              />
             </div>
 
             <div class="backup-info">
@@ -557,6 +516,7 @@ import {
 import AppButton from '~/components/ui/AppButton.vue'
 import AppColorPicker from '~/components/ui/AppColorPicker.vue'
 import AppCustomColorPicker from '~/components/ui/AppCustomColorPicker.vue'
+import AppSwitch from '~/components/ui/AppSwitch.vue'
 import { useNotification } from '~/composables/useNotification'
 import { ACCENT_COLORS, useSettingsStore } from '~/stores/settings.store'
 import {
@@ -677,8 +637,7 @@ function setThemeMode(mode: ThemeMode) {
   settingsStore.setThemeMode(mode)
 }
 
-function toggleTheme(event: Event) {
-  const checked = (event.target as HTMLInputElement).checked
+function toggleTheme(checked: boolean) {
   setTheme(checked ? 'light' : 'dark')
 }
 
@@ -704,40 +663,40 @@ function setPresetAccent(color: string) {
   setAccentColor(color)
 }
 
-function toggleTopStats(event: Event) {
-  settingsStore.setShowTopStats((event.target as HTMLInputElement).checked)
+function toggleTopStats(checked: boolean) {
+  settingsStore.setShowTopStats(checked)
 }
 
-function toggleSettingsStats(event: Event) {
-  settingsStore.setShowSettingsStats((event.target as HTMLInputElement).checked)
+function toggleSettingsStats(checked: boolean) {
+  settingsStore.setShowSettingsStats(checked)
 }
 
-function toggleDangerConfirm(event: Event) {
-  settingsStore.setConfirmDangerActions((event.target as HTMLInputElement).checked)
+function toggleDangerConfirm(checked: boolean) {
+  settingsStore.setConfirmDangerActions(checked)
 }
 
-function toggleAutoBackup(event: Event) {
-  settingsStore.setAutoBackup((event.target as HTMLInputElement).checked)
+function toggleAutoBackup(checked: boolean) {
+  settingsStore.setAutoBackup(checked)
 }
 
-function toggleBoardAutoFocus(event: Event) {
-  settingsStore.setBoardAutoFocus((event.target as HTMLInputElement).checked)
+function toggleBoardAutoFocus(checked: boolean) {
+  settingsStore.setBoardAutoFocus(checked)
 }
 
-function toggleBoardFocusAfterAction(event: Event) {
-  settingsStore.setBoardFocusAfterAction((event.target as HTMLInputElement).checked)
+function toggleBoardFocusAfterAction(checked: boolean) {
+  settingsStore.setBoardFocusAfterAction(checked)
 }
 
-function toggleBoardConfirmEdgeDelete(event: Event) {
-  settingsStore.setBoardConfirmEdgeDelete((event.target as HTMLInputElement).checked)
+function toggleBoardConfirmEdgeDelete(checked: boolean) {
+  settingsStore.setBoardConfirmEdgeDelete(checked)
 }
 
-function toggleBoardConfirmBranchDelete(event: Event) {
-  settingsStore.setBoardConfirmBranchDelete((event.target as HTMLInputElement).checked)
+function toggleBoardConfirmBranchDelete(checked: boolean) {
+  settingsStore.setBoardConfirmBranchDelete(checked)
 }
 
-function toggleBoardShowNodeTypes(event: Event) {
-  settingsStore.setBoardShowNodeTypes((event.target as HTMLInputElement).checked)
+function toggleBoardShowNodeTypes(checked: boolean) {
+  settingsStore.setBoardShowNodeTypes(checked)
 }
 
 function selectBackgroundImage() {
@@ -1164,133 +1123,6 @@ function resetAllData() {
     border-radius: var(--border-radius-md);
     background: var(--glass-surface);
     color: var(--accent);
-  }
-}
-
-.theme-slider {
-  position: relative;
-  justify-self: end;
-  cursor: pointer;
-
-  input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-  }
-
-  @include mobile {
-    justify-self: center;
-  }
-}
-
-.theme-slider__track {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 84px;
-  height: 38px;
-  padding: 3px;
-  border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-pill);
-  background: var(--glass-surface);
-  color: var(--dim);
-  transition:
-    border-color var(--transition-standard),
-    background var(--transition-standard),
-    color var(--transition-standard);
-}
-
-.theme-slider__icon {
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  color: inherit;
-  transition:
-    color var(--transition-standard),
-    opacity var(--transition-standard);
-}
-
-.theme-slider__thumb {
-  position: absolute;
-  left: 3px;
-  top: 3px;
-  display: inline-flex;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--border-radius-pill);
-  background: var(--accent);
-  transition: transform var(--transition-standard);
-}
-
-.theme-slider.light .theme-slider__thumb {
-  transform: translateX(47px);
-}
-
-.theme-slider:not(.light) .theme-slider__icon.dark,
-.theme-slider.light .theme-slider__icon.light {
-  color: var(--bg);
-}
-
-.theme-slider:not(.light) .theme-slider__icon.light,
-.theme-slider.light .theme-slider__icon.dark {
-  opacity: 0.72;
-}
-
-.theme-slider:hover .theme-slider__track {
-  border-color: var(--accent);
-}
-
-.switch {
-  position: relative;
-  width: 44px;
-  height: 24px;
-  flex-shrink: 0;
-  justify-self: end;
-  cursor: pointer;
-
-  input {
-    width: 0;
-    height: 0;
-    opacity: 0;
-  }
-
-  .slider {
-    position: absolute;
-    inset: 0;
-    border-radius: var(--border-radius-pill);
-    background: var(--glass-surface);
-    cursor: pointer;
-    transition: background var(--transition-standard);
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: 3px;
-      bottom: 3px;
-      width: 18px;
-      height: 18px;
-      border-radius: var(--border-radius-pill);
-      background: var(--glass-surface);
-      transition: transform var(--transition-standard);
-    }
-  }
-
-  input:checked + .slider {
-    background: var(--accent);
-  }
-
-  input:checked + .slider::before {
-    transform: translateX(20px);
-    background: var(--glass-surface);
-  }
-
-  @include mobile {
-    justify-self: center;
   }
 }
 

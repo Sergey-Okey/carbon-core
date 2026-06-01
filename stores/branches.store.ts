@@ -7,11 +7,34 @@ import { useTasksStore } from './tasks.store'
 
 const edgeStyle = { stroke: 'var(--accent)', strokeWidth: 1 }
 
-function createEdge(source: string, target: string): Edge {
+function sourcePort(nodeId: string, side: 'right' | 'bottom' = 'right') {
+  return `source-${side}-${nodeId}`
+}
+
+function targetPort(nodeId: string, side: 'left' | 'top' = 'left') {
+  return `target-${side}-${nodeId}`
+}
+
+function isSourceHandle(handle?: string | null) {
+  return !!handle && handle.startsWith('source-')
+}
+
+function isTargetHandle(handle?: string | null) {
+  return !!handle && handle.startsWith('target-')
+}
+
+function createEdge(
+  source: string,
+  target: string,
+  sourceHandle?: string | null,
+  targetHandle?: string | null
+): Edge {
   return {
     id: `edge-${source}-${target}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     source,
     target,
+    sourceHandle: sourceHandle || sourcePort(source),
+    targetHandle: targetHandle || targetPort(target),
     type: 'smoothstep',
     animated: false,
     style: edgeStyle,
@@ -261,6 +284,46 @@ export const useBranchesStore = defineStore(
       return undefined
     }
 
+    function getNodePosition(nodeId: string) {
+      const branch = getBranch(nodeId)
+      if (branch) return branch.position || { x: 100, y: 100 }
+      return getMilestoneLocation(nodeId)?.milestone.position
+    }
+
+    function normalizeEdgePorts(edge: Edge): Edge {
+      const normalizedDirection =
+        isTargetHandle(edge.sourceHandle) || isSourceHandle(edge.targetHandle)
+          ? {
+              ...edge,
+              source: edge.target,
+              target: edge.source,
+              sourceHandle: edge.targetHandle,
+              targetHandle: edge.sourceHandle,
+            }
+          : edge
+      edge = normalizedDirection
+
+      const sourcePosition = getNodePosition(edge.source)
+      const targetPosition = getNodePosition(edge.target)
+      const dx =
+        sourcePosition && targetPosition ? targetPosition.x - sourcePosition.x : 0
+      const dy =
+        sourcePosition && targetPosition ? targetPosition.y - sourcePosition.y : 0
+      const isMostlyVertical = Math.abs(dy) > Math.max(90, Math.abs(dx) * 0.55)
+
+      return {
+        ...edge,
+        sourceHandle:
+          edge.sourceHandle ||
+          sourcePort(edge.source, isMostlyVertical && dy > 0 ? 'bottom' : 'right'),
+        targetHandle:
+          edge.targetHandle ||
+          targetPort(edge.target, isMostlyVertical && dy > 0 ? 'top' : 'left'),
+        type: edge.type || 'smoothstep',
+        style: edge.style || edgeStyle,
+      }
+    }
+
     function getAllMilestones(): Milestone[] {
       return branches.value.flatMap((branch) => branch.milestones)
     }
@@ -271,10 +334,11 @@ export const useBranchesStore = defineStore(
       )
       const visited = new Set<string>()
       const queue = [startId]
+      const normalizedEdges = edges.value.map(normalizeEdgePorts)
 
       while (queue.length) {
         const currentId = queue.shift()!
-        for (const edge of edges.value) {
+        for (const edge of normalizedEdges) {
           if (edge.source !== currentId) continue
           if (!milestoneIds.has(edge.target) || visited.has(edge.target)) continue
           visited.add(edge.target)
@@ -285,8 +349,40 @@ export const useBranchesStore = defineStore(
       return visited
     }
 
+    function collectRelatedMilestoneIds(startId: string): Set<string> {
+      const milestoneIds = new Set(
+        getAllMilestones().map((milestone) => milestone.id)
+      )
+      const visitedNodes = new Set<string>([startId])
+      const visitedMilestones = new Set<string>()
+      const queue = [startId]
+      const normalizedEdges = edges.value.map(normalizeEdgePorts)
+
+      while (queue.length) {
+        const currentId = queue.shift()!
+
+        for (const edge of normalizedEdges) {
+          const nextId =
+            edge.source === currentId
+              ? edge.target
+              : edge.target === currentId
+                ? edge.source
+                : null
+
+          if (!nextId || visitedNodes.has(nextId)) continue
+          if (getNodeKind(nextId) === 'branch') continue
+
+          visitedNodes.add(nextId)
+          if (milestoneIds.has(nextId)) visitedMilestones.add(nextId)
+          queue.push(nextId)
+        }
+      }
+
+      return visitedMilestones
+    }
+
     function collectBranchMilestoneIds(branchId: string): Set<string> {
-      return collectReachableMilestoneIds(branchId)
+      return collectRelatedMilestoneIds(branchId)
     }
 
     function findBranchByMilestone(milestoneId: string): Branch | undefined {
@@ -319,13 +415,20 @@ export const useBranchesStore = defineStore(
     function cleanupEdges() {
       const ids = allNodeIds()
       const seen = new Set<string>()
-      edges.value = edges.value.filter((edge) => {
+      const nextEdges: Edge[] = []
+      const currentEdges = edges.value as Edge[]
+
+      for (const currentEdge of currentEdges) {
+        const edge = normalizeEdgePorts(currentEdge)
         const key = `${edge.source}->${edge.target}`
-        if (!ids.has(edge.source) || !ids.has(edge.target) || seen.has(key))
-          return false
+        if (!ids.has(edge.source) || !ids.has(edge.target) || seen.has(key)) {
+          continue
+        }
         seen.add(key)
-        return true
-      })
+        nextEdges.push(edge)
+      }
+
+      edges.value = nextEdges
     }
 
     function normalizeBoard() {
@@ -457,16 +560,13 @@ export const useBranchesStore = defineStore(
       ) {
         return
       }
-      edges.value.push({
-        ...edge,
-        type: edge.type || 'smoothstep',
-        style: edge.style || edgeStyle,
-      })
+      const normalizedEdge: Edge = normalizeEdgePorts(edge)
+      edges.value = [...(edges.value as Edge[]), normalizedEdge]
       normalizeBoard()
     }
 
     function removeEdge(edgeId: string) {
-      edges.value = edges.value.filter((edge) => edge.id !== edgeId)
+      edges.value = (edges.value as Edge[]).filter((edge) => edge.id !== edgeId)
       normalizeBoard()
     }
 
@@ -479,7 +579,7 @@ export const useBranchesStore = defineStore(
           : edgeOrId
       if (!edge) return
 
-      edges.value = edges.value.filter((item) => item.id !== edge.id)
+      edges.value = (edges.value as Edge[]).filter((item) => item.id !== edge.id)
       normalizeBoard()
     }
 
@@ -733,7 +833,9 @@ export const useBranchesStore = defineStore(
 
     function connectNodes(
       sourceId: string,
-      targetId: string
+      targetId: string,
+      sourceHandle?: string | null,
+      targetHandle?: string | null
     ): BoardActionResult {
       if (sourceId === targetId) {
         return { ok: false, reason: 'Нельзя связать узел с самим собой' }
@@ -748,14 +850,21 @@ export const useBranchesStore = defineStore(
       ) {
         return { ok: false, reason: 'Такая связь уже существует' }
       }
-      if (sourceKind !== 'milestone' || !targetKind) {
-        return { ok: false, reason: 'Источник связи должен быть этапом' }
+      if (!sourceKind || !targetKind) {
+        return { ok: false, reason: 'Узел связи не найден' }
+      }
+      if (sourceKind === 'branch' && targetKind === 'branch') {
+        return { ok: false, reason: 'Связывайте ветку с этапом' }
       }
 
-      const sourceBranch = findBranchByMilestone(sourceId)
-      if (!sourceBranch) return { ok: false, reason: 'Этап не найден' }
+      const sourceBranch =
+        sourceKind === 'branch' ? getBranch(sourceId) : findBranchByMilestone(sourceId)
+      if (!sourceBranch) return { ok: false, reason: 'Источник связи не найден' }
 
       if (targetKind === 'branch') {
+        if (sourceKind !== 'milestone') {
+          return { ok: false, reason: 'К ветке можно подключить только этап' }
+        }
         moveMilestoneToBranch(sourceId, targetId)
         return { ok: true }
       }
@@ -766,8 +875,13 @@ export const useBranchesStore = defineStore(
       }
       if (!targetBranch) return { ok: false, reason: 'Целевой этап не найден' }
 
+      if (sourceKind === 'branch') {
+        addEdge(createEdge(sourceId, targetId, sourceHandle, targetHandle))
+        return { ok: true }
+      }
+
       if (sourceBranch.id === targetBranch.id) {
-        addEdge(createEdge(sourceId, targetId))
+        addEdge(createEdge(sourceId, targetId, sourceHandle, targetHandle))
         return { ok: true }
       }
 
@@ -776,7 +890,7 @@ export const useBranchesStore = defineStore(
     }
 
     function replaceEdges(nextEdges: Edge[]) {
-      edges.value = nextEdges
+      edges.value = nextEdges.map(normalizeEdgePorts)
       normalizeBoard()
     }
 

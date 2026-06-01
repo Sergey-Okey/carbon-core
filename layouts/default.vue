@@ -2,7 +2,7 @@
   <div class="layout">
     <TheHeader />
     <div class="layout-content">
-      <TheNavbar class="navbar" />
+      <TheNavbar />
       <main class="main">
         <slot />
       </main>
@@ -51,11 +51,6 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
     flex-direction: row;
     padding: 4px 0;
   }
-}
-
-.navbar {
-  flex-shrink: 0;
-  align-self: center;
 }
 
 .main {

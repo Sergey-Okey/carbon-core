@@ -1,14 +1,12 @@
 <template>
   <nav
-    class="navbar"
-    :class="{
-      'is-expanded': showLabels,
-      'is-mobile': isMobile,
-    }"
+    class="nav-island"
+    :class="{ 'is-expanded': showLabels, 'is-mobile': isMobile }"
+    aria-label="Основная навигация"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
-    <div class="nav-items">
+    <div class="nav-track">
       <button
         v-for="item in navItems"
         :key="item.id"
@@ -16,11 +14,16 @@
         class="nav-item"
         :class="{ active: uiStore.activeNav === item.id }"
         :title="item.label"
+        :aria-label="item.label"
+        :aria-current="uiStore.activeNav === item.id ? 'page' : undefined"
         @click="handleNavClick(item.id)"
       >
-        <component :is="item.icon" :size="isMobile ? 24 : 20" class="nav-icon" />
-        <Transition name="label-fade">
-          <span v-if="showLabels" class="label">{{ item.label }}</span>
+        <span class="icon-shell">
+          <component :is="item.icon" :size="isMobile ? 20 : 18" />
+        </span>
+
+        <Transition name="label">
+          <span v-if="showLabels" class="nav-label">{{ item.label }}</span>
         </Transition>
       </button>
     </div>
@@ -36,24 +39,28 @@ import {
   Settings,
   ShoppingBag,
 } from 'lucide-vue-next'
-import { useUIStore } from '~/stores/ui.store'
+import { useUIStore, type NavSection } from '~/stores/ui.store'
 
 const uiStore = useUIStore()
 const route = useRoute()
 const router = useRouter()
 
-const navItems = [
-  { id: 'board' as const, label: 'Доска', icon: LayoutGrid },
-  { id: 'tasks' as const, label: 'Задачи', icon: CheckSquare },
-  { id: 'shop' as const, label: 'Магазин', icon: ShoppingBag },
-  { id: 'analytics' as const, label: 'Аналитика', icon: BarChart2 },
-  { id: 'settings' as const, label: 'Настройки', icon: Settings },
+const navItems: { id: NavSection; label: string; icon: any }[] = [
+  { id: 'board', label: 'Доска', icon: LayoutGrid },
+  { id: 'tasks', label: 'Задачи', icon: CheckSquare },
+  { id: 'shop', label: 'Магазин', icon: ShoppingBag },
+  { id: 'analytics', label: 'Аналитика', icon: BarChart2 },
+  { id: 'settings', label: 'Настройки', icon: Settings },
 ]
 
 const isMobile = ref(false)
+let closeTimer: ReturnType<typeof setTimeout> | null = null
+
+const showLabels = computed(() => !isMobile.value && uiStore.showLabels)
 
 function checkMobile() {
   isMobile.value = window.innerWidth < 768
+  if (isMobile.value) uiStore.setSidebarHovered(false)
 }
 
 onMounted(() => {
@@ -63,13 +70,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
+  if (closeTimer) clearTimeout(closeTimer)
 })
 
-const showLabels = computed(() => !isMobile.value && uiStore.showLabels)
-
-let hoverTimer: ReturnType<typeof setTimeout> | null = null
-
-async function handleNavClick(section: (typeof navItems)[number]['id']) {
+async function handleNavClick(section: NavSection) {
   uiStore.setActiveNav(section)
 
   if (route.path !== '/') {
@@ -79,151 +83,120 @@ async function handleNavClick(section: (typeof navItems)[number]['id']) {
 
 function onMouseEnter() {
   if (isMobile.value) return
-  if (hoverTimer) clearTimeout(hoverTimer)
+  if (closeTimer) clearTimeout(closeTimer)
   uiStore.setSidebarHovered(true)
 }
 
 function onMouseLeave() {
   if (isMobile.value) return
-  if (hoverTimer) clearTimeout(hoverTimer)
-  hoverTimer = setTimeout(() => {
-    uiStore.setSidebarHovered(false)
-  }, 200)
+  if (closeTimer) clearTimeout(closeTimer)
+  closeTimer = setTimeout(() => uiStore.setSidebarHovered(false), 140)
 }
 </script>
 
 <style scoped lang="scss">
-.navbar {
-  color: var(--accent);
-  z-index: 100;
-  overflow: hidden;
-  will-change: width;
-  transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);
+.nav-island {
   @include glass;
+  flex-shrink: 0;
+  align-self: center;
+  z-index: 100;
+  color: var(--accent);
+  border-radius: var(--border-radius-pill);
+  backdrop-filter: blur(12px);
+  transition:
+    width 0.32s cubic-bezier(0.2, 0, 0, 1),
+    transform var(--transition-standard),
+    border-color var(--transition-standard),
+    background var(--transition-standard);
 
-  /* Десктоп (без изменений) */
   @include desktop {
-    position: relative;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: auto;
-    transform: none;
-    width: 64px;
-    height: fit-content;
+    width: 56px;
     margin: auto 12px;
-    border-radius: var(--border-radius-lg);
-    display: flex;
-    flex-direction: column;
     padding: 8px 0;
 
     &.is-expanded {
       width: 180px;
-    }
-
-    &:not(.is-expanded) {
-      .nav-item {
-        width: 44px;
-        min-width: 44px;
-        height: 44px;
-        padding: 0;
-        justify-content: center;
-        border-radius: 50%;
-        gap: 0;
-      }
+      border-radius: var(--border-radius-lg);
     }
   }
 
-  /* Мобильная версия — компактнее островок */
   @include mobile {
-    @include glass;
     position: fixed;
-    bottom: 16px;
-    left: 12px;
-    right: 12px;
+    left: 50%;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
     width: auto;
-    padding: 8px 10px;
-    border-radius: var(--border-radius-pill);
-    animation: slideUp 0.3s ease-out;
-    transition: transform 0.2s, box-shadow 0.2s;
-
-    &:active {
-      transform: scale(0.98);
-    }
+    max-width: calc(100vw - 32px);
+    padding: 6px 12px;
+    transform: translateX(-50%);
+    backdrop-filter: blur(16px);
   }
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.nav-items {
+.nav-track {
   display: flex;
   flex-direction: row;
-  justify-content: center;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
 
   @include desktop {
     flex-direction: column;
-    gap: 2px;
-    width: 100%;
+    gap: 6px;
   }
 
   @include mobile {
     flex-direction: row;
-    justify-content: space-around;
-    gap: 6px;
-    width: 100%;
+    gap: 8px;
   }
 }
 
 .nav-item {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 12px;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 10px 12px;
-    border: 1px solid transparent;
-  border-radius: var(--border-radius-md);
-    background: var(--glass-surface);
+  width: auto;
+  min-width: 40px;
+  height: 40px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-pill);
+  background: transparent;
   color: var(--dim);
   cursor: pointer;
-  white-space: nowrap;
   outline: none;
-  transition: all var(--transition-standard);
+  white-space: nowrap;
+  transition:
+    all var(--transition-standard),
+    transform 0.12s ease;
 
   @include desktop {
-    justify-content: flex-start;
-    width: calc(100% - 12px);
-    margin: 0 6px;
-    padding: 10px 14px;
-    border-radius: var(--border-radius-pill);
+    width: 40px;
+    justify-content: center;
+    padding: 6px;
+
+    .is-expanded & {
+      width: 100%;
+      justify-content: flex-start;
+      padding: 6px 12px;
+    }
   }
 
   @include mobile {
-    flex: 0;
-    width: 42px;
-    min-width: 42px;
-    min-height: 42px;
+    width: 44px;
+    height: 44px;
     justify-content: center;
-    padding: 0;
-    border-radius: 50%;
+    padding: 6px;
   }
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     color: var(--accent);
-    border-color: color-mix(in srgb, var(--accent) 20%, transparent);
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    border-color: color-mix(in srgb, var(--border) 90%, transparent);
+    transform: translateY(-1px);
   }
 
   &:active {
@@ -231,39 +204,54 @@ function onMouseLeave() {
   }
 
   &.active {
-    color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 16%, var(--glass-surface));
-  }
-
-  &:focus-visible {
-    box-shadow: 0 0 0 2px var(--accent);
+    color: var(--bg);
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
   }
 }
 
-.nav-icon {
-  stroke: currentColor;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
+.icon-shell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: inherit;
+  transition: background 0.2s;
 
-  @include desktop {
-    .nav-item:hover & {
-      transform: scale(1.08);
-    }
+  .nav-item:active & {
+    transform: scale(0.96);
+  }
+
+  svg {
+    display: block;
+    stroke: currentColor;
+    stroke-width: 1.5;
   }
 }
 
-.label {
-  font-size: 0.9rem;
+.nav-label {
+  overflow: hidden;
+  color: inherit;
+  font-size: 0.85rem;
   font-weight: 500;
-  opacity: 1;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.label-fade-enter-active,
-.label-fade-leave-active {
-  transition: opacity 0.25s ease;
+.label-enter-active,
+.label-leave-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
-.label-fade-enter-from,
-.label-fade-leave-to {
+
+.label-enter-from,
+.label-leave-to {
   opacity: 0;
+  transform: translateX(-6px);
 }
 </style>

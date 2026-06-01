@@ -56,7 +56,30 @@
     </Transition>
 
     <!-- Хендлы -->
-    <Handle type="target" :position="Position.Right" class="handle handle-right" />
+    <Handle
+      :id="`target-top-${data.branchId}`"
+      type="target"
+      :position="Position.Top"
+      class="handle handle-top handle-target"
+    />
+    <Handle
+      :id="`target-left-${data.branchId}`"
+      type="target"
+      :position="Position.Left"
+      class="handle handle-left handle-target"
+    />
+    <Handle
+      :id="`source-right-${data.branchId}`"
+      type="source"
+      :position="Position.Right"
+      class="handle handle-right handle-source"
+    />
+    <Handle
+      :id="`source-bottom-${data.branchId}`"
+      type="source"
+      :position="Position.Bottom"
+      class="handle handle-bottom handle-source"
+    />
   </GlassCard>
 </template>
 
@@ -191,6 +214,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
 <style scoped lang="scss">
 .branch-node {
+  @include glass;
   width: 240px;
   padding: 12px;
   position: relative;
@@ -199,6 +223,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     border-color 0.2s,
     background 0.2s;
   border: 1px solid var(--glass-border);
+  background: var(--glass-surface);
 
   &.selected {
     border-color: var(--accent);
@@ -232,11 +257,11 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
     background: var(--accent);
-    border-radius: var(--border-radius-sm);
-    border: 1px solid var(--glass-border);
+    border-radius: 2px;
+    border: none;
     transition: opacity 0.2s;
     z-index: 2;
   }
@@ -382,26 +407,62 @@ top: 45px;           /* фиксированный отступ от верхн�
 
   /* Хендлы – общие стили */
   .handle {
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
     background: var(--accent);
     border: 1px solid var(--glass-border);
-    opacity: 0;
+    opacity: 1;
     z-index: 10;
   }
 
-  .handle-right {
-    width: 10px;
-    height: 10px;
+  .handle-target {
+    background: var(--surface);
+    border-color: var(--accent);
+  }
+
+  .handle-source {
+    background: var(--accent);
+  }
+
+  .handle-top {
+    width: 12px;
+    height: 5px;
+    border-radius: var(--border-radius-sm);
+    top: -3px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .handle-left,
+  .handle-right,
+  .handle-bottom {
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    top: 55px !important;
+  }
+
+  .handle-left {
+    left: -5px !important;
+    top: 54px !important;
+    transform: none !important;
+  }
+
+  .handle-right {
+    top: 54px !important;
     right: -5px !important;
     transform: none !important;
   }
 
+  .handle-bottom {
+    bottom: -5px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+
   &:hover .handle,
   &.selected .handle {
-    opacity: 1;
-    transform: scale(1.05);
+    box-shadow: 0 0 0 2px var(--border);
   }
 
   .handle:active {

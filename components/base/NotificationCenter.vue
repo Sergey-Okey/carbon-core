@@ -260,7 +260,7 @@ onBeforeUnmount(() => {
 
   &:hover,
   &.active {
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    background: var(--glass-surface);
     color: var(--accent);
   }
 }
@@ -277,7 +277,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  border-bottom: 1px solid color-mix(in srgb, var(--dim) 8%, transparent);
+  border-bottom: 1px solid var(--glass-border);
 
   &:last-child {
     border-bottom: none;
