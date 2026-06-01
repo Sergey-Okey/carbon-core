@@ -194,9 +194,7 @@ function onMouseLeave() {
   &:hover,
   &:focus-visible {
     color: var(--accent);
-    background: color-mix(in srgb, var(--surface) 70%, transparent);
-    border-color: color-mix(in srgb, var(--border) 90%, transparent);
-    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--surface) 60%, transparent);
   }
 
   &:active {
@@ -228,7 +226,7 @@ function onMouseLeave() {
   svg {
     display: block;
     stroke: currentColor;
-    stroke-width: 1.5;
+    stroke-width: 2.5; 
   }
 }
 
