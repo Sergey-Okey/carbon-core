@@ -124,7 +124,7 @@ defineEmits([
       background var(--transition-standard),
       color var(--transition-standard),
       opacity var(--transition-standard),
-      transform var(--transition-standard);
+      box-shadow var(--transition-standard);
 
     &:hover {
       background: var(--glass-surface);
@@ -132,13 +132,19 @@ defineEmits([
     }
 
     &:active {
-      transform: scale(0.96);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
     }
 
     &:disabled {
       opacity: 0.4;
       cursor: not-allowed;
-      transform: none;
+    }
+  }
+
+  @include mobile {
+    button {
+      width: 44px;
+      height: 44px;
     }
   }
 

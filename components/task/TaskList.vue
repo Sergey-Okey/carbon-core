@@ -281,7 +281,7 @@ function handleSave(taskData: any) {
     }
 
     &:active {
-      transform: scale(0.96);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
     }
 
     &.limited {
@@ -354,6 +354,7 @@ function handleSave(taskData: any) {
     .add-btn {
       width: 36px;
       height: 36px;
+      min-height: 44px;
     }
 
     .tasks {

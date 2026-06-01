@@ -918,7 +918,7 @@ function resetAllData() {
   }
 
   &:active {
-    transform: scale(0.96);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
   }
 
   @include mobile {
@@ -1076,7 +1076,11 @@ function resetAllData() {
     font: inherit;
     font-size: 0.82rem;
     font-weight: 600;
-    transition: all var(--transition-standard);
+    transition:
+      background var(--transition-standard),
+      border-color var(--transition-standard),
+      color var(--transition-standard),
+      box-shadow var(--transition-standard);
 
     &:hover {
       background: var(--glass-surface);

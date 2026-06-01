@@ -42,11 +42,12 @@ html.no-animations::view-transition-new(root) {
 
 /* ✅ ГЛОБАЛЬНЫЕ МИКРО-ВЗАИМОДЕЙСТВИЯ */
 button {
-  transition: all 0.1s cubic-bezier(0.2, 0, 0, 1);
-
-  &:active:not(:disabled) {
-    transform: scale(0.95);
-  }
+  transition:
+    background var(--transition-standard),
+    border-color var(--transition-standard),
+    color var(--transition-standard),
+    box-shadow var(--transition-standard),
+    opacity var(--transition-standard);
 
   &:disabled {
     opacity: 0.5;

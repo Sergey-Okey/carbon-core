@@ -1132,7 +1132,10 @@ onUnmounted(() => {
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.1s;
+  transition:
+    background 0.1s,
+    border-color 0.1s,
+    color 0.1s;
   &:hover {
     border-color: var(--accent);
     color: var(--accent);
@@ -1249,9 +1252,11 @@ onUnmounted(() => {
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard),
+    box-shadow var(--transition-standard);
   &:hover {
-    transform: scale(1.02);
     .btn-icon {
       transform: translateX(5px);
     }

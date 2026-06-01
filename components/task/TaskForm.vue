@@ -421,7 +421,11 @@ function getTaskTags(task: Task): TaskTag[] {
     background: color-mix(in srgb, var(--tag-color, var(--accent)) 6%, transparent);
     font-size: 0.85rem;
     font-weight: 500;
-    transition: all var(--transition-standard);
+    transition:
+      background var(--transition-standard),
+      border-color var(--transition-standard),
+      color var(--transition-standard),
+      box-shadow var(--transition-standard);
     cursor: pointer;
 
     &:hover {
@@ -460,7 +464,10 @@ function getTaskTags(task: Task): TaskTag[] {
     border: var(--ui-border);
     color: var(--dim);
     cursor: pointer;
-    transition: all 0.1s;
+    transition:
+      background 0.1s,
+      color 0.1s,
+      border-color 0.1s;
     padding: 0;
 
     &:hover {

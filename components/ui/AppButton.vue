@@ -30,7 +30,6 @@ withDefaults(
 
 <style scoped lang="scss">
 .app-button {
-  @include glass;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -38,6 +37,7 @@ withDefaults(
   min-width: 0;
   border: none;
   border-radius: var(--border-radius-pill);
+  background: transparent;
   font: inherit;
   font-weight: 500;
   line-height: 1;
@@ -47,8 +47,7 @@ withDefaults(
     background var(--transition-standard),
     border-color var(--transition-standard),
     color var(--transition-standard),
-    box-shadow var(--transition-standard),
-    transform 0.16s ease;
+    box-shadow var(--transition-standard);
 
   &:focus-visible {
     outline: none;
@@ -58,7 +57,6 @@ withDefaults(
   &:disabled {
     opacity: 0.45;
     cursor: not-allowed;
-    transform: none;
   }
 }
 
@@ -95,10 +93,11 @@ withDefaults(
 
 .variant-secondary:not(.icon) {
   border: var(--ui-border);
+  background: transparent;
   color: var(--dim);
 
   &:hover:not(:disabled) {
-    background: var(--glass-surface);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
     border-color: var(--ui-border-color);
     color: var(--accent);
   }
@@ -120,8 +119,21 @@ withDefaults(
   color: var(--dim);
 
   &:hover:not(:disabled) {
-    background: var(--glass-surface);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
     color: var(--accent);
+  }
+}
+
+@include mobile {
+  .size-md,
+  .size-sm {
+    min-height: 44px;
+  }
+
+  .icon {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
   }
 }
 </style>

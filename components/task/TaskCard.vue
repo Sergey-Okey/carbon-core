@@ -512,7 +512,7 @@ async function handleDelete() {
     }
 
     &:active:not(:disabled) {
-      transform: scale(0.96);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
     }
   }
 
@@ -600,8 +600,8 @@ async function handleDelete() {
     }
 
     .actions button {
-      width: 28px;
-      height: 28px;
+      width: 44px;
+      height: 44px;
     }
 
     .scroll-btn {

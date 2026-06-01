@@ -19,7 +19,7 @@
         @click="handleNavClick(item.id)"
       >
         <span class="icon-shell">
-          <component :is="item.icon" :size="isMobile ? 16 : 18" />
+          <component :is="item.icon" :size="isMobile ? 20 : 18" />
         </span>
 
         <span class="nav-label" :class="{ 'is-visible': showLabels }">
@@ -119,25 +119,25 @@ function onMouseLeave() {
     margin: 0 auto;
     padding: 10px 0;
     border: var(--ui-border);
-    box-shadow: var(--shadow-sm);
+    box-shadow: none;
 
     &.is-expanded {
       width: 198px;
       border-radius: var(--border-radius-lg);
-      box-shadow: var(--shadow-md);
+      box-shadow: none;
     }
   }
 
   @include mobile {
     position: fixed;
     left: 50%;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
     width: auto;
     max-width: calc(100vw - 24px);
-    padding: 8px 10px;
+    padding: 10px 13px;
     transform: translateX(-50%);
     border-radius: 999px;
-    box-shadow: var(--shadow-md);
+    box-shadow: none;
     backdrop-filter: var(--glass-strong-filter);
     -webkit-backdrop-filter: var(--glass-strong-filter);
   }
@@ -154,7 +154,7 @@ function onMouseLeave() {
   @include mobile {
     flex-direction: row;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
   }
 }
 
@@ -187,7 +187,7 @@ function onMouseLeave() {
   &.active {
     color: var(--bg);
     background: var(--accent);
-    box-shadow: var(--shadow-sm);
+    box-shadow: none;
   }
 
   &.active:hover {
@@ -205,14 +205,14 @@ function onMouseLeave() {
   }
 
   @include mobile {
-    width: 36px;
-    min-width: 36px;
-    height: 36px;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
     justify-content: center;
   }
 
   &:active {
-    transform: scale(0.96);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
   }
 }
 
@@ -228,7 +228,7 @@ function onMouseLeave() {
   transition: transform 0.2s ease, background 0.2s ease;
 
   .nav-item:active & {
-    transform: scale(0.96);
+    transform: none;
   }
 
   svg {

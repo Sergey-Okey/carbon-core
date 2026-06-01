@@ -305,13 +305,11 @@ function getIconComponent(iconName: string) {
     &:hover {
       background: var(--accent);
       color: var(--bg);
-      transform: translateY(-1px);
     }
 
     &:active {
       background: var(--accent);
       color: var(--bg);
-      transform: scale(0.96);
     }
   }
 }
@@ -647,7 +645,9 @@ function getIconComponent(iconName: string) {
 /* Анимации раскрытия */
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  transition:
+    opacity 0.2s cubic-bezier(0.2, 0, 0, 1),
+    transform 0.2s cubic-bezier(0.2, 0, 0, 1);
   overflow: hidden;
 }
 

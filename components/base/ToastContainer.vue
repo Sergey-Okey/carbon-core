@@ -75,10 +75,6 @@ const { notifications, removeNotification } = useNotification()
     border-color var(--transition-standard);
   touch-action: pan-y;
 
-  &:active {
-    transform: scale(0.98);
-  }
-
   .indicator {
     width: 5px;
     height: 5px;
@@ -125,7 +121,9 @@ const { notifications, removeNotification } = useNotification()
 
 .toast-enter-active,
 .toast-leave-active {
-  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+  transition:
+    opacity 0.3s cubic-bezier(0.2, 0, 0, 1),
+    transform 0.3s cubic-bezier(0.2, 0, 0, 1);
 }
 .toast-enter-from {
   opacity: 0;

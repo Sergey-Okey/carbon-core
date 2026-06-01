@@ -297,7 +297,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
       color: var(--accent);
     }
     &:active {
-      transform: scale(0.96);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
     }
   }
 
@@ -365,7 +365,7 @@ top: 45px;           /* фиксированный отступ от верхн�
       color: var(--accent);
     }
     &:active {
-      transform: scale(0.96);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
     }
     .rotated {
       transform: rotate(180deg);
@@ -481,7 +481,9 @@ top: 45px;           /* фиксированный отступ от верхн�
 
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
 }
 .expand-enter-from,
 .expand-leave-to {

@@ -179,29 +179,27 @@ function openOnboarding() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: var(--control-icon-size);
+  height: var(--control-icon-size);
   border: none;
-  border-radius: var(--border-radius-pill);
+  border-radius: var(--border-radius-md);
   background: transparent;
-  border: none;
   color: var(--dim);
   cursor: pointer;
   transition:
-    transform 0.22s ease,
     background var(--transition-standard),
     color var(--transition-standard),
     box-shadow var(--transition-standard);
 
   &:hover {
-    background: var(--glass-surface);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
     color: var(--accent);
     transform: none;
     box-shadow: none;
   }
 
   &:active {
-    transform: scale(0.96);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
     box-shadow: none;
   }
 
@@ -211,9 +209,38 @@ function openOnboarding() {
   }
 
   @include mobile {
-    width: 36px;
-    height: 36px;
-    border-radius: var(--border-radius-pill);
+    width: 44px;
+    height: 44px;
+    border-radius: var(--border-radius-md);
+  }
+}
+
+.actions :deep(.notification-trigger) {
+  width: var(--control-icon-size);
+  height: var(--control-icon-size);
+  min-height: var(--control-icon-size);
+  padding: 0;
+  border: none;
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  color: var(--dim);
+  box-shadow: none;
+
+  &:hover,
+  &:focus-visible {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    color: var(--accent);
+    box-shadow: none;
+  }
+
+  &:active {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+
+  @include mobile {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
   }
 }
 

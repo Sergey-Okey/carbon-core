@@ -67,10 +67,6 @@ function toggle() {
     outline-offset: 1px;
   }
 
-  &:active {
-    transform: scale(0.96);
-  }
-
   &:disabled {
     cursor: not-allowed;
     opacity: 0.5;
