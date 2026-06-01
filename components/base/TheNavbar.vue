@@ -19,12 +19,12 @@
         @click="handleNavClick(item.id)"
       >
         <span class="icon-shell">
-          <component :is="item.icon" :size="isMobile ? 20 : 18" />
+          <component :is="item.icon" :size="isMobile ? 16 : 18" />
         </span>
 
-        <Transition name="label">
-          <span v-if="showLabels" class="nav-label">{{ item.label }}</span>
-        </Transition>
+        <span class="nav-label" :class="{ 'is-visible': showLabels }">
+          {{ item.label }}
+        </span>
       </button>
     </div>
   </nav>
@@ -97,56 +97,62 @@ function onMouseLeave() {
 <style scoped lang="scss">
 .nav-island {
   @include glass;
-  flex-shrink: 0;
-  align-self: center;
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   z-index: 100;
   color: var(--accent);
   border-radius: var(--border-radius-pill);
-  backdrop-filter: blur(12px);
+  background: transparent;
   transition:
     width 0.32s cubic-bezier(0.2, 0, 0, 1),
-    transform var(--transition-standard),
     border-color var(--transition-standard),
-    background var(--transition-standard);
+    background var(--transition-standard),
+    box-shadow var(--transition-standard);
 
   @include desktop {
+    align-self: center;
     width: 56px;
-    margin: auto 12px;
-    padding: 8px 0;
+    margin: 0 auto;
+    padding: 10px 0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: var(--shadow-sm);
 
     &.is-expanded {
-      width: 180px;
+      width: 198px;
       border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-md);
     }
   }
 
   @include mobile {
     position: fixed;
     left: 50%;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
     width: auto;
-    max-width: calc(100vw - 32px);
-    padding: 6px 12px;
+    max-width: calc(100vw - 24px);
+    padding: 8px 10px;
     transform: translateX(-50%);
-    backdrop-filter: blur(16px);
+    border-radius: 999px;
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(18px);
   }
 }
 
 .nav-track {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
   width: 100%;
-
-  @include desktop {
-    flex-direction: column;
-    gap: 6px;
-  }
+  gap: 10px;
 
   @include mobile {
     flex-direction: row;
+    justify-content: center;
     gap: 8px;
   }
 }
@@ -155,69 +161,65 @@ function onMouseLeave() {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  width: auto;
+  justify-content: center;
+  width: 40px;
   min-width: 40px;
   height: 40px;
-  padding: 6px 8px;
-  border: 1px solid transparent;
-  border-radius: var(--border-radius-pill);
+  padding: 0;
+  border: none;
+  border-radius: 50%;
   background: transparent;
   color: var(--dim);
   cursor: pointer;
   outline: none;
   white-space: nowrap;
+  overflow: hidden;
+  box-sizing: border-box;
   transition:
-    all var(--transition-standard),
-    transform 0.12s ease;
+    width 0.32s cubic-bezier(0.25, 0.1, 0.25, 1),
+    padding 0.32s cubic-bezier(0.25, 0.1, 0.25, 1),
+    background var(--transition-standard),
+    color var(--transition-standard),
+    border-radius 0.32s ease,
+    box-shadow var(--transition-standard);
+
+  &.active {
+    color: var(--bg);
+    background: var(--accent);
+    box-shadow: var(--shadow-sm);
+  }
 
   @include desktop {
-    width: 40px;
-    justify-content: center;
-    padding: 6px;
-
     .is-expanded & {
-      width: 100%;
+      width: calc(100% - 28px);
       justify-content: flex-start;
-      padding: 6px 12px;
+      padding: 0 14px;
+      border-radius: var(--border-radius-pill);
     }
   }
 
   @include mobile {
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
     justify-content: center;
-    padding: 6px;
-  }
-
-  &:hover,
-  &:focus-visible {
-    color: var(--accent);
-    background: color-mix(in srgb, var(--surface) 60%, transparent);
   }
 
   &:active {
     transform: scale(0.96);
   }
-
-  &.active {
-    color: var(--bg);
-    background: var(--accent);
-    border-color: var(--accent);
-    box-shadow: var(--shadow-sm);
-  }
 }
 
 .icon-shell {
   display: inline-flex;
+  flex: 0 0 28px;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
   border-radius: 50%;
   color: inherit;
-  transition: background 0.2s;
+  transition: transform 0.2s ease, background 0.2s ease;
 
   .nav-item:active & {
     transform: scale(0.96);
@@ -225,31 +227,32 @@ function onMouseLeave() {
 
   svg {
     display: block;
-    stroke: currentColor;
-    stroke-width: 2.5; 
+    width: 18px;
+    height: 18px;
   }
 }
 
 .nav-label {
+  display: inline-flex;
   overflow: hidden;
-  color: inherit;
+  max-width: 0;
+  opacity: 0;
+  margin-left: 0;
   font-size: 0.85rem;
   font-weight: 500;
   line-height: 1.2;
-  text-overflow: ellipsis;
+  color: inherit;
   white-space: nowrap;
-}
-
-.label-enter-active,
-.label-leave-active {
   transition:
-    opacity 0.18s ease,
-    transform 0.18s ease;
+    max-width 0.28s ease,
+    opacity 0.28s ease,
+    margin-left 0.28s ease;
+  pointer-events: none;
 }
 
-.label-enter-from,
-.label-leave-to {
-  opacity: 0;
-  transform: translateX(-6px);
+.nav-island.is-expanded .nav-label.is-visible {
+  max-width: 120px;
+  opacity: 1;
+  margin-left: 10px;
 }
 </style>

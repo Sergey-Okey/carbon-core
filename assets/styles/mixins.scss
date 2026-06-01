@@ -1,10 +1,10 @@
 @mixin glass {
   background: var(--glass-surface);
   background-clip: padding-box;
-  backdrop-filter: var(--glass-filter) !important;
-  -webkit-backdrop-filter: var(--glass-filter) !important;
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-strong-filter) !important;
+  -webkit-backdrop-filter: var(--glass-strong-filter) !important;
+  border: 1px solid var(--glass-strong-border);
+  box-shadow: var(--glass-strong-shadow);
   transform: translateZ(0);
 }
 

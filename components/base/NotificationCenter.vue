@@ -167,6 +167,13 @@ onBeforeUnmount(() => {
 
 .notification-trigger {
   position: relative;
+  border: 1px solid transparent;
+  background: transparent;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(255, 255, 255, 0.08);
+  }
 
   @media (max-width: 767px) {
     width: 32px;

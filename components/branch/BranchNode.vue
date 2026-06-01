@@ -50,7 +50,7 @@
           <ul v-if="linkedTasks.length">
             <li v-for="task in linkedTasks" :key="task.id">{{ task.title }}</li>
           </ul>
-          <span v-else class="empty">Нет задач</span>
+          <span v-else class="empty">Задачи не привязаны</span>
         </div>
       </div>
     </Transition>

@@ -81,6 +81,10 @@ function openOnboarding() {
   padding: 8px 14px;
   border-radius: var(--border-radius-lg);
   @include glass;
+  background: transparent;
+  transition:
+    border-color var(--transition-standard),
+    box-shadow var(--transition-standard);
 
   @include mobile {
     grid-template-columns: minmax(0, 1fr) auto;
@@ -102,9 +106,9 @@ function openOnboarding() {
   width: 32px;
   height: 32px;
   flex: 0 0 auto;
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--border-radius-md);
-  background: var(--glass-surface);
+  background: transparent;
 
   @include mobile {
     width: 30px;
@@ -177,23 +181,30 @@ function openOnboarding() {
   height: 34px;
   border: none;
   border-radius: var(--border-radius-md);
-  background: var(--glass-surface);
+  background: transparent;
   border: 1px solid transparent;
   color: var(--dim);
   cursor: pointer;
-  transition: all var(--transition-standard);
+  transition:
+    transform 0.22s ease,
+    background var(--transition-standard),
+    color var(--transition-standard),
+    box-shadow var(--transition-standard);
 
   &:hover {
-    background: color-mix(in srgb, var(--glass-surface) 90%, transparent);
+    background: rgba(255, 255, 255, 0.1);
     color: var(--accent);
+    transform: translateY(-1px) scale(1.03);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.08);
   }
 
   &:active {
-    transform: scale(0.96);
+    transform: translateY(0) scale(0.96);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
   }
 
   &:focus-visible {
-    box-shadow: 0 0 0 2px var(--accent);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
   }
 
   @include mobile {
