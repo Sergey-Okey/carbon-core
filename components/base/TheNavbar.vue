@@ -138,7 +138,8 @@ function onMouseLeave() {
     transform: translateX(-50%);
     border-radius: 999px;
     box-shadow: var(--shadow-md);
-    backdrop-filter: blur(18px);
+    backdrop-filter: var(--glass-strong-filter);
+    -webkit-backdrop-filter: var(--glass-strong-filter);
   }
 }
 

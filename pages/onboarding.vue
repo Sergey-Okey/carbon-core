@@ -1072,7 +1072,7 @@ onUnmounted(() => {
     color-mix(in srgb, var(--bg) 44%, transparent) 0%,
     var(--bg) 100%
   );
-  backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-strong-filter);
 }
 
 .fixed-header,
@@ -1097,7 +1097,7 @@ onUnmounted(() => {
     color-mix(in srgb, var(--bg) 95%, transparent),
     transparent
   );
-  backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-strong-filter);
 }
 .logo {
   font-family: 'Space Grotesk', sans-serif;

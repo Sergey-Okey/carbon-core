@@ -92,8 +92,8 @@ function handleBackdrop() {
   justify-content: center;
   padding: 16px;
   background: color-mix(in srgb, var(--bg) 54%, transparent);
-  backdrop-filter: var(--glass-filter);
-  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-strong-filter);
+  -webkit-backdrop-filter: var(--glass-strong-filter);
 }
 
 .app-modal {
