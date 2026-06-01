@@ -114,8 +114,8 @@ const chartOptions = {
       align-items: center;
       padding: 8px 12px;
       background: var(--glass-surface);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--border-radius-sm);
+      border: var(--ui-border);
+      border-radius: var(--border-radius-lg);
       font-size: 0.85rem;
 
       span {

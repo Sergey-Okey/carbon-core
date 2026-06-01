@@ -166,7 +166,7 @@ html[data-background-mode='glass'],
 html[data-background-mode='image'] {
   --glass-filter: blur(50px) saturate(1.75);
   --glass-surface: color-mix(in srgb, var(--surface) 38%, transparent);
-  --glass-border: color-mix(in srgb, var(--accent) 14%, var(--border));
+  --glass-border: var(--ui-border-color);
   --glass-highlight: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
@@ -174,7 +174,7 @@ html.light-theme[data-background-mode='glass'],
 html.light-theme[data-background-mode='image'] {
   --glass-filter: blur(90px) saturate(1.65);
   --glass-surface: color-mix(in srgb, var(--surface) 42%, transparent);
-  --glass-border: color-mix(in srgb, var(--accent) 12%, var(--border));
+  --glass-border: var(--ui-border-color);
   --glass-highlight: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 

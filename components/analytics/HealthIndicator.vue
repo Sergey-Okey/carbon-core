@@ -24,7 +24,7 @@ const chartData = computed(() => ({
   datasets: [
     {
       data: [userStore.levelProgressPercent, 100 - userStore.levelProgressPercent],
-      backgroundColor: ['var(--accent)', 'var(--border)'],
+      backgroundColor: ['var(--accent)', 'var(--ui-border-color)'],
       borderWidth: 0,
     },
   ],

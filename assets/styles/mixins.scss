@@ -3,7 +3,7 @@
   background-clip: padding-box;
   backdrop-filter: var(--glass-strong-filter) !important;
   -webkit-backdrop-filter: var(--glass-strong-filter) !important;
-  border: 1px solid var(--glass-strong-border);
+  border: var(--ui-border);
   box-shadow: var(--glass-strong-shadow);
   transform: translateZ(0);
 }

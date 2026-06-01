@@ -103,7 +103,7 @@ function handleBackdrop() {
   width: min(100%, 520px);
   max-height: min(88dvh, 760px);
   overflow: hidden;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-lg);
   color: var(--accent);
 
@@ -128,10 +128,6 @@ function handleBackdrop() {
   gap: var(--panel-gap);
   min-height: 66px;
   padding: 14px 18px;
-}
-
-.app-modal-header {
-  border-bottom: 1px solid var(--glass-border);
 }
 
 .title-block {
@@ -174,13 +170,9 @@ function handleBackdrop() {
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--border);
+    background: var(--ui-border-color);
     border-radius: var(--border-radius-sm);
   }
-}
-
-.app-modal-footer {
-  border-top: 1px solid var(--glass-border);
 }
 
 .modal-fade-enter-active,

@@ -727,7 +727,7 @@ watch(
   @include glass;
   width: 100%;
   height: 100%;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-lg);
   position: relative;
   overflow: hidden;
@@ -753,7 +753,7 @@ watch(
   background-color: transparent;
 
   .vue-flow__background-pattern {
-    stroke: var(--border);
+    stroke: var(--ui-border-color);
   }
 }
 
@@ -763,7 +763,8 @@ watch(
 }
 
 :deep(.vue-flow__node.selected .branch-node, .vue-flow__node.selected .milestone-node) {
-  border: 1px solid var(--accent) !important;
+  border: var(--ui-border) !important;
+  border-color: var(--accent) !important;
 }
 
 :deep(.vue-flow__edge.selected .vue-flow__edge-path) {

@@ -105,7 +105,7 @@ function apply() {
   gap: 8px;
   min-height: 34px;
   padding: 4px 8px 4px 12px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-md);
   color: var(--dim);
   cursor: pointer;
@@ -123,7 +123,7 @@ function apply() {
 .color-preview {
   width: 24px;
   height: 24px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-pill);
 }
 
@@ -134,7 +134,7 @@ function apply() {
 
 .color-large-preview {
   height: 64px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-md);
 }
 
@@ -146,7 +146,7 @@ function apply() {
 
 .color-swatches button {
   aspect-ratio: 1;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-pill);
   cursor: pointer;
 

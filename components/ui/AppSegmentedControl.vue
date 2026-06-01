@@ -47,7 +47,7 @@ const emit = defineEmits<{
   min-width: 0;
   min-height: var(--control-height-md);
   padding: 2px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-md);
 }
 
@@ -59,7 +59,7 @@ const emit = defineEmits<{
   margin: 0;
   padding: 0 10px;
   overflow: hidden;
-  border: 1px solid transparent;
+  border: none;
   border-radius: calc(var(--border-radius-md) - 4px);
   background: transparent;
   color: var(--dim);
@@ -71,7 +71,6 @@ const emit = defineEmits<{
   white-space: nowrap;
   transition:
     background var(--transition-standard),
-    border-color var(--transition-standard),
     color var(--transition-standard);
 
   &:hover:not(.active) {
@@ -80,9 +79,13 @@ const emit = defineEmits<{
   }
 
   &.active {
-    border-color: color-mix(in srgb, var(--accent) 22%, var(--glass-border));
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-    color: var(--accent);
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  &.active:hover {
+    background: var(--accent);
+    color: var(--bg);
   }
 }
 </style>

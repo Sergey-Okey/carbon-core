@@ -819,7 +819,7 @@ function resetAllData() {
 <style scoped lang="scss">
 .settings-page {
   display: grid;
-  gap: var(--panel-gap);
+  gap: 18px;
   padding-bottom: 24px;
 
   @include mobile {
@@ -828,10 +828,14 @@ function resetAllData() {
 }
 
 .settings-head {
+  @include glass;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
+  padding: 18px 20px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
 
   h2 {
     margin: 0 0 6px;
@@ -864,7 +868,7 @@ function resetAllData() {
   display: grid;
   gap: 6px;
   padding: 8px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-lg);
 
   @include mobile {
@@ -885,25 +889,36 @@ function resetAllData() {
   width: 100%;
   min-height: 44px;
   padding: 10px 12px;
-  border: 1px solid transparent;
-  border-radius: var(--border-radius-md);
+  border: none;
+  border-radius: var(--border-radius-pill);
   background: transparent;
   color: var(--dim);
   cursor: pointer;
   font: inherit;
   font-size: 0.92rem;
   font-weight: 600;
-  transition: all var(--transition-standard);
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard),
+    transform 0.16s ease;
 
   &:hover {
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    background: var(--glass-surface);
     color: var(--accent);
   }
 
   &.active {
-    border-color: color-mix(in srgb, var(--accent) 28%, var(--glass-border));
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-    color: var(--accent);
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  &.active:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  &:active {
+    transform: scale(0.96);
   }
 
   @include mobile {
@@ -935,7 +950,7 @@ function resetAllData() {
 .settings-group {
   @include glass;
   overflow: hidden;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-lg);
 }
 
@@ -946,7 +961,7 @@ function resetAllData() {
   gap: 16px;
   min-height: 68px;
   padding: 18px 22px;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: var(--ui-border);
   color: var(--accent);
 
   > div {
@@ -1000,7 +1015,7 @@ function resetAllData() {
   gap: var(--panel-gap);
   min-height: 72px;
   padding: 14px 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--dim) 8%, transparent);
+  border-bottom: var(--ui-border);
 
   &:last-of-type {
     border-bottom: none;
@@ -1053,9 +1068,9 @@ function resetAllData() {
     gap: 7px;
     min-height: 38px;
     padding: 0 10px;
-    border: 1px solid var(--glass-border);
-    border-radius: var(--border-radius-md);
-    background: var(--glass-surface);
+    border: none;
+    border-radius: var(--border-radius-pill);
+    background: transparent;
     color: var(--dim);
     cursor: pointer;
     font: inherit;
@@ -1063,15 +1078,19 @@ function resetAllData() {
     font-weight: 600;
     transition: all var(--transition-standard);
 
-    &:hover,
-    &.active {
-      border-color: var(--glass-border);
+    &:hover {
+      background: var(--glass-surface);
       color: var(--accent);
     }
 
     &.active {
-      background: var(--glass-surface);
-      color: var(--accent);
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    &.active:hover {
+      background: var(--accent);
+      color: var(--bg);
     }
   }
 
@@ -1104,7 +1123,7 @@ function resetAllData() {
 .background-preview {
   width: 86px;
   height: 48px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-md);
   background-position: center;
   background-repeat: no-repeat;
@@ -1121,7 +1140,7 @@ function resetAllData() {
   input {
     min-height: 36px;
     padding: 0 10px;
-    border: 1px solid var(--glass-border);
+    border: var(--ui-border);
     border-radius: var(--border-radius-md);
     background: var(--glass-surface);
     color: var(--accent);
@@ -1136,7 +1155,7 @@ function resetAllData() {
   gap: 8px;
   margin: 12px 0 18px;
   padding: 12px 14px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-md);
   background: var(--glass-surface);
   color: var(--dim);
@@ -1203,7 +1222,7 @@ function resetAllData() {
   gap: 16px;
   margin-top: 18px;
   padding-top: 18px;
-  border-top: 1px solid var(--glass-border);
+  border-top: var(--ui-border);
 
   @include mobile {
     grid-template-columns: 1fr;

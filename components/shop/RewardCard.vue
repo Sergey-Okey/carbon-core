@@ -30,39 +30,66 @@ function purchase() {
 
 <style scoped lang="scss">
 .reward-card {
-  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+  padding: 18px;
+  border: var(--ui-border);
   color: var(--accent);
-  transition: opacity var(--transition-standard);
+  transition:
+    opacity var(--transition-standard),
+    background var(--transition-standard);
+
   &.purchased {
     opacity: 0.5;
   }
+
   h4 {
+    color: var(--accent);
     margin-bottom: 4px;
   }
+
   p {
     font-size: 0.85rem;
     color: var(--dim);
     margin-bottom: 12px;
+    line-height: 1.45;
   }
+
   .price {
     display: flex;
     align-items: center;
     gap: 4px;
+    margin-top: auto;
     margin-bottom: 12px;
+    color: var(--accent);
   }
+
   .buy-btn {
     width: 100%;
-    padding: 10px;
+    min-height: var(--control-height-md);
+    padding: 0 14px;
+    border: none;
     background: var(--accent);
     color: var(--bg);
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--border-radius-pill);
+    font: inherit;
     font-weight: 600;
-    transition: opacity var(--transition-standard);
+    cursor: pointer;
+    transition:
+      opacity var(--transition-standard),
+      transform var(--transition-standard);
+
     &:hover:not(:disabled) {
-      opacity: 0.8;
+      opacity: 0.92;
     }
+
+    &:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+
     &:disabled {
-      background: var(--border);
+      background: var(--ui-border-color);
       color: var(--dim);
       cursor: not-allowed;
     }

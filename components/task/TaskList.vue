@@ -251,7 +251,7 @@ function handleSave(taskData: any) {
     white-space: normal;
     width: max-content;
     max-width: 240px;
-    border: 1px solid var(--glass-border);
+    border: var(--ui-border);
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s, transform 0.2s;
@@ -269,11 +269,15 @@ function handleSave(taskData: any) {
     justify-content: center;
     color: var(--accent);
     cursor: pointer;
-    transition: all var(--transition-standard);
+    border: none;
+    transition:
+      background var(--transition-standard),
+      color var(--transition-standard),
+      transform var(--transition-standard);
 
     &:hover {
-      transform: scale(1.02);
-      border-color: var(--accent);
+      background: var(--glass-surface);
+      color: var(--accent);
     }
 
     &:active {
@@ -310,7 +314,7 @@ function handleSave(taskData: any) {
     color: var(--dim);
     padding: 24px 16px;
     font-size: 0.9rem;
-    border: 1px dashed var(--border);
+    border: var(--ui-border);
     border-radius: var(--border-radius-lg);
   }
 

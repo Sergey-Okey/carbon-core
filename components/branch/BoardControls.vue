@@ -104,7 +104,7 @@ defineEmits([
   gap: 4px;
   padding: 6px;
   border-radius: var(--border-radius-pill);
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   pointer-events: auto;
   transform: translateY(-16px);
 
@@ -120,7 +120,11 @@ defineEmits([
     background: transparent;
     border: none;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition:
+      background var(--transition-standard),
+      color var(--transition-standard),
+      opacity var(--transition-standard),
+      transform var(--transition-standard);
 
     &:hover {
       background: var(--glass-surface);
@@ -143,6 +147,7 @@ defineEmits([
 
     &:hover {
       background: var(--glass-surface);
+      color: var(--accent);
       transform: none;
     }
   }
@@ -150,7 +155,7 @@ defineEmits([
   .divider {
     width: 1px;
     height: 20px;
-    background: var(--border);
+    background: var(--ui-border-color);
     margin: 0 2px;
   }
 }

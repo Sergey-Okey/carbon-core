@@ -69,8 +69,8 @@ const emit = defineEmits<{
   background: transparent;
   cursor: pointer;
   transition:
-    opacity var(--transition-standard),
-    transform var(--transition-standard);
+    background var(--transition-standard),
+    opacity var(--transition-standard);
 
   .color-dot {
     display: inline-flex;
@@ -88,18 +88,23 @@ const emit = defineEmits<{
   }
 
   &:hover {
-    transform: translateY(-1px);
+    background: var(--glass-surface);
 
     .color-dot {
-      box-shadow: 0 3px 10px color-mix(in srgb, var(--picker-color) 24%, transparent);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--picker-color) 28%, transparent);
     }
   }
 
   &.active {
+    background: var(--accent);
+
     .color-dot {
-      transform: scale(1.18);
-      box-shadow: 0 4px 12px color-mix(in srgb, var(--picker-color) 30%, transparent);
+      box-shadow: 0 0 0 2px var(--bg);
     }
+  }
+
+  &.active:hover {
+    background: var(--accent);
   }
 }
 </style>

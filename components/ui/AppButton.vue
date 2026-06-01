@@ -30,13 +30,14 @@ withDefaults(
 
 <style scoped lang="scss">
 .app-button {
+  @include glass;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   min-width: 0;
-  border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-md);
+  border: none;
+  border-radius: var(--border-radius-pill);
   font: inherit;
   font-weight: 500;
   line-height: 1;
@@ -48,10 +49,6 @@ withDefaults(
     color var(--transition-standard),
     box-shadow var(--transition-standard),
     transform 0.16s ease;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-  }
 
   &:focus-visible {
     outline: none;
@@ -82,29 +79,35 @@ withDefaults(
   height: var(--control-icon-size);
   min-height: var(--control-icon-size);
   padding: 0;
+  border: none;
   border-radius: var(--border-radius-pill);
 }
 
 .variant-primary {
   background: var(--accent);
-  border-color: var(--accent);
   color: var(--bg);
+
+  &:hover:not(:disabled) {
+    background: var(--accent);
+    color: var(--bg);
+  }
 }
 
-.variant-secondary {
-  @include glass;
-  border-color: var(--glass-border);
+.variant-secondary:not(.icon) {
+  border: var(--ui-border);
   color: var(--dim);
 
   &:hover:not(:disabled) {
+    background: var(--glass-surface);
+    border-color: var(--ui-border-color);
     color: var(--accent);
   }
 }
 
 .variant-danger {
-  @include glass;
-  border-color: var(--error);
-  color: var(--error);
+  border: none;
+  background: var(--error);
+  color: var(--bg);
 
   &:hover:not(:disabled) {
     background: var(--error);
@@ -113,10 +116,11 @@ withDefaults(
 }
 
 .variant-ghost {
-  @include glass;
+  border: none;
   color: var(--dim);
 
   &:hover:not(:disabled) {
+    background: var(--glass-surface);
     color: var(--accent);
   }
 }

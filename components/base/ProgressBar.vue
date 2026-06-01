@@ -45,7 +45,7 @@ const percent = computed(() => {
 }
 
 .progress-bar {
-  background: var(--border);
+  background: var(--ui-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   width: 100%;

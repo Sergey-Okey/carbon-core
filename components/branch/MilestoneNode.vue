@@ -32,7 +32,7 @@
           :class="{ filled: i <= completedIndicatorTasks }"
         ></span>
       </div>
-      <div class="task-counter" v-if="indicatorTasks > 0">
+      <div class="task-counter">
         {{ completedIndicatorTasks }} / {{ indicatorTasks }} задач
       </div>
       <button class="expand-btn nodrag" @click.stop="togglePinned">
@@ -192,8 +192,8 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   transition:
     border-color 0.2s,
     background 0.2s;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-surface);
+  border: var(--ui-border);
+  background: transparent;
 
   &.selected {
     border-color: var(--accent);
@@ -231,7 +231,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     height: 10px;
     background: var(--accent);
     border-radius: 50%;
-    border: 1px solid var(--glass-border);
+    border: none;
     transition: opacity 0.2s;
     z-index: 2;
   }
@@ -250,7 +250,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--border-radius-pill);
     background: transparent;
     border: none;
     color: var(--dim);
@@ -258,12 +258,16 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     opacity: 0;
     z-index: 3;
     transition:
-      opacity 0.2s,
-      background 0.2s,
-      color 0.2s;
+      opacity var(--transition-standard),
+      background var(--transition-standard),
+      color var(--transition-standard),
+      transform var(--transition-standard);
     &:hover {
       background: var(--glass-surface);
       color: var(--accent);
+    }
+    &:active {
+      transform: scale(0.96);
     }
   }
 
@@ -287,7 +291,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   .dash {
     flex: 1;
     height: 3px;
-    background: var(--border);
+    background: var(--ui-border-color);
     border-radius: var(--border-radius-sm);
     transition: background 0.2s;
     &.filled {
@@ -295,25 +299,37 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     }
   }
 
+  .task-counter {
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin-bottom: 4px;
+  }
+
   .expand-btn {
     position: absolute;
     top: 45px;           /* фиксированный отступ от верхнего края – не съезжает при раскрытии */
-    right:13px;
+    right: 13px;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 20px;
     height: 20px;
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--border-radius-pill);
     background: transparent;
     border: none;
     color: var(--dim);
     cursor: pointer;
-    transition: all 0.2s;
+    transition:
+      background var(--transition-standard),
+      color var(--transition-standard),
+      transform var(--transition-standard);
     z-index: 5;
     &:hover {
       background: var(--glass-surface);
       color: var(--accent);
+    }
+    &:active {
+      transform: scale(0.96);
     }
     .rotated {
       transform: rotate(180deg);
@@ -323,7 +339,6 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   .node-details {
     margin-top: 12px;
     padding-top: 12px;
-    border-top: 1px solid var(--glass-border);
     font-size: 0.85rem;
     word-wrap: break-word;
     p {
@@ -369,7 +384,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
       transform 0.2s ease,
       box-shadow 0.2s ease;
     background: var(--accent);
-    border: 1px solid var(--glass-border);
+    border: var(--ui-border);
     opacity: 1;
     z-index: 10;
   }
@@ -422,7 +437,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
   &:hover .handle,
   &.selected .handle {
-    box-shadow: 0 0 0 2px var(--border);
+    box-shadow: 0 0 0 2px var(--ui-border-color);
   }
 
   .handle:active {

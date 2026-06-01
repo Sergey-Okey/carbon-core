@@ -73,7 +73,10 @@ const branchIconComponent = computed(() => {
 <style scoped lang="scss">
 .quest-card {
   padding: 16px;
-  transition: all var(--transition-standard);
+  transition:
+    background var(--transition-standard),
+    border-color var(--transition-standard),
+    opacity var(--transition-standard);
   &.completed {
     filter: grayscale(1);
     opacity: 0.4;
@@ -87,7 +90,7 @@ const branchIconComponent = computed(() => {
   .branch-icon {
     background: var(--glass-surface);
     padding: 6px;
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--border-radius-pill);
     color: var(--accent);
   }
   .quest-info {
@@ -105,8 +108,8 @@ const branchIconComponent = computed(() => {
   .quest-type {
     font-size: 0.7rem;
     padding: 2px 8px;
-    border-radius: var(--border-radius-sm);
-    background: var(--border);
+    border-radius: var(--border-radius-pill);
+    background: var(--ui-border-color);
     text-transform: uppercase;
     color: var(--accent);
     &.DAILY {

@@ -134,7 +134,7 @@ function handleSubmit() {
   gap: 8px;
   min-height: 36px;
   padding: 0 12px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-md);
   color: var(--accent);
   font-size: 0.9rem;
@@ -144,7 +144,7 @@ function handleSubmit() {
     border-color var(--transition-standard);
 
   &:hover {
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--ui-border-color));
   }
 
   input {

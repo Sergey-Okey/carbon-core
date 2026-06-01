@@ -118,7 +118,7 @@ function onMouseLeave() {
     width: 56px;
     margin: 0 auto;
     padding: 10px 0;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: var(--ui-border);
     box-shadow: var(--shadow-sm);
 
     &.is-expanded {
@@ -188,6 +188,11 @@ function onMouseLeave() {
     color: var(--bg);
     background: var(--accent);
     box-shadow: var(--shadow-sm);
+  }
+
+  &.active:hover {
+    color: var(--bg);
+    background: var(--accent);
   }
 
   @include desktop {

@@ -221,7 +221,7 @@ onBeforeUnmount(() => {
   height: var(--control-height-md);
   padding: 0 34px 0 12px;
   overflow: hidden;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-md);
   color: var(--accent);
   font: inherit;
@@ -236,7 +236,7 @@ onBeforeUnmount(() => {
 
   &:hover:not(:disabled),
   .app-select.open & {
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--ui-border-color));
   }
 
   &:focus-visible {
@@ -332,12 +332,19 @@ onBeforeUnmount(() => {
 
   &.highlighted,
   &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--option-color) 9%, transparent);
+    background: var(--glass-surface);
   }
 
   &.active {
-    background: color-mix(in srgb, var(--option-color) 14%, transparent);
+    background: var(--accent);
+    color: var(--bg);
     font-weight: 600;
+  }
+
+  &.active:hover,
+  &.active.highlighted {
+    background: var(--accent);
+    color: var(--bg);
   }
 }
 

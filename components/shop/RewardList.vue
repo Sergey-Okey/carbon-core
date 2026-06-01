@@ -19,9 +19,17 @@ const rewardsStore = useRewardsStore()
 
 <style scoped lang="scss">
 .reward-list {
+  display: grid;
+  gap: 18px;
+
   .list-header {
-    margin-bottom: 16px;
+    @include glass;
+    padding: 18px 20px;
+    border: var(--ui-border);
+    border-radius: var(--border-radius-lg);
+
     h3 {
+      margin: 0;
       font-weight: 600;
       font-size: 1.2rem;
       color: var(--accent);
@@ -29,7 +37,7 @@ const rewardsStore = useRewardsStore()
   }
   .rewards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
     gap: 16px;
   }
 }

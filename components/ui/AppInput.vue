@@ -69,7 +69,7 @@ function handleInput(event: Event) {
   width: 100%;
   min-height: var(--control-height-md);
   padding: 0 14px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-md);
   color: var(--accent);
   font: inherit;
@@ -86,7 +86,7 @@ function handleInput(event: Event) {
   }
 
   &:hover:not(:disabled) {
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--ui-border-color));
   }
 
   &:focus {

@@ -278,7 +278,7 @@ function formatTaskCount(count: number) {
   @include glass;
   border-radius: var(--border-radius-lg);
   padding: 12px 18px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
 
   @include mobile {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -359,7 +359,7 @@ function formatTaskCount(count: number) {
   width: min(100%, 5px);
   aspect-ratio: 1;
   border-radius: var(--border-radius-pill);
-  background: color-mix(in srgb, var(--border) 82%, transparent);
+  background: color-mix(in srgb, var(--ui-border-color) 82%, transparent);
   transition: background var(--transition-standard);
   justify-self: center;
 
@@ -398,9 +398,9 @@ function formatTaskCount(count: number) {
   min-width: 0;
   min-height: 27px;
   padding: 3px 6px;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--border-radius-pill);
   background: var(--glass-surface);
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   font-size: 0.8rem;
   color: var(--accent);
   transition:
@@ -410,7 +410,7 @@ function formatTaskCount(count: number) {
 
   &--done {
     background: var(--accent);
-    border-color: var(--accent);
+    border-color: var(--ui-border-color);
     color: var(--bg);
   }
 }
@@ -519,7 +519,7 @@ function formatTaskCount(count: number) {
   height: 30px;
   overflow: hidden;
   border-radius: var(--border-radius-pill);
-  background: color-mix(in srgb, var(--border) 38%, transparent);
+  background: color-mix(in srgb, var(--ui-border-color) 38%, transparent);
 }
 
 .activity-fill {
@@ -536,7 +536,7 @@ function formatTaskCount(count: number) {
 }
 
 .activity-day.empty .activity-fill {
-  background: var(--border);
+  background: var(--ui-border-color);
 }
 
 .activity-label {
@@ -555,8 +555,8 @@ function formatTaskCount(count: number) {
   width: max-content;
   max-width: 150px;
   padding: 5px 8px;
-  border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-sm);
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
   color: var(--accent);
   font-size: 0.7rem;
   font-weight: 600;

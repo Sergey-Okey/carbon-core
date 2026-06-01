@@ -83,7 +83,7 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--border);
+    background: var(--ui-border-color);
     border-radius: 3px;
 
     &:hover {

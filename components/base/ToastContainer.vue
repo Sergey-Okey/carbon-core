@@ -66,7 +66,7 @@ const { notifications, removeNotification } = useNotification()
   min-height: 34px;
   padding: 8px 10px 8px 12px;
   border-radius: var(--border-radius-lg);
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   background: var(--glass-surface);
   color: var(--accent);
   cursor: pointer;

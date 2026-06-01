@@ -250,15 +250,16 @@ function handleSubmit() {
   min-height: 42px;
   padding: 0 14px;
   color: var(--accent);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-md);
+  border: none;
+  border-radius: var(--border-radius-pill);
   cursor: pointer;
   transition:
-    border-color var(--transition-standard),
-    background var(--transition-standard);
+    background var(--transition-standard),
+    color var(--transition-standard);
 
   &:hover {
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+    background: var(--glass-surface);
+    color: var(--accent);
   }
 
   .rotated {
@@ -285,22 +286,26 @@ function handleSubmit() {
   justify-content: center;
   aspect-ratio: 1;
   color: var(--dim);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-md);
+  border: none;
+  border-radius: var(--border-radius-pill);
   cursor: pointer;
   transition:
     color var(--transition-standard),
-    border-color var(--transition-standard),
-    transform var(--transition-standard);
+    background var(--transition-standard);
 
-  &:hover,
-  &.active {
+  &:hover {
     color: var(--accent);
-    border-color: var(--accent);
+    background: var(--glass-surface);
   }
 
   &.active {
-    transform: translateY(-1px);
+    color: var(--bg);
+    background: var(--accent);
+  }
+
+  &.active:hover {
+    color: var(--bg);
+    background: var(--accent);
   }
 }
 
@@ -317,8 +322,8 @@ function handleSubmit() {
   max-height: 220px;
   padding: 8px;
   overflow-y: auto;
-  border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-md);
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
 }
 
 .task-row {
@@ -329,12 +334,22 @@ function handleSubmit() {
   gap: 10px;
   padding: 10px 12px;
   color: var(--accent);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-md);
+  border: none;
+  border-radius: var(--border-radius-lg);
   cursor: pointer;
 
   &.selected {
-    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--bg);
+
+    .task-xp {
+      color: color-mix(in srgb, var(--bg) 72%, transparent);
+    }
+  }
+
+  &.selected:hover {
+    background: var(--accent);
+    color: var(--bg);
   }
 }
 
@@ -354,7 +369,7 @@ function handleSubmit() {
   display: block;
   width: 18px;
   height: 18px;
-  border: 1px solid var(--glass-border);
+  border: none;
   border-radius: var(--border-radius-sm);
   background: var(--glass-surface);
 
@@ -381,8 +396,8 @@ function handleSubmit() {
   padding: 12px;
   text-align: center;
   background: var(--glass-surface);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-md);
+  border: none;
+  border-radius: var(--border-radius-lg);
 }
 
 .footer-actions {

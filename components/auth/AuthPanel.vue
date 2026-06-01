@@ -290,7 +290,7 @@ async function submit() {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-sm);
   color: var(--accent);
   font-family: 'Manrope', sans-serif;
@@ -305,7 +305,7 @@ async function submit() {
 .auth-card {
   @include glass;
   padding: 32px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
 
   @media (max-width: 480px) {
     padding: 24px;
@@ -325,7 +325,7 @@ async function submit() {
   .badge {
     display: inline-flex;
     padding: 4px 12px;
-    border: 1px solid var(--glass-border);
+    border: var(--ui-border);
     border-radius: var(--border-radius-pill);
     background: color-mix(in srgb, var(--accent) 6%, transparent);
     color: var(--accent);
@@ -358,7 +358,7 @@ async function submit() {
 .spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid var(--border);
+  border: var(--ui-border);
   border-top-color: var(--bg);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;

@@ -166,10 +166,13 @@ function saveProfile() {
   height: 100px;
   overflow: hidden;
   color: var(--dim);
-  border: 2px solid var(--border);
+  border: var(--ui-border);
   border-radius: 50%;
   cursor: pointer;
-  transition: border-color var(--transition-standard), transform var(--transition-standard);
+  transition:
+    background var(--transition-standard),
+    border-color var(--transition-standard),
+    color var(--transition-standard);
 
   img {
     width: 100%;
@@ -178,8 +181,9 @@ function saveProfile() {
   }
 
   &:hover {
-    border-color: var(--accent);
-    transform: translateY(-1px);
+    background: var(--glass-surface);
+    border-color: var(--ui-border-color);
+    color: var(--accent);
   }
 
   &:hover .avatar-overlay {
@@ -216,8 +220,8 @@ function saveProfile() {
   flex-direction: column;
   gap: 8px;
   padding: 16px;
-  border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-md);
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
 }
 
 .stat-item {

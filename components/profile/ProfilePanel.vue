@@ -389,42 +389,55 @@ function deleteAccount() {
 <style scoped lang="scss">
 .profile-page {
   display: grid;
-  gap: 24px;
+  gap: 18px;
 }
 
 .profile-tabs {
+  @include glass;
   display: flex;
   gap: 8px;
-  border-bottom: 1px solid var(--glass-border);
-  padding-bottom: 8px;
+  width: fit-content;
+  padding: 8px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
+
+  @media (max-width: 640px) {
+    width: 100%;
+  }
 }
 
 .tab-btn {
   padding: 8px 16px;
-  border: 1px solid transparent;
-  border-radius: var(--border-radius-sm);
+  border: none;
+  border-radius: var(--border-radius-pill);
   background: transparent;
   color: var(--dim);
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-standard);
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard);
 
   &:hover {
     background: var(--glass-surface);
-    color: var(--text);
+    color: var(--accent);
   }
 
   &.active {
     background: var(--accent);
     color: var(--bg);
-    border-color: var(--accent);
+  }
+
+  &.active:hover {
+    background: var(--accent);
+    color: var(--bg);
   }
 }
 
 .profile-content {
   display: grid;
-  gap: 24px;
+  gap: 18px;
 }
 
 .tab-content {
@@ -433,10 +446,14 @@ function deleteAccount() {
 }
 
 .profile-topbar {
+  @include glass;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding: 10px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
 
   @media (max-width: 640px) {
     flex-direction: column;
@@ -460,7 +477,7 @@ function deleteAccount() {
   justify-content: space-between;
   gap: 20px;
   padding: 28px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-lg);
 
   @media (max-width: 860px) {
@@ -485,18 +502,20 @@ function deleteAccount() {
   width: 120px;
   height: 120px;
   overflow: hidden;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-lg);
   background: var(--glass-surface);
   color: var(--dim);
   cursor: pointer;
   transition:
-    transform var(--transition-standard),
+    background var(--transition-standard),
+    color var(--transition-standard),
     border-color var(--transition-standard);
 
   &:hover {
-    transform: translateY(-2px);
-    border-color: var(--accent);
+    background: var(--glass-surface);
+    color: var(--accent);
+    border-color: var(--ui-border-color);
   }
 
   img {
@@ -548,7 +567,7 @@ function deleteAccount() {
 }
 
 .profile-card {
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
 }
 
 .section-head {
@@ -587,7 +606,7 @@ function deleteAccount() {
   textarea {
     width: 100%;
     padding: 14px 16px;
-    border: 1px solid var(--glass-border);
+    border: var(--ui-border);
     border-radius: var(--border-radius-md);
     background: var(--glass-surface);
     color: var(--accent);
@@ -596,7 +615,7 @@ function deleteAccount() {
 
     &:focus {
       outline: none;
-      border-color: var(--accent);
+      border-color: var(--ui-border-color);
     }
   }
 
@@ -617,8 +636,8 @@ function deleteAccount() {
   gap: 8px;
   padding: 16px;
   @include glass;
-  border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-md);
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
 
   svg {
     color: var(--accent);
@@ -646,7 +665,7 @@ function deleteAccount() {
   justify-content: space-between;
   gap: 12px;
   padding: 12px 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--dim) 12%, transparent);
+  border-bottom: var(--ui-border);
 
   &:last-child {
     border-bottom: none;
@@ -694,8 +713,8 @@ function deleteAccount() {
   font-weight: 600;
   cursor: pointer;
   transition:
-    transform var(--transition-standard),
     background var(--transition-standard),
+    color var(--transition-standard),
     border-color var(--transition-standard);
 }
 
@@ -705,24 +724,25 @@ function deleteAccount() {
   color: var(--bg);
 
   &:hover {
-    transform: translateY(-1px);
+    background: var(--accent);
   }
 }
 
 .ghost-btn,
 .nav-chip,
 .back-btn {
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   background: var(--glass-surface);
   color: var(--accent);
 
   &:hover {
     background: var(--glass-surface);
+    color: var(--accent);
   }
 }
 
 .ghost-btn.danger {
   color: var(--error);
-  border-color: color-mix(in srgb, var(--error) 35%, var(--border));
+  border-color: var(--ui-border-color);
 }
 </style>

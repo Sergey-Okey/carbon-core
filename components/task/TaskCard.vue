@@ -261,22 +261,22 @@ async function handleDelete() {
   height: 100%;
   padding: 1rem;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-lg);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    background var(--transition-standard),
+    border-color var(--transition-standard);
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
-    border-color: color-mix(in srgb, var(--border) 90%, transparent);
+    border-color: var(--ui-border-color);
   }
 
   &.habit-checked {
-    border-color: var(--glass-border);
+    border-color: var(--ui-border-color);
   }
 
   &.overdue {
-    border-color: color-mix(in srgb, var(--error) 28%, var(--glass-border));
+    border-color: color-mix(in srgb, var(--error) 28%, var(--ui-border-color));
     background: var(--surface);
   }
 
@@ -307,9 +307,10 @@ async function handleDelete() {
     background: color-mix(in srgb, var(--success) 15%, transparent);
     color: var(--success);
     cursor: pointer;
-    transition: all 0.2s;
+    transition:
+      background var(--transition-standard),
+      color var(--transition-standard);
     &:hover {
-      transform: scale(1.05);
       background: color-mix(in srgb, var(--success) 25%, transparent);
     }
   }
@@ -362,7 +363,7 @@ async function handleDelete() {
     font-size: 0.75rem;
     background: color-mix(in srgb, var(--surface) 90%, transparent);
     padding: 2px 6px;
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--border-radius-pill);
     white-space: nowrap;
   }
 
@@ -381,21 +382,23 @@ async function handleDelete() {
     transform: translateY(-50%);
     width: 24px;
     height: 24px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--accent);
+    border-radius: var(--border-radius-pill);
+    border: none;
+    background: var(--glass-surface);
+    color: var(--dim);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s;
+    transition:
+      background var(--transition-standard),
+      color var(--transition-standard),
+      opacity var(--transition-standard);
     z-index: 2;
 
     &:hover:not(:disabled) {
-      background: var(--accent);
-      color: var(--bg);
-      transform: translateY(-50%) scale(1.05);
+      background: var(--glass-surface);
+      color: var(--accent);
     }
     &:disabled {
       opacity: 0.3;
@@ -434,12 +437,15 @@ async function handleDelete() {
     gap: 6px;
     padding: 2px 8px;
     background: color-mix(in srgb, var(--tag-color, var(--accent)) 8%, var(--surface));
-    border: 1px solid color-mix(in srgb, var(--tag-color, var(--accent)) 18%, var(--border));
-    border-radius: var(--border-radius-sm);
+    border: var(--ui-border);
+    border-radius: var(--border-radius-pill);
     font-size: 0.7rem;
     color: var(--tag-color, var(--accent));
     white-space: nowrap;
-    transition: all 0.1s;
+    transition:
+      background var(--transition-standard),
+      border-color var(--transition-standard),
+      color var(--transition-standard);
   }
 
   .tag-dot {
@@ -494,11 +500,19 @@ async function handleDelete() {
     border: none;
     color: var(--dim);
     cursor: pointer;
-    transition: all 0.2s;
+    transition:
+      background var(--transition-standard),
+      color var(--transition-standard),
+      opacity var(--transition-standard),
+      transform var(--transition-standard);
 
     &:hover:not(:disabled) {
-      background: color-mix(in srgb, var(--surface) 80%, transparent);
+      background: var(--glass-surface);
       color: var(--accent);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.96);
     }
   }
 

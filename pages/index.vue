@@ -217,7 +217,7 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
   padding: 32px 24px;
   text-align: center;
   border-radius: var(--border-radius-lg);
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
 
   h3 {
     margin: 0 0 8px;

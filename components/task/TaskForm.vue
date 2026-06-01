@@ -415,7 +415,7 @@ function getTaskTags(task: Task): TaskTag[] {
     gap: 8px;
     min-height: 36px;
     padding: 7px 12px 7px 10px;
-    border: 1px solid color-mix(in srgb, var(--tag-color, var(--accent)) 22%, var(--border));
+    border: var(--ui-border);
     border-radius: var(--border-radius-md);
     color: var(--tag-color, var(--accent));
     background: color-mix(in srgb, var(--tag-color, var(--accent)) 6%, transparent);
@@ -425,13 +425,13 @@ function getTaskTags(task: Task): TaskTag[] {
     cursor: pointer;
 
     &:hover {
-      border-color: color-mix(in srgb, var(--tag-color, var(--accent)) 42%, var(--border));
+      border-color: color-mix(in srgb, var(--tag-color, var(--accent)) 42%, var(--ui-border-color));
       color: var(--tag-color, var(--accent));
     }
 
     &.active {
       background: color-mix(in srgb, var(--tag-color, var(--accent)) 12%, transparent);
-      border-color: color-mix(in srgb, var(--tag-color, var(--accent)) 72%, var(--border));
+      border-color: color-mix(in srgb, var(--tag-color, var(--accent)) 72%, var(--ui-border-color));
       color: var(--tag-color, var(--accent));
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tag-color, var(--accent)) 18%, transparent);
     }
@@ -457,7 +457,7 @@ function getTaskTags(task: Task): TaskTag[] {
     width: 19px;
     height: 19px;
     border-radius: var(--border-radius-pill);
-    border: 1px solid var(--glass-border);
+    border: var(--ui-border);
     color: var(--dim);
     cursor: pointer;
     transition: all 0.1s;
@@ -472,7 +472,7 @@ function getTaskTags(task: Task): TaskTag[] {
 
   .add-tag-btn {
     background: var(--glass-surface);
-    border: 1px dashed var(--border);
+    border: var(--ui-border);
     color: var(--dim);
     display: flex;
     align-items: center;

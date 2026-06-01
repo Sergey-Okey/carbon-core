@@ -67,7 +67,7 @@ function getTaskTitle(taskId: string): string {
   justify-content: space-between;
   gap: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--ui-border);
 
   .label {
     color: var(--dim);

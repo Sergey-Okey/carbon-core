@@ -861,7 +861,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--border);
+  background: var(--ui-border-color);
   z-index: 200;
   .progress-fill {
     height: 100%;
@@ -885,12 +885,12 @@ onUnmounted(() => {
   background-image:
     linear-gradient(
       to right,
-      color-mix(in srgb, var(--border) 26%, transparent) 1px,
+      color-mix(in srgb, var(--ui-border-color) 26%, transparent) 1px,
       transparent 1px
     ),
     linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--border) 24%, transparent) 1px,
+      color-mix(in srgb, var(--ui-border-color) 24%, transparent) 1px,
       transparent 1px
     );
   background-size: 54px 54px;
@@ -929,7 +929,7 @@ onUnmounted(() => {
 
 .geo-shape {
   position: absolute;
-  border: 1px solid color-mix(in srgb, #ffffff 78%, var(--accent));
+  border: var(--ui-border);
   background: color-mix(in srgb, #ffffff 8%, transparent);
   box-shadow:
     0 0 18px color-mix(in srgb, #ffffff 42%, var(--accent)),
@@ -1110,7 +1110,7 @@ onUnmounted(() => {
 .beta-badge {
   padding: 5px 12px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: var(--ui-border);
   border-radius: 30px;
   font-family: 'Manrope', sans-serif;
   font-size: 0.75rem;
@@ -1125,7 +1125,7 @@ onUnmounted(() => {
   gap: 6px;
   padding: 8px 18px;
   background: color-mix(in srgb, var(--surface) 86%, transparent);
-  border: 1px solid var(--border);
+  border: var(--ui-border);
   border-radius: 40px;
   color: var(--dim);
   font-family: 'Manrope', sans-serif;
@@ -1282,7 +1282,7 @@ onUnmounted(() => {
 .hashtag {
   padding: 10px 20px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: var(--ui-border);
   border-radius: 40px;
   font-family: 'Manrope', sans-serif;
   font-size: 1rem;
@@ -1294,7 +1294,7 @@ onUnmounted(() => {
   will-change: transform;
 
   &:hover {
-    border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+    border-color: color-mix(in srgb, var(--accent) 34%, var(--ui-border-color));
     color: var(--accent);
     background: color-mix(in srgb, var(--surface) 86%, transparent);
   }
@@ -1367,7 +1367,7 @@ onUnmounted(() => {
   margin-top: 30px;
   padding: 60px 40px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: var(--ui-border);
   border-radius: 30px;
   text-align: center;
   p {
@@ -1387,7 +1387,7 @@ onUnmounted(() => {
 .tool-card {
   padding: 35px 25px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: var(--ui-border);
   border-radius: 30px;
   text-align: center;
   svg {
@@ -1417,7 +1417,7 @@ onUnmounted(() => {
   gap: 8px;
   padding: 10px 20px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: var(--ui-border);
   border-radius: 40px;
   font-family: 'Manrope', sans-serif;
   color: var(--accent);
@@ -1443,7 +1443,7 @@ onUnmounted(() => {
   gap: 10px;
   padding: 12px 24px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-md);
   color: var(--accent);
   font-family: 'Manrope', sans-serif;
@@ -1485,7 +1485,7 @@ onUnmounted(() => {
   gap: 12px;
   padding: 14px 18px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-sm);
 }
 

@@ -91,7 +91,7 @@ function toggle() {
   height: 100%;
   padding: 2px;
   border-radius: var(--border-radius-pill);
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   background: color-mix(in srgb, var(--surface) 88%, var(--accent) 12%);
   transition:
     background var(--transition-standard),

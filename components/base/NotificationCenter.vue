@@ -167,12 +167,12 @@ onBeforeUnmount(() => {
 
 .notification-trigger {
   position: relative;
-  border: 1px solid transparent;
+  border: var(--ui-border);
   background: transparent;
 
   &:hover,
   &:focus-visible {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--glass-surface);
   }
 
   @media (max-width: 767px) {
@@ -189,7 +189,7 @@ onBeforeUnmount(() => {
   min-width: 16px;
   height: 16px;
   padding: 0 4px;
-  border: 1px solid var(--bg);
+  border: var(--ui-border);
   border-radius: 999px;
   background: var(--accent);
   color: var(--bg);
@@ -206,8 +206,9 @@ onBeforeUnmount(() => {
   z-index: 2500;
   width: min(380px, calc(100vw - 24px));
   overflow: hidden;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-lg);
+  background: transparent;
   color: var(--accent);
 }
 
@@ -217,7 +218,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 14px;
   padding: 14px;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: var(--ui-border);
 
   h3 {
     margin: 0 0 2px;
@@ -236,7 +237,7 @@ onBeforeUnmount(() => {
   grid-template-columns: 1fr 1fr;
   gap: 6px;
   padding: 10px;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: var(--ui-border);
 }
 
 .tab-btn {
@@ -247,12 +248,14 @@ onBeforeUnmount(() => {
   min-height: 34px;
   padding: 7px 10px;
   border: none;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--border-radius-pill);
   background: transparent;
   color: var(--dim);
   cursor: pointer;
   font-size: 0.82rem;
-  transition: all var(--transition-standard);
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard);
 
   b {
     min-width: 18px;
@@ -265,9 +268,23 @@ onBeforeUnmount(() => {
     line-height: 18px;
   }
 
-  &:hover,
-  &.active {
+  &:hover {
     background: var(--glass-surface);
+    color: var(--accent);
+  }
+
+  &.active {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  &.active:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  &.active b {
+    background: var(--bg);
     color: var(--accent);
   }
 }
@@ -284,7 +301,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: var(--ui-border);
 
   &:last-child {
     border-bottom: none;

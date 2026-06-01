@@ -77,15 +77,23 @@ h4 {
   .import-btn {
     padding: 10px 16px;
     @include glass;
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--border-radius-pill);
     cursor: pointer;
     color: var(--accent);
-    border: 1px solid var(--glass-border);
+    border: var(--ui-border);
     &:hover {
+      color: var(--bg);
+      background: var(--accent);
+      border-color: transparent;
     }
     &.danger {
       color: var(--error);
-      border-color: var(--error);
+      border-color: var(--ui-border-color);
+
+      &:hover {
+        color: var(--bg);
+        background: var(--error);
+      }
     }
   }
   .import-btn {

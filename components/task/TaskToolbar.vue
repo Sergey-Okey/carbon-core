@@ -91,7 +91,7 @@ const viewModel = computed({
   gap: var(--panel-gap);
   align-items: end;
   padding: var(--panel-padding);
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-lg);
 
   @include mobile {

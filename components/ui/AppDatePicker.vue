@@ -205,7 +205,7 @@ onUnmounted(() => {
   width: 100%;
   min-height: 40px;
   padding: 0 14px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-md);
   color: var(--accent);
   cursor: pointer;
@@ -218,7 +218,7 @@ onUnmounted(() => {
   z-index: 1200;
   width: min(304px, 86vw);
   padding: 12px;
-  border: 1px solid var(--glass-border);
+  border: var(--ui-border);
   border-radius: var(--border-radius-lg);
 }
 
@@ -232,7 +232,7 @@ onUnmounted(() => {
   button {
     min-height: 30px;
     padding: 0 9px;
-    border: 1px solid var(--glass-border);
+    border: var(--ui-border);
     border-radius: var(--border-radius-md);
     background: var(--glass-surface);
     color: var(--accent);
@@ -266,7 +266,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   aspect-ratio: 1;
-  border: 1px solid transparent;
+  border: var(--ui-border);
   border-radius: var(--border-radius-pill);
   background: transparent;
   color: var(--accent);
@@ -280,11 +280,17 @@ onUnmounted(() => {
   }
 
   &.today {
-    border-color: var(--border);
+    border-color: var(--ui-border-color);
   }
 
   &.active,
   &:hover {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  &.active:hover {
     border-color: var(--accent);
     background: var(--accent);
     color: var(--bg);
