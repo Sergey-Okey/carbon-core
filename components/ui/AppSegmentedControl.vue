@@ -45,13 +45,16 @@ const emit = defineEmits<{
   grid-auto-flow: column;
   gap: 2px;
   min-width: 0;
-  min-height: 40px;
+  min-height: var(--control-height-md);
   padding: 2px;
   border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-md);
 }
 
 .segment-option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 0;
   margin: 0;
   padding: 0 10px;

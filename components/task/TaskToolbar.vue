@@ -88,16 +88,16 @@ const viewModel = computed({
   @include glass;
   display: grid;
   grid-template-columns: minmax(220px, 1.25fr) minmax(180px, 0.85fr) minmax(292px, auto);
-  gap: 20px;
+  gap: var(--panel-gap);
   align-items: end;
-  padding: 20px 24px;
+  padding: var(--panel-padding);
   border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-lg);
 
   @include mobile {
     grid-template-columns: 1fr;
-    gap: 16px;
-    padding: 16px;
+    gap: 14px;
+    padding: 14px;
   }
 }
 

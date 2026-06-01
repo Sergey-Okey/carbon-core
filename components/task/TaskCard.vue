@@ -272,18 +272,18 @@ async function handleDelete() {
   }
 
   &.habit-checked {
-    border-left-color: transparent;
+    border-color: var(--glass-border);
   }
 
   &.overdue {
-    border-left: 2px solid color-mix(in srgb, var(--error) 12%, transparent);
+    border-color: color-mix(in srgb, var(--error) 28%, var(--glass-border));
     background: var(--surface);
   }
 
   .task-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     gap: 8px;
     margin-bottom: 8px;
   }
@@ -342,7 +342,7 @@ async function handleDelete() {
     justify-content: space-between;
     gap: 12px;
     margin-top: auto;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 
   .task-info {
@@ -484,8 +484,8 @@ async function handleDelete() {
   }
 
   .actions button {
-    width: 32px;
-    height: 32px;
+    width: var(--control-icon-size);
+    height: var(--control-icon-size);
     border-radius: 50%;
     display: inline-flex;
     align-items: center;

@@ -67,13 +67,14 @@ function handleInput(event: Event) {
 .app-input {
   @include glass;
   width: 100%;
-  min-height: 40px;
+  min-height: var(--control-height-md);
   padding: 0 14px;
   border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-md);
   color: var(--accent);
   font: inherit;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
+  line-height: 1.2;
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard),
@@ -126,7 +127,7 @@ input[type='search'].app-input {
 
 @media (max-width: 640px) {
   .app-input {
-    min-height: 42px;
+    min-height: var(--control-height-md);
     font-size: 16px;
   }
 }

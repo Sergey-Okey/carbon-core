@@ -84,11 +84,10 @@
         </div>
       </AppFormField>
 
-      <label v-if="!editing && form.type !== 'HABIT'" class="checkbox-label">
-        <input type="checkbox" v-model="createBranch" />
-        <span class="checkmark"></span>
+      <div v-if="!editing && form.type !== 'HABIT'" class="form-toggle-row">
         <span class="checkbox-text">Создать ветку по задаче</span>
-      </label>
+        <AppSwitch v-model="createBranch" aria-label="Создать ветку по задаче" />
+      </div>
     </div>
 
     <template #footer>
@@ -159,6 +158,7 @@ import AppFormField from '~/components/ui/AppFormField.vue'
 import AppInput from '~/components/ui/AppInput.vue'
 import AppModal from '~/components/ui/AppModal.vue'
 import AppSelect from '~/components/ui/AppSelect.vue'
+import AppSwitch from '~/components/ui/AppSwitch.vue'
 import type { AppSelectOption } from '~/types/ui.types'
 import type { BranchId } from '~/types/branch.types'
 import type { Task, TaskTag } from '~/types/task.types'
@@ -377,52 +377,16 @@ function getTaskTags(task: Task): TaskTag[] {
   }
 }
 
-.checkbox-label {
-  display: flex;
+.form-toggle-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  min-height: var(--control-height-md);
   margin: 0;
   color: var(--accent);
   font-size: 0.95rem;
-  cursor: pointer;
-
-  input[type='checkbox'] {
-    display: none;
-  }
-
-  .checkmark {
-    @include glass;
-    position: relative;
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-    border: 2px solid var(--border);
-    border-radius: var(--border-radius-sm);
-    transition: all var(--transition-standard);
-
-    &::after {
-      position: absolute;
-      display: none;
-      left: 6px;
-      top: 2px;
-      width: 5px;
-      height: 10px;
-      border: solid var(--bg);
-      border-width: 0 2px 2px 0;
-      transform: rotate(45deg);
-      content: '';
-    }
-  }
-
-  input[type='checkbox']:checked + .checkmark {
-    background: var(--accent);
-    border-color: var(--accent);
-
-    &::after {
-      display: block;
-    }
-  }
+  line-height: 1.3;
 }
 
 .tag-color-row {

@@ -218,7 +218,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 8px;
   width: 100%;
-  height: 40px;
+  height: var(--control-height-md);
   padding: 0 34px 0 12px;
   overflow: hidden;
   border: 1px solid var(--glass-border);
@@ -226,6 +226,7 @@ onBeforeUnmount(() => {
   color: var(--accent);
   font: inherit;
   font-size: 0.9rem;
+  line-height: 1;
   text-align: left;
   cursor: pointer;
   transition:
@@ -274,12 +275,14 @@ onBeforeUnmount(() => {
 .select-arrow {
   position: absolute;
   right: 12px;
+  top: 50%;
   color: var(--dim);
   pointer-events: none;
+  transform: translateY(-50%);
   transition: transform var(--transition-standard);
 
   .app-select.open & {
-    transform: rotate(180deg);
+    transform: translateY(-50%) rotate(180deg);
   }
 }
 
@@ -301,7 +304,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 10px;
   width: 100%;
-  min-height: 36px;
+  min-height: var(--control-height-sm);
   padding: 0 10px;
   border: none;
   border-radius: calc(var(--border-radius-md) - 4px);

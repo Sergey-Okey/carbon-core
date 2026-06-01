@@ -30,6 +30,11 @@ $transition-standard: 0.3s cubic-bezier(0.2, 0, 0, 1);
   --border-radius-sm: #{$border-radius-sm};
   --border-radius-pill: 999px;
   --transition-standard: #{$transition-standard};
+  --control-height-md: 40px;
+  --control-height-sm: 34px;
+  --control-icon-size: 34px;
+  --panel-padding: 18px;
+  --panel-gap: 16px;
 
   --glass-filter: blur(20px) saturate(1.35);
   --glass-surface: color-mix(in srgb, var(--surface) 78%, transparent);

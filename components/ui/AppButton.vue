@@ -66,21 +66,21 @@ withDefaults(
 }
 
 .size-md {
-  min-height: 40px;
-  padding: 0 18px;
-  font-size: 0.95rem;
+  min-height: var(--control-height-md);
+  padding: 0 16px;
+  font-size: 0.92rem;
 }
 
 .size-sm {
-  min-height: 34px;
-  padding: 0 13px;
+  min-height: var(--control-height-sm);
+  padding: 0 12px;
   font-size: 0.85rem;
 }
 
 .icon {
-  width: 34px;
-  height: 34px;
-  min-height: 34px;
+  width: var(--control-icon-size);
+  height: var(--control-icon-size);
+  min-height: var(--control-icon-size);
   padding: 0;
   border-radius: var(--border-radius-pill);
 }

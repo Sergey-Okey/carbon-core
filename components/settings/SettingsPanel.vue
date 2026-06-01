@@ -819,7 +819,7 @@ function resetAllData() {
 <style scoped lang="scss">
 .settings-page {
   display: grid;
-  gap: 18px;
+  gap: var(--panel-gap);
   padding-bottom: 24px;
 
   @include mobile {
@@ -850,7 +850,7 @@ function resetAllData() {
 .settings-layout {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
-  gap: 18px;
+  gap: var(--panel-gap);
   align-items: start;
 
   @include mobile {
@@ -944,7 +944,8 @@ function resetAllData() {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 22px 24px;
+  min-height: 68px;
+  padding: 18px 22px;
   border-bottom: 1px solid var(--glass-border);
   color: var(--accent);
 
@@ -985,7 +986,7 @@ function resetAllData() {
 }
 
 .group-body {
-  padding: 6px 24px 24px;
+  padding: 4px 22px 22px;
 
   @include mobile {
     padding: 4px 20px 22px;
@@ -996,9 +997,9 @@ function resetAllData() {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(180px, auto);
   align-items: center;
-  gap: 20px;
-  min-height: 78px;
-  padding: 16px 0;
+  gap: var(--panel-gap);
+  min-height: 72px;
+  padding: 14px 0;
   border-bottom: 1px solid color-mix(in srgb, var(--dim) 8%, transparent);
 
   &:last-of-type {
@@ -1093,6 +1094,7 @@ function resetAllData() {
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
+  min-height: var(--control-height-md);
 
   @include mobile {
     justify-content: center;

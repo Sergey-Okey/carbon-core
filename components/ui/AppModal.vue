@@ -125,8 +125,9 @@ function handleBackdrop() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 16px 18px;
+  gap: var(--panel-gap);
+  min-height: 66px;
+  padding: 14px 18px;
 }
 
 .app-modal-header {
@@ -157,7 +158,7 @@ function handleBackdrop() {
 
 .app-modal-body {
   min-height: 0;
-  padding: 18px;
+  padding: var(--panel-padding);
   overflow-y: auto;
 
   &.allow-overflow {

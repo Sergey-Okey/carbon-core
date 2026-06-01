@@ -101,19 +101,20 @@ defineEmits([
   @include glass;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 4px;
+  padding: 6px;
   border-radius: var(--border-radius-pill);
   border: 1px solid var(--glass-border);
   pointer-events: auto;
   transform: translateY(-16px);
 
   button {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: var(--control-icon-size);
+    height: var(--control-icon-size);
+    padding: 0;
     border-radius: var(--border-radius-pill);
     color: var(--accent);
     background: transparent;
@@ -122,7 +123,8 @@ defineEmits([
     transition: all 0.2s ease;
 
     &:hover {
-      transform: scale(1.08);
+      background: var(--glass-surface);
+      transform: none;
     }
 
     &:active {
@@ -140,16 +142,16 @@ defineEmits([
     color: var(--error);
 
     &:hover {
-      background: transparent;
-      transform: scale(1.08);
+      background: var(--glass-surface);
+      transform: none;
     }
   }
 
   .divider {
     width: 1px;
-    height: 24px;
+    height: 20px;
     background: var(--border);
-    margin: 0 4px;
+    margin: 0 2px;
   }
 }
 </style>

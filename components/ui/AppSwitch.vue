@@ -60,6 +60,7 @@ function toggle() {
   cursor: pointer;
   outline: none;
   transition: transform 0.12s ease;
+  vertical-align: middle;
 
   &:focus-visible .switch-track {
     outline: 1px solid var(--accent);
@@ -77,8 +78,7 @@ function toggle() {
 
   @include mobile {
     justify-self: center;
-    width: 44px;
-    height: 24px;
+    margin-left: 0;
   }
 }
 
@@ -91,12 +91,16 @@ function toggle() {
   height: 100%;
   padding: 2px;
   border-radius: var(--border-radius-pill);
-  background: color-mix(in srgb, var(--surface) 70%, var(--dim));
-  transition: background var(--transition-standard);
+  border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--surface) 88%, var(--accent) 12%);
+  transition:
+    background var(--transition-standard),
+    border-color var(--transition-standard);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.08);
 
   .checked & {
     background: var(--accent);
+    border-color: var(--accent);
   }
 }
 
@@ -104,8 +108,8 @@ function toggle() {
   position: absolute;
   left: 2px;
   top: 2px;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: var(--surface);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
@@ -114,14 +118,6 @@ function toggle() {
 
   .checked & {
     transform: translateX(18px);
-  }
-
-  @include mobile {
-    width: 20px;
-    height: 20px;
-    .checked & {
-      transform: translateX(20px);
-    }
   }
 }
 
@@ -145,8 +141,8 @@ function toggle() {
   @include mobile {
     svg,
     img {
-      width: 14px;
-      height: 14px;
+      width: 12px;
+      height: 12px;
     }
   }
 }
