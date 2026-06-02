@@ -1,10 +1,8 @@
 <template>
   <nav
     class="nav-island"
-    :class="{ 'is-expanded': showLabels, 'is-mobile': isMobile }"
+    :class="{ 'is-mobile': isMobile }"
     aria-label="Основная навигация"
-    @mouseenter="onMouseEnter"
-    @mouseleave="onMouseLeave"
   >
     <div class="nav-track">
       <button
@@ -13,17 +11,14 @@
         type="button"
         class="nav-item"
         :class="{ active: uiStore.activeNav === item.id }"
-        :title="item.label"
         :aria-label="item.label"
         :aria-current="uiStore.activeNav === item.id ? 'page' : undefined"
+        :data-tooltip="item.label"
+        data-tooltip-position="right"
         @click="handleNavClick(item.id)"
       >
         <span class="icon-shell">
           <component :is="item.icon" :size="isMobile ? 20 : 18" />
-        </span>
-
-        <span class="nav-label" :class="{ 'is-visible': showLabels }">
-          {{ item.label }}
         </span>
       </button>
     </div>
@@ -31,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import {
   BarChart2,
   CheckSquare,
@@ -54,13 +49,10 @@ const navItems: { id: NavSection; label: string; icon: any }[] = [
 ]
 
 const isMobile = ref(false)
-let closeTimer: ReturnType<typeof setTimeout> | null = null
-
-const showLabels = computed(() => !isMobile.value && uiStore.showLabels)
 
 function checkMobile() {
   isMobile.value = window.innerWidth < 768
-  if (isMobile.value) uiStore.setSidebarHovered(false)
+  uiStore.setSidebarHovered(false)
 }
 
 onMounted(() => {
@@ -70,7 +62,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
-  if (closeTimer) clearTimeout(closeTimer)
 })
 
 async function handleNavClick(section: NavSection) {
@@ -80,35 +71,22 @@ async function handleNavClick(section: NavSection) {
     await router.push('/')
   }
 }
-
-function onMouseEnter() {
-  if (isMobile.value) return
-  if (closeTimer) clearTimeout(closeTimer)
-  uiStore.setSidebarHovered(true)
-}
-
-function onMouseLeave() {
-  if (isMobile.value) return
-  if (closeTimer) clearTimeout(closeTimer)
-  closeTimer = setTimeout(() => uiStore.setSidebarHovered(false), 140)
-}
 </script>
 
 <style scoped lang="scss">
 .nav-island {
   @include glass;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 3000;
-  color: var(--accent);
+  color: var(--text);
   border-radius: var(--border-radius-pill);
   background: transparent;
   transition:
-    width 0.32s cubic-bezier(0.2, 0, 0, 1),
     border-color var(--transition-standard),
     background var(--transition-standard);
 
@@ -118,11 +96,6 @@ function onMouseLeave() {
     margin: 0 auto;
     padding: 10px 0;
     border: var(--ui-border);
-
-    &.is-expanded {
-      width: 198px;
-      border-radius: var(--border-radius-lg);
-    }
   }
 
   @include mobile {
@@ -133,7 +106,7 @@ function onMouseLeave() {
     max-width: calc(100vw - 24px);
     padding: 10px 13px;
     transform: translateX(-50%);
-    border-radius: 999px;
+    border-radius: var(--border-radius-pill);
     backdrop-filter: var(--glass-strong-filter);
     -webkit-backdrop-filter: var(--glass-strong-filter);
   }
@@ -169,49 +142,30 @@ function onMouseLeave() {
   color: var(--dim);
   cursor: pointer;
   outline: none;
-  white-space: nowrap;
-  overflow: hidden;
   box-sizing: border-box;
   transition:
-    width 0.32s cubic-bezier(0.25, 0.1, 0.25, 1),
-    padding 0.32s cubic-bezier(0.25, 0.1, 0.25, 1),
     background var(--transition-standard),
-    color var(--transition-standard),
-    border-radius 0.32s ease;
+    color var(--transition-standard);
 
   &:hover:not(.active) {
     background: color-mix(in srgb, var(--accent) 7%, transparent);
-    color: var(--accent);
+    color: var(--text);
   }
 
-  &.active {
-    color: var(--bg);
-    background: var(--accent);
-  }
-
+  &.active,
   &.active:hover {
     color: var(--bg);
     background: var(--accent);
   }
 
-  @include desktop {
-    .is-expanded & {
-      width: calc(100% - 28px);
-      justify-content: flex-start;
-      padding: 0 14px;
-      border-radius: var(--border-radius-pill);
-    }
+  &:active {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
   }
 
   @include mobile {
     width: 44px;
     min-width: 44px;
     height: 44px;
-    justify-content: center;
-  }
-
-  &:active {
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
   }
 }
 
@@ -224,11 +178,9 @@ function onMouseLeave() {
   height: 28px;
   border-radius: 50%;
   color: inherit;
-  transition: background var(--transition-standard), color var(--transition-standard);
-
-  .nav-item:active & {
-    transform: none;
-  }
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard);
 
   svg {
     display: block;
@@ -237,27 +189,4 @@ function onMouseLeave() {
   }
 }
 
-.nav-label {
-  display: inline-flex;
-  overflow: hidden;
-  max-width: 0;
-  opacity: 0;
-  margin-left: 0;
-  font-size: 0.85rem;
-  font-weight: 500;
-  line-height: 1.2;
-  color: inherit;
-  white-space: nowrap;
-  transition:
-    max-width 0.28s ease,
-    opacity 0.28s ease,
-    margin-left 0.28s ease;
-  pointer-events: none;
-}
-
-.nav-island.is-expanded .nav-label.is-visible {
-  max-width: 120px;
-  opacity: 1;
-  margin-left: 10px;
-}
 </style>

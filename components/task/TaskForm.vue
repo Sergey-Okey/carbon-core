@@ -384,7 +384,7 @@ function getTaskTags(task: Task): TaskTag[] {
   gap: 12px;
   min-height: var(--control-height-md);
   margin: 0;
-  color: var(--accent);
+  color: var(--text);
   font-size: 0.95rem;
   line-height: 1.3;
 }
@@ -413,36 +413,33 @@ function getTaskTags(task: Task): TaskTag[] {
     align-items: center;
     gap: 8px;
     min-height: var(--control-height-md);
-    padding: 7px 12px 7px 10px;
-    border: var(--ui-border);
-    border-radius: var(--border-radius-md);
+    padding: 7px 10px;
+    border: none;
+    border-radius: var(--border-radius-pill);
     color: var(--tag-color, var(--accent));
-    background: color-mix(in srgb, var(--tag-color, var(--accent)) 6%, transparent);
+    background: transparent;
     font-size: 0.85rem;
     font-weight: 500;
     transition:
       background var(--transition-standard),
-      border-color var(--transition-standard),
-      color var(--transition-standard),
       color var(--transition-standard);
     cursor: pointer;
 
     &:hover {
-      border-color: color-mix(in srgb, var(--tag-color, var(--accent)) 42%, var(--ui-border-color));
+      background: color-mix(in srgb, var(--tag-color, var(--accent)) 8%, transparent);
       color: var(--tag-color, var(--accent));
     }
 
     &.active {
       background: color-mix(in srgb, var(--tag-color, var(--accent)) 12%, transparent);
-      border-color: color-mix(in srgb, var(--tag-color, var(--accent)) 72%, var(--ui-border-color));
       color: var(--tag-color, var(--accent));
     }
   }
 
   .tag-dot {
     flex: 0 0 auto;
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: var(--border-radius-pill);
     background: var(--tag-color, var(--accent));
   }
@@ -476,7 +473,7 @@ function getTaskTags(task: Task): TaskTag[] {
 
   .add-tag-btn {
     background: transparent;
-    border: var(--ui-border);
+    border: none;
     color: var(--dim);
     display: flex;
     align-items: center;
@@ -484,7 +481,6 @@ function getTaskTags(task: Task): TaskTag[] {
 
     &:hover {
       background: color-mix(in srgb, var(--accent) 7%, transparent);
-      border-style: solid;
     }
   }
 }

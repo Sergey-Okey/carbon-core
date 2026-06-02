@@ -32,7 +32,7 @@ const rewardsStore = useRewardsStore()
       margin: 0;
       font-weight: 600;
       font-size: 1.2rem;
-      color: var(--accent);
+      color: var(--text);
     }
   }
   .rewards-grid {

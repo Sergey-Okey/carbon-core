@@ -47,7 +47,7 @@ function handleSave(questData: any) {
     h3 {
       font-weight: 600;
       font-size: 1.2rem;
-      color: var(--accent);
+      color: var(--text);
     }
   }
   .add-btn {
@@ -59,7 +59,7 @@ function handleSave(questData: any) {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--accent);
+    color: var(--text);
     &:hover {
       background: color-mix(in srgb, var(--accent) 8%, transparent);
     }

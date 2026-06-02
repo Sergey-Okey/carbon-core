@@ -136,7 +136,7 @@ function handleSubmit() {
   padding: 0 12px;
   border: var(--ui-border);
   border-radius: var(--border-radius-md);
-  color: var(--accent);
+  color: var(--text);
   font-size: 0.9rem;
   cursor: pointer;
   transition:
@@ -148,7 +148,7 @@ function handleSubmit() {
   }
 
   input {
-    accent-color: var(--accent);
+    accent-color: var(--text);
   }
 }
 

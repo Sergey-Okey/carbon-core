@@ -75,7 +75,7 @@ function getTaskTitle(taskId: string): string {
   }
 
   .value {
-    color: var(--accent);
+    color: var(--text);
     font-weight: 600;
     text-align: right;
 
@@ -107,7 +107,7 @@ function getTaskTitle(taskId: string): string {
 
   li,
   p {
-    color: var(--accent);
+    color: var(--text);
     font-size: 0.95rem;
     line-height: 1.5;
   }

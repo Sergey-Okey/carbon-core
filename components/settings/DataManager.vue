@@ -66,7 +66,7 @@ function resetData() {
 
 <style scoped lang="scss">
 h4 {
-  color: var(--accent);
+  color: var(--text);
   margin-bottom: 16px;
 }
 .actions {
@@ -80,10 +80,10 @@ h4 {
     background: transparent;
     border-radius: var(--border-radius-pill);
     cursor: pointer;
-    color: var(--accent);
+    color: var(--text);
     border: var(--ui-border);
     &:hover {
-      color: var(--accent);
+      color: var(--text);
       background: color-mix(in srgb, var(--accent) 8%, transparent);
       border-color: var(--ui-border-color);
     }

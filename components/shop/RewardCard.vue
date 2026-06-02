@@ -35,7 +35,7 @@ function purchase() {
   min-height: 180px;
   padding: 18px;
   border: var(--ui-border);
-  color: var(--accent);
+  color: var(--text);
   transition:
     opacity var(--transition-standard),
     background var(--transition-standard);
@@ -45,7 +45,7 @@ function purchase() {
   }
 
   h4 {
-    color: var(--accent);
+    color: var(--text);
     margin-bottom: 4px;
   }
 
@@ -62,7 +62,7 @@ function purchase() {
     gap: 4px;
     margin-top: auto;
     margin-bottom: 12px;
-    color: var(--accent);
+    color: var(--text);
   }
 
   .buy-btn {

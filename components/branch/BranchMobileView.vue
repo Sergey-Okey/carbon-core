@@ -2,11 +2,11 @@
   <div class="branch-mobile-view">
     <!-- Панель инструментов -->
     <div class="mobile-controls">
-      <button @click="addBranch" title="Добавить ветку">
+      <button @click="addBranch">
         <Plus :size="20" />
         <span>Ветка</span>
       </button>
-      <button @click="addMilestoneToSelectedBranch" title="Добавить этап">
+      <button @click="addMilestoneToSelectedBranch">
         <PlusCircle :size="20" />
         <span>Этап</span>
       </button>
@@ -19,6 +19,7 @@
         :key="branch.id"
         class="branch-item"
         :class="{ expanded: expandedBranch === branch.id }"
+        :style="{ '--node-bg-color': branch.backgroundColor || '#d6d6d6' }"
       >
         <!-- Заголовок ветки -->
         <div class="branch-header" @click="toggleBranch(branch.id)">
@@ -42,10 +43,10 @@
             </div>
           </div>
           <div class="branch-actions">
-            <button class="branch-edit" @click.stop="editBranch(branch.id)" title="Редактировать ветку">
+            <button class="branch-edit" @click.stop="editBranch(branch.id)">
               <PenSquare :size="16" />
             </button>
-            <button class="branch-delete" @click.stop="deleteBranch(branch.id)" title="Удалить ветку">
+            <button class="branch-delete" @click.stop="deleteBranch(branch.id)">
               <Trash2 :size="16" />
             </button>
             <ChevronDown :size="20" :class="{ rotated: expandedBranch === branch.id }" />
@@ -60,6 +61,7 @@
               :key="milestone.id"
               class="milestone-item"
               :class="milestone.status"
+              :style="{ '--node-bg-color': milestone.backgroundColor || branch.backgroundColor || '#d6d6d6' }"
               @click="selectNode(milestone.id)"
             >
               <!-- Декоративный маркер этапа (круг) -->
@@ -109,14 +111,12 @@
                 <button
                   class="milestone-edit"
                   @click.stop="editMilestone(milestone)"
-                  title="Редактировать этап"
                 >
                   <PenSquare :size="16" />
                 </button>
                 <button
                   class="milestone-delete"
                   @click.stop="deleteMilestone(milestone.id)"
-                  title="Удалить этап"
                 >
                   <Trash2 :size="16" />
                 </button>
@@ -323,7 +323,13 @@ function getIconComponent(iconName: string) {
   @include glass;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
-  background: transparent;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--node-bg-color) 12%, transparent),
+      color-mix(in srgb, var(--node-bg-color) 4%, transparent)
+    ),
+    var(--glass-surface);
   overflow: hidden;
   transition:
     background var(--transition-standard),
@@ -337,7 +343,7 @@ function getIconComponent(iconName: string) {
   justify-content: space-between;
   padding: 14px 16px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color var(--transition-standard);
 
   &:active {
     background: var(--glass-surface);
@@ -357,7 +363,7 @@ function getIconComponent(iconName: string) {
 
 .branch-icon {
   flex-shrink: 0;
-  color: var(--accent);
+  color: var(--text);
 }
 
 .branch-text {
@@ -367,7 +373,7 @@ function getIconComponent(iconName: string) {
     font-weight: 600;
     font-size: 1rem;
     margin: 0 0 4px;
-    color: var(--accent);
+    color: var(--text);
   }
 
   .branch-stats {
@@ -394,7 +400,7 @@ function getIconComponent(iconName: string) {
   height: 3px;
   background: var(--ui-border-color);
   border-radius: var(--border-radius-sm);
-  transition: background 0.2s;
+  transition: background var(--transition-standard);
 
   &.filled {
     background: var(--accent);
@@ -424,12 +430,12 @@ function getIconComponent(iconName: string) {
 
     &:hover {
       background: var(--glass-surface);
-      color: var(--accent);
+      color: var(--text);
     }
 
     &:active {
       background: var(--glass-surface);
-      color: var(--accent);
+      color: var(--text);
     }
   }
 
@@ -453,7 +459,13 @@ function getIconComponent(iconName: string) {
   @include glass;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
-  background: transparent;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--node-bg-color) 12%, transparent),
+      color-mix(in srgb, var(--node-bg-color) 4%, transparent)
+    ),
+    var(--glass-surface);
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard);
@@ -502,7 +514,7 @@ function getIconComponent(iconName: string) {
     font-weight: 600;
     font-size: 0.9rem;
     margin: 0;
-    color: var(--accent);
+    color: var(--text);
   }
 
   .milestone-badges {
@@ -550,7 +562,7 @@ function getIconComponent(iconName: string) {
 
   li {
     font-size: 0.8rem;
-    color: var(--accent);
+    color: var(--text);
     padding: 4px 6px;
     border-radius: var(--border-radius-pill);
     transition:
@@ -583,12 +595,12 @@ function getIconComponent(iconName: string) {
 
     &:hover {
       background: var(--glass-surface);
-      color: var(--accent);
+      color: var(--text);
     }
 
     &:active {
       background: var(--glass-surface);
-      color: var(--accent);
+      color: var(--text);
     }
   }
 
@@ -619,7 +631,7 @@ function getIconComponent(iconName: string) {
   &:active {
     background: var(--glass-surface);
     border-style: solid;
-    color: var(--accent);
+    color: var(--text);
   }
 }
 
@@ -630,7 +642,7 @@ function getIconComponent(iconName: string) {
   flex-shrink: 0;
   background: var(--accent);
   border: none;
-  transition: opacity 0.2s;
+  transition: opacity var(--transition-standard);
 }
 
 .branch-marker {
@@ -645,8 +657,8 @@ function getIconComponent(iconName: string) {
 .expand-enter-active,
 .expand-leave-active {
   transition:
-    opacity 0.2s cubic-bezier(0.2, 0, 0, 1),
-    transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+    opacity var(--transition-standard),
+    transform var(--transition-standard);
   overflow: hidden;
 }
 
@@ -658,7 +670,7 @@ function getIconComponent(iconName: string) {
 
 /* Ротация иконки */
 svg {
-  transition: transform 0.2s;
+  transition: transform var(--transition-standard);
 
   &.rotated {
     transform: rotate(180deg);

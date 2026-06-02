@@ -33,32 +33,38 @@
         />
       </AppFormField>
 
-      <AppFormField label="Иконка">
-        <div class="icon-section">
-          <button type="button" class="toggle-btn" @click="iconsExpanded = !iconsExpanded">
-            <span class="selected-icon">
-              <component :is="iconComponent(form.icon)" :size="20" />
-            </span>
-            <ChevronDown :size="16" :class="{ rotated: iconsExpanded }" />
-          </button>
+      <div class="visual-row">
+        <AppFormField label="Иконка">
+          <div class="icon-section">
+            <button type="button" class="toggle-btn" @click="iconsExpanded = !iconsExpanded">
+              <span class="selected-icon">
+                <component :is="iconComponent(form.icon)" :size="20" />
+              </span>
+              <ChevronDown :size="16" :class="{ rotated: iconsExpanded }" />
+            </button>
 
-          <Transition name="expand">
-            <div v-if="iconsExpanded" class="icons-grid">
-              <button
-                v-for="icon in iconOptions"
-                :key="icon"
-                type="button"
-                class="icon-option"
-                :class="{ active: form.icon === icon }"
-                :title="icon"
-                @click="form.icon = icon"
-              >
-                <component :is="iconComponent(icon)" :size="20" />
-              </button>
-            </div>
-          </Transition>
-        </div>
-      </AppFormField>
+            <Transition name="expand">
+              <div v-if="iconsExpanded" class="icons-grid">
+                <button
+                  v-for="icon in iconOptions"
+                  :key="icon"
+                  type="button"
+                  class="icon-option"
+                  :class="{ active: form.icon === icon }"
+                  :aria-label="icon"
+                  @click="form.icon = icon"
+                >
+                  <component :is="iconComponent(icon)" :size="20" />
+                </button>
+              </div>
+            </Transition>
+          </div>
+        </AppFormField>
+
+        <AppFormField label="Фон этапа">
+          <AppCustomColorPicker v-model="form.backgroundColor" label="Выбрать фон" />
+        </AppFormField>
+      </div>
 
       <AppFormField label="Привязанные задачи">
         <div class="tasks-section">
@@ -135,6 +141,7 @@ import {
   Users,
 } from 'lucide-vue-next'
 import AppButton from '~/components/ui/AppButton.vue'
+import AppCustomColorPicker from '~/components/ui/AppCustomColorPicker.vue'
 import AppFormField from '~/components/ui/AppFormField.vue'
 import AppInput from '~/components/ui/AppInput.vue'
 import AppModal from '~/components/ui/AppModal.vue'
@@ -212,6 +219,7 @@ const form = reactive({
   name: '',
   description: '',
   icon: 'target',
+  backgroundColor: '#d6d6d6',
   taskIds: [] as string[],
 })
 
@@ -226,6 +234,7 @@ watch(
       form.name = newVal.name
       form.description = newVal.description || ''
       form.icon = newVal.icon || 'target'
+      form.backgroundColor = newVal.backgroundColor || '#d6d6d6'
       form.taskIds = [...(newVal.taskIds || [])]
     }
   },
@@ -239,6 +248,7 @@ function handleSubmit() {
     name: form.name.trim(),
     description: form.description,
     icon: form.icon,
+    backgroundColor: form.backgroundColor,
     taskIds: form.taskIds,
   })
 }
@@ -258,6 +268,13 @@ async function handleDelete() {
   gap: 18px;
 }
 
+.visual-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(180px, 0.65fr);
+  align-items: start;
+  gap: 14px;
+}
+
 .icon-section,
 .tasks-section {
   position: relative;
@@ -274,7 +291,7 @@ async function handleDelete() {
   width: 100%;
   min-height: var(--control-height-md);
   padding: 0 14px;
-  color: var(--accent);
+  color: var(--text);
   background: transparent;
   border: var(--ui-border);
   border-radius: var(--border-radius-pill);
@@ -285,7 +302,7 @@ async function handleDelete() {
 
   &:hover {
     background: color-mix(in srgb, var(--accent) 8%, transparent);
-    color: var(--accent);
+    color: var(--text);
   }
 
   .rotated {
@@ -296,12 +313,13 @@ async function handleDelete() {
 .selected-icon {
   display: inline-flex;
   align-items: center;
-  color: var(--accent);
+  color: var(--text);
 }
 
 .icons-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(38px, 1fr));
   gap: 8px;
 }
 
@@ -320,7 +338,7 @@ async function handleDelete() {
     background var(--transition-standard);
 
   &:hover {
-    color: var(--accent);
+    color: var(--text);
     background: color-mix(in srgb, var(--accent) 8%, transparent);
   }
 
@@ -359,7 +377,7 @@ async function handleDelete() {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  color: var(--accent);
+  color: var(--text);
   border: none;
   border-radius: var(--border-radius-lg);
   cursor: pointer;
@@ -401,7 +419,7 @@ async function handleDelete() {
 
   input:checked + & {
     background: var(--accent);
-    border-color: var(--accent);
+    border-color: var(--text);
   }
 }
 
@@ -426,7 +444,7 @@ async function handleDelete() {
   height: 24px;
   border-radius: var(--border-radius-pill);
   background: color-mix(in srgb, var(--accent) 8%, transparent);
-  color: var(--accent);
+  color: var(--text);
   font-size: 0.75rem;
   font-weight: 700;
   line-height: 1;
@@ -461,6 +479,11 @@ async function handleDelete() {
 }
 
 @media (max-width: 640px) {
+  .visual-row {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
   .footer-actions {
     width: 100%;
     flex-direction: column;

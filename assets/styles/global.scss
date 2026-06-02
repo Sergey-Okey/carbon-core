@@ -57,11 +57,79 @@ button {
 input,
 select,
 textarea {
-  transition: border-color 0.2s;
+  transition: border-color var(--transition-standard);
 
   &:focus {
     outline: 2px solid color-mix(in srgb, var(--accent) 18%, transparent);
     outline-offset: 2px;
+  }
+}
+
+[data-tooltip] {
+  position: relative;
+
+  &::after {
+    @include glass;
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    z-index: 5000;
+    width: max-content;
+    max-width: min(240px, calc(100vw - 24px));
+    padding: 7px 10px;
+    border: var(--ui-border);
+    border-radius: var(--border-radius-pill);
+    color: var(--text);
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
+    content: attr(data-tooltip);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(4px);
+    transition:
+      opacity var(--transition-standard),
+      transform var(--transition-standard),
+      visibility var(--transition-standard);
+  }
+
+  &:hover::after,
+  &:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  &[data-tooltip-position='right']::after {
+    left: calc(100% + 10px);
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%) translateX(-4px);
+  }
+
+  &[data-tooltip-position='right']:hover::after,
+  &[data-tooltip-position='right']:focus-visible::after {
+    transform: translateY(-50%) translateX(0);
+  }
+
+  &[data-tooltip-position='bottom']::after {
+    top: calc(100% + 10px);
+    bottom: auto;
+    transform: translateX(-50%) translateY(-4px);
+  }
+
+  &[data-tooltip-position='bottom']:hover::after,
+  &[data-tooltip-position='bottom']:focus-visible::after {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@media (max-width: 767px) {
+  [data-tooltip]::after {
+    display: none;
   }
 }
 
@@ -122,7 +190,7 @@ body {
   position: relative;
   min-height: 100%;
   background: transparent;
-  color: var(--accent);
+  color: var(--text);
 }
 
 body::before {

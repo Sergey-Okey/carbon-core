@@ -1,5 +1,10 @@
 <template>
-  <div ref="boardWrapper" class="branch-flow-wrapper" tabindex="-1">
+  <div
+    ref="boardWrapper"
+    class="branch-flow-wrapper"
+    :class="{ 'is-auto-layouting': isAutoLayoutAnimating }"
+    tabindex="-1"
+  >
     <BranchMobileView
       v-if="isMobile"
       :selected-node-id="selectedNodeId"
@@ -136,7 +141,7 @@ const defaultEdgeOptions = {
   type: 'smoothstep',
   pathOptions: { borderRadius: 50, offset: 24 },
   animated: false,
-  style: { stroke: 'var(--accent)', strokeWidth: 1 },
+  style: { stroke: 'var(--dim)', strokeWidth: 1.15 },
 }
 
 const history = ref<{ branches: Branch[]; edges: Edge[] }[]>([])
@@ -157,6 +162,7 @@ const selectedEdgeId = ref<string | null>(null)
 const selectedEdge = ref<Edge | null>(null)
 const edgeSnapshot = ref<Edge[]>([])
 const isSyncingFlow = ref(false)
+const isAutoLayoutAnimating = ref(false)
 const editingMilestone = ref<Milestone | null>(null)
 const creatingMilestone = ref(false)
 const branchModal = ref<{ visible: boolean; branch: Branch | null }>({
@@ -174,6 +180,7 @@ const emptyMilestone: Milestone = {
   currentXP: 0,
   status: 'pending',
   taskIds: [],
+  backgroundColor: '#d6d6d6',
   position: { x: 0, y: 0 },
 }
 
@@ -188,6 +195,18 @@ const selectedControlType = computed<'branch' | 'milestone' | 'edge' | 'none'>((
   if (node?.type === 'milestone-node') return 'milestone'
   return 'none'
 })
+
+function getBranchByNodeId(nodeId: string): Branch | undefined {
+  return branchesStore.branches.find(
+    (branch) =>
+      branch.id === nodeId ||
+      branch.milestones.some((milestone) => milestone.id === nodeId)
+  )
+}
+
+function getEdgeColor(edge: Edge) {
+  return getBranchByNodeId(edge.source)?.backgroundColor || 'var(--dim)'
+}
 
 function cloneState() {
   return {
@@ -241,6 +260,7 @@ function syncNodesAndEdges() {
         branchId: branch.id,
         milestone: null,
         branchIcon: branch.icon,
+        branchColor: branch.backgroundColor,
       },
     })
     branch.milestones.forEach((milestone) => {
@@ -253,6 +273,7 @@ function syncNodesAndEdges() {
           branchId: branch.id,
           milestone,
           branchIcon: branch.icon,
+          branchColor: branch.backgroundColor,
         },
       })
     })
@@ -270,8 +291,9 @@ function syncNodesAndEdges() {
       ...(edge.pathOptions || {}),
     },
     style: {
-      ...defaultEdgeOptions.style,
       ...(edge.style || {}),
+      ...defaultEdgeOptions.style,
+      stroke: getEdgeColor(edge),
     },
   }))
   edgeSnapshot.value = JSON.parse(JSON.stringify(edges.value))
@@ -471,6 +493,7 @@ function alignLayoutSmart() {
     wide: { rankSep: 220, nodeSep: 110 },
   }[settingsStore.boardLayoutDensity]
 
+  isAutoLayoutAnimating.value = true
   syncNodesAndEdges()
 
   const nodeIds = new Set(nodes.value.map((node) => node.id))
@@ -499,7 +522,11 @@ function alignLayoutSmart() {
   syncNodesAndEdges()
   saveToHistory()
   refocusBoard()
-  nextTick(() => fitView())
+  nextTick(() => {
+    window.setTimeout(() => {
+      isAutoLayoutAnimating.value = false
+    }, 460)
+  })
   addNotification({ type: 'success', message: 'Доска выровнена по связям' })
 }
 
@@ -532,6 +559,12 @@ function openMilestoneEditor(milestone: Milestone) {
 }
 
 function openMilestoneCreator() {
+  const sourceBranch = branchesStore.branches.find(
+    (branch) =>
+      branch.id === selectedNodeId.value ||
+      branch.milestones.some((milestone) => milestone.id === selectedNodeId.value)
+  )
+  emptyMilestone.backgroundColor = sourceBranch?.backgroundColor || '#d6d6d6'
   creatingMilestone.value = true
 }
 
@@ -615,7 +648,13 @@ function handleSaveBranch(data: any) {
       displayName: data.name,
     })
   } else {
-    branchesStore.addBranch(data.name, data.icon, data.description, data.taskIds)
+    branchesStore.addBranch(
+      data.name,
+      data.icon,
+      data.description,
+      data.taskIds,
+      data.backgroundColor
+    )
   }
   branchModal.value.visible = false
   saveToHistory()
@@ -787,8 +826,18 @@ watch(
   border-color: var(--accent) !important;
 }
 
+.branch-flow-wrapper.is-auto-layouting :deep(.vue-flow__node) {
+  transition: transform 0.46s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.branch-flow-wrapper.is-auto-layouting :deep(.vue-flow__edge-path) {
+  transition:
+    stroke var(--transition-standard),
+    opacity var(--transition-standard);
+}
+
 :deep(.vue-flow__edge.selected .vue-flow__edge-path) {
-  stroke: var(--accent);
-  stroke-width: 2.4;
+  stroke: var(--accent) !important;
+  stroke-width: 2.4 !important;
 }
 </style>

@@ -217,7 +217,7 @@ onUnmounted(() => {
   padding: 0 14px;
   border: var(--ui-border);
   border-radius: var(--border-radius-md);
-  color: var(--accent);
+  color: var(--text);
   cursor: pointer;
   font: inherit;
 }
@@ -250,13 +250,13 @@ onUnmounted(() => {
     border: var(--ui-border);
     border-radius: var(--border-radius-md);
     background: var(--glass-surface);
-    color: var(--accent);
+    color: var(--text);
     cursor: pointer;
   }
 }
 
 .date-head strong {
-  color: var(--accent);
+  color: var(--text);
   font-size: 0.9rem;
   text-transform: capitalize;
 }
@@ -284,7 +284,7 @@ onUnmounted(() => {
   border: var(--ui-border);
   border-radius: var(--border-radius-pill);
   background: transparent;
-  color: var(--accent);
+  color: var(--text);
   cursor: pointer;
   font: inherit;
   font-size: 0.78rem;
@@ -300,13 +300,13 @@ onUnmounted(() => {
 
   &.active,
   &:hover {
-    border-color: var(--accent);
+    border-color: var(--text);
     background: var(--accent);
     color: var(--bg);
   }
 
   &.active:hover {
-    border-color: var(--accent);
+    border-color: var(--text);
     background: var(--accent);
     color: var(--bg);
   }

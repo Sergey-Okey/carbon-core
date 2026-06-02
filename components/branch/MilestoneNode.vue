@@ -7,6 +7,7 @@
       expanded: isExpanded,
       selected: selected,
     }"
+    :style="nodeStyle"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
   >
@@ -62,24 +63,28 @@
       type="target"
       :position="Position.Top"
       class="handle handle-top handle-target"
+      :style="targetHandleStyle"
     />
     <Handle
       :id="`target-left-${data.milestone.id}`"
       type="target"
       :position="Position.Left"
       class="handle handle-left handle-target"
+      :style="targetHandleStyle"
     />
     <Handle
       :id="`source-right-${data.milestone.id}`"
       type="source"
       :position="Position.Right"
       class="handle handle-right handle-source"
+      :style="sourceHandleStyle"
     />
     <Handle
       :id="`source-bottom-${data.milestone.id}`"
       type="source"
       :position="Position.Bottom"
       class="handle handle-bottom handle-source"
+      :style="sourceHandleStyle"
     />
   </GlassCard>
 </template>
@@ -108,6 +113,7 @@ import {
 } from 'lucide-vue-next'
 import GlassCard from '~/components/base/GlassCard.vue'
 import { useTasksStore } from '~/stores/tasks.store'
+import { useBranchesStore } from '~/stores/branches.store'
 import type { Milestone, BranchNodeData } from '~/types/branch.types'
 
 const props = defineProps<{
@@ -117,7 +123,28 @@ const props = defineProps<{
 const emit = defineEmits<{ (e: 'edit', milestone: Milestone): void }>()
 
 const tasksStore = useTasksStore()
+const branchesStore = useBranchesStore()
 const milestone = computed(() => props.data.milestone!)
+const branchColor = computed(() => {
+  const branch = branchesStore.branches.find((item) => item.id === props.data.branchId)
+  return branch?.backgroundColor || props.data.branchColor || '#d6d6d6'
+})
+const milestoneColor = computed(
+  () => milestone.value.backgroundColor || branchColor.value
+)
+const nodeStyle = computed(() => ({
+  '--node-bg-color': milestoneColor.value,
+  '--node-handle-color': branchColor.value,
+  background: `linear-gradient(135deg, color-mix(in srgb, ${milestoneColor.value} 16%, transparent), color-mix(in srgb, ${milestoneColor.value} 5%, transparent)), var(--glass-surface)`,
+}))
+const sourceHandleStyle = computed(() => ({
+  background: branchColor.value,
+  borderColor: branchColor.value,
+}))
+const targetHandleStyle = computed(() => ({
+  background: 'var(--glass-surface)',
+  borderColor: branchColor.value,
+}))
 
 const isExpanded = ref(false)
 const isPinned = ref(false)
@@ -190,12 +217,19 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   position: relative;
   overflow: visible;
   transition:
-    border-color 0.2s,
-    background 0.2s;
+    border-color var(--transition-standard),
+    background var(--transition-standard);
   border: var(--ui-border);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--node-bg-color) 14%, transparent),
+      color-mix(in srgb, var(--node-bg-color) 4%, transparent)
+    ),
+    var(--glass-surface);
 
   &.selected {
-    border-color: var(--accent);
+    border-color: var(--text);
   }
 
   &.completed {
@@ -231,7 +265,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     background: var(--accent);
     border-radius: 50%;
     border: none;
-    transition: opacity 0.2s;
+    transition: opacity var(--transition-standard);
     z-index: 2;
   }
 
@@ -262,7 +296,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
       color var(--transition-standard);
     &:hover {
       background: var(--glass-surface);
-      color: var(--accent);
+      color: var(--text);
     }
     &:active {
       background: color-mix(in srgb, var(--accent) 12%, transparent);
@@ -277,7 +311,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     font-size: 0.95rem;
     font-weight: 600;
     margin-bottom: 8px;
-    color: var(--accent);
+    color: var(--text);
     word-break: break-word;
   }
   .progress-dashes {
@@ -291,7 +325,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     height: 3px;
     background: var(--ui-border-color);
     border-radius: var(--border-radius-sm);
-    transition: background 0.2s;
+    transition: background var(--transition-standard);
     &.filled {
       background: var(--accent);
     }
@@ -323,7 +357,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     z-index: 5;
     &:hover {
       background: var(--glass-surface);
-      color: var(--accent);
+      color: var(--text);
     }
     &:active {
       background: color-mix(in srgb, var(--accent) 12%, transparent);
@@ -340,7 +374,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     word-wrap: break-word;
     p {
       margin-bottom: 8px;
-      color: var(--accent);
+      color: var(--text);
     }
     .placeholder {
       color: var(--dim);
@@ -359,12 +393,12 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
         margin: 0;
       }
       li {
-        color: var(--accent);
+        color: var(--text);
         font-size: 0.8rem;
         margin-bottom: 2px;
         &::before {
           content: '•';
-          color: var(--accent);
+          color: var(--text);
           margin-right: 6px;
         }
       }
@@ -378,21 +412,21 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   /* Хендлы */
   .handle {
     transition:
-      transform 0.2s ease,
-      outline-color 0.2s ease;
-    background: var(--accent);
-    border: var(--ui-border);
+      transform var(--transition-standard),
+      outline-color var(--transition-standard);
+    background: var(--node-handle-color);
+    border: 1px solid color-mix(in srgb, var(--node-handle-color) 46%, var(--ui-border-color));
     opacity: 1;
     z-index: 10;
   }
 
   .handle-target {
     background: var(--glass-surface);
-    border-color: var(--accent);
+    border-color: var(--node-handle-color);
   }
 
   .handle-source {
-    background: var(--accent);
+    background: var(--node-handle-color);
   }
 
   .handle-top {
@@ -434,12 +468,12 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
   &:hover .handle,
   &.selected .handle {
-    outline: 2px solid var(--ui-border-color);
+    outline: 2px solid color-mix(in srgb, var(--node-handle-color) 35%, var(--ui-border-color));
     outline-offset: 1px;
   }
 
   .handle:active {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--node-handle-color);
     outline-offset: 1px;
   }
 }
@@ -447,8 +481,8 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 .expand-enter-active,
 .expand-leave-active {
   transition:
-    opacity 0.2s,
-    transform 0.2s;
+    opacity var(--transition-standard),
+    transform var(--transition-standard);
 }
 .expand-enter-from,
 .expand-leave-to {

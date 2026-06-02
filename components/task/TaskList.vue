@@ -4,10 +4,27 @@
       <div class="title-group">
         <div class="title-wrapper">
           <h3>{{ title }}</h3>
-          <div v-if="taskType !== 'HABITS' && !hideRuleHint" class="info-badge" :title="ruleHint">
+          <div
+            v-if="taskType !== 'HABITS' && !hideRuleHint"
+            class="info-badge"
+            :aria-label="ruleHint"
+            @mouseenter="showRuleTooltip"
+            @mouseleave="hideRuleTooltip"
+            @focus="showRuleTooltip"
+            @blur="hideRuleTooltip"
+          >
             <Info :size="14" />
-            <span class="tooltip">{{ ruleHint }}</span>
           </div>
+          <Teleport to="body">
+            <span
+              v-if="isRuleTooltipVisible"
+              class="task-rule-tooltip"
+              :style="ruleTooltipStyle"
+            >
+              <span class="tooltip-title">Лимит задач</span>
+              <span>{{ ruleHint }}</span>
+            </span>
+          </Teleport>
         </div>
         <span class="list-hint">{{ listHint }}</span>
       </div>
@@ -15,7 +32,7 @@
         v-if="!hideAdd"
         class="add-btn"
         :class="{ limited: isAddLimited }"
-        :title="addButtonTitle"
+        :aria-label="addButtonTitle"
         @click="handleAddClick"
       >
         <Plus :size="20" />
@@ -79,6 +96,8 @@ const { addNotification } = useNotification()
 const { saveTask, toggleTask, removeTask } = useTaskActions()
 const showForm = ref(false)
 const editingTask = ref<Task | undefined>(undefined)
+const isRuleTooltipVisible = ref(false)
+const ruleTooltipPosition = ref({ x: 0, y: 0 })
 
 const tasks = computed(() => {
   if (props.tasksOverride) return props.tasksOverride
@@ -90,15 +109,13 @@ const tasks = computed(() => {
 
 const ruleHint = computed(() => {
   const map: Record<string, string> = {
-    TASK_DAY:
-      'Не более 3 активных задач на день. Выполненные — можно добавлять новые.',
-    TASK_WEEK: 'Не более 3 активных задач на неделю.',
-    TASK_MONTH: 'Не более 3 активных задач на месяц.',
-    TASK_YEAR: 'Не более 3 активных задач на год.',
+    TASK_DAY: 'До 3 активных задач на день. Завершите одну, чтобы добавить новую.',
+    TASK_WEEK: 'До 3 активных задач на неделю. Держите фокус на главном.',
+    TASK_MONTH: 'До 3 активных задач на месяц. Планируйте только ключевые цели.',
+    TASK_YEAR: 'До 3 активных задач на год. Оставьте стратегические приоритеты.',
   }
   return map[props.taskType as string] || ''
 })
-
 const emptyMessage = computed(() => {
   if (props.taskType === 'HABITS') return 'Нет привычек. Добавьте первую.'
   return 'Нет активных задач. Можно добавить до 3.'
@@ -124,6 +141,27 @@ const isAddLimited = computed(() => {
 const addButtonTitle = computed(() =>
   isAddLimited.value ? 'Завершите одну задачу, чтобы добавить новую' : 'Добавить'
 )
+
+const ruleTooltipStyle = computed(() => ({
+  left: `${ruleTooltipPosition.value.x}px`,
+  top: `${ruleTooltipPosition.value.y}px`,
+}))
+
+function showRuleTooltip(event: MouseEvent | FocusEvent) {
+  const target = event.currentTarget as HTMLElement | null
+  if (!target) return
+
+  const rect = target.getBoundingClientRect()
+  ruleTooltipPosition.value = {
+    x: rect.left + rect.width / 2,
+    y: Math.max(12, rect.top - 10),
+  }
+  isRuleTooltipVisible.value = true
+}
+
+function hideRuleTooltip() {
+  isRuleTooltipVisible.value = false
+}
 
 function handleAddClick() {
   const type = props.defaultType || (props.taskType as TaskType)
@@ -209,7 +247,7 @@ function handleSave(taskData: any) {
   h3 {
     font-weight: 600;
     font-size: 1.1rem;
-    color: var(--accent);
+    color: var(--text);
     letter-spacing: -0.01em;
   }
 
@@ -226,37 +264,20 @@ function handleSave(taskData: any) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: var(--border-radius-pill);
     color: var(--dim);
     cursor: help;
+    transition:
+      background var(--transition-standard),
+      color var(--transition-standard);
 
-    &:hover .tooltip {
-      opacity: 1;
-      visibility: visible;
-      transform: translateX(-50%) translateY(-4px);
+    &:hover {
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+      color: var(--text);
     }
-  }
 
-  .tooltip {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    @include glass;
-    color: var(--accent);
-    padding: 6px 12px;
-    border-radius: var(--border-radius-md);
-    font-size: 0.75rem;
-    font-weight: 400;
-    line-height: 1.4;
-    white-space: normal;
-    width: max-content;
-    max-width: 240px;
-    border: var(--ui-border);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s, transform 0.2s;
-    pointer-events: none;
-    z-index: 100;
   }
 
   .add-btn {
@@ -267,7 +288,7 @@ function handleSave(taskData: any) {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--accent);
+    color: var(--text);
     cursor: pointer;
     border: var(--ui-border);
     border-style: dashed;
@@ -278,7 +299,7 @@ function handleSave(taskData: any) {
 
     &:hover {
       background: color-mix(in srgb, var(--accent) 8%, transparent);
-      color: var(--accent);
+      color: var(--text);
     }
 
     &:active {
@@ -286,7 +307,7 @@ function handleSave(taskData: any) {
     }
 
     &.limited {
-      color: var(--accent);
+      color: var(--text);
       border: var(--ui-border);
       border-style: dashed;
     }
@@ -330,8 +351,8 @@ function handleSave(taskData: any) {
   .task-list-enter-active,
   .task-list-leave-active {
     transition:
-      opacity 0.2s cubic-bezier(0.2, 0, 0, 1),
-      transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+      opacity var(--transition-standard),
+      transform var(--transition-standard);
   }
 
   .task-list-enter-from {
@@ -345,7 +366,7 @@ function handleSave(taskData: any) {
   }
 
   .task-list-move {
-    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+    transition: transform var(--transition-standard);
   }
 
   /* Адаптивность */
@@ -433,6 +454,34 @@ function handleSave(taskData: any) {
     &.task-list--habits .tasks {
       grid-template-columns: 1fr;
     }
+  }
+}
+
+.task-rule-tooltip {
+  @include glass;
+  position: fixed;
+  display: grid;
+  gap: 3px;
+  width: max-content;
+  max-width: min(240px, calc(100vw - 24px));
+  padding: 9px 10px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+  white-space: normal;
+  pointer-events: none;
+  z-index: 5000;
+  transform: translate(-50%, -100%);
+
+  .tooltip-title {
+    color: var(--text);
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1.1;
   }
 }
 </style>

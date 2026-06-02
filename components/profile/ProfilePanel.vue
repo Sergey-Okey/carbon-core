@@ -421,7 +421,7 @@ function deleteAccount() {
 
   &:hover {
     background: var(--glass-surface);
-    color: var(--accent);
+    color: var(--text);
   }
 
   &.active {
@@ -514,7 +514,7 @@ function deleteAccount() {
 
   &:hover {
     background: var(--glass-surface);
-    color: var(--accent);
+    color: var(--text);
     border-color: var(--ui-border-color);
   }
 
@@ -534,7 +534,7 @@ function deleteAccount() {
   padding: 7px 10px;
   border-radius: var(--border-radius-pill);
   background: color-mix(in srgb, var(--bg) 68%, transparent);
-  color: var(--accent);
+  color: var(--text);
   font-size: 0.78rem;
   font-weight: 600;
 }
@@ -551,7 +551,7 @@ function deleteAccount() {
 
   h1 {
     margin: 0 0 8px;
-    color: var(--accent);
+    color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
     font-size: clamp(2rem, 5vw, 3rem);
     line-height: 0.98;
@@ -575,7 +575,7 @@ function deleteAccount() {
 
   h2 {
     margin: 0 0 8px;
-    color: var(--accent);
+    color: var(--text);
     font-size: 1.2rem;
   }
 
@@ -609,7 +609,7 @@ function deleteAccount() {
     border: var(--ui-border);
     border-radius: var(--border-radius-md);
     background: var(--glass-surface);
-    color: var(--accent);
+    color: var(--text);
     font-size: 1rem;
     transition: border-color var(--transition-standard);
 
@@ -640,11 +640,11 @@ function deleteAccount() {
   border-radius: var(--border-radius-lg);
 
   svg {
-    color: var(--accent);
+    color: var(--text);
   }
 
   strong {
-    color: var(--accent);
+    color: var(--text);
     font-size: 1.05rem;
   }
 
@@ -676,7 +676,7 @@ function deleteAccount() {
   }
 
   strong {
-    color: var(--accent);
+    color: var(--text);
     text-align: right;
   }
 
@@ -733,11 +733,11 @@ function deleteAccount() {
 .back-btn {
   border: var(--ui-border);
   background: var(--glass-surface);
-  color: var(--accent);
+  color: var(--text);
 
   &:hover {
     background: var(--glass-surface);
-    color: var(--accent);
+    color: var(--text);
   }
 }
 

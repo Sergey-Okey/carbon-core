@@ -91,14 +91,14 @@ const branchIconComponent = computed(() => {
     background: var(--glass-surface);
     padding: 6px;
     border-radius: var(--border-radius-pill);
-    color: var(--accent);
+    color: var(--text);
   }
   .quest-info {
     flex: 1;
     h4 {
       font-size: 1rem;
       margin-bottom: 4px;
-      color: var(--accent);
+      color: var(--text);
     }
     p {
       font-size: 0.85rem;
@@ -111,7 +111,7 @@ const branchIconComponent = computed(() => {
     border-radius: var(--border-radius-pill);
     background: var(--ui-border-color);
     text-transform: uppercase;
-    color: var(--accent);
+    color: var(--text);
     &.DAILY {
       background: color-mix(in srgb, var(--accent) 10%, transparent);
     }
@@ -147,7 +147,7 @@ const branchIconComponent = computed(() => {
     color: var(--dim);
     transition: color var(--transition-standard);
     &:hover:not(:disabled) {
-      color: var(--accent);
+      color: var(--text);
     }
     &.done {
       color: var(--success);

@@ -75,7 +75,7 @@ const emit = defineEmits<{
 
   &:hover:not(.active) {
     background: color-mix(in srgb, var(--accent) 8%, transparent);
-    color: var(--accent);
+    color: var(--text);
   }
 
   &.active {

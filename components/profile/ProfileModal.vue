@@ -183,7 +183,7 @@ function saveProfile() {
   &:hover {
     background: var(--glass-surface);
     border-color: var(--ui-border-color);
-    color: var(--accent);
+    color: var(--text);
   }
 
   &:hover .avatar-overlay {
@@ -228,7 +228,7 @@ function saveProfile() {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--accent);
+  color: var(--text);
   font-size: 0.95rem;
 
   .bronze {

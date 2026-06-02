@@ -84,7 +84,7 @@ const chartOptions = {
   margin-bottom: 24px;
   h4 {
     margin-bottom: 12px;
-    color: var(--accent);
+    color: var(--text);
   }
 }
 </style>

@@ -209,7 +209,7 @@ onBeforeUnmount(() => {
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
   background: transparent;
-  color: var(--accent);
+  color: var(--text);
 }
 
 .panel-header {
@@ -263,14 +263,14 @@ onBeforeUnmount(() => {
     padding: 0 5px;
     border-radius: 999px;
     background: var(--glass-surface);
-    color: var(--accent);
+    color: var(--text);
     font-size: 0.7rem;
     line-height: 18px;
   }
 
   &:hover {
     background: var(--glass-surface);
-    color: var(--accent);
+    color: var(--text);
   }
 
   &.active {
@@ -285,7 +285,7 @@ onBeforeUnmount(() => {
 
   &.active b {
     background: var(--bg);
-    color: var(--accent);
+    color: var(--text);
   }
 }
 
@@ -343,7 +343,7 @@ onBeforeUnmount(() => {
 
   strong {
     overflow: hidden;
-    color: var(--accent);
+    color: var(--text);
     font-size: 0.88rem;
     font-weight: 600;
     line-height: 1.35;

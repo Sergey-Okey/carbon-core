@@ -10,13 +10,13 @@
           v-if="isHabitDoneToday"
           type="button"
           class="habit-done-icon"
-          title="Сегодня выполнена"
           aria-label="Сегодня выполнена"
+          data-tooltip="Сегодня выполнена"
         >
           <Check :size="14" />
         </button>
       </div>
-      <span class="task-type" :class="task.type" :title="typeTitle">{{ typeLabel }}</span>
+      <span class="task-type" :class="task.type" :aria-label="typeTitle" :data-tooltip="typeTitle">{{ typeLabel }}</span>
     </div>
 
     <p v-if="task.description?.trim()" class="task-desc">{{ task.description.trim() }}</p>
@@ -54,7 +54,7 @@
               v-for="tag in taskTags"
               :key="tag.id"
               class="tag"
-              :title="tag.name"
+              :aria-label="tag.name" :data-tooltip="tag.name"
               :style="{ '--tag-color': tag.color || 'var(--accent)' }"
             >
               <span class="tag-dot" />
@@ -81,15 +81,15 @@
           :class="{ done: isCompleted }"
           @click="handleToggle"
           :disabled="disableToggle || isCompleted"
-          :title="completeButtonTitle"
+          :aria-label="completeButtonTitle" :data-tooltip="completeButtonTitle"
         >
           <CheckCircle v-if="isCompleted" :size="18" />
           <Circle v-else :size="18" />
         </button>
-        <button class="edit-btn" title="Редактировать" @click.stop="emit('edit', task)">
+        <button class="edit-btn" aria-label="Редактировать" data-tooltip="Редактировать" @click.stop="emit('edit', task)">
           <Edit :size="16" />
         </button>
-        <button class="delete-btn" title="Удалить" @click.stop="handleDelete">
+        <button class="delete-btn" aria-label="Удалить" data-tooltip="Удалить" @click.stop="handleDelete">
           <Trash2 :size="16" />
         </button>
       </div>
@@ -317,7 +317,7 @@ async function handleDelete() {
 
   h4 {
     margin: 0;
-    color: var(--accent);
+    color: var(--text);
     font-size: 0.95rem;
     font-weight: 600;
     line-height: 1.3;
@@ -398,7 +398,7 @@ async function handleDelete() {
 
     &:hover:not(:disabled) {
       background: var(--glass-surface);
-      color: var(--accent);
+      color: var(--text);
     }
     &:disabled {
       opacity: 0.3;
@@ -435,22 +435,25 @@ async function handleDelete() {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 2px 8px;
-    background: color-mix(in srgb, var(--tag-color, var(--accent)) 8%, transparent);
-    border: var(--ui-border);
+    padding: 2px 6px;
+    background: transparent;
+    border: none;
     border-radius: var(--border-radius-pill);
     font-size: 0.7rem;
     color: var(--tag-color, var(--accent));
     white-space: nowrap;
     transition:
       background var(--transition-standard),
-      border-color var(--transition-standard),
       color var(--transition-standard);
+
+    &:hover {
+      background: color-mix(in srgb, var(--tag-color, var(--accent)) 8%, transparent);
+    }
   }
 
   .tag-dot {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: var(--tag-color, var(--accent));
   }
@@ -507,7 +510,7 @@ async function handleDelete() {
 
     &:hover:not(:disabled) {
       background: var(--glass-surface);
-      color: var(--accent);
+      color: var(--text);
     }
 
     &:active:not(:disabled) {
@@ -524,7 +527,7 @@ async function handleDelete() {
   }
 
   .edit-btn:hover {
-    color: var(--accent);
+    color: var(--text);
   }
   .delete-btn:hover {
     color: var(--error);

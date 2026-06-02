@@ -41,7 +41,7 @@ const chartOptions = {
   height: 180px;
   h4 {
     margin-bottom: 8px;
-    color: var(--accent);
+    color: var(--text);
   }
   
   .level-info {
@@ -54,7 +54,7 @@ const chartOptions = {
     .level-text {
       font-weight: 600;
       font-size: 1.1rem;
-      color: var(--accent);
+      color: var(--text);
     }
     
     .tasks-text {

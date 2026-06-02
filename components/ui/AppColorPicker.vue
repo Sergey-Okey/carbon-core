@@ -7,8 +7,8 @@
       class="color-option"
       :class="{ active: option.value === modelValue }"
       :style="{ '--picker-color': option.value }"
-      :title="option.label"
       role="radio"
+      :aria-label="option.label"
       :aria-checked="option.value === modelValue"
       @click="emit('update:modelValue', option.value)"
     >
@@ -54,15 +54,15 @@ const emit = defineEmits<{
 .color-picker {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
 }
 
 .color-option {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: none;
   border-radius: 50%;
@@ -76,28 +76,25 @@ const emit = defineEmits<{
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: var(--picker-color);
     color: var(--bg);
+    transition: box-shadow var(--transition-standard);
   }
 
   &:hover {
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    background: color-mix(in srgb, var(--picker-color) 12%, transparent);
   }
 
-  &.active {
-    background: var(--accent);
+  &.active,
+  &.active:hover {
+    background: color-mix(in srgb, var(--picker-color) 18%, transparent);
 
     .color-dot {
-      outline: 2px solid var(--bg);
-      outline-offset: 1px;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--picker-color) 22%, transparent);
     }
-  }
-
-  &.active:hover {
-    background: var(--accent);
   }
 }
 

@@ -329,7 +329,7 @@ function formatTaskCount(count: number) {
   gap: 6px;
   font-weight: 500;
   font-size: 0.86rem;
-  color: var(--accent);
+  color: var(--text);
 
   svg {
     color: var(--dim);
@@ -401,7 +401,7 @@ function formatTaskCount(count: number) {
   background: var(--glass-surface);
   border: var(--ui-border);
   font-size: 0.8rem;
-  color: var(--accent);
+  color: var(--text);
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard),
@@ -446,7 +446,7 @@ function formatTaskCount(count: number) {
   font-weight: 500;
 
   strong {
-    color: var(--accent);
+    color: var(--text);
     font-size: 0.78rem;
     font-weight: 600;
   }
@@ -500,12 +500,12 @@ function formatTaskCount(count: number) {
   }
 
   .active {
-    color: var(--accent);
+    color: var(--text);
   }
 }
 
 .activity-day.active .activity-label {
-  color: var(--accent);
+  color: var(--text);
 }
 
 .activity-track {
@@ -555,7 +555,7 @@ function formatTaskCount(count: number) {
   padding: 5px 8px;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
-  color: var(--accent);
+  color: var(--text);
   font-size: 0.7rem;
   font-weight: 600;
   opacity: 0;

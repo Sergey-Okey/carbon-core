@@ -1,6 +1,6 @@
 <template>
   <div class="custom-color-picker">
-    <button type="button" class="color-trigger" @click="isOpen = true">
+    <button type="button" class="color-trigger" @click="open">
       <span class="color-preview" :style="{ '--custom-color': modelValue }" />
       <span>{{ label }}</span>
     </button>
@@ -12,7 +12,27 @@
       @close="close"
     >
       <div class="color-modal">
-        <div class="color-large-preview" :style="{ '--custom-color': draftColor }" />
+        <div class="palette-row">
+          <button
+            ref="paletteRef"
+            type="button"
+            class="palette-wheel"
+            :style="{ '--custom-color': safeDraftColor }"
+            aria-label="Выбрать цвет из палитры"
+            @pointerdown="pickFromPalette"
+            @pointermove="pickFromPalette"
+          >
+            <span class="palette-core" />
+            <span class="palette-cursor" :style="paletteCursorStyle" />
+          </button>
+
+          <div class="color-preview-panel">
+            <span class="color-large-preview" :style="{ '--custom-color': draftColor }" />
+            <AppButton type="button" variant="secondary" @click="resetToCurrentColor">
+              Текущий
+            </AppButton>
+          </div>
+        </div>
 
         <AppFormField label="HEX">
           <AppInput
@@ -30,6 +50,7 @@
             type="button"
             :style="{ '--custom-color': color }"
             :class="{ active: normalizeColor(draftColor) === normalizeColor(color) }"
+            :aria-label="color"
             @click="draftColor = color"
           />
         </div>
@@ -62,7 +83,7 @@ const props = withDefaults(
   }>(),
   {
     label: 'Свой',
-    swatches: () => ['#d6d6d6', '#3584e4', '#33d17a', '#ff7800', '#9141ac', '#e01b24', '#1c71d8'],
+    swatches: () => ['#d6d6d6', '#7aa2ff', '#74d6a0', '#e5b45a', '#b49cff', '#ff8a7a', '#6fd8d2'],
   }
 )
 
@@ -72,7 +93,21 @@ const emit = defineEmits<{
 
 const isOpen = ref(false)
 const draftColor = ref(props.modelValue)
+const paletteRef = ref<HTMLButtonElement | null>(null)
 const isValidColor = computed(() => /^#[0-9a-fA-F]{6}$/.test(draftColor.value))
+const safeDraftColor = computed(() => (isValidColor.value ? draftColor.value : '#d6d6d6'))
+const paletteCursorStyle = computed(() => {
+  const hsv = hexToHsv(safeDraftColor.value)
+  const angle = (hsv.h - 90) * (Math.PI / 180)
+  const radius = 42 * hsv.s
+  const x = 50 + Math.cos(angle) * radius
+  const y = 50 + Math.sin(angle) * radius
+
+  return {
+    left: `${x}%`,
+    top: `${y}%`,
+  }
+})
 
 watch(
   () => props.modelValue,
@@ -85,9 +120,86 @@ function normalizeColor(color: string) {
   return color.toLowerCase()
 }
 
+function open() {
+  draftColor.value = props.modelValue
+  isOpen.value = true
+}
+
 function close() {
   draftColor.value = props.modelValue
   isOpen.value = false
+}
+
+function resetToCurrentColor() {
+  draftColor.value = props.modelValue
+}
+
+function pickFromPalette(event: PointerEvent) {
+  if (event.type === 'pointermove' && event.buttons === 0) return
+  const target = paletteRef.value
+  if (!target) return
+
+  const rect = target.getBoundingClientRect()
+  const centerX = rect.left + rect.width / 2
+  const centerY = rect.top + rect.height / 2
+  const dx = event.clientX - centerX
+  const dy = event.clientY - centerY
+  const radius = Math.min(rect.width, rect.height) / 2
+  const distance = Math.min(Math.hypot(dx, dy), radius)
+  const hue = (Math.atan2(dy, dx) * 180) / Math.PI + 90
+  const saturation = distance / radius
+
+  draftColor.value = hsvToHex((hue + 360) % 360, saturation, 1)
+}
+
+function hsvToHex(h: number, s: number, v: number) {
+  const chroma = v * s
+  const hueSector = h / 60
+  const x = chroma * (1 - Math.abs((hueSector % 2) - 1))
+  const m = v - chroma
+  const [r, g, b] =
+    hueSector < 1
+      ? [chroma, x, 0]
+      : hueSector < 2
+        ? [x, chroma, 0]
+        : hueSector < 3
+          ? [0, chroma, x]
+          : hueSector < 4
+            ? [0, x, chroma]
+            : hueSector < 5
+              ? [x, 0, chroma]
+              : [chroma, 0, x]
+
+  return rgbToHex(r + m, g + m, b + m)
+}
+
+function rgbToHex(r: number, g: number, b: number) {
+  return [r, g, b]
+    .map((channel) => Math.round(channel * 255).toString(16).padStart(2, '0'))
+    .join('')
+    .replace(/^/, '#')
+}
+
+function hexToHsv(hex: string) {
+  const value = hex.replace('#', '')
+  const r = parseInt(value.slice(0, 2), 16) / 255
+  const g = parseInt(value.slice(2, 4), 16) / 255
+  const b = parseInt(value.slice(4, 6), 16) / 255
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  const delta = max - min
+  const saturation = max === 0 ? 0 : delta / max
+  let hue = 0
+
+  if (delta !== 0) {
+    if (max === r) hue = ((g - b) / delta) % 6
+    if (max === g) hue = (b - r) / delta + 2
+    if (max === b) hue = (r - g) / delta + 4
+    hue *= 60
+    if (hue < 0) hue += 360
+  }
+
+  return { h: hue, s: saturation, v: max }
 }
 
 function apply() {
@@ -107,16 +219,18 @@ function apply() {
   padding: 4px 8px 4px 12px;
   border: var(--ui-border);
   border-radius: var(--border-radius-md);
-  color: var(--dim);
+  color: var(--text);
   cursor: pointer;
   font: inherit;
   font-size: 0.82rem;
   font-weight: 600;
-}
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard),
+    border-color var(--transition-standard);
 
-@include mobile {
-  .color-trigger {
-    min-height: 44px;
+  &:hover {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
   }
 }
 
@@ -127,9 +241,8 @@ function apply() {
 }
 
 .color-preview {
-  width: 24px;
-  height: 24px;
-  border: var(--ui-border);
+  width: 22px;
+  height: 22px;
   border-radius: var(--border-radius-pill);
 }
 
@@ -138,9 +251,57 @@ function apply() {
   gap: 16px;
 }
 
-.color-large-preview {
-  height: 64px;
+.palette-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 14px;
+}
+
+.palette-wheel {
+  position: relative;
+  display: inline-flex;
+  width: 112px;
+  height: 112px;
   border: var(--ui-border);
+  border-radius: 50%;
+  cursor: crosshair;
+  background:
+    radial-gradient(circle at 50% 50%, #fff 0 7%, transparent 43%),
+    conic-gradient(red, #ff0, lime, cyan, blue, magenta, red);
+  box-shadow: none;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.palette-core {
+  position: absolute;
+  inset: 35px;
+  border-radius: 50%;
+  background: var(--custom-color);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--bg) 52%, transparent);
+  pointer-events: none;
+}
+
+.palette-cursor {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--text-inverse);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--text);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.color-preview-panel {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 10px;
+}
+
+.color-large-preview {
+  min-height: 56px;
   border-radius: var(--border-radius-md);
 }
 
@@ -152,13 +313,16 @@ function apply() {
 
 .color-swatches button {
   aspect-ratio: 1;
-  border: var(--ui-border);
+  border: none;
   border-radius: var(--border-radius-pill);
   cursor: pointer;
+  transition:
+    box-shadow var(--transition-standard),
+    opacity var(--transition-standard);
 
+  &:hover,
   &.active {
-    outline: 2px solid var(--accent);
-    outline-offset: 1px;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--custom-color) 18%, transparent);
   }
 }
 
@@ -167,5 +331,19 @@ function apply() {
   justify-content: flex-end;
   gap: 10px;
   width: 100%;
+}
+
+@include mobile {
+  .color-trigger {
+    min-height: 44px;
+  }
+
+  .palette-row {
+    grid-template-columns: 1fr;
+  }
+
+  .palette-wheel {
+    justify-self: center;
+  }
 }
 </style>

@@ -223,7 +223,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--border-radius-md);
-  color: var(--accent);
+  color: var(--text);
   font: inherit;
   font-size: 0.9rem;
   line-height: 1;
@@ -239,7 +239,7 @@ onBeforeUnmount(() => {
   }
 
   &:focus-visible {
-    border-color: var(--accent);
+    border-color: var(--text);
     outline: none;
     outline: 2px solid color-mix(in srgb, var(--accent) 14%, transparent);
     outline-offset: 2px;
@@ -307,7 +307,7 @@ onBeforeUnmount(() => {
   border: none;
   border-radius: calc(var(--border-radius-md) - 4px);
   background: transparent;
-  color: var(--accent);
+  color: var(--text);
   font: inherit;
   font-size: 0.88rem;
   text-align: left;
@@ -348,7 +348,7 @@ onBeforeUnmount(() => {
 
 .select-pop-enter-active,
 .select-pop-leave-active {
-  transition: opacity 0.16s ease;
+  transition: opacity var(--transition-standard);
 }
 
 .select-pop-enter-from,

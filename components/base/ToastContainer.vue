@@ -68,10 +68,10 @@ const { notifications, removeNotification } = useNotification()
   border-radius: var(--border-radius-lg);
   border: var(--ui-border);
   background: var(--glass-surface);
-  color: var(--accent);
+  color: var(--text);
   cursor: pointer;
   transition:
-    transform 0.16s ease,
+    transform var(--transition-standard),
     border-color var(--transition-standard);
   touch-action: pan-y;
 
@@ -111,7 +111,7 @@ const { notifications, removeNotification } = useNotification()
     font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: opacity var(--transition-standard);
 
     &:hover {
       opacity: 0.8;

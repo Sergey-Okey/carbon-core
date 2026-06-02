@@ -16,8 +16,9 @@
       <button
         class="action-btn"
         type="button"
-        title="Обучение"
         aria-label="Открыть обучение"
+        data-tooltip="Обучение"
+        data-tooltip-position="bottom"
         @click="openOnboarding"
       >
         <HelpCircle :size="20" />
@@ -26,8 +27,9 @@
       <button
         class="profile-btn"
         type="button"
-        title="Профиль"
         aria-label="Открыть профиль"
+        data-tooltip="Профиль"
+        data-tooltip-position="bottom"
         @click="openProfile"
       >
         <div v-if="userStore.profile.avatar" class="avatar-small">
@@ -125,7 +127,7 @@ function openOnboarding() {
 
 .brand-text {
   min-width: 0;
-  color: var(--accent);
+  color: var(--text);
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0;
@@ -155,7 +157,7 @@ function openOnboarding() {
   justify-self: center;
   max-width: min(320px, 40vw);
   overflow: hidden;
-  color: var(--accent);
+  color: var(--text);
   font-size: 0.9rem;
   font-weight: 600;
   text-overflow: ellipsis;
@@ -196,7 +198,7 @@ function openOnboarding() {
 
   &:hover {
     background: color-mix(in srgb, var(--accent) 8%, transparent);
-    color: var(--accent);
+    color: var(--text);
   }
 
   &:active {
@@ -228,7 +230,7 @@ function openOnboarding() {
   &:hover,
   &:focus-visible {
     background: color-mix(in srgb, var(--accent) 8%, transparent);
-    color: var(--accent);
+    color: var(--text);
   }
 
   &:active {

@@ -266,7 +266,7 @@ async function submit() {
     font-weight: 600;
     line-height: 1.1;
     letter-spacing: -0.02em;
-    color: var(--accent);
+    color: var(--text);
     margin-bottom: 20px;
   }
 
@@ -292,7 +292,7 @@ async function submit() {
   padding: 12px 16px;
   border: var(--ui-border);
   border-radius: var(--border-radius-sm);
-  color: var(--accent);
+  color: var(--text);
   font-family: 'Manrope', sans-serif;
   font-size: 0.9rem;
 
@@ -317,7 +317,7 @@ async function submit() {
     h2 {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 1.5rem;
-      color: var(--accent);
+      color: var(--text);
       margin: 12px 0 0;
     }
   }
@@ -328,7 +328,7 @@ async function submit() {
     border: var(--ui-border);
     border-radius: var(--border-radius-pill);
     background: color-mix(in srgb, var(--accent) 6%, transparent);
-    color: var(--accent);
+    color: var(--text);
     font-family: 'Manrope', sans-serif;
     font-size: 0.7rem;
     font-weight: 600;
@@ -374,7 +374,7 @@ async function submit() {
   color: var(--dim);
 
   a {
-    color: var(--accent);
+    color: var(--text);
     font-weight: 600;
     text-decoration: none;
 

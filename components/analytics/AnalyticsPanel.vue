@@ -51,7 +51,7 @@ import HealthIndicator from './HealthIndicator.vue'
 
   h3 {
     margin: 0;
-    color: var(--accent);
+    color: var(--text);
     font-size: 1.2rem;
     font-weight: 600;
   }

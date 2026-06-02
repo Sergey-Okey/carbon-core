@@ -105,7 +105,7 @@ function handleBackdrop() {
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
-  color: var(--accent);
+  color: var(--text);
 
   &.allow-overflow {
     overflow: visible;
@@ -135,7 +135,7 @@ function handleBackdrop() {
 
   h3 {
     margin: 2px 0 0;
-    color: var(--accent);
+    color: var(--text);
     font-size: 1rem;
     font-weight: 600;
     line-height: 1.25;
@@ -155,7 +155,7 @@ function handleBackdrop() {
 .app-modal-body {
   min-height: 0;
   padding: 16px;
-  color: var(--accent);
+  color: var(--text);
   font-size: 0.92rem;
   line-height: 1.5;
   overflow-y: auto;
@@ -180,7 +180,7 @@ function handleBackdrop() {
 
 .modal-fade-enter-active,
 .modal-fade-leave-active {
-  transition: opacity 0.16s ease;
+  transition: opacity var(--transition-standard);
 }
 
 .modal-fade-enter-from,
@@ -191,8 +191,8 @@ function handleBackdrop() {
 .modal-panel-enter-active,
 .modal-panel-leave-active {
   transition:
-    opacity 0.18s ease,
-    transform 0.18s ease;
+    opacity var(--transition-standard),
+    transform var(--transition-standard);
 }
 
 .modal-panel-enter-from,

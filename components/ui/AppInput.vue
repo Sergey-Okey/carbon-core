@@ -71,7 +71,7 @@ function handleInput(event: Event) {
   padding: 0 14px;
   border: var(--ui-border);
   border-radius: var(--border-radius-md);
-  color: var(--accent);
+  color: var(--text);
   font: inherit;
   font-size: 0.92rem;
   line-height: 1.2;
@@ -89,7 +89,7 @@ function handleInput(event: Event) {
   }
 
   &:focus {
-    border-color: var(--accent);
+    border-color: var(--text);
     outline: 2px solid color-mix(in srgb, var(--accent) 14%, transparent);
     outline-offset: 2px;
   }

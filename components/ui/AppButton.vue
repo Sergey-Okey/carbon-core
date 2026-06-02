@@ -98,7 +98,7 @@ withDefaults(
   &:hover:not(:disabled) {
     background: color-mix(in srgb, var(--accent) 8%, transparent);
     border-color: var(--ui-border-color);
-    color: var(--accent);
+    color: var(--text);
   }
 }
 
@@ -119,7 +119,7 @@ withDefaults(
 
   &:hover:not(:disabled) {
     background: color-mix(in srgb, var(--accent) 8%, transparent);
-    color: var(--accent);
+    color: var(--text);
   }
 }
 

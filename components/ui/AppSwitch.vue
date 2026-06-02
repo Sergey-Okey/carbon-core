@@ -97,7 +97,7 @@ function toggle() {
 
   .checked & {
     background: var(--accent);
-    border-color: var(--accent);
+    border-color: var(--text);
   }
 }
 

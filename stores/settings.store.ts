@@ -3,27 +3,15 @@ import { ref } from 'vue'
 
 export const ACCENT_COLORS = [
   { name: 'Графит', value: '#d6d6d6' },
-  { name: 'Синий', value: '#3584e4' },
-  { name: 'Зелёный', value: '#33d17a' },
-  { name: 'Оранжевый', value: '#ff7800' },
-  { name: 'Фиолетовый', value: '#9141ac' },
-  { name: 'Красный', value: '#e01b24' },
-  { name: 'Бирюзовый', value: '#1c71d8' },
+  { name: 'Сапфир', value: '#7aa2ff' },
+  { name: 'Мята', value: '#74d6a0' },
+  { name: 'Янтарь', value: '#e5b45a' },
+  { name: 'Лаванда', value: '#b49cff' },
+  { name: 'Коралл', value: '#ff8a7a' },
+  { name: 'Бирюза', value: '#6fd8d2' },
 ]
 
-function getLuminance(hex: string): number {
-  const r = parseInt(hex.slice(1, 3), 16) / 255
-  const g = parseInt(hex.slice(3, 5), 16) / 255
-  const b = parseInt(hex.slice(5, 7), 16) / 255
-  const a = [r, g, b].map((v) =>
-    v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
-  )
-  return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722
-}
-
-function resolveAccentColor(color: string, isLightTheme: boolean): string {
-  const lum = getLuminance(color)
-  if (isLightTheme && lum > 0.5) return '#2b2b2b'
+function resolveAccentColor(color: string): string {
   return color
 }
 
@@ -121,7 +109,7 @@ export const useSettingsStore = defineStore(
 
     function applyAccentColor(color: string) {
       if (import.meta.client) {
-        const finalColor = resolveAccentColor(color, isLight())
+        const finalColor = resolveAccentColor(color)
         document.documentElement.style.setProperty('--accent', finalColor)
         const r = parseInt(finalColor.slice(1, 3), 16)
         const g = parseInt(finalColor.slice(3, 5), 16)

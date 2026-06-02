@@ -5,6 +5,7 @@ export interface Milestone {
   name: string
   description?: string
   icon?: string
+  backgroundColor?: string
   requiredXP: number
   currentXP: number
   status: 'pending' | 'active' | 'completed'
@@ -19,6 +20,7 @@ export interface Branch {
   displayName: string
   icon: string
   description?: string
+  backgroundColor?: string
   taskIds: string[]
   milestones: Milestone[]
   order: number
@@ -32,10 +34,12 @@ export type BranchNodeData =
       branchId: string
       milestone: null
       branchIcon?: string
+      branchColor?: string
     }
   | {
       type: 'milestone'
       branchId: string
       milestone: Milestone
       branchIcon?: string
+      branchColor?: string
     }

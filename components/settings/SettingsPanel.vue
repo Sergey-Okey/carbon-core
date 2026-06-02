@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="settings-page">
     <div class="settings-head">
       <div class="settings-title">
@@ -839,7 +839,7 @@ function resetAllData() {
 
   h2 {
     margin: 0 0 6px;
-    color: var(--accent);
+    color: var(--text);
     font-size: 1.35rem;
     font-weight: 700;
   }
@@ -908,7 +908,7 @@ function resetAllData() {
 
   &:hover {
     background: color-mix(in srgb, var(--accent) 7%, transparent);
-    color: var(--accent);
+    color: var(--text);
   }
 
   &.active {
@@ -968,7 +968,7 @@ function resetAllData() {
   min-height: 68px;
   padding: 16px 18px;
   border-bottom: var(--ui-border);
-  color: var(--accent);
+  color: var(--text);
 
   > div {
     display: flex;
@@ -1040,7 +1040,7 @@ function resetAllData() {
 
   .label {
     display: block;
-    color: var(--accent);
+    color: var(--text);
     font-size: 0.92rem;
     font-weight: 600;
   }
@@ -1090,7 +1090,7 @@ function resetAllData() {
 
     &:hover {
       background: color-mix(in srgb, var(--accent) 7%, transparent);
-      color: var(--accent);
+      color: var(--text);
     }
 
     &.active {
@@ -1153,7 +1153,7 @@ function resetAllData() {
     border: var(--ui-border);
     border-radius: var(--border-radius-md);
     background: var(--glass-surface);
-    color: var(--accent);
+    color: var(--text);
   }
 }
 
@@ -1173,7 +1173,7 @@ function resetAllData() {
 
   svg {
     flex-shrink: 0;
-    color: var(--accent);
+    color: var(--text);
   }
 }
 
@@ -1189,7 +1189,7 @@ function resetAllData() {
 
   strong {
     margin-bottom: 4px;
-    color: var(--accent);
+    color: var(--text);
     font-size: 0.9rem;
   }
 

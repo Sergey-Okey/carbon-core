@@ -1,32 +1,34 @@
 <template>
   <Panel position="bottom-center" class="board-controls-panel">
     <div class="board-controls">
-      <button @click="$emit('fit-view')" title="Сбросить вид">
+      <button @click="$emit('fit-view')" aria-label="Сбросить вид" data-tooltip="Сбросить вид">
         <Maximize :size="18" />
       </button>
-      <button @click="$emit('zoom-in')" title="Приблизить">
+      <button @click="$emit('zoom-in')" aria-label="Приблизить" data-tooltip="Приблизить">
         <ZoomIn :size="18" />
       </button>
-      <button @click="$emit('zoom-out')" title="Отдалить">
+      <button @click="$emit('zoom-out')" aria-label="Отдалить" data-tooltip="Отдалить">
         <ZoomOut :size="18" />
       </button>
       <div class="divider"></div>
 
-      <button @click="$emit('align-layout')" title="Выровнять доску">
+      <button @click="$emit('align-layout')" aria-label="Выровнять доску" data-tooltip="Выровнять доску">
         <LayoutGrid :size="18" />
       </button>
       <div class="divider"></div>
 
       <button
         @click="$emit('add-branch')"
-        title="Добавить ветку"
+        aria-label="Добавить ветку"
+        data-tooltip="Добавить ветку"
         :disabled="!canAddBranch"
       >
         <Plus :size="18" />
       </button>
       <button
         @click="$emit('add-milestone')"
-        :title="canAddMilestone ? 'Добавить этап' : 'Выберите ветку или этап'"
+        :aria-label="milestoneTooltip"
+        :data-tooltip="milestoneTooltip"
         :disabled="!canAddMilestone"
       >
         <PlusCircle :size="18" />
@@ -36,7 +38,8 @@
       <button
         v-if="hasSelection"
         @click="$emit('delete-selected')"
-        :title="selectionType === 'edge' ? 'Разорвать связь' : 'Удалить выбранное'"
+        :aria-label="deleteTooltip"
+        :data-tooltip="deleteTooltip"
         class="delete-btn"
       >
         <Unlink2 v-if="selectionType === 'edge'" :size="18" />
@@ -44,10 +47,10 @@
       </button>
       <div v-if="hasSelection" class="divider"></div>
 
-      <button @click="$emit('undo')" title="Отменить" :disabled="!canUndo">
+      <button @click="$emit('undo')" aria-label="Отменить" data-tooltip="Отменить" :disabled="!canUndo">
         <Undo :size="18" />
       </button>
-      <button @click="$emit('redo')" title="Повторить" :disabled="!canRedo">
+      <button @click="$emit('redo')" aria-label="Повторить" data-tooltip="Повторить" :disabled="!canRedo">
         <Redo :size="18" />
       </button>
     </div>
@@ -55,6 +58,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Panel } from '@vue-flow/core'
 import {
   Maximize,
@@ -89,12 +93,20 @@ defineEmits([
   'undo',
   'redo',
 ])
+
+const milestoneTooltip = computed(() =>
+  props.canAddMilestone ? 'Добавить этап' : 'Выберите ветку или этап'
+)
+const deleteTooltip = computed(() =>
+  props.selectionType === 'edge' ? 'Разорвать связь' : 'Удалить выбранное'
+)
 </script>
 
 <style scoped lang="scss">
 .board-controls-panel {
   pointer-events: none;
   z-index: 10;
+  overflow: visible;
 }
 
 .board-controls {
@@ -107,8 +119,10 @@ defineEmits([
   border: var(--ui-border);
   pointer-events: auto;
   transform: translateY(-16px);
+  overflow: visible;
 
   button {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -116,7 +130,7 @@ defineEmits([
     height: var(--control-icon-size);
     padding: 0;
     border-radius: var(--border-radius-pill);
-    color: var(--accent);
+    color: var(--text);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -143,6 +157,7 @@ defineEmits([
     button {
       width: 44px;
       height: 44px;
+
     }
   }
 
@@ -151,7 +166,7 @@ defineEmits([
 
     &:hover {
       background: var(--glass-surface);
-      color: var(--accent);
+      color: var(--text);
       transform: none;
     }
   }

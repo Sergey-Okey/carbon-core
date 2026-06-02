@@ -5,8 +5,9 @@ import { v4 as uuidv4 } from 'uuid'
 import type { Branch, BranchId, Milestone } from '~/types/branch.types'
 import { useTasksStore } from './tasks.store'
 
-const edgeStyle = { stroke: 'var(--accent)', strokeWidth: 1 }
+const edgeStyle = { stroke: 'var(--dim)', strokeWidth: 1.15 }
 const edgePathOptions = { borderRadius: 50, offset: 24 }
+const defaultNodeBackground = '#d6d6d6'
 
 function sourcePort(nodeId: string, side: 'right' | 'bottom' = 'right') {
   return `source-${side}-${nodeId}`
@@ -65,6 +66,7 @@ export const useBranchesStore = defineStore(
         displayName: 'Core of Life',
         icon: 'target',
         description: 'Разработка главного приложения для саморазвития',
+        backgroundColor: defaultNodeBackground,
         taskIds: [],
         milestones: [
           {
@@ -323,7 +325,7 @@ export const useBranchesStore = defineStore(
           targetPort(edge.target, isMostlyVertical && dy > 0 ? 'top' : 'left'),
         type: edge.type || 'smoothstep',
         pathOptions: edge.pathOptions || edgePathOptions,
-        style: edge.style || edgeStyle,
+        style: edgeStyle,
       }
     }
 
@@ -602,7 +604,8 @@ export const useBranchesStore = defineStore(
       displayName: string,
       icon: string,
       description: string = '',
-      taskIds: string[] = []
+      taskIds: string[] = [],
+      backgroundColor: string = defaultNodeBackground
     ) {
       const lastBranch = branches.value.at(-1)
       const lastPosition = lastBranch?.position || { x: 100, y: 100 }
@@ -611,6 +614,7 @@ export const useBranchesStore = defineStore(
         displayName,
         icon,
         description,
+        backgroundColor,
         taskIds,
         milestones: [],
         order: branches.value.length,
@@ -660,6 +664,7 @@ export const useBranchesStore = defineStore(
         name,
         icon: branch?.icon || 'target',
         description: '',
+        backgroundColor: branch?.backgroundColor || defaultNodeBackground,
         requiredXP: 500,
         currentXP: 0,
         status: 'pending',
@@ -707,6 +712,7 @@ export const useBranchesStore = defineStore(
         name: data.name || 'Новый этап',
         icon: branch.icon,
         description: data.description || '',
+        backgroundColor: data.backgroundColor || branch.backgroundColor || defaultNodeBackground,
         requiredXP: data.requiredXP || 500,
         currentXP: data.currentXP || 0,
         status: data.status || 'pending',
@@ -825,6 +831,7 @@ export const useBranchesStore = defineStore(
         displayName: milestone.name,
         icon: 'help-circle',
         description: '',
+        backgroundColor: defaultNodeBackground,
         taskIds: [],
         milestones: [milestone],
         order: branches.value.length,

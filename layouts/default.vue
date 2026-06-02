@@ -27,7 +27,7 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  color: var(--accent);
+  color: var(--text);
   isolation: isolate;
   transition: background var(--transition-standard);
 

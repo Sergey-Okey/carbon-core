@@ -7,6 +7,7 @@
       expanded: isExpanded,
       selected: selected,
     }"
+    :style="nodeStyle"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
   >
@@ -61,24 +62,28 @@
       type="target"
       :position="Position.Top"
       class="handle handle-top handle-target"
+      :style="targetHandleStyle"
     />
     <Handle
       :id="`target-left-${data.branchId}`"
       type="target"
       :position="Position.Left"
       class="handle handle-left handle-target"
+      :style="targetHandleStyle"
     />
     <Handle
       :id="`source-right-${data.branchId}`"
       type="source"
       :position="Position.Right"
       class="handle handle-right handle-source"
+      :style="sourceHandleStyle"
     />
     <Handle
       :id="`source-bottom-${data.branchId}`"
       type="source"
       :position="Position.Bottom"
       class="handle handle-bottom handle-source"
+      :style="sourceHandleStyle"
     />
   </GlassCard>
 </template>
@@ -136,6 +141,29 @@ const branchDescription = computed(() => {
   )
   return branch?.description?.trim() || ''
 })
+
+const branchColor = computed(() => {
+  const branch = branchesStore.branches.find(
+    (b) => b.id === props.data.branchId
+  )
+  return branch?.backgroundColor || props.data.branchColor || '#d6d6d6'
+})
+
+const nodeStyle = computed(() => ({
+  '--node-bg-color': branchColor.value,
+  '--node-handle-color': branchColor.value,
+  background: `linear-gradient(135deg, color-mix(in srgb, ${branchColor.value} 16%, transparent), color-mix(in srgb, ${branchColor.value} 5%, transparent)), var(--glass-surface)`,
+}))
+
+const sourceHandleStyle = computed(() => ({
+  background: branchColor.value,
+  borderColor: branchColor.value,
+}))
+
+const targetHandleStyle = computed(() => ({
+  background: 'var(--glass-surface)',
+  borderColor: branchColor.value,
+}))
 
 const iconComponent = computed(() => {
   const branch = branchesStore.branches.find(
@@ -220,12 +248,19 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   position: relative;
   overflow: visible;
   transition:
-    border-color 0.2s,
-    background 0.2s;
+    border-color var(--transition-standard),
+    background var(--transition-standard);
   border: var(--ui-border);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--node-bg-color) 14%, transparent),
+      color-mix(in srgb, var(--node-bg-color) 4%, transparent)
+    ),
+    var(--glass-surface);
 
   &.selected {
-    border-color: var(--accent);
+    border-color: var(--text);
   }
 
   &.completed {
@@ -261,7 +296,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     background: var(--accent);
     border-radius: 2px;
     border: none;
-    transition: opacity 0.2s;
+    transition: opacity var(--transition-standard);
     z-index: 2;
   }
 
@@ -292,7 +327,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
       color var(--transition-standard);
     &:hover {
       background: var(--glass-surface);
-      color: var(--accent);
+      color: var(--text);
     }
     &:active {
       background: color-mix(in srgb, var(--accent) 12%, transparent);
@@ -307,7 +342,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     font-size: 0.95rem;
     font-weight: 600;
     margin-bottom: 8px;
-    color: var(--accent);
+    color: var(--text);
     word-break: break-word;
   }
   .progress-dashes {
@@ -321,7 +356,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     height: 3px;
     background: var(--ui-border-color);
     border-radius: var(--border-radius-sm);
-    transition: background 0.2s;
+    transition: background var(--transition-standard);
     &.filled {
       background: var(--accent);
     }
@@ -359,7 +394,7 @@ top: 45px;           /* фиксированный отступ от верхн�
     z-index: 5;
     &:hover {
       background: var(--glass-surface);
-      color: var(--accent);
+      color: var(--text);
     }
     &:active {
       background: color-mix(in srgb, var(--accent) 12%, transparent);
@@ -376,7 +411,7 @@ top: 45px;           /* фиксированный отступ от верхн�
     word-wrap: break-word;
     p {
       margin-bottom: 8px;
-      color: var(--accent);
+      color: var(--text);
     }
     .placeholder {
       color: var(--dim);
@@ -395,12 +430,12 @@ top: 45px;           /* фиксированный отступ от верхн�
         margin: 0;
       }
       li {
-        color: var(--accent);
+        color: var(--text);
         font-size: 0.8rem;
         margin-bottom: 2px;
         &::before {
           content: '•';
-          color: var(--accent);
+          color: var(--text);
           margin-right: 6px;
         }
       }
@@ -414,21 +449,21 @@ top: 45px;           /* фиксированный отступ от верхн�
   /* Хендлы – общие стили */
   .handle {
     transition:
-      transform 0.2s ease,
-      outline-color 0.2s ease;
-    background: var(--accent);
-    border: var(--ui-border);
+      transform var(--transition-standard),
+      outline-color var(--transition-standard);
+    background: var(--node-handle-color);
+    border: 1px solid color-mix(in srgb, var(--node-handle-color) 46%, var(--ui-border-color));
     opacity: 1;
     z-index: 10;
   }
 
   .handle-target {
     background: var(--glass-surface);
-    border-color: var(--accent);
+    border-color: var(--node-handle-color);
   }
 
   .handle-source {
-    background: var(--accent);
+    background: var(--node-handle-color);
   }
 
   .handle-top {
@@ -468,12 +503,12 @@ top: 45px;           /* фиксированный отступ от верхн�
 
   &:hover .handle,
   &.selected .handle {
-    outline: 2px solid var(--ui-border-color);
+    outline: 2px solid color-mix(in srgb, var(--node-handle-color) 35%, var(--ui-border-color));
     outline-offset: 1px;
   }
 
   .handle:active {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--node-handle-color);
     outline-offset: 1px;
   }
 }
@@ -481,8 +516,8 @@ top: 45px;           /* фиксированный отступ от верхн�
 .expand-enter-active,
 .expand-leave-active {
   transition:
-    opacity 0.2s,
-    transform 0.2s;
+    opacity var(--transition-standard),
+    transform var(--transition-standard);
 }
 .expand-enter-from,
 .expand-leave-to {
