@@ -103,15 +103,14 @@ function onMouseLeave() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 3000;
   color: var(--accent);
   border-radius: var(--border-radius-pill);
   background: transparent;
   transition:
     width 0.32s cubic-bezier(0.2, 0, 0, 1),
     border-color var(--transition-standard),
-    background var(--transition-standard),
-    box-shadow var(--transition-standard);
+    background var(--transition-standard);
 
   @include desktop {
     align-self: center;
@@ -119,12 +118,10 @@ function onMouseLeave() {
     margin: 0 auto;
     padding: 10px 0;
     border: var(--ui-border);
-    box-shadow: none;
 
     &.is-expanded {
       width: 198px;
       border-radius: var(--border-radius-lg);
-      box-shadow: none;
     }
   }
 
@@ -137,7 +134,6 @@ function onMouseLeave() {
     padding: 10px 13px;
     transform: translateX(-50%);
     border-radius: 999px;
-    box-shadow: none;
     backdrop-filter: var(--glass-strong-filter);
     -webkit-backdrop-filter: var(--glass-strong-filter);
   }
@@ -181,13 +177,16 @@ function onMouseLeave() {
     padding 0.32s cubic-bezier(0.25, 0.1, 0.25, 1),
     background var(--transition-standard),
     color var(--transition-standard),
-    border-radius 0.32s ease,
-    box-shadow var(--transition-standard);
+    border-radius 0.32s ease;
+
+  &:hover:not(.active) {
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
+    color: var(--accent);
+  }
 
   &.active {
     color: var(--bg);
     background: var(--accent);
-    box-shadow: none;
   }
 
   &.active:hover {
@@ -225,7 +224,7 @@ function onMouseLeave() {
   height: 28px;
   border-radius: 50%;
   color: inherit;
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition: background var(--transition-standard), color var(--transition-standard);
 
   .nav-item:active & {
     transform: none;

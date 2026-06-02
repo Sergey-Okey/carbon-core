@@ -223,7 +223,6 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     border-color 0.2s,
     background 0.2s;
   border: var(--ui-border);
-  background: transparent;
 
   &.selected {
     border-color: var(--accent);
@@ -290,8 +289,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     transition:
       opacity var(--transition-standard),
       background var(--transition-standard),
-      color var(--transition-standard),
-      transform var(--transition-standard);
+      color var(--transition-standard);
     &:hover {
       background: var(--glass-surface);
       color: var(--accent);
@@ -357,8 +355,7 @@ top: 45px;           /* фиксированный отступ от верхн�
     cursor: pointer;
     transition:
       background var(--transition-standard),
-      color var(--transition-standard),
-      transform var(--transition-standard);
+      color var(--transition-standard);
     z-index: 5;
     &:hover {
       background: var(--glass-surface);
@@ -418,7 +415,7 @@ top: 45px;           /* фиксированный отступ от верхн�
   .handle {
     transition:
       transform 0.2s ease,
-      box-shadow 0.2s ease;
+      outline-color 0.2s ease;
     background: var(--accent);
     border: var(--ui-border);
     opacity: 1;
@@ -426,7 +423,7 @@ top: 45px;           /* фиксированный отступ от верхн�
   }
 
   .handle-target {
-    background: var(--surface);
+    background: var(--glass-surface);
     border-color: var(--accent);
   }
 
@@ -471,11 +468,13 @@ top: 45px;           /* фиксированный отступ от верхн�
 
   &:hover .handle,
   &.selected .handle {
-    box-shadow: 0 0 0 2px var(--ui-border-color);
+    outline: 2px solid var(--ui-border-color);
+    outline-offset: 1px;
   }
 
   .handle:active {
-    box-shadow: 0 0 0 2px var(--accent);
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
   }
 }
 

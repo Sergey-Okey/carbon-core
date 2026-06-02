@@ -81,30 +81,30 @@ const emit = defineEmits<{
     border-radius: 50%;
     background: var(--picker-color);
     color: var(--bg);
-    box-shadow: none;
-    transition:
-      box-shadow var(--transition-standard),
-      transform var(--transition-standard);
   }
 
   &:hover {
-    background: var(--glass-surface);
-
-    .color-dot {
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--picker-color) 28%, transparent);
-    }
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
   }
 
   &.active {
     background: var(--accent);
 
     .color-dot {
-      box-shadow: 0 0 0 2px var(--bg);
+      outline: 2px solid var(--bg);
+      outline-offset: 1px;
     }
   }
 
   &.active:hover {
     background: var(--accent);
+  }
+}
+
+@media (max-width: 767px) {
+  .color-option {
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 </style>

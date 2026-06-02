@@ -60,36 +60,6 @@
         </div>
       </AppFormField>
 
-      <AppFormField label="Привязанные задачи">
-        <div class="tasks-section">
-          <button type="button" class="toggle-btn" @click="tasksExpanded = !tasksExpanded">
-            <span>Выбрать задачи ({{ form.taskIds.length }})</span>
-            <ChevronDown :size="16" :class="{ rotated: tasksExpanded }" />
-          </button>
-
-          <Transition name="expand">
-            <div v-if="tasksExpanded" class="tasks-list">
-              <label
-                v-for="task in activeTasks"
-                :key="task.id"
-                class="task-row"
-                :class="{ selected: form.taskIds.includes(task.id) }"
-              >
-                <span class="custom-checkbox">
-                  <input v-model="form.taskIds" type="checkbox" :value="task.id" />
-                  <span class="checkmark"></span>
-                </span>
-                <span class="task-title">{{ task.title }}</span>
-                <span class="task-xp">+{{ task.xpReward || 50 }} XP</span>
-              </label>
-
-              <div v-if="activeTasks.length === 0" class="empty-list">
-                Нет доступных задач
-              </div>
-            </div>
-          </Transition>
-        </div>
-      </AppFormField>
     </div>
 
     <template #footer>
@@ -131,7 +101,6 @@ import AppButton from '~/components/ui/AppButton.vue'
 import AppFormField from '~/components/ui/AppFormField.vue'
 import AppInput from '~/components/ui/AppInput.vue'
 import AppModal from '~/components/ui/AppModal.vue'
-import { useTasksStore } from '~/stores/tasks.store'
 import type { Branch } from '~/types/branch.types'
 
 const props = defineProps<{ branch?: Branch | null }>()
@@ -144,9 +113,7 @@ const emit = defineEmits<{
   (e: 'delete'): void
 }>()
 
-const tasksStore = useTasksStore()
 const iconsExpanded = ref(false)
-const tasksExpanded = ref(false)
 const nameTouched = ref(false)
 
 const iconOptions = [
@@ -186,7 +153,6 @@ const iconComponent = (name: string) => {
   return map[name] || Target
 }
 
-const activeTasks = computed(() => tasksStore.tasks.filter((task) => task.type !== 'HABIT'))
 const canSubmit = computed(() => form.name.trim().length > 0)
 
 const form = reactive({
@@ -201,7 +167,6 @@ watch(
   (newBranch) => {
     nameTouched.value = false
     iconsExpanded.value = false
-    tasksExpanded.value = false
 
     if (newBranch) {
       form.name = newBranch.displayName
@@ -232,8 +197,7 @@ function handleSubmit() {
   gap: 18px;
 }
 
-.icon-section,
-.tasks-section {
+.icon-section {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -241,16 +205,16 @@ function handleSubmit() {
 }
 
 .toggle-btn {
-  @include glass;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   width: 100%;
-  min-height: 42px;
+  min-height: var(--control-height-md);
   padding: 0 14px;
   color: var(--accent);
-  border: none;
+  background: transparent;
+  border: var(--ui-border);
   border-radius: var(--border-radius-pill);
   cursor: pointer;
   transition:
@@ -258,7 +222,7 @@ function handleSubmit() {
     color var(--transition-standard);
 
   &:hover {
-    background: var(--glass-surface);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
     color: var(--accent);
   }
 
@@ -280,12 +244,12 @@ function handleSubmit() {
 }
 
 .icon-option {
-  @include glass;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   aspect-ratio: 1;
   color: var(--dim);
+  background: transparent;
   border: none;
   border-radius: var(--border-radius-pill);
   cursor: pointer;
@@ -295,7 +259,7 @@ function handleSubmit() {
 
   &:hover {
     color: var(--accent);
-    background: var(--glass-surface);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
   }
 
   &.active {
@@ -307,97 +271,6 @@ function handleSubmit() {
     color: var(--bg);
     background: var(--accent);
   }
-}
-
-.tasks-list {
-  @include glass;
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(100% + 8px);
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 220px;
-  padding: 8px;
-  overflow-y: auto;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
-}
-
-.task-row {
-  @include glass;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  color: var(--accent);
-  border: none;
-  border-radius: var(--border-radius-lg);
-  cursor: pointer;
-
-  &.selected {
-    background: var(--accent);
-    color: var(--bg);
-
-    .task-xp {
-      color: color-mix(in srgb, var(--bg) 72%, transparent);
-    }
-  }
-
-  &.selected:hover {
-    background: var(--accent);
-    color: var(--bg);
-  }
-}
-
-.custom-checkbox {
-  position: relative;
-  width: 18px;
-  height: 18px;
-
-  input {
-    position: absolute;
-    opacity: 0;
-    inset: 0;
-  }
-}
-
-.checkmark {
-  display: block;
-  width: 18px;
-  height: 18px;
-  border: none;
-  border-radius: var(--border-radius-sm);
-  background: var(--glass-surface);
-
-  input:checked + & {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
-}
-
-.task-title {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.task-xp,
-.empty-list {
-  color: var(--dim);
-  font-size: 0.85rem;
-}
-
-.empty-list {
-  padding: 12px;
-  text-align: center;
-  background: var(--glass-surface);
-  border: none;
-  border-radius: var(--border-radius-lg);
 }
 
 .footer-actions {
@@ -427,12 +300,10 @@ function handleSubmit() {
     margin-left: 0;
   }
 
-  .task-row {
-    grid-template-columns: auto minmax(0, 1fr);
+  .toggle-btn,
+  .icon-option {
+    min-height: 44px;
   }
 
-  .task-xp {
-    grid-column: 2;
-  }
 }
 </style>

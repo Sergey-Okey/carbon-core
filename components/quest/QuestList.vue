@@ -51,15 +51,22 @@ function handleSave(questData: any) {
     }
   }
   .add-btn {
-    @include glass;
     width: 36px;
-    height: 36px;
+    height: var(--control-height-md);
+    min-height: var(--control-height-md);
+    background: transparent;
     border-radius: var(--border-radius-pill);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--accent);
     &:hover {
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+    }
+
+    @include mobile {
+      height: 44px;
+      min-height: 44px;
     }
   }
   .quests {

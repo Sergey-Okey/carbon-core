@@ -4,8 +4,7 @@
   backdrop-filter: var(--glass-strong-filter) !important;
   -webkit-backdrop-filter: var(--glass-strong-filter) !important;
   border: var(--ui-border);
-  box-shadow: var(--glass-strong-shadow);
-  transform: translateZ(0);
+  box-shadow: none;
 }
 
 @mixin desktop {

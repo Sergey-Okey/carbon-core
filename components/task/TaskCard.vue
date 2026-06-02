@@ -260,7 +260,7 @@ async function handleDelete() {
   min-height: 148px;
   height: 100%;
   padding: 1rem;
-  background: var(--surface);
+  background: transparent;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
   transition:
@@ -277,7 +277,7 @@ async function handleDelete() {
 
   &.overdue {
     border-color: color-mix(in srgb, var(--error) 28%, var(--ui-border-color));
-    background: var(--surface);
+    background: transparent;
   }
 
   .task-header {
@@ -361,7 +361,7 @@ async function handleDelete() {
     gap: 4px;
     color: var(--dim);
     font-size: 0.75rem;
-    background: color-mix(in srgb, var(--surface) 90%, transparent);
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
     padding: 2px 6px;
     border-radius: var(--border-radius-pill);
     white-space: nowrap;
@@ -436,7 +436,7 @@ async function handleDelete() {
     align-items: center;
     gap: 6px;
     padding: 2px 8px;
-    background: color-mix(in srgb, var(--tag-color, var(--accent)) 8%, var(--surface));
+    background: color-mix(in srgb, var(--tag-color, var(--accent)) 8%, transparent);
     border: var(--ui-border);
     border-radius: var(--border-radius-pill);
     font-size: 0.7rem;
@@ -453,7 +453,6 @@ async function handleDelete() {
     height: 6px;
     border-radius: 50%;
     background: var(--tag-color, var(--accent));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-color, var(--accent)) 20%, var(--bg));
   }
 
   .tag-name {
@@ -504,7 +503,7 @@ async function handleDelete() {
       background var(--transition-standard),
       color var(--transition-standard),
       opacity var(--transition-standard),
-      transform var(--transition-standard);
+      opacity var(--transition-standard);
 
     &:hover:not(:disabled) {
       background: var(--glass-surface);

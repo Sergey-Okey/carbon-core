@@ -80,7 +80,9 @@
                   <span class="checkmark"></span>
                 </span>
                 <span class="task-title">{{ task.title }}</span>
-                <span class="task-xp">+{{ task.xpReward || 50 }} XP</span>
+                <span class="task-marker" :class="task.type" :title="taskTypeMeta(task.type).title">
+                  {{ taskTypeMeta(task.type).label }}
+                </span>
               </label>
 
               <div v-if="activeTasks.length === 0" class="empty-list">
@@ -193,6 +195,19 @@ const iconComponent = (name: string) => {
 const activeTasks = computed(() => tasksStore.tasks.filter((task) => !task.done))
 const canSubmit = computed(() => form.name.trim().length > 0)
 
+function taskTypeMeta(type: string) {
+  const map: Record<string, { label: string; title: string }> = {
+    HABIT: { label: 'П', title: 'Привычка' },
+    TASK_DAY: { label: 'Д', title: 'День' },
+    TASK_WEEK: { label: 'Н', title: 'Неделя' },
+    TASK_MONTH: { label: 'М', title: 'Месяц' },
+    TASK_YEAR: { label: 'Г', title: 'Год' },
+    PURCHASE: { label: 'К', title: 'Покупка' },
+  }
+
+  return map[type] || { label: type.charAt(0).toUpperCase(), title: type }
+}
+
 const form = reactive({
   name: '',
   description: '',
@@ -252,16 +267,16 @@ async function handleDelete() {
 }
 
 .toggle-btn {
-  @include glass;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   width: 100%;
-  min-height: 42px;
+  min-height: var(--control-height-md);
   padding: 0 14px;
   color: var(--accent);
-  border: none;
+  background: transparent;
+  border: var(--ui-border);
   border-radius: var(--border-radius-pill);
   cursor: pointer;
   transition:
@@ -269,7 +284,7 @@ async function handleDelete() {
     color var(--transition-standard);
 
   &:hover {
-    background: var(--glass-surface);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
     color: var(--accent);
   }
 
@@ -291,12 +306,12 @@ async function handleDelete() {
 }
 
 .icon-option {
-  @include glass;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   aspect-ratio: 1;
   color: var(--dim);
+  background: transparent;
   border: none;
   border-radius: var(--border-radius-pill);
   cursor: pointer;
@@ -306,7 +321,7 @@ async function handleDelete() {
 
   &:hover {
     color: var(--accent);
-    background: var(--glass-surface);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
   }
 
   &.active {
@@ -353,7 +368,7 @@ async function handleDelete() {
     background: var(--accent);
     color: var(--bg);
 
-    .task-xp {
+    .task-marker {
       color: color-mix(in srgb, var(--bg) 72%, transparent);
     }
   }
@@ -397,10 +412,24 @@ async function handleDelete() {
   white-space: nowrap;
 }
 
-.task-xp,
+.task-marker,
 .empty-list {
   color: var(--dim);
   font-size: 0.85rem;
+}
+
+.task-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--border-radius-pill);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .empty-list {
@@ -438,11 +467,16 @@ async function handleDelete() {
     margin-left: 0;
   }
 
+  .toggle-btn,
+  .icon-option {
+    min-height: 44px;
+  }
+
   .task-row {
     grid-template-columns: auto minmax(0, 1fr);
   }
 
-  .task-xp {
+  .task-marker {
     grid-column: 2;
   }
 }

@@ -299,8 +299,7 @@ function getIconComponent(iconName: string) {
     cursor: pointer;
     transition:
       background var(--transition-standard),
-      color var(--transition-standard),
-      transform var(--transition-standard);
+      color var(--transition-standard);
 
     &:hover {
       background: var(--accent);

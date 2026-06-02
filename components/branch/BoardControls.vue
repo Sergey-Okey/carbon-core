@@ -123,12 +123,10 @@ defineEmits([
     transition:
       background var(--transition-standard),
       color var(--transition-standard),
-      opacity var(--transition-standard),
-      box-shadow var(--transition-standard);
+      opacity var(--transition-standard);
 
     &:hover {
-      background: var(--glass-surface);
-      transform: none;
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
     }
 
     &:active {

@@ -72,7 +72,7 @@ function openOnboarding() {
 .header {
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 3000;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
@@ -83,17 +83,21 @@ function openOnboarding() {
   @include glass;
   background: transparent;
   border: var(--ui-border);
-  box-shadow: none;
   transition:
     background var(--transition-standard),
     opacity var(--transition-standard);
 
   @include mobile {
+    position: fixed;
+    left: 0;
+    right: 0;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px;
-    margin: 8px 8px 0;
-    padding: 8px 10px;
-    border-radius: var(--border-radius-pill);
+    margin: 0;
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) 12px 8px;
+    border: none;
+    border-bottom: var(--ui-border);
+    border-radius: 0;
   }
 }
 
@@ -188,24 +192,20 @@ function openOnboarding() {
   cursor: pointer;
   transition:
     background var(--transition-standard),
-    color var(--transition-standard),
-    box-shadow var(--transition-standard);
+    color var(--transition-standard);
 
   &:hover {
     background: color-mix(in srgb, var(--accent) 8%, transparent);
     color: var(--accent);
-    transform: none;
-    box-shadow: none;
   }
 
   &:active {
     background: color-mix(in srgb, var(--accent) 12%, transparent);
-    box-shadow: none;
   }
 
   &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--accent) 18%, transparent);
+    outline-offset: 2px;
   }
 
   @include mobile {
@@ -224,13 +224,11 @@ function openOnboarding() {
   border-radius: var(--border-radius-md);
   background: transparent;
   color: var(--dim);
-  box-shadow: none;
 
   &:hover,
   &:focus-visible {
     background: color-mix(in srgb, var(--accent) 8%, transparent);
     color: var(--accent);
-    box-shadow: none;
   }
 
   &:active {

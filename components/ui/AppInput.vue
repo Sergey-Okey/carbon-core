@@ -77,8 +77,7 @@ function handleInput(event: Event) {
   line-height: 1.2;
   transition:
     background var(--transition-standard),
-    border-color var(--transition-standard),
-    box-shadow var(--transition-standard);
+    border-color var(--transition-standard);
 
   &::placeholder {
     color: var(--dim);
@@ -91,8 +90,8 @@ function handleInput(event: Event) {
 
   &:focus {
     border-color: var(--accent);
-    outline: none;
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 14%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--accent) 14%, transparent);
+    outline-offset: 2px;
   }
 
   &:disabled {

@@ -176,9 +176,9 @@ onBeforeUnmount(() => {
   }
 
   @media (max-width: 767px) {
-    width: 32px;
-    height: 32px;
-    min-height: 32px;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
   }
 }
 
@@ -203,7 +203,7 @@ onBeforeUnmount(() => {
   position: fixed;
   top: 72px;
   right: 12px;
-  z-index: 2500;
+  z-index: 4300;
   width: min(380px, calc(100vw - 24px));
   overflow: hidden;
   border: var(--ui-border);
@@ -245,7 +245,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 34px;
+  min-height: var(--control-height-md);
   padding: 7px 10px;
   border: none;
   border-radius: var(--border-radius-pill);
@@ -286,6 +286,12 @@ onBeforeUnmount(() => {
   &.active b {
     background: var(--bg);
     color: var(--accent);
+  }
+}
+
+@media (max-width: 767px) {
+  .tab-btn {
+    min-height: 44px;
   }
 }
 
@@ -365,7 +371,6 @@ onBeforeUnmount(() => {
 .panel-leave-active {
   transition:
     opacity var(--transition-standard),
-    transform var(--transition-standard);
 }
 
 .panel-enter-from,

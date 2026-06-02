@@ -59,7 +59,7 @@ function toggle() {
   background: transparent;
   cursor: pointer;
   outline: none;
-  transition: transform 0.12s ease;
+  transition: opacity var(--transition-standard);
   vertical-align: middle;
 
   &:focus-visible .switch-track {
@@ -75,6 +75,8 @@ function toggle() {
   @include mobile {
     justify-self: center;
     margin-left: 0;
+    width: 44px;
+    height: 44px;
   }
 }
 
@@ -83,8 +85,8 @@ function toggle() {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  width: 100%;
-  height: 100%;
+  width: 40px;
+  height: 22px;
   padding: 2px;
   border-radius: var(--border-radius-pill);
   border: var(--ui-border);
@@ -92,7 +94,6 @@ function toggle() {
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard);
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.08);
 
   .checked & {
     background: var(--accent);
@@ -107,9 +108,7 @@ function toggle() {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--surface);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-  transition: transform var(--transition-standard);
+  background: var(--bg);
   will-change: transform;
 
   .checked & {

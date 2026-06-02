@@ -77,8 +77,7 @@ function purchase() {
     font-weight: 600;
     cursor: pointer;
     transition:
-      opacity var(--transition-standard),
-      transform var(--transition-standard);
+      opacity var(--transition-standard);
 
     &:hover:not(:disabled) {
       opacity: 0.92;

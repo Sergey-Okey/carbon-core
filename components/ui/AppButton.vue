@@ -46,12 +46,11 @@ withDefaults(
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard),
-    color var(--transition-standard),
-    box-shadow var(--transition-standard);
+    color var(--transition-standard);
 
   &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 16%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--accent) 16%, transparent);
+    outline-offset: 2px;
   }
 
   &:disabled {

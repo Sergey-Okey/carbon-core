@@ -139,7 +139,7 @@ function updateMenuPosition() {
     top: openUp ? `${rect.top - gap}px` : `${rect.bottom + gap}px`,
     width: `${rect.width}px`,
     maxHeight: `${Math.max(140, menuHeight)}px`,
-    zIndex: isInsideModal ? '1000' : '998',
+    zIndex: isInsideModal ? '5200' : '4200',
   }
 }
 
@@ -231,7 +231,6 @@ onBeforeUnmount(() => {
   cursor: pointer;
   transition:
     border-color var(--transition-standard),
-    box-shadow var(--transition-standard),
     background var(--transition-standard);
 
   &:hover:not(:disabled),
@@ -242,7 +241,8 @@ onBeforeUnmount(() => {
   &:focus-visible {
     border-color: var(--accent);
     outline: none;
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 14%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--accent) 14%, transparent);
+    outline-offset: 2px;
   }
 
   :deep(svg:not(.select-arrow)) {
@@ -269,7 +269,6 @@ onBeforeUnmount(() => {
   height: 9px;
   border-radius: 50%;
   background: var(--option-color);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--option-color) 18%, transparent);
 }
 
 .select-arrow {
@@ -279,7 +278,6 @@ onBeforeUnmount(() => {
   color: var(--dim);
   pointer-events: none;
   transform: translateY(-50%);
-  transition: transform var(--transition-standard);
 
   .app-select.open & {
     transform: translateY(-50%) rotate(180deg);

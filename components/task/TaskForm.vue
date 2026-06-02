@@ -408,12 +408,11 @@ function getTaskTags(task: Task): TaskTag[] {
   }
 
   .tag-btn {
-    @include glass;
     position: relative;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    min-height: 36px;
+    min-height: var(--control-height-md);
     padding: 7px 12px 7px 10px;
     border: var(--ui-border);
     border-radius: var(--border-radius-md);
@@ -425,7 +424,7 @@ function getTaskTags(task: Task): TaskTag[] {
       background var(--transition-standard),
       border-color var(--transition-standard),
       color var(--transition-standard),
-      box-shadow var(--transition-standard);
+      color var(--transition-standard);
     cursor: pointer;
 
     &:hover {
@@ -437,7 +436,6 @@ function getTaskTags(task: Task): TaskTag[] {
       background: color-mix(in srgb, var(--tag-color, var(--accent)) 12%, transparent);
       border-color: color-mix(in srgb, var(--tag-color, var(--accent)) 72%, var(--ui-border-color));
       color: var(--tag-color, var(--accent));
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tag-color, var(--accent)) 18%, transparent);
     }
   }
 
@@ -447,21 +445,20 @@ function getTaskTags(task: Task): TaskTag[] {
     height: 10px;
     border-radius: var(--border-radius-pill);
     background: var(--tag-color, var(--accent));
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tag-color, var(--accent)) 12%, transparent);
   }
 
   .tag-delete {
-    @include glass;
     position: absolute;
     top: -7px;
     right: -7px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 19px;
-    height: 19px;
+    width: 22px;
+    height: 22px;
     border-radius: var(--border-radius-pill);
-    border: var(--ui-border);
+    background: color-mix(in srgb, var(--bg) 50%, transparent);
+    border: none;
     color: var(--dim);
     cursor: pointer;
     transition:
@@ -478,7 +475,7 @@ function getTaskTags(task: Task): TaskTag[] {
   }
 
   .add-tag-btn {
-    background: var(--glass-surface);
+    background: transparent;
     border: var(--ui-border);
     color: var(--dim);
     display: flex;
@@ -514,6 +511,7 @@ function getTaskTags(task: Task): TaskTag[] {
     gap: 6px;
 
     .tag-btn {
+      min-height: 44px;
       padding: 6px 12px;
       font-size: 0.8rem;
     }
@@ -525,6 +523,7 @@ function getTaskTags(task: Task): TaskTag[] {
     gap: 4px;
 
     .tag-btn {
+      min-height: 44px;
       padding: 4px 8px;
       font-size: 0.75rem;
     }

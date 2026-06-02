@@ -6,6 +6,7 @@ import type { Branch, BranchId, Milestone } from '~/types/branch.types'
 import { useTasksStore } from './tasks.store'
 
 const edgeStyle = { stroke: 'var(--accent)', strokeWidth: 1 }
+const edgePathOptions = { borderRadius: 50, offset: 24 }
 
 function sourcePort(nodeId: string, side: 'right' | 'bottom' = 'right') {
   return `source-${side}-${nodeId}`
@@ -36,6 +37,7 @@ function createEdge(
     sourceHandle: sourceHandle || sourcePort(source),
     targetHandle: targetHandle || targetPort(target),
     type: 'smoothstep',
+    pathOptions: edgePathOptions,
     animated: false,
     style: edgeStyle,
   }
@@ -320,6 +322,7 @@ export const useBranchesStore = defineStore(
           edge.targetHandle ||
           targetPort(edge.target, isMostlyVertical && dy > 0 ? 'top' : 'left'),
         type: edge.type || 'smoothstep',
+        pathOptions: edge.pathOptions || edgePathOptions,
         style: edge.style || edgeStyle,
       }
     }
@@ -349,14 +352,19 @@ export const useBranchesStore = defineStore(
       return visited
     }
 
-    function collectRelatedMilestoneIds(startId: string): Set<string> {
+    function collectRelatedMilestoneIds(startIds: string | string[]): Set<string> {
       const milestoneIds = new Set(
         getAllMilestones().map((milestone) => milestone.id)
       )
-      const visitedNodes = new Set<string>([startId])
+      const initialIds = Array.isArray(startIds) ? startIds : [startIds]
+      const visitedNodes = new Set<string>(initialIds)
       const visitedMilestones = new Set<string>()
-      const queue = [startId]
+      const queue = [...initialIds]
       const normalizedEdges = edges.value.map(normalizeEdgePorts)
+
+      initialIds.forEach((id) => {
+        if (milestoneIds.has(id)) visitedMilestones.add(id)
+      })
 
       while (queue.length) {
         const currentId = queue.shift()!
@@ -370,7 +378,6 @@ export const useBranchesStore = defineStore(
                 : null
 
           if (!nextId || visitedNodes.has(nextId)) continue
-          if (getNodeKind(nextId) === 'branch') continue
 
           visitedNodes.add(nextId)
           if (milestoneIds.has(nextId)) visitedMilestones.add(nextId)
@@ -382,7 +389,9 @@ export const useBranchesStore = defineStore(
     }
 
     function collectBranchMilestoneIds(branchId: string): Set<string> {
-      return collectRelatedMilestoneIds(branchId)
+      const branch = getBranch(branchId)
+      const ownMilestoneIds = branch?.milestones.map((milestone) => milestone.id) || []
+      return collectRelatedMilestoneIds([branchId, ...ownMilestoneIds])
     }
 
     function findBranchByMilestone(milestoneId: string): Branch | undefined {

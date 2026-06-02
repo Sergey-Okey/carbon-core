@@ -49,7 +49,8 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
 
   @include desktop {
     flex-direction: row;
-    padding: 4px 0;
+    padding: 4px 12px 12px;
+    gap: 12px;
   }
 }
 
@@ -67,10 +68,10 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
   }
 
   @include desktop {
-    padding: 20px 24px;
+    padding: 20px 12px 20px 16px;
 
     html.compact-ui & {
-      padding: 14px 18px;
+      padding: 14px 8px 14px 12px;
     }
   }
 

@@ -1,14 +1,12 @@
-<template>
+﻿<template>
   <div class="settings-page">
     <div class="settings-head">
-      <div>
+      <div class="settings-title">
         <h2>Настройки</h2>
         <p>Интерфейс, рабочий режим, доска и локальные данные приложения.</p>
       </div>
-    </div>
 
-    <div class="settings-layout">
-      <aside class="settings-nav" aria-label="Разделы настроек">
+      <nav class="settings-nav" aria-label="Разделы настроек">
         <button
           v-for="tab in tabs"
           :key="tab.key"
@@ -22,8 +20,10 @@
           <component :is="tab.icon" :size="18" />
           <span class="nav-label">{{ tab.label }}</span>
         </button>
-      </aside>
+      </nav>
+    </div>
 
+    <div class="settings-layout">
       <div class="settings-content">
         <section v-if="activeTab === 'appearance'" class="settings-group">
           <div class="group-header">
@@ -819,7 +819,7 @@ function resetAllData() {
 <style scoped lang="scss">
 .settings-page {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   padding-bottom: 24px;
 
   @include mobile {
@@ -829,11 +829,11 @@ function resetAllData() {
 
 .settings-head {
   @include glass;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 16px;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
 
@@ -847,38 +847,43 @@ function resetAllData() {
   p {
     margin: 0;
     color: var(--dim);
+    font-size: 0.9rem;
     line-height: 1.5;
   }
-}
-
-.settings-layout {
-  display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  gap: var(--panel-gap);
-  align-items: start;
 
   @include mobile {
     grid-template-columns: 1fr;
     gap: 14px;
+    padding: 14px;
+    text-align: left;
   }
+}
+
+.settings-title {
+  min-width: 0;
+}
+
+.settings-layout {
+  display: block;
+  min-width: 0;
 }
 
 .settings-nav {
   @include glass;
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
   gap: 6px;
-  padding: 8px;
+  width: fit-content;
+  padding: 5px;
   border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--border-radius-pill);
 
   @include mobile {
-    display: inline-grid;
-    grid-template-columns: repeat(4, 44px);
-    justify-self: center;
-    justify-content: center;
-    width: fit-content;
+    justify-self: stretch;
+    width: 100%;
     padding: 6px;
-    border-radius: var(--border-radius-lg);
+    border-radius: var(--border-radius-pill);
   }
 }
 
@@ -886,9 +891,9 @@ function resetAllData() {
   display: flex;
   align-items: center;
   gap: 10px;
-  width: 100%;
+  width: auto;
   min-height: 44px;
-  padding: 10px 12px;
+  padding: 0 14px;
   border: none;
   border-radius: var(--border-radius-pill);
   background: transparent;
@@ -899,11 +904,10 @@ function resetAllData() {
   font-weight: 600;
   transition:
     background var(--transition-standard),
-    color var(--transition-standard),
-    transform 0.16s ease;
+    color var(--transition-standard);
 
   &:hover {
-    background: var(--glass-surface);
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
     color: var(--accent);
   }
 
@@ -922,8 +926,8 @@ function resetAllData() {
   }
 
   @include mobile {
+    flex: 1 1 0;
     justify-content: center;
-    width: 44px;
     min-width: 44px;
     height: 44px;
     min-height: 44px;
@@ -945,6 +949,8 @@ function resetAllData() {
 
 .settings-content {
   min-width: 0;
+  max-width: 980px;
+  margin: 0;
 }
 
 .settings-group {
@@ -960,7 +966,7 @@ function resetAllData() {
   justify-content: space-between;
   gap: 16px;
   min-height: 68px;
-  padding: 18px 22px;
+  padding: 16px 18px;
   border-bottom: var(--ui-border);
   color: var(--accent);
 
@@ -990,9 +996,9 @@ function resetAllData() {
 
   @include mobile {
     align-items: center;
-    flex-direction: column;
-    padding: 20px;
-    text-align: center;
+    flex-direction: row;
+    padding: 14px;
+    text-align: left;
 
     span {
       text-align: center;
@@ -1001,10 +1007,12 @@ function resetAllData() {
 }
 
 .group-body {
-  padding: 4px 22px 22px;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
 
   @include mobile {
-    padding: 4px 20px 22px;
+    padding: 8px;
   }
 }
 
@@ -1013,19 +1021,17 @@ function resetAllData() {
   grid-template-columns: minmax(0, 1fr) minmax(180px, auto);
   align-items: center;
   gap: var(--panel-gap);
-  min-height: 72px;
-  padding: 14px 0;
-  border-bottom: var(--ui-border);
-
-  &:last-of-type {
-    border-bottom: none;
-  }
+  min-height: 64px;
+  padding: 12px;
+  border-radius: var(--border-radius-md);
+  background: color-mix(in srgb, var(--glass-surface) 72%, transparent);
 
   @include mobile {
     grid-template-columns: 1fr;
     gap: 12px;
     min-height: 0;
-    text-align: center;
+    padding: 12px;
+    text-align: left;
   }
 }
 
@@ -1035,6 +1041,7 @@ function resetAllData() {
   .label {
     display: block;
     color: var(--accent);
+    font-size: 0.92rem;
     font-weight: 600;
   }
 
@@ -1042,7 +1049,7 @@ function resetAllData() {
     display: block;
     margin-top: 4px;
     color: var(--dim);
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     line-height: 1.45;
   }
 }
@@ -1079,11 +1086,10 @@ function resetAllData() {
     transition:
       background var(--transition-standard),
       border-color var(--transition-standard),
-      color var(--transition-standard),
-      box-shadow var(--transition-standard);
+      color var(--transition-standard);
 
     &:hover {
-      background: var(--glass-surface);
+      background: color-mix(in srgb, var(--accent) 7%, transparent);
       color: var(--accent);
     }
 

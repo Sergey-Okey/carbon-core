@@ -76,19 +76,21 @@ h4 {
   button,
   .import-btn {
     padding: 10px 16px;
-    @include glass;
+    min-height: var(--control-height-md);
+    background: transparent;
     border-radius: var(--border-radius-pill);
     cursor: pointer;
     color: var(--accent);
     border: var(--ui-border);
     &:hover {
-      color: var(--bg);
-      background: var(--accent);
-      border-color: transparent;
+      color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+      border-color: var(--ui-border-color);
     }
     &.danger {
-      color: var(--error);
-      border-color: var(--ui-border-color);
+      color: var(--bg);
+      background: var(--error);
+      border-color: transparent;
 
       &:hover {
         color: var(--bg);
@@ -106,6 +108,13 @@ h4 {
       left: 0;
       top: 0;
       cursor: pointer;
+    }
+  }
+
+  @include mobile {
+    button,
+    .import-btn {
+      min-height: 44px;
     }
   }
 }

@@ -103,7 +103,7 @@ function apply() {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 34px;
+  min-height: var(--control-height-md);
   padding: 4px 8px 4px 12px;
   border: var(--ui-border);
   border-radius: var(--border-radius-md);
@@ -112,6 +112,12 @@ function apply() {
   font: inherit;
   font-size: 0.82rem;
   font-weight: 600;
+}
+
+@include mobile {
+  .color-trigger {
+    min-height: 44px;
+  }
 }
 
 .color-preview,
@@ -151,7 +157,8 @@ function apply() {
   cursor: pointer;
 
   &.active {
-    box-shadow: 0 0 0 2px var(--accent);
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
   }
 }
 

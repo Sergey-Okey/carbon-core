@@ -931,10 +931,6 @@ onUnmounted(() => {
   position: absolute;
   border: var(--ui-border);
   background: color-mix(in srgb, #ffffff 8%, transparent);
-  box-shadow:
-    0 0 18px color-mix(in srgb, #ffffff 42%, var(--accent)),
-    0 0 34px color-mix(in srgb, #ffffff 22%, transparent),
-    inset 0 0 10px color-mix(in srgb, #ffffff 30%, var(--accent));
   opacity: 0.72;
   animation: geoFloat var(--geo-duration) ease-in-out var(--geo-delay) infinite;
   will-change: transform, opacity;
@@ -1001,9 +997,6 @@ onUnmounted(() => {
   position: absolute;
   border-radius: 999px;
   background: color-mix(in srgb, var(--accent) 72%, transparent);
-  box-shadow:
-    0 0 0 6px color-mix(in srgb, var(--accent) 8%, transparent),
-    0 0 20px color-mix(in srgb, var(--accent) 16%, transparent);
   opacity: 0.58;
   animation: particleFloat var(--particle-duration) ease-in-out
     var(--particle-delay) infinite;
@@ -1254,15 +1247,12 @@ onUnmounted(() => {
   cursor: pointer;
   transition:
     background var(--transition-standard),
-    color var(--transition-standard),
-    box-shadow var(--transition-standard);
+    color var(--transition-standard);
   &:hover {
-    .btn-icon {
-      transform: translateX(5px);
-    }
+    background: color-mix(in srgb, var(--accent) 92%, var(--bg));
   }
   .btn-icon {
-    transition: transform 0.2s;
+    transition: color var(--transition-standard);
   }
 }
 .hint-text {
@@ -1286,7 +1276,7 @@ onUnmounted(() => {
 }
 .hashtag {
   padding: 10px 20px;
-  background: var(--surface);
+  background: var(--glass-surface);
   border: var(--ui-border);
   border-radius: 40px;
   font-family: 'Manrope', sans-serif;
@@ -1371,7 +1361,7 @@ onUnmounted(() => {
 .placeholder-card {
   margin-top: 30px;
   padding: 60px 40px;
-  background: var(--surface);
+  background: var(--glass-surface);
   border: var(--ui-border);
   border-radius: 30px;
   text-align: center;
@@ -1391,7 +1381,7 @@ onUnmounted(() => {
 }
 .tool-card {
   padding: 35px 25px;
-  background: var(--surface);
+  background: var(--glass-surface);
   border: var(--ui-border);
   border-radius: 30px;
   text-align: center;
@@ -1421,7 +1411,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: var(--surface);
+  background: var(--glass-surface);
   border: var(--ui-border);
   border-radius: 40px;
   font-family: 'Manrope', sans-serif;
@@ -1447,7 +1437,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
   padding: 12px 24px;
-  background: var(--surface);
+  background: var(--glass-surface);
   border: var(--ui-border);
   border-radius: var(--border-radius-md);
   color: var(--accent);
@@ -1489,7 +1479,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 12px;
   padding: 14px 18px;
-  background: var(--surface);
+  background: var(--glass-surface);
   border: var(--ui-border);
   border-radius: var(--border-radius-sm);
 }
@@ -1625,7 +1615,6 @@ onUnmounted(() => {
 
   .particle {
     opacity: 0.32;
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 7%, transparent);
   }
 
   .ambient-light {
@@ -1635,7 +1624,6 @@ onUnmounted(() => {
 
   .geo-shape {
     opacity: 0.44;
-    box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 20%, #ffffff);
   }
 
   .section-label {

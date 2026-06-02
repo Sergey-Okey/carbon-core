@@ -260,23 +260,24 @@ function handleSave(taskData: any) {
   }
 
   .add-btn {
-    @include glass;
-    width: 38px;
-    height: 38px;
+    width: 34px;
+    height: 34px;
+    min-height: 34px;
     border-radius: var(--border-radius-pill);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--accent);
     cursor: pointer;
-    border: none;
+    border: var(--ui-border);
+    border-style: dashed;
+    background: transparent;
     transition:
       background var(--transition-standard),
-      color var(--transition-standard),
-      transform var(--transition-standard);
+      color var(--transition-standard);
 
     &:hover {
-      background: var(--glass-surface);
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
       color: var(--accent);
     }
 
@@ -285,8 +286,15 @@ function handleSave(taskData: any) {
     }
 
     &.limited {
-      color: var(--dim);
+      color: var(--accent);
+      border: var(--ui-border);
       border-style: dashed;
+    }
+
+    @include mobile {
+      width: 44px;
+      height: 44px;
+      min-height: 44px;
     }
   }
 
@@ -352,8 +360,8 @@ function handleSave(taskData: any) {
     }
 
     .add-btn {
-      width: 36px;
-      height: 36px;
+      width: 44px;
+      height: 44px;
       min-height: 44px;
     }
 
@@ -394,8 +402,9 @@ function handleSave(taskData: any) {
     }
 
     .add-btn {
-      width: 34px;
-      height: 34px;
+      width: 44px;
+      height: 44px;
+      min-height: 44px;
     }
 
     .tasks {

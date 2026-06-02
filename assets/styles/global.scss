@@ -46,7 +46,6 @@ button {
     background var(--transition-standard),
     border-color var(--transition-standard),
     color var(--transition-standard),
-    box-shadow var(--transition-standard),
     opacity var(--transition-standard);
 
   &:disabled {
@@ -58,12 +57,11 @@ button {
 input,
 select,
 textarea {
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+  transition: border-color 0.2s;
 
   &:focus {
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--accent) 18%, transparent);
+    outline-offset: 2px;
   }
 }
 

@@ -67,7 +67,7 @@ const props = withDefaults(
     closable: true,
     closeOnBackdrop: true,
     closeTitle: 'Закрыть',
-    zIndex: 999,
+    zIndex: 5000,
     allowOverflow: false,
   }
 )
@@ -126,8 +126,8 @@ function handleBackdrop() {
   align-items: center;
   justify-content: space-between;
   gap: var(--panel-gap);
-  min-height: 66px;
-  padding: 14px 18px;
+  min-height: 62px;
+  padding: 14px 16px;
 }
 
 .title-block {
@@ -136,7 +136,7 @@ function handleBackdrop() {
   h3 {
     margin: 2px 0 0;
     color: var(--accent);
-    font-size: 1.08rem;
+    font-size: 1rem;
     font-weight: 600;
     line-height: 1.25;
     word-break: break-word;
@@ -146,7 +146,7 @@ function handleBackdrop() {
 .modal-kicker {
   display: block;
   color: var(--dim);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -154,7 +154,10 @@ function handleBackdrop() {
 
 .app-modal-body {
   min-height: 0;
-  padding: var(--panel-padding);
+  padding: 16px;
+  color: var(--accent);
+  font-size: 0.92rem;
+  line-height: 1.5;
   overflow-y: auto;
 
   &.allow-overflow {
@@ -195,7 +198,7 @@ function handleBackdrop() {
 .modal-panel-enter-from,
 .modal-panel-leave-to {
   opacity: 0;
-  transform: translateY(8px) scale(0.985);
+  transform: translateY(8px);
 }
 
 @media (max-width: 640px) {

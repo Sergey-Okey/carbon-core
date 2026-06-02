@@ -67,7 +67,8 @@ const popoverEl = ref<HTMLElement | null>(null)
 const popoverStyle = ref<Record<string, string>>({
   top: '0px',
   left: '0px',
-  width: 'min(304px, 86vw)',
+  width: '304px',
+  maxHeight: '360px',
 })
 const isOpen = ref(false)
 const viewDate = ref(createDateFromValue(props.modelValue) || new Date())
@@ -123,20 +124,29 @@ function toggleOpen() {
 }
 
 function updatePopoverPosition() {
-  if (!rootEl.value) return
+  if (!rootEl.value || !isOpen.value) return
 
   const rect = rootEl.value.getBoundingClientRect()
-  const maxWidth = Math.min(304, window.innerWidth * 0.86)
+  const gap = 8
+  const viewportPadding = 12
+  const width = Math.min(304, window.innerWidth - viewportPadding * 2)
+  const expectedHeight = popoverEl.value?.offsetHeight || 332
+  const availableBelow = window.innerHeight - rect.bottom - viewportPadding
+  const availableAbove = rect.top - viewportPadding
+  const openUp = availableBelow < expectedHeight && availableAbove > availableBelow
+  const maxHeight = Math.max(280, Math.min(expectedHeight, openUp ? availableAbove - gap : availableBelow - gap))
   let left = rect.left
 
-  if (left + maxWidth + 12 > window.innerWidth) {
-    left = Math.max(12, window.innerWidth - maxWidth - 12)
-  }
+  left = Math.min(left, window.innerWidth - width - viewportPadding)
+  left = Math.max(viewportPadding, left)
 
   popoverStyle.value = {
-    top: `${rect.bottom + 8}px`,
+    top: openUp
+      ? `${Math.max(viewportPadding, rect.top - gap - maxHeight)}px`
+      : `${Math.min(rect.bottom + gap, window.innerHeight - viewportPadding - maxHeight)}px`,
     left: `${left}px`,
-    width: `min(304px, 86vw)`,
+    width: `${width}px`,
+    maxHeight: `${maxHeight}px`,
   }
 }
 
@@ -215,11 +225,16 @@ onUnmounted(() => {
 .date-popover {
   @include glass;
   position: fixed;
-  z-index: 1200;
-  width: min(304px, 86vw);
+  z-index: 5200;
+  width: 304px;
+  max-height: min(360px, calc(100dvh - 24px));
   padding: 12px;
+  overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-strong-filter);
+  -webkit-backdrop-filter: var(--glass-strong-filter);
 }
 
 .date-head,

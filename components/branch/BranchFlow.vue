@@ -17,6 +17,7 @@
       v-model:nodes="nodes"
       v-model:edges="edges"
       :node-types="nodeTypes"
+      :default-edge-options="defaultEdgeOptions"
       :default-viewport="{ zoom: 1, x: 0, y: 0 }"
       :snap-to-grid="true"
       :snap-grid="[20, 20]"
@@ -131,6 +132,12 @@ const { fitView, zoomIn: vfZoomIn, zoomOut: vfZoomOut } = useVueFlow()
 const { applyLayout } = useAutoLayout()
 const { confirm } = useConfirm()
 const { addNotification } = useNotification()
+const defaultEdgeOptions = {
+  type: 'smoothstep',
+  pathOptions: { borderRadius: 50, offset: 24 },
+  animated: false,
+  style: { stroke: 'var(--accent)', strokeWidth: 1 },
+}
 
 const history = ref<{ branches: Branch[]; edges: Edge[] }[]>([])
 const historyIndex = ref(-1)
@@ -255,7 +262,18 @@ function syncNodesAndEdges() {
   nodes.value = newNodes
   edges.value = branchesStore.edges.filter(
     (edge) => existingIds.has(edge.source) && existingIds.has(edge.target)
-  )
+  ).map((edge) => ({
+    ...defaultEdgeOptions,
+    ...edge,
+    pathOptions: {
+      ...defaultEdgeOptions.pathOptions,
+      ...(edge.pathOptions || {}),
+    },
+    style: {
+      ...defaultEdgeOptions.style,
+      ...(edge.style || {}),
+    },
+  }))
   edgeSnapshot.value = JSON.parse(JSON.stringify(edges.value))
   nextTick(() => {
     isSyncingFlow.value = false
@@ -760,6 +778,8 @@ watch(
 :deep(.vue-flow__edge-path) {
   stroke: var(--dim);
   stroke-width: 1.15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 :deep(.vue-flow__node.selected .branch-node, .vue-flow__node.selected .milestone-node) {

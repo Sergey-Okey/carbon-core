@@ -365,7 +365,6 @@ function formatTaskCount(count: number) {
 
   &--active {
     background: var(--accent);
-    box-shadow: 0 0 4px color-mix(in srgb, var(--accent) 28%, transparent);
   }
 }
 
@@ -490,7 +489,7 @@ function formatTaskCount(count: number) {
 
     .activity-fill {
       opacity: 1;
-      transform: scaleY(1.03);
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
     }
 
     .activity-tooltip {
@@ -532,7 +531,6 @@ function formatTaskCount(count: number) {
   transition:
     height var(--transition-standard),
     opacity var(--transition-standard),
-    transform var(--transition-standard);
 }
 
 .activity-day.empty .activity-fill {
@@ -565,8 +563,7 @@ function formatTaskCount(count: number) {
   transform: translate(-50%, 0);
   transition:
     opacity var(--transition-standard),
-    transform var(--transition-standard),
-    visibility var(--transition-standard);
+        visibility var(--transition-standard);
   visibility: hidden;
 }
 
