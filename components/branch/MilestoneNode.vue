@@ -127,15 +127,15 @@ const branchesStore = useBranchesStore()
 const milestone = computed(() => props.data.milestone!)
 const branchColor = computed(() => {
   const branch = branchesStore.branches.find((item) => item.id === props.data.branchId)
-  return branch?.backgroundColor || props.data.branchColor || '#d6d6d6'
+  return branch?.markerColor || branch?.backgroundColor || props.data.branchColor || '#d6d6d6'
 })
 const milestoneColor = computed(
-  () => milestone.value.backgroundColor || branchColor.value
+  () => milestone.value.markerColor || milestone.value.backgroundColor || branchColor.value
 )
 const nodeStyle = computed(() => ({
-  '--node-bg-color': milestoneColor.value,
+  '--node-marker-color': milestoneColor.value,
   '--node-handle-color': branchColor.value,
-  background: `linear-gradient(135deg, color-mix(in srgb, ${milestoneColor.value} 16%, transparent), color-mix(in srgb, ${milestoneColor.value} 5%, transparent)), var(--glass-surface)`,
+  background: 'var(--glass-surface)',
 }))
 const sourceHandleStyle = computed(() => ({
   background: branchColor.value,
@@ -220,13 +220,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     border-color var(--transition-standard),
     background var(--transition-standard);
   border: var(--ui-border);
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--node-bg-color) 14%, transparent),
-      color-mix(in srgb, var(--node-bg-color) 4%, transparent)
-    ),
-    var(--glass-surface);
+  background: var(--glass-surface);
 
   &.selected {
     border-color: var(--text);
@@ -262,7 +256,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     transform: translate(-50%, -50%);
     width: 10px;
     height: 10px;
-    background: var(--accent);
+    background: var(--node-marker-color);
     border-radius: 50%;
     border: none;
     transition: opacity var(--transition-standard);

@@ -7,7 +7,7 @@ import { useTasksStore } from './tasks.store'
 
 const edgeStyle = { stroke: 'var(--dim)', strokeWidth: 1.15 }
 const edgePathOptions = { borderRadius: 50, offset: 24 }
-const defaultNodeBackground = '#d6d6d6'
+const defaultMarkerColor = '#d6d6d6'
 
 function sourcePort(nodeId: string, side: 'right' | 'bottom' = 'right') {
   return `source-${side}-${nodeId}`
@@ -66,7 +66,7 @@ export const useBranchesStore = defineStore(
         displayName: 'Core of Life',
         icon: 'target',
         description: 'Разработка главного приложения для саморазвития',
-        backgroundColor: defaultNodeBackground,
+        markerColor: defaultMarkerColor,
         taskIds: [],
         milestones: [
           {
@@ -605,7 +605,7 @@ export const useBranchesStore = defineStore(
       icon: string,
       description: string = '',
       taskIds: string[] = [],
-      backgroundColor: string = defaultNodeBackground
+      markerColor: string = defaultMarkerColor
     ) {
       const lastBranch = branches.value.at(-1)
       const lastPosition = lastBranch?.position || { x: 100, y: 100 }
@@ -614,7 +614,7 @@ export const useBranchesStore = defineStore(
         displayName,
         icon,
         description,
-        backgroundColor,
+        markerColor,
         taskIds,
         milestones: [],
         order: branches.value.length,
@@ -664,7 +664,7 @@ export const useBranchesStore = defineStore(
         name,
         icon: branch?.icon || 'target',
         description: '',
-        backgroundColor: branch?.backgroundColor || defaultNodeBackground,
+        markerColor: branch?.markerColor || branch?.backgroundColor || defaultMarkerColor,
         requiredXP: 500,
         currentXP: 0,
         status: 'pending',
@@ -712,7 +712,7 @@ export const useBranchesStore = defineStore(
         name: data.name || 'Новый этап',
         icon: branch.icon,
         description: data.description || '',
-        backgroundColor: data.backgroundColor || branch.backgroundColor || defaultNodeBackground,
+        markerColor: data.markerColor || data.backgroundColor || branch.markerColor || branch.backgroundColor || defaultMarkerColor,
         requiredXP: data.requiredXP || 500,
         currentXP: data.currentXP || 0,
         status: data.status || 'pending',
@@ -831,7 +831,7 @@ export const useBranchesStore = defineStore(
         displayName: milestone.name,
         icon: 'help-circle',
         description: '',
-        backgroundColor: defaultNodeBackground,
+        markerColor: defaultMarkerColor,
         taskIds: [],
         milestones: [milestone],
         order: branches.value.length,

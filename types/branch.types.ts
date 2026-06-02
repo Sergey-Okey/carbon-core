@@ -5,6 +5,7 @@ export interface Milestone {
   name: string
   description?: string
   icon?: string
+  markerColor?: string
   backgroundColor?: string
   requiredXP: number
   currentXP: number
@@ -20,6 +21,7 @@ export interface Branch {
   displayName: string
   icon: string
   description?: string
+  markerColor?: string
   backgroundColor?: string
   taskIds: string[]
   milestones: Milestone[]

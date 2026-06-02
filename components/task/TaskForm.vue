@@ -208,7 +208,7 @@ const currentScope = computed<TagScope>(() =>
   form.type === 'HABIT' ? 'habit' : 'task'
 )
 
-const allTags = computed<Tag[]>(() => tagsStore.getTagsByScope(currentScope.value))
+const allTags = computed<Tag[]>(() => tagsStore.tags)
 const availableTags = computed<Tag[]>(() =>
   allTags.value.filter((tag) => !form.tagIds.includes(tag.id))
 )
@@ -296,7 +296,7 @@ function createTag() {
 
   const name = newTagName.value.trim()
   const existingGlobal = tagsStore.tags.find(
-    (tag) => tag.name.toLowerCase() === name.toLowerCase() && tag.scope === currentScope.value
+    (tag) => tag.name.toLowerCase() === name.toLowerCase()
   )
   if (existingGlobal) {
     if (!form.tagIds.includes(existingGlobal.id)) {

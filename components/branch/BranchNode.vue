@@ -146,13 +146,13 @@ const branchColor = computed(() => {
   const branch = branchesStore.branches.find(
     (b) => b.id === props.data.branchId
   )
-  return branch?.backgroundColor || props.data.branchColor || '#d6d6d6'
+  return branch?.markerColor || branch?.backgroundColor || props.data.branchColor || '#d6d6d6'
 })
 
 const nodeStyle = computed(() => ({
-  '--node-bg-color': branchColor.value,
+  '--node-marker-color': branchColor.value,
   '--node-handle-color': branchColor.value,
-  background: `linear-gradient(135deg, color-mix(in srgb, ${branchColor.value} 16%, transparent), color-mix(in srgb, ${branchColor.value} 5%, transparent)), var(--glass-surface)`,
+  background: 'var(--glass-surface)',
 }))
 
 const sourceHandleStyle = computed(() => ({
@@ -251,13 +251,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     border-color var(--transition-standard),
     background var(--transition-standard);
   border: var(--ui-border);
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--node-bg-color) 14%, transparent),
-      color-mix(in srgb, var(--node-bg-color) 4%, transparent)
-    ),
-    var(--glass-surface);
+  background: var(--glass-surface);
 
   &.selected {
     border-color: var(--text);
@@ -293,7 +287,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     transform: translate(-50%, -50%);
     width: 9px;
     height: 9px;
-    background: var(--accent);
+    background: var(--node-marker-color);
     border-radius: 2px;
     border: none;
     transition: opacity var(--transition-standard);

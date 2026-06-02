@@ -61,8 +61,8 @@
           </div>
         </AppFormField>
 
-        <AppFormField label="Фон ветки">
-          <AppCustomColorPicker v-model="form.backgroundColor" label="Выбрать фон" />
+        <AppFormField label="Цвет маркера">
+          <AppCustomColorPicker v-model="form.markerColor" label="Выбрать цвет" />
         </AppFormField>
       </div>
 
@@ -115,7 +115,7 @@ const emit = defineEmits<{
   (e: 'close'): void
   (
     e: 'save',
-    data: { name: string; icon: string; description: string; taskIds: string[]; backgroundColor: string }
+    data: { name: string; icon: string; description: string; taskIds: string[]; markerColor: string }
   ): void
   (e: 'delete'): void
 }>()
@@ -166,7 +166,7 @@ const form = reactive({
   name: '',
   icon: 'target',
   description: '',
-  backgroundColor: '#d6d6d6',
+  markerColor: '#d6d6d6',
   taskIds: [] as string[],
 })
 
@@ -180,13 +180,13 @@ watch(
       form.name = newBranch.displayName
       form.icon = newBranch.icon
       form.description = newBranch.description || ''
-      form.backgroundColor = newBranch.backgroundColor || '#d6d6d6'
+      form.markerColor = newBranch.markerColor || newBranch.backgroundColor || '#d6d6d6'
       form.taskIds = [...(newBranch.taskIds || [])]
     } else {
       form.name = ''
       form.icon = 'target'
       form.description = ''
-      form.backgroundColor = '#d6d6d6'
+      form.markerColor = '#d6d6d6'
       form.taskIds = []
     }
   },

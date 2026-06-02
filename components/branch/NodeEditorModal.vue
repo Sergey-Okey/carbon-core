@@ -61,8 +61,8 @@
           </div>
         </AppFormField>
 
-        <AppFormField label="Фон этапа">
-          <AppCustomColorPicker v-model="form.backgroundColor" label="Выбрать фон" />
+        <AppFormField label="Цвет маркера">
+          <AppCustomColorPicker v-model="form.markerColor" label="Выбрать цвет" />
         </AppFormField>
       </div>
 
@@ -199,7 +199,9 @@ const iconComponent = (name: string) => {
   return map[name] || Target
 }
 
-const activeTasks = computed(() => tasksStore.tasks.filter((task) => !task.done))
+const activeTasks = computed(() =>
+  tasksStore.tasks.filter((task) => task.type !== 'HABIT' && !task.done)
+)
 const canSubmit = computed(() => form.name.trim().length > 0)
 
 function taskTypeMeta(type: string) {
@@ -219,7 +221,7 @@ const form = reactive({
   name: '',
   description: '',
   icon: 'target',
-  backgroundColor: '#d6d6d6',
+  markerColor: '#d6d6d6',
   taskIds: [] as string[],
 })
 
@@ -234,7 +236,7 @@ watch(
       form.name = newVal.name
       form.description = newVal.description || ''
       form.icon = newVal.icon || 'target'
-      form.backgroundColor = newVal.backgroundColor || '#d6d6d6'
+      form.markerColor = newVal.markerColor || newVal.backgroundColor || '#d6d6d6'
       form.taskIds = [...(newVal.taskIds || [])]
     }
   },
@@ -248,7 +250,7 @@ function handleSubmit() {
     name: form.name.trim(),
     description: form.description,
     icon: form.icon,
-    backgroundColor: form.backgroundColor,
+    markerColor: form.markerColor,
     taskIds: form.taskIds,
   })
 }

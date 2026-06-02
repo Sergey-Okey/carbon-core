@@ -19,7 +19,7 @@
         :key="branch.id"
         class="branch-item"
         :class="{ expanded: expandedBranch === branch.id }"
-        :style="{ '--node-bg-color': branch.backgroundColor || '#d6d6d6' }"
+        :style="{ '--node-marker-color': branch.markerColor || branch.backgroundColor || '#d6d6d6' }"
       >
         <!-- Заголовок ветки -->
         <div class="branch-header" @click="toggleBranch(branch.id)">
@@ -61,7 +61,7 @@
               :key="milestone.id"
               class="milestone-item"
               :class="milestone.status"
-              :style="{ '--node-bg-color': milestone.backgroundColor || branch.backgroundColor || '#d6d6d6' }"
+              :style="{ '--node-marker-color': milestone.markerColor || milestone.backgroundColor || branch.markerColor || branch.backgroundColor || '#d6d6d6' }"
               @click="selectNode(milestone.id)"
             >
               <!-- Декоративный маркер этапа (круг) -->
@@ -323,13 +323,7 @@ function getIconComponent(iconName: string) {
   @include glass;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--node-bg-color) 12%, transparent),
-      color-mix(in srgb, var(--node-bg-color) 4%, transparent)
-    ),
-    var(--glass-surface);
+  background: var(--glass-surface);
   overflow: hidden;
   transition:
     background var(--transition-standard),
@@ -459,13 +453,7 @@ function getIconComponent(iconName: string) {
   @include glass;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--node-bg-color) 12%, transparent),
-      color-mix(in srgb, var(--node-bg-color) 4%, transparent)
-    ),
-    var(--glass-surface);
+  background: var(--glass-surface);
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard);
@@ -640,7 +628,7 @@ function getIconComponent(iconName: string) {
   width: 10px;
   height: 10px;
   flex-shrink: 0;
-  background: var(--accent);
+  background: var(--node-marker-color, var(--accent));
   border: none;
   transition: opacity var(--transition-standard);
 }

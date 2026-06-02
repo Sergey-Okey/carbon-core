@@ -180,7 +180,7 @@ const emptyMilestone: Milestone = {
   currentXP: 0,
   status: 'pending',
   taskIds: [],
-  backgroundColor: '#d6d6d6',
+  markerColor: '#d6d6d6',
   position: { x: 0, y: 0 },
 }
 
@@ -205,7 +205,8 @@ function getBranchByNodeId(nodeId: string): Branch | undefined {
 }
 
 function getEdgeColor(edge: Edge) {
-  return getBranchByNodeId(edge.source)?.backgroundColor || 'var(--dim)'
+  const branch = getBranchByNodeId(edge.source)
+  return branch?.markerColor || branch?.backgroundColor || 'var(--dim)'
 }
 
 function cloneState() {
@@ -260,7 +261,7 @@ function syncNodesAndEdges() {
         branchId: branch.id,
         milestone: null,
         branchIcon: branch.icon,
-        branchColor: branch.backgroundColor,
+        branchColor: branch.markerColor || branch.backgroundColor,
       },
     })
     branch.milestones.forEach((milestone) => {
@@ -273,7 +274,7 @@ function syncNodesAndEdges() {
           branchId: branch.id,
           milestone,
           branchIcon: branch.icon,
-          branchColor: branch.backgroundColor,
+          branchColor: branch.markerColor || branch.backgroundColor,
         },
       })
     })
@@ -564,7 +565,7 @@ function openMilestoneCreator() {
       branch.id === selectedNodeId.value ||
       branch.milestones.some((milestone) => milestone.id === selectedNodeId.value)
   )
-  emptyMilestone.backgroundColor = sourceBranch?.backgroundColor || '#d6d6d6'
+  emptyMilestone.markerColor = sourceBranch?.markerColor || sourceBranch?.backgroundColor || '#d6d6d6'
   creatingMilestone.value = true
 }
 
@@ -653,7 +654,7 @@ function handleSaveBranch(data: any) {
       data.icon,
       data.description,
       data.taskIds,
-      data.backgroundColor
+      data.markerColor || data.backgroundColor
     )
   }
   branchModal.value.visible = false
