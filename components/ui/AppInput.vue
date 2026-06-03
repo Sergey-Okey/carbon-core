@@ -66,6 +66,8 @@ function handleInput(event: Event) {
 <style scoped lang="scss">
 .app-input {
   @include glass;
+  appearance: none;
+  -webkit-appearance: none;
   width: 100%;
   min-height: var(--control-height-md);
   padding: 0 14px;
@@ -78,6 +80,7 @@ function handleInput(event: Event) {
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard);
+  box-shadow: none;
 
   &::placeholder {
     color: var(--dim);
@@ -88,10 +91,22 @@ function handleInput(event: Event) {
     border-color: color-mix(in srgb, var(--accent) 45%, var(--ui-border-color));
   }
 
-  &:focus {
+  &:focus,
+  &:focus-visible {
     border-color: var(--text);
-    outline: 2px solid color-mix(in srgb, var(--accent) 14%, transparent);
-    outline-offset: 2px;
+    outline: none;
+    background: color-mix(in srgb, var(--accent) 5%, var(--glass-surface));
+    box-shadow: none;
+  }
+
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text);
+    caret-color: var(--text);
+    border-color: var(--ui-border-color);
+    box-shadow: 0 0 0 1000px color-mix(in srgb, var(--surface) 80%, transparent) inset;
+    transition: background-color 9999s ease-out;
   }
 
   &:disabled {

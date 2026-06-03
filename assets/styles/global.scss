@@ -60,8 +60,7 @@ textarea {
   transition: border-color var(--transition-standard);
 
   &:focus {
-    outline: 2px solid color-mix(in srgb, var(--accent) 18%, transparent);
-    outline-offset: 2px;
+    outline: none;
   }
 }
 
