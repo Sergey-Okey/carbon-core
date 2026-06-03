@@ -244,7 +244,10 @@ function apply() {
 .color-trigger {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  width: max-content;
+  max-width: 100%;
   min-height: var(--control-height-md);
   padding: 4px 10px;
   border: var(--ui-border);
@@ -255,6 +258,9 @@ function apply() {
   font: inherit;
   font-size: 0.82rem;
   font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+  box-sizing: border-box;
   transition:
     background var(--transition-standard),
     color var(--transition-standard),
@@ -282,13 +288,15 @@ function apply() {
 .color-modal {
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .palette-row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(112px, 1fr);
   align-items: stretch;
   gap: 16px;
+  min-width: 0;
 }
 
 .palette-wheel {
@@ -331,6 +339,11 @@ function apply() {
   display: grid;
   grid-template-rows: 1fr auto;
   gap: 10px;
+  min-width: 0;
+
+  :deep(.app-button) {
+    width: 100%;
+  }
 }
 
 .color-large-preview {
@@ -382,13 +395,19 @@ function apply() {
 
 .modal-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
   width: 100%;
+
+  :deep(.app-button) {
+    min-width: 112px;
+  }
 }
 
 @include mobile {
   .color-trigger {
+    width: 100%;
     min-height: 44px;
   }
 
@@ -398,6 +417,13 @@ function apply() {
 
   .palette-wheel {
     justify-self: center;
+    width: 124px;
+    height: 124px;
+  }
+
+  .modal-actions {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 }
 </style>

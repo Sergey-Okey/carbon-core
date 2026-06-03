@@ -54,7 +54,7 @@ const uiStore = useUIStore()
 const sectionTitles: Record<NavSection, string> = {
   board: 'Доска',
   tasks: 'Задачи',
-  shop: 'Магазин',
+  shop: 'Фокус',
   analytics: 'Аналитика',
   settings: 'Настройки',
 }

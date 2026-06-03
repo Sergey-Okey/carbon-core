@@ -54,7 +54,7 @@
         </Teleport>
       </div>
 
-      <RewardList v-if="uiStore.activeNav === 'shop'" />
+      <FocusPanel v-if="uiStore.activeNav === 'shop'" />
       <AnalyticsPanel v-if="uiStore.activeNav === 'analytics'" />
       <SettingsPanel v-if="uiStore.activeNav === 'settings'" />
     </section>
@@ -72,7 +72,7 @@ import { useTaskActions } from '~/composables/useTaskActions'
 import AnalyticsPanel from '~/components/analytics/AnalyticsPanel.vue'
 import BranchFlow from '~/components/branch/BranchFlow.vue'
 import StatsOverview from '~/components/dashboard/StatsOverview.vue'
-import RewardList from '~/components/shop/RewardList.vue'
+import FocusPanel from '~/components/focus/FocusPanel.vue'
 import TaskForm from '~/components/task/TaskForm.vue'
 import TaskSections from '~/components/task/TaskSections.vue'
 import TaskToolbar from '~/components/task/TaskToolbar.vue'

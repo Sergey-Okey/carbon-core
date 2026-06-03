@@ -67,8 +67,8 @@ const popoverEl = ref<HTMLElement | null>(null)
 const popoverStyle = ref<Record<string, string>>({
   top: '0px',
   left: '0px',
-  width: '304px',
-  maxHeight: '360px',
+  width: '284px',
+  maxHeight: '332px',
 })
 const isOpen = ref(false)
 const viewDate = ref(createDateFromValue(props.modelValue) || new Date())
@@ -119,7 +119,10 @@ watch(
 function toggleOpen() {
   isOpen.value = !isOpen.value
   if (isOpen.value) {
-    nextTick(updatePopoverPosition)
+    nextTick(() => {
+      updatePopoverPosition()
+      requestAnimationFrame(updatePopoverPosition)
+    })
   }
 }
 
@@ -129,8 +132,8 @@ function updatePopoverPosition() {
   const rect = rootEl.value.getBoundingClientRect()
   const gap = 8
   const viewportPadding = 12
-  const width = Math.min(304, window.innerWidth - viewportPadding * 2)
-  const expectedHeight = popoverEl.value?.offsetHeight || 332
+  const width = Math.min(284, window.innerWidth - viewportPadding * 2)
+  const expectedHeight = popoverEl.value?.offsetHeight || 312
   const availableBelow = window.innerHeight - rect.bottom - viewportPadding
   const availableAbove = rect.top - viewportPadding
   const openUp = availableBelow < expectedHeight && availableAbove > availableBelow
@@ -154,6 +157,7 @@ function shiftMonth(delta: number) {
   const next = new Date(viewDate.value)
   next.setMonth(next.getMonth() + delta)
   viewDate.value = next
+  nextTick(updatePopoverPosition)
 }
 
 function selectDate(value: string) {
@@ -220,15 +224,22 @@ onUnmounted(() => {
   color: var(--text);
   cursor: pointer;
   font: inherit;
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard);
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
+  }
 }
 
 .date-popover {
   @include glass;
   position: fixed;
   z-index: 5200;
-  width: 304px;
-  max-height: min(360px, calc(100dvh - 24px));
-  padding: 12px;
+  width: 284px;
+  max-height: min(332px, calc(100dvh - 24px));
+  padding: 10px;
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
@@ -245,13 +256,20 @@ onUnmounted(() => {
   gap: 8px;
 
   button {
-    min-height: 30px;
-    padding: 0 9px;
-    border: var(--ui-border);
+    min-height: 28px;
+    padding: 0 8px;
+    border: none;
     border-radius: var(--border-radius-md);
-    background: var(--glass-surface);
+    background: transparent;
     color: var(--text);
     cursor: pointer;
+    transition:
+      background var(--transition-standard),
+      color var(--transition-standard);
+
+    &:hover {
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+    }
   }
 }
 
@@ -271,7 +289,7 @@ onUnmounted(() => {
 .weekdays {
   margin: 12px 0 6px;
   color: var(--dim);
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 700;
   text-align: center;
 }
@@ -287,7 +305,7 @@ onUnmounted(() => {
   color: var(--text);
   cursor: pointer;
   font: inherit;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
 
   &.muted {
     color: var(--dim);

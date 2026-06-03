@@ -32,7 +32,7 @@ import {
   CheckSquare,
   LayoutGrid,
   Settings,
-  ShoppingBag,
+  Timer,
 } from 'lucide-vue-next'
 import { useUIStore, type NavSection } from '~/stores/ui.store'
 
@@ -43,7 +43,7 @@ const router = useRouter()
 const navItems: { id: NavSection; label: string; icon: any }[] = [
   { id: 'board', label: 'Доска', icon: LayoutGrid },
   { id: 'tasks', label: 'Задачи', icon: CheckSquare },
-  { id: 'shop', label: 'Магазин', icon: ShoppingBag },
+  { id: 'shop', label: 'Фокус', icon: Timer },
   { id: 'analytics', label: 'Аналитика', icon: BarChart2 },
   { id: 'settings', label: 'Настройки', icon: Settings },
 ]

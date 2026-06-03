@@ -90,7 +90,8 @@ function handleBackdrop() {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  overflow: hidden;
   background: color-mix(in srgb, var(--bg) 54%, transparent);
   backdrop-filter: var(--glass-strong-filter);
   -webkit-backdrop-filter: var(--glass-strong-filter);
@@ -101,7 +102,8 @@ function handleBackdrop() {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   width: min(100%, 520px);
-  max-height: min(88dvh, 760px);
+  max-height: min(calc(100dvh - 32px), 760px);
+  min-height: 0;
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
@@ -204,11 +206,11 @@ function handleBackdrop() {
 @media (max-width: 640px) {
   .app-modal-overlay {
     align-items: center;
-    padding: 10px;
+    padding: max(10px, env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px));
   }
 
   .app-modal {
-    width: calc(100vw - 20px);
+    width: min(100%, calc(100vw - 20px));
     max-height: calc(100dvh - 20px);
   }
 
