@@ -90,9 +90,6 @@ const viewModel = computed({
   grid-template-columns: minmax(220px, 1.25fr) minmax(180px, 0.85fr) minmax(292px, auto);
   gap: var(--panel-gap);
   align-items: end;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
   padding: var(--panel-padding);
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
@@ -102,14 +99,6 @@ const viewModel = computed({
     gap: 14px;
     padding: 14px;
   }
-}
-
-.search-field,
-.filter-field,
-.view-switch,
-.control-wrapper {
-  min-width: 0;
-  max-width: 100%;
 }
 
 label,

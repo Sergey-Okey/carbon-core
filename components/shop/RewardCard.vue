@@ -32,8 +32,6 @@ function purchase() {
 .reward-card {
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  max-width: 100%;
   min-height: 180px;
   padding: 18px;
   border: var(--ui-border);

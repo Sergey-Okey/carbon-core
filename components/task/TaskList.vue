@@ -223,8 +223,6 @@ function handleSave(taskData: any) {
 
 <style scoped lang="scss">
 .task-list {
-  min-width: 0;
-  max-width: 100%;
   padding: 4px 0 0;
 
   .list-header {

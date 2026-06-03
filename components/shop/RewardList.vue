@@ -20,9 +20,6 @@ const rewardsStore = useRewardsStore()
 <style scoped lang="scss">
 .reward-list {
   display: grid;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
   gap: 18px;
 
   .list-header {
@@ -40,9 +37,7 @@ const rewardsStore = useRewardsStore()
   }
   .rewards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr));
-    min-width: 0;
-    max-width: 100%;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
     gap: 16px;
   }
 }

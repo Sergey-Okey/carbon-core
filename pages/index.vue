@@ -141,9 +141,6 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
 .dashboard {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
   gap: 24px;
   padding-bottom: 80px;
 
@@ -177,9 +174,6 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
 }
 
 .content-section {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
   min-height: 400px;
   @include desktop {
     min-height: 0;
@@ -202,9 +196,6 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
 .tasks-dashboard {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
   gap: 24px;
 
   > * {
