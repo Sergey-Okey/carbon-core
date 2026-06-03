@@ -3,7 +3,7 @@
     <div class="settings-head">
       <div class="settings-title">
         <h2>Настройки</h2>
-        <p>Интерфейс, рабочий режим, доска и локальные данные приложения.</p>
+        <p>Тема, рабочее поведение, доска и локальные данные приложения.</p>
       </div>
 
       <nav class="settings-nav" aria-label="Разделы настроек">
@@ -36,55 +36,12 @@
           <div class="group-body">
             <div class="setting-row">
               <div class="setting-info">
-                <span class="label">Режим темы</span>
-                <span class="desc">{{ themeModeDescription }}</span>
-              </div>
-              <div class="option-grid theme-mode-grid">
-                <button
-                  v-for="option in themeModeOptions"
-                  :key="option.value"
-                  type="button"
-                  :class="{ active: settingsStore.themeMode === option.value }"
-                  @click="setThemeMode(option.value)"
-                >
-                  <component :is="option.icon" :size="16" />
-                </button>
-              </div>
-            </div>
-
-            <div v-if="settingsStore.themeMode === 'schedule'" class="setting-row">
-              <div class="setting-info">
-                <span class="label">Расписание темы</span>
-                <span class="desc">Светлая тема днём, тёмная вечером.</span>
-              </div>
-              <div class="time-range">
-                <label>
-                  <span>Светлая</span>
-                  <input
-                    type="time"
-                    :value="settingsStore.lightThemeFrom"
-                    @input="setLightThemeFrom"
-                  />
-                </label>
-                <label>
-                  <span>Тёмная</span>
-                  <input
-                    type="time"
-                    :value="settingsStore.darkThemeFrom"
-                    @input="setDarkThemeFrom"
-                  />
-                </label>
-              </div>
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Быстрая смена темы</span>
+                <span class="label">Светлая тема</span>
                 <span class="desc">{{ themeLabel }}</span>
               </div>
               <AppSwitch
                 :model-value="settingsStore.theme === 'light'"
-                aria-label="Сменить тему"
+                aria-label="Светлая тема"
                 @update:model-value="toggleTheme"
               >
                 <template #off>
@@ -98,142 +55,80 @@
 
             <div class="setting-row">
               <div class="setting-info">
+                <span class="label">Следовать системе</span>
+                <span class="desc">Тема будет повторять настройки устройства.</span>
+              </div>
+              <AppSwitch
+                :model-value="settingsStore.themeMode === 'system'"
+                aria-label="Следовать системной теме"
+                @update:model-value="toggleSystemTheme"
+              />
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="label">Тема по времени</span>
+                <span class="desc">{{ scheduleDescription }}</span>
+              </div>
+              <AppSwitch
+                :model-value="settingsStore.themeMode === 'schedule'"
+                aria-label="Тема по времени"
+                @update:model-value="toggleScheduleTheme"
+              />
+            </div>
+
+            <div v-if="settingsStore.themeMode === 'schedule'" class="setting-row">
+              <div class="setting-info">
+                <span class="label">Расписание</span>
+                <span class="desc">Когда включать светлую и темную тему.</span>
+              </div>
+              <div class="time-range">
+                <label>
+                  <span>Светлая</span>
+                  <input
+                    type="time"
+                    :value="settingsStore.lightThemeFrom"
+                    @input="setLightThemeFrom"
+                  />
+                </label>
+                <label>
+                  <span>Темная</span>
+                  <input
+                    type="time"
+                    :value="settingsStore.darkThemeFrom"
+                    @input="setDarkThemeFrom"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
                 <span class="label">Акцент</span>
                 <span class="desc">{{ accentLabel }}</span>
               </div>
               <div class="accent-controls">
-              <AppColorPicker
-                :model-value="settingsStore.accentColor"
-                :options="accentOptions"
-                label="Акцент интерфейса"
-                @update:model-value="setPresetAccent"
-              />
-              <AppCustomColorPicker
-                :model-value="settingsStore.accentColor"
-                @update:model-value="setAccentColor"
-              />
-              </div>
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Плотность интерфейса</span>
-                <span class="desc">{{ settingsStore.uiDensity === 'compact' ? 'Компактнее списки и панели.' : 'Комфортные отступы по умолчанию.' }}</span>
-              </div>
-              <div class="option-grid two">
-                <button
-                  type="button"
-                  :class="{ active: settingsStore.uiDensity === 'comfortable' }"
-                  @click="settingsStore.setUiDensity('comfortable')"
-                >
-                  Обычная
-                </button>
-                <button
-                  type="button"
-                  :class="{ active: settingsStore.uiDensity === 'compact' }"
-                  @click="settingsStore.setUiDensity('compact')"
-                >
-                  Компактная
-                </button>
-              </div>
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Фон приложения</span>
-                <span class="desc">{{ backgroundModeLabel }}</span>
-              </div>
-              <div class="option-grid three">
-                <button
-                  type="button"
-                  :class="{ active: settingsStore.appBackgroundMode === 'default' }"
-                  @click="settingsStore.setAppBackgroundMode('default')"
-                >
-                  Базовый
-                </button>
-                <button
-                  type="button"
-                  :class="{ active: settingsStore.appBackgroundMode === 'glass' }"
-                  @click="settingsStore.setAppBackgroundMode('glass')"
-                >
-                  Стекло
-                </button>
-                <button
-                  type="button"
-                  :class="{ active: settingsStore.appBackgroundMode === 'image' }"
-                  @click="chooseImageBackground"
-                >
-                  Свой
-                </button>
-              </div>
-            </div>
-
-            <div v-if="settingsStore.appBackgroundMode === 'image'" class="setting-row">
-              <div class="setting-info">
-                <span class="label">Изображение фона</span>
-                <span class="desc">{{ settingsStore.customBackgroundImage ? 'Фон загружен и сохранён локально.' : 'Загрузите изображение, оно сохранится вместе с настройками.' }}</span>
-              </div>
-              <div class="background-control">
-                <div
-                  v-if="settingsStore.customBackgroundImage"
-                  class="background-preview"
-                  :style="{ backgroundImage: `url(${settingsStore.customBackgroundImage})` }"
-                  aria-label="Текущий фон"
+                <AppColorPicker
+                  :model-value="settingsStore.accentColor"
+                  :options="accentOptions"
+                  label="Акцент интерфейса"
+                  @update:model-value="setPresetAccent"
                 />
-                <AppButton class="action-btn" type="button" variant="secondary" @click="selectBackgroundImage">
-                  <ImageIcon :size="16" />
-                  {{ settingsStore.customBackgroundImage ? 'Заменить' : 'Загрузить' }}
-                </AppButton>
-                <AppButton
-                  class="action-btn"
-                  type="button"
-                  variant="ghost"
-                  :disabled="!settingsStore.customBackgroundImage"
-                  @click="clearBackgroundImage"
-                >
-                  Очистить
-                </AppButton>
-              </div>
-            </div>
-
-            <div v-if="settingsStore.appBackgroundMode !== 'default'" class="setting-row">
-              <div class="setting-info">
-                <span class="label">Интенсивность фона</span>
-                <span class="desc">{{ backgroundIntensityLabel }}</span>
-              </div>
-              <div class="option-grid three">
-                <button
-                  type="button"
-                  :class="{ active: settingsStore.backgroundIntensity === 'soft' }"
-                  @click="settingsStore.setBackgroundIntensity('soft')"
-                >
-                  Мягко
-                </button>
-                <button
-                  type="button"
-                  :class="{ active: settingsStore.backgroundIntensity === 'normal' }"
-                  @click="settingsStore.setBackgroundIntensity('normal')"
-                >
-                  Обычно
-                </button>
-                <button
-                  type="button"
-                  :class="{ active: settingsStore.backgroundIntensity === 'contrast' }"
-                  @click="settingsStore.setBackgroundIntensity('contrast')"
-                >
-                  Контраст
-                </button>
+                <AppCustomColorPicker
+                  :model-value="settingsStore.accentColor"
+                  @update:model-value="setAccentColor"
+                />
               </div>
             </div>
 
             <div class="setting-row">
               <div class="setting-info">
-                <span class="label">Сброс внешнего вида</span>
-                <span class="desc">Вернуть тему, цвет, плотность и фон к базовым значениям.</span>
+                <span class="label">Сбросить оформление</span>
+                <span class="desc">Вернуть темную тему и базовый графитовый акцент.</span>
               </div>
               <AppButton class="action-btn" type="button" variant="secondary" @click="resetAppearance">
                 <RotateCcw :size="16" />
-                Сбросить вид
+                Сбросить
               </AppButton>
             </div>
           </div>
@@ -245,14 +140,13 @@
               <Gauge :size="22" />
               <h3>Рабочий режим</h3>
             </div>
-            <span>{{ settingsStore.showTopStats ? 'С панелью' : 'Без панели' }}</span>
           </div>
 
           <div class="group-body">
             <div class="setting-row">
               <div class="setting-info">
                 <span class="label">Верхняя статистика</span>
-                <span class="desc">Показывать панель уровня, лиги, активности и счётчиков задач.</span>
+                <span class="desc">Показывать уровень, лигу, активность и счетчики задач.</span>
               </div>
               <AppSwitch
                 :model-value="settingsStore.showTopStats"
@@ -262,8 +156,8 @@
 
             <div class="setting-row">
               <div class="setting-info">
-                <span class="label">Прогресс в настройках</span>
-                <span class="desc">Показывать верхнюю статистику и на странице настроек.</span>
+                <span class="label">Статистика на странице настроек</span>
+                <span class="desc">Показывать верхнюю статистику и внутри настроек.</span>
               </div>
               <AppSwitch
                 :model-value="settingsStore.showSettingsStats"
@@ -281,14 +175,6 @@
                 @update:model-value="toggleDangerConfirm"
               />
             </div>
-
-            <div class="mode-summary">
-              <ShieldCheck :size="18" />
-              <div>
-                <strong>Рекомендуемый баланс</strong>
-                <span>Оставьте подтверждения включёнными, а верхнюю статистику скрывайте только если нужен максимально спокойный экран.</span>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -298,14 +184,13 @@
               <LayoutGrid :size="22" />
               <h3>Доска</h3>
             </div>
-            <span>{{ settingsStore.boardColumns }} колонки</span>
           </div>
 
           <div class="group-body">
             <div class="setting-row">
               <div class="setting-info">
-                <span class="label">Фокус доски при открытии</span>
-                <span class="desc">Доска сразу готова к горячим клавишам и созданию веток.</span>
+                <span class="label">Фокусировать доску при открытии</span>
+                <span class="desc">Доска сразу готова к горячим клавишам и навигации с клавиатуры.</span>
               </div>
               <AppSwitch
                 :model-value="settingsStore.boardAutoFocus"
@@ -316,7 +201,7 @@
             <div class="setting-row">
               <div class="setting-info">
                 <span class="label">Возвращать фокус после действий</span>
-                <span class="desc">После создания, редактирования и удаления фокус снова возвращается на доску.</span>
+                <span class="desc">После создания, редактирования и удаления фокус возвращается на доску.</span>
               </div>
               <AppSwitch
                 :model-value="settingsStore.boardFocusAfterAction"
@@ -326,8 +211,19 @@
 
             <div class="setting-row">
               <div class="setting-info">
-                <span class="label">Подтверждать разрыв связи</span>
-                <span class="desc">Защита от случайного отсоединения цепочки этапов.</span>
+                <span class="label">Показывать типы узлов</span>
+                <span class="desc">Подписи помогают отличать ветки от этапов на сложных схемах.</span>
+              </div>
+              <AppSwitch
+                :model-value="settingsStore.boardShowNodeTypes"
+                @update:model-value="toggleBoardShowNodeTypes"
+              />
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="label">Защищать связи от случайного удаления</span>
+                <span class="desc">Перед разрывом линии между элементами появится подтверждение.</span>
               </div>
               <AppSwitch
                 :model-value="settingsStore.boardConfirmEdgeDelete"
@@ -337,8 +233,8 @@
 
             <div class="setting-row">
               <div class="setting-info">
-                <span class="label">Подтверждать удаление ветки</span>
-                <span class="desc">Особенно важно, если в ветке есть этапы и связанные задачи.</span>
+                <span class="label">Защищать ветки от удаления</span>
+                <span class="desc">Полезно, если в ветке есть этапы и связанные задачи.</span>
               </div>
               <AppSwitch
                 :model-value="settingsStore.boardConfirmBranchDelete"
@@ -346,70 +242,11 @@
               />
             </div>
 
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Режим автораскладки</span>
-                <span class="desc">{{ boardDensityLabel }}</span>
-              </div>
-              <div class="option-grid three">
-                <button
-                  type="button"
-                  :class="{ active: settingsStore.boardLayoutDensity === 'compact' }"
-                  @click="settingsStore.setBoardLayoutDensity('compact')"
-                >
-                  Компактно
-                </button>
-                <button
-                  type="button"
-                  :class="{ active: settingsStore.boardLayoutDensity === 'normal' }"
-                  @click="settingsStore.setBoardLayoutDensity('normal')"
-                >
-                  Обычно
-                </button>
-                <button
-                  type="button"
-                  :class="{ active: settingsStore.boardLayoutDensity === 'wide' }"
-                  @click="settingsStore.setBoardLayoutDensity('wide')"
-                >
-                  Широко
-                </button>
-              </div>
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Колонки веток</span>
-                <span class="desc">Сколько веток помещать в ряд при автораскладке.</span>
-              </div>
-              <div class="option-grid three">
-                <button
-                  v-for="count in [3, 4, 5]"
-                  :key="count"
-                  type="button"
-                  :class="{ active: settingsStore.boardColumns === count }"
-                  @click="settingsStore.setBoardColumns(count)"
-                >
-                  {{ count }}
-                </button>
-              </div>
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Обозначения узлов</span>
-                <span class="desc">Показывать подписи типа “ветка” и “этап”, если они нужны для ориентира.</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.boardShowNodeTypes"
-                @update:model-value="toggleBoardShowNodeTypes"
-              />
-            </div>
-
             <div class="mode-summary">
               <LayoutGrid :size="18" />
               <div>
-                <strong>Ручные связи защищены</strong>
-                <span>Автораскладка меняет позиции, но не должна пересобирать специально созданные связи.</span>
+                <strong>Автораскладка остается умной</strong>
+                <span>Доска сохраняет созданные связи, защищает важные действия и оставляет схему читаемой.</span>
               </div>
             </div>
           </div>
@@ -421,7 +258,7 @@
               <Database :size="22" />
               <h3>Данные</h3>
             </div>
-            <span>{{ settingsStore.autoBackup ? 'Авто-бэкап включён' : 'Авто-бэкап отключён' }}</span>
+            <span>{{ settingsStore.autoBackup ? 'Авто-бэкап включен' : 'Авто-бэкап отключен' }}</span>
           </div>
           <div class="group-body">
             <div class="data-note">
@@ -446,7 +283,7 @@
                 {{
                   settingsStore.lastBackupDate
                     ? `Последний бэкап: ${lastBackupText}`
-                    : 'Резервная копия ещё не создавалась'
+                    : 'Резервная копия еще не создавалась'
                 }}
               </span>
             </div>
@@ -484,7 +321,7 @@
               </div>
               <AppButton class="action-btn" type="button" variant="danger" @click="resetAllData">
                 <Trash2 :size="16" />
-                Сбросить всё
+                Сбросить все
               </AppButton>
             </div>
           </div>
@@ -502,13 +339,11 @@ import {
   Download,
   FileJson,
   Gauge,
-  Image as ImageIcon,
   LayoutGrid,
   Monitor,
   Moon,
   Palette,
   RotateCcw,
-  ShieldCheck,
   Sun,
   Trash2,
   Upload,
@@ -527,7 +362,6 @@ import {
 } from '~/utils/backup'
 
 type SettingsTab = 'appearance' | 'focus' | 'board' | 'data'
-type ThemeMode = 'dark' | 'light' | 'system' | 'schedule'
 
 const settingsStore = useSettingsStore()
 const { addNotification } = useNotification()
@@ -540,13 +374,6 @@ const tabs = [
   { key: 'data' as const, label: 'Данные', icon: Database },
 ]
 
-const themeModeOptions = [
-  { value: 'dark' as const, label: 'Тёмная', icon: Moon },
-  { value: 'light' as const, label: 'Светлая', icon: Sun },
-  { value: 'system' as const, label: 'Система', icon: Monitor },
-  { value: 'schedule' as const, label: 'По времени', icon: Clock },
-]
-
 const accentOptions = computed(() =>
   ACCENT_COLORS.map((color) => ({
     label: color.name,
@@ -555,41 +382,16 @@ const accentOptions = computed(() =>
 )
 
 const themeLabel = computed(() =>
-  settingsStore.theme === 'dark' ? 'Тёмная' : 'Светлая'
+  settingsStore.theme === 'dark' ? 'Сейчас включена темная тема.' : 'Сейчас включена светлая тема.'
 )
 
-const themeModeLabel = computed(() => {
-  const found = themeModeOptions.find((option) => option.value === settingsStore.themeMode)
-  return found?.label ?? 'Тёмная'
-})
-
-const themeModeDescription = computed(() => {
-  if (settingsStore.themeMode === 'system') return 'Повторяет тему операционной системы.'
-  if (settingsStore.themeMode === 'schedule') return `Светлая с ${settingsStore.lightThemeFrom}, тёмная с ${settingsStore.darkThemeFrom}.`
-  return `${themeLabel.value} тема включена вручную.`
-})
+const scheduleDescription = computed(() =>
+  `Светлая с ${settingsStore.lightThemeFrom}, темная с ${settingsStore.darkThemeFrom}.`
+)
 
 const accentLabel = computed(() => {
   const found = ACCENT_COLORS.find((color) => color.value === settingsStore.accentColor)
   return found?.name ?? 'Пользовательский'
-})
-
-const backgroundModeLabel = computed(() => {
-  if (settingsStore.appBackgroundMode === 'glass') return 'Стеклянный фон поверх базовой темы.'
-  if (settingsStore.appBackgroundMode === 'image') return 'Пользовательское изображение фона.'
-  return 'Базовый фон приложения.'
-})
-
-const backgroundIntensityLabel = computed(() => {
-  if (settingsStore.backgroundIntensity === 'soft') return 'Фон мягко приглушён.'
-  if (settingsStore.backgroundIntensity === 'contrast') return 'Фон заметнее и контрастнее.'
-  return 'Сбалансированная интенсивность.'
-})
-
-const boardDensityLabel = computed(() => {
-  if (settingsStore.boardLayoutDensity === 'compact') return 'Меньше отступы между ветками и этапами.'
-  if (settingsStore.boardLayoutDensity === 'wide') return 'Больше воздуха между цепочками.'
-  return 'Стандартные отступы автораскладки.'
 })
 
 const lastBackupText = computed(() => {
@@ -597,48 +399,28 @@ const lastBackupText = computed(() => {
   return new Date(settingsStore.lastBackupDate).toLocaleString('ru-RU')
 })
 
-function setTheme(theme: 'dark' | 'light', event?: MouseEvent) {
-  if (settingsStore.theme === theme && settingsStore.themeMode === theme) return
-
-  if (!import.meta.client) {
-    settingsStore.setTheme(theme)
-    return
-  }
-
-  const x = event?.clientX ?? window.innerWidth - 32
-  const y = event?.clientY ?? 32
-  document.documentElement.style.setProperty('--theme-transition-x', `${x}px`)
-  document.documentElement.style.setProperty('--theme-transition-y', `${y}px`)
-
-  const transitionDocument = document as Document & {
-    startViewTransition?: (callback: () => void) => { finished: Promise<void> }
-  }
-
-  if (!transitionDocument.startViewTransition) {
-    settingsStore.setTheme(theme)
-    return
-  }
-
-  const transition = transitionDocument.startViewTransition(() => {
-    settingsStore.setTheme(theme)
-  })
-
-  transition.finished.finally(() => {
-    document.documentElement.style.removeProperty('--theme-transition-x')
-    document.documentElement.style.removeProperty('--theme-transition-y')
-  })
-}
-
-function setThemeMode(mode: ThemeMode) {
-  if (mode === 'dark' || mode === 'light') {
-    setTheme(mode)
-    return
-  }
-  settingsStore.setThemeMode(mode)
+function setTheme(theme: 'dark' | 'light') {
+  settingsStore.setTheme(theme)
 }
 
 function toggleTheme(checked: boolean) {
   setTheme(checked ? 'light' : 'dark')
+}
+
+function toggleSystemTheme(checked: boolean) {
+  if (checked) {
+    settingsStore.setThemeMode('system')
+    return
+  }
+  settingsStore.setTheme(settingsStore.theme)
+}
+
+function toggleScheduleTheme(checked: boolean) {
+  if (checked) {
+    settingsStore.setThemeMode('schedule')
+    return
+  }
+  settingsStore.setTheme(settingsStore.theme)
 }
 
 function setLightThemeFrom(event: Event) {
@@ -699,39 +481,6 @@ function toggleBoardShowNodeTypes(checked: boolean) {
   settingsStore.setBoardShowNodeTypes(checked)
 }
 
-function selectBackgroundImage() {
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.accept = 'image/*'
-  input.onchange = () => {
-    const file = input.files?.[0]
-    if (!file) return
-    if (file.size > 1_500_000) {
-      addNotification({ type: 'warning', message: 'Фон слишком большой. Выберите изображение до 1.5 МБ.' })
-      return
-    }
-
-    const reader = new FileReader()
-    reader.onload = () => {
-      settingsStore.setCustomBackgroundImage(String(reader.result || ''))
-      settingsStore.setAppBackgroundMode('image')
-      addNotification({ type: 'success', message: 'Фон приложения обновлён' })
-    }
-    reader.readAsDataURL(file)
-  }
-  input.click()
-}
-
-function chooseImageBackground() {
-  settingsStore.setAppBackgroundMode('image')
-  if (!settingsStore.customBackgroundImage) selectBackgroundImage()
-}
-
-function clearBackgroundImage() {
-  settingsStore.setCustomBackgroundImage('')
-  settingsStore.setAppBackgroundMode('default')
-}
-
 function resetAppearance() {
   settingsStore.setTheme('dark')
   settingsStore.setAccentColor(ACCENT_COLORS[0].value)
@@ -739,7 +488,7 @@ function resetAppearance() {
   settingsStore.setAppBackgroundMode('default')
   settingsStore.setCustomBackgroundImage('')
   settingsStore.setBackgroundIntensity('normal')
-  addNotification({ type: 'success', message: 'Внешний вид сброшен' })
+  addNotification({ type: 'success', message: 'Оформление сброшено' })
 }
 
 function createBackup() {
@@ -776,7 +525,7 @@ function importData() {
     try {
       const payload = JSON.parse(await file.text())
       const restored = restoreBackupPayload(payload)
-      if (!restored) throw new Error('Invalid backup')
+      if (!restored) throw new Error('Restore failed')
       addNotification({ type: 'success', message: 'Данные импортированы. Перезагрузка...' })
       setTimeout(() => window.location.reload(), 1000)
     } catch (err) {
@@ -791,7 +540,7 @@ function restoreAutoBackup() {
   try {
     const backup = readAutoBackup()
     if (!backup) {
-      addNotification({ type: 'warning', message: 'Нет сохранённой копии' })
+      addNotification({ type: 'warning', message: 'Нет сохраненной копии' })
       return
     }
     const restored = restoreBackupPayload(backup)
@@ -819,8 +568,13 @@ function resetAllData() {
 <style scoped lang="scss">
 .settings-page {
   display: grid;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   gap: 14px;
+  margin: 0;
   padding-bottom: 24px;
+  box-sizing: border-box;
 
   @include mobile {
     padding-bottom: 112px;
@@ -831,6 +585,9 @@ function resetAllData() {
   @include glass;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   align-items: center;
   gap: 18px;
   padding: 16px;
@@ -865,7 +622,10 @@ function resetAllData() {
 
 .settings-layout {
   display: block;
+  width: 100%;
   min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .settings-nav {
@@ -875,6 +635,7 @@ function resetAllData() {
   justify-content: flex-end;
   gap: 6px;
   width: fit-content;
+  max-width: 100%;
   padding: 5px;
   border: var(--ui-border);
   border-radius: var(--border-radius-pill);
@@ -882,6 +643,7 @@ function resetAllData() {
   @include mobile {
     justify-self: stretch;
     width: 100%;
+    min-width: 0;
     padding: 6px;
     border-radius: var(--border-radius-pill);
   }
@@ -911,18 +673,10 @@ function resetAllData() {
     color: var(--text);
   }
 
-  &.active {
-    background: var(--accent);
-    color: var(--bg);
-  }
-
+  &.active,
   &.active:hover {
     background: var(--accent);
     color: var(--bg);
-  }
-
-  &:active {
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
   }
 
   @include mobile {
@@ -948,16 +702,22 @@ function resetAllData() {
 }
 
 .settings-content {
+  width: 100%;
   min-width: 0;
-  max-width: 980px;
+  max-width: 100%;
   margin: 0;
+  box-sizing: border-box;
 }
 
 .settings-group {
   @include glass;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
+  box-sizing: border-box;
 }
 
 .group-header {
@@ -967,7 +727,6 @@ function resetAllData() {
   gap: 16px;
   min-height: 68px;
   padding: 16px 18px;
-  border-bottom: var(--ui-border);
   color: var(--text);
 
   > div {
@@ -993,27 +752,11 @@ function resetAllData() {
   svg {
     opacity: 0.7;
   }
-
-  @include mobile {
-    align-items: center;
-    flex-direction: row;
-    padding: 14px;
-    text-align: left;
-
-    span {
-      text-align: center;
-    }
-  }
 }
 
 .group-body {
   display: grid;
-  gap: 8px;
-  padding: 10px;
-
-  @include mobile {
-    padding: 8px;
-  }
+  padding: 0 16px 10px;
 }
 
 .setting-row {
@@ -1022,16 +765,32 @@ function resetAllData() {
   align-items: center;
   gap: var(--panel-gap);
   min-height: 64px;
-  padding: 12px;
-  border-radius: var(--border-radius-md);
-  background: color-mix(in srgb, var(--glass-surface) 72%, transparent);
+  padding: 14px 0;
+
+  + .setting-row,
+  + .backup-info,
+  + .action-group,
+  + .danger-zone,
+  + .mode-summary {
+    border-top: var(--ui-border);
+  }
 
   @include mobile {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-width: 0;
+    max-width: 100%;
     gap: 12px;
     min-height: 0;
-    padding: 12px;
+    align-items: center;
     text-align: left;
+  }
+}
+
+.setting-row:has(.time-range),
+.setting-row:has(.accent-controls),
+.setting-row:has(.action-btn) {
+  @include mobile {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1054,79 +813,20 @@ function resetAllData() {
   }
 }
 
-.option-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  min-width: 220px;
-
-  &.two {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  &.three {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    min-height: 38px;
-    padding: 0 10px;
-    border: none;
-    border-radius: var(--border-radius-pill);
-    background: transparent;
-    color: var(--dim);
-    cursor: pointer;
-    font: inherit;
-    font-size: 0.82rem;
-    font-weight: 600;
-    transition:
-      background var(--transition-standard),
-      border-color var(--transition-standard),
-      color var(--transition-standard);
-
-    &:hover {
-      background: color-mix(in srgb, var(--accent) 7%, transparent);
-      color: var(--text);
-    }
-
-    &.active {
-      background: var(--accent);
-      color: var(--bg);
-    }
-
-    &.active:hover {
-      background: var(--accent);
-      color: var(--bg);
-    }
-  }
-
-  @include mobile {
-    width: 100%;
-    min-width: 0;
-  }
-}
-
-.theme-mode-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 .time-range,
-.action-inline,
-.accent-controls,
-.background-control {
+.accent-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
   min-height: var(--control-height-md);
 
   @include mobile {
-    justify-content: center;
+    justify-content: flex-start;
+    width: 100%;
   }
 }
 
@@ -1142,6 +842,7 @@ function resetAllData() {
 
 .time-range label {
   display: grid;
+  min-width: 0;
   gap: 4px;
   color: var(--dim);
   font-size: 0.75rem;
@@ -1149,10 +850,11 @@ function resetAllData() {
 
   input {
     min-height: 36px;
+    width: 100%;
     padding: 0 10px;
     border: var(--ui-border);
     border-radius: var(--border-radius-md);
-    background: var(--glass-surface);
+    background: transparent;
     color: var(--text);
   }
 }
@@ -1161,13 +863,11 @@ function resetAllData() {
 .data-note,
 .mode-summary {
   display: flex;
+  min-width: 0;
+  max-width: 100%;
   align-items: center;
   gap: 8px;
-  margin: 12px 0 18px;
-  padding: 12px 14px;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-md);
-  background: var(--glass-surface);
+  padding: 12px 0;
   color: var(--dim);
   font-size: 0.85rem;
 
@@ -1179,8 +879,7 @@ function resetAllData() {
 
 .mode-summary {
   align-items: flex-start;
-  margin-top: 12px;
-  margin-bottom: 0;
+  margin-top: 0;
 
   strong,
   span {
@@ -1198,31 +897,22 @@ function resetAllData() {
   }
 }
 
-.data-note {
-  margin-top: 12px;
-  margin-bottom: 0;
+.data-note + .setting-row,
+.backup-info + .action-group {
+  border-top: var(--ui-border);
 }
 
 .action-group {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+  max-width: 100%;
   gap: 10px;
+  padding-top: 14px;
 
   @include mobile {
     grid-template-columns: 1fr;
   }
-}
-
-.danger-zone .action-btn {
-  min-width: 180px;
-
-  @include mobile {
-    width: 100%;
-  }
-}
-
-.action-btn {
-  min-height: 42px;
 }
 
 .danger-zone {
@@ -1230,12 +920,20 @@ function resetAllData() {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 16px;
-  margin-top: 18px;
   padding-top: 18px;
-  border-top: var(--ui-border);
 
   @include mobile {
     grid-template-columns: 1fr;
+    min-width: 0;
+  }
+}
+
+.action-btn {
+  min-height: 42px;
+
+  @include mobile {
+    width: 100%;
+    min-height: 44px;
   }
 }
 

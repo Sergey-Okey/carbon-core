@@ -52,17 +52,24 @@ const emit = defineEmits<{
 
 <style scoped lang="scss">
 .color-picker {
+  @include glass;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 5px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-pill);
 }
 
 .color-option {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   padding: 0;
   border: none;
   border-radius: 50%;
@@ -76,31 +83,43 @@ const emit = defineEmits<{
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     background: var(--picker-color);
     color: var(--bg);
-    transition: box-shadow var(--transition-standard);
+    transition:
+      outline-color var(--transition-standard),
+      outline-offset var(--transition-standard),
+      transform var(--transition-standard);
   }
 
   &:hover {
-    background: color-mix(in srgb, var(--picker-color) 12%, transparent);
+    background: color-mix(in srgb, var(--picker-color) 10%, transparent);
   }
 
   &.active,
   &.active:hover {
-    background: color-mix(in srgb, var(--picker-color) 18%, transparent);
+    background: color-mix(in srgb, var(--picker-color) 14%, transparent);
 
     .color-dot {
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--picker-color) 22%, transparent);
+      outline: 2px solid color-mix(in srgb, var(--picker-color) 64%, var(--text) 36%);
+      outline-offset: 3px;
     }
   }
 }
 
 @media (max-width: 767px) {
+  .color-picker {
+    width: 100%;
+    justify-content: space-between;
+    border-radius: var(--border-radius-lg);
+  }
+
   .color-option {
+    width: 44px;
     min-width: 44px;
+    height: 44px;
     min-height: 44px;
   }
 }

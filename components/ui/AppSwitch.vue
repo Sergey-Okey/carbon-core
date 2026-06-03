@@ -10,12 +10,6 @@
     @click="toggle"
   >
     <span class="switch-track">
-      <span class="switch-icon switch-icon-off">
-        <slot name="off" />
-      </span>
-      <span class="switch-icon switch-icon-on">
-        <slot name="on" />
-      </span>
       <span class="switch-thumb" />
     </span>
   </button>
@@ -51,8 +45,9 @@ function toggle() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 22px;
+  width: 46px;
+  min-width: 46px;
+  height: 44px;
   padding: 0;
   border: none;
   border-radius: var(--border-radius-pill);
@@ -73,86 +68,51 @@ function toggle() {
   }
 
   @include mobile {
-    justify-self: center;
+    justify-self: end;
     margin-left: 0;
-    width: 44px;
+    width: 46px;
+    min-width: 46px;
     height: 44px;
   }
 }
 
 .switch-track {
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  width: 40px;
-  height: 22px;
-  padding: 2px;
+  display: block;
+  width: 46px;
+  height: 26px;
   border-radius: var(--border-radius-pill);
   border: var(--ui-border);
-  background: color-mix(in srgb, var(--surface) 88%, var(--accent) 12%);
+  background: color-mix(in srgb, var(--surface) 82%, var(--text) 18%);
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard);
 
   .checked & {
     background: var(--accent);
-    border-color: var(--text);
+    border-color: color-mix(in srgb, var(--accent) 70%, var(--text) 30%);
   }
 }
 
 .switch-thumb {
   position: absolute;
-  left: 2px;
-  top: 2px;
-  width: 16px;
-  height: 16px;
+  left: 3px;
+  top: 50%;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--bg);
+  border: var(--ui-border);
+  transition:
+    transform var(--transition-standard),
+    background var(--transition-standard),
+    border-color var(--transition-standard);
+  transform: translateY(-50%);
   will-change: transform;
 
   .checked & {
-    transform: translateX(18px);
-  }
-}
-
-.switch-icon {
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  color: currentColor;
-  font-size: 10px;
-  transition: opacity var(--transition-standard);
-
-  svg,
-  img {
-    width: 12px;
-    height: 12px;
-  }
-
-  @include mobile {
-    svg,
-    img {
-      width: 12px;
-      height: 12px;
-    }
-  }
-}
-
-.switch-icon-off {
-  opacity: 0.85;
-  .checked & {
-    opacity: 0.35;
-  }
-}
-
-.switch-icon-on {
-  opacity: 0.35;
-  .checked & {
-    opacity: 0.85;
+    transform: translate(20px, -50%);
+    border-color: color-mix(in srgb, var(--bg) 84%, var(--text) 16%);
   }
 }
 </style>

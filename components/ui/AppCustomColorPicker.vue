@@ -43,6 +43,18 @@
           />
         </AppFormField>
 
+        <label class="brightness-control">
+          <span>Яркость</span>
+          <input
+            v-model.number="brightness"
+            type="range"
+            min="0"
+            max="100"
+            :style="{ '--custom-color': safeDraftColor }"
+            @input="setBrightness"
+          />
+        </label>
+
         <div class="color-swatches" aria-label="Быстрый выбор цвета">
           <button
             v-for="color in swatches"
@@ -93,6 +105,7 @@ const emit = defineEmits<{
 
 const isOpen = ref(false)
 const draftColor = ref(props.modelValue)
+const brightness = ref(100)
 const paletteRef = ref<HTMLButtonElement | null>(null)
 const isValidColor = computed(() => /^#[0-9a-fA-F]{6}$/.test(draftColor.value))
 const safeDraftColor = computed(() => (isValidColor.value ? draftColor.value : '#d6d6d6'))
@@ -113,6 +126,7 @@ watch(
   () => props.modelValue,
   (value) => {
     draftColor.value = value
+    syncBrightness(value)
   }
 )
 
@@ -122,16 +136,19 @@ function normalizeColor(color: string) {
 
 function open() {
   draftColor.value = props.modelValue
+  syncBrightness(props.modelValue)
   isOpen.value = true
 }
 
 function close() {
   draftColor.value = props.modelValue
+  syncBrightness(props.modelValue)
   isOpen.value = false
 }
 
 function resetToCurrentColor() {
   draftColor.value = props.modelValue
+  syncBrightness(props.modelValue)
 }
 
 function pickFromPalette(event: PointerEvent) {
@@ -149,7 +166,21 @@ function pickFromPalette(event: PointerEvent) {
   const hue = (Math.atan2(dy, dx) * 180) / Math.PI + 90
   const saturation = distance / radius
 
-  draftColor.value = hsvToHex((hue + 360) % 360, saturation, 1)
+  draftColor.value = hsvToHex((hue + 360) % 360, saturation, brightness.value / 100)
+}
+
+function setBrightness() {
+  if (!isValidColor.value) return
+  const hsv = hexToHsv(draftColor.value)
+  draftColor.value = hsvToHex(hsv.h, hsv.s, brightness.value / 100)
+}
+
+function syncBrightness(color: string) {
+  brightness.value = Math.round(hexToHsv(isValidHex(color) ? color : '#d6d6d6').v * 100)
+}
+
+function isValidHex(color: string) {
+  return /^#[0-9a-fA-F]{6}$/.test(color)
 }
 
 function hsvToHex(h: number, s: number, v: number) {
@@ -211,14 +242,14 @@ function apply() {
 
 <style scoped lang="scss">
 .color-trigger {
-  @include glass;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   min-height: var(--control-height-md);
-  padding: 4px 8px 4px 12px;
+  padding: 4px 10px;
   border: var(--ui-border);
-  border-radius: var(--border-radius-md);
+  border-radius: var(--border-radius-pill);
+  background: transparent;
   color: var(--text);
   cursor: pointer;
   font: inherit;
@@ -241,28 +272,30 @@ function apply() {
 }
 
 .color-preview {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: var(--border-radius-pill);
+  outline: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+  outline-offset: 2px;
 }
 
 .color-modal {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .palette-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: stretch;
-  gap: 14px;
+  gap: 16px;
 }
 
 .palette-wheel {
   position: relative;
   display: inline-flex;
-  width: 112px;
-  height: 112px;
+  width: 132px;
+  height: 132px;
   border: var(--ui-border);
   border-radius: 50%;
   cursor: crosshair;
@@ -276,10 +309,10 @@ function apply() {
 
 .palette-core {
   position: absolute;
-  inset: 35px;
+  inset: 43px;
   border-radius: 50%;
   background: var(--custom-color);
-  box-shadow: 0 0 0 5px color-mix(in srgb, var(--bg) 52%, transparent);
+  outline: 5px solid color-mix(in srgb, var(--bg) 48%, transparent);
   pointer-events: none;
 }
 
@@ -289,7 +322,7 @@ function apply() {
   height: 12px;
   border: 2px solid var(--text-inverse);
   border-radius: 50%;
-  box-shadow: 0 0 0 1px var(--text);
+  outline: 1px solid var(--text);
   pointer-events: none;
   transform: translate(-50%, -50%);
 }
@@ -301,28 +334,49 @@ function apply() {
 }
 
 .color-large-preview {
-  min-height: 56px;
-  border-radius: var(--border-radius-md);
+  min-height: 74px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
+}
+
+.brightness-control {
+  display: grid;
+  gap: 8px;
+  color: var(--dim);
+  font-size: 0.78rem;
+  font-weight: 600;
+
+  input {
+    width: 100%;
+    accent-color: var(--custom-color);
+    cursor: pointer;
+  }
 }
 
 .color-swatches {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  gap: 7px;
 }
 
 .color-swatches button {
   aspect-ratio: 1;
   border: none;
   border-radius: var(--border-radius-pill);
+  background: var(--custom-color);
   cursor: pointer;
   transition:
-    box-shadow var(--transition-standard),
+    outline-color var(--transition-standard),
+    outline-offset var(--transition-standard),
     opacity var(--transition-standard);
 
-  &:hover,
+  &:hover {
+    opacity: 0.84;
+  }
+
   &.active {
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--custom-color) 18%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--custom-color) 62%, var(--text) 38%);
+    outline-offset: 3px;
   }
 }
 
