@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const ACCENT_COLORS = [
-  { name: 'Графит', value: '#d6d6d6' },
+  { name: 'Графит', value: '#2b2b2b' },
   { name: 'Сапфир', value: '#7aa2ff' },
   { name: 'Мята', value: '#74d6a0' },
   { name: 'Янтарь', value: '#e5b45a' },
@@ -11,8 +11,17 @@ export const ACCENT_COLORS = [
   { name: 'Бирюза', value: '#6fd8d2' },
 ]
 
-function resolveAccentColor(color: string): string {
+function resolveAccentColor(color: string, light = false): string {
+  if (isGraphiteAccent(color)) {
+    return light ? '#2b2b2b' : '#d6d6d6'
+  }
+
   return color
+}
+
+function isGraphiteAccent(color: string): boolean {
+  const normalized = color.toLowerCase()
+  return normalized === '#2b2b2b' || normalized === '#d6d6d6'
 }
 
 export const useSettingsStore = defineStore(
@@ -109,7 +118,7 @@ export const useSettingsStore = defineStore(
 
     function applyAccentColor(color: string) {
       if (import.meta.client) {
-        const finalColor = resolveAccentColor(color)
+        const finalColor = resolveAccentColor(color, isLight())
         document.documentElement.style.setProperty('--accent', finalColor)
         const r = parseInt(finalColor.slice(1, 3), 16)
         const g = parseInt(finalColor.slice(3, 5), 16)
@@ -237,7 +246,11 @@ export const useSettingsStore = defineStore(
         }
         if (typeof saved.lightThemeFrom === 'string') lightThemeFrom.value = saved.lightThemeFrom
         if (typeof saved.darkThemeFrom === 'string') darkThemeFrom.value = saved.darkThemeFrom
-        if (typeof saved.accentColor === 'string') accentColor.value = saved.accentColor
+        if (typeof saved.accentColor === 'string') {
+          accentColor.value = isGraphiteAccent(saved.accentColor)
+            ? ACCENT_COLORS[0].value
+            : saved.accentColor
+        }
         if (saved.uiDensity === 'comfortable' || saved.uiDensity === 'compact') uiDensity.value = saved.uiDensity
         if (['default', 'glass', 'image'].includes(saved.appBackgroundMode)) appBackgroundMode.value = saved.appBackgroundMode
         if (typeof saved.customBackgroundImage === 'string') customBackgroundImage.value = saved.customBackgroundImage

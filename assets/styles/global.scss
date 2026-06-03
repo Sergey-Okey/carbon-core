@@ -182,12 +182,17 @@ textarea {
 html {
   scroll-behavior: smooth;
   min-height: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Предотвращение мерцания при загрузке */
 body {
   position: relative;
+  width: 100%;
+  max-width: 100%;
   min-height: 100%;
+  overflow-x: hidden;
   background: transparent;
   color: var(--text);
 }
@@ -213,7 +218,10 @@ body::after {
 #__nuxt {
   position: relative;
   z-index: 2;
+  width: 100%;
+  max-width: 100%;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 html.compact-ui {
