@@ -619,10 +619,12 @@ function getLocalDateKey(date: Date) {
 
   line {
     stroke: color-mix(in srgb, var(--text) 18%, transparent);
+    stroke-dasharray: 16;
+    stroke-dashoffset: 16;
     stroke-linecap: round;
     stroke-width: 3;
     opacity: 0;
-    animation: analytics-tick-in 700ms ease both;
+    animation: analytics-tick-in 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
 
     &.active {
       stroke: var(--text);
@@ -631,7 +633,7 @@ function getLocalDateKey(date: Date) {
 
   @for $i from 1 through 40 {
     line:nth-child(#{$i}) {
-      animation-delay: #{220 + ($i * 12)}ms;
+      animation-delay: #{160 + ($i * 24) - ($i * $i * 0.28)}ms;
     }
   }
 
@@ -647,6 +649,9 @@ function getLocalDateKey(date: Date) {
   justify-items: center;
   color: var(--text);
   z-index: 1;
+  opacity: 0;
+  transform: scale(0.96);
+  animation: analytics-value-in 420ms cubic-bezier(0.16, 1, 0.3, 1) 760ms both;
 
   strong {
     font-size: 1.65rem;
@@ -682,7 +687,7 @@ function getLocalDateKey(date: Date) {
 
   @for $i from 1 through 14 {
     span:nth-child(#{$i}) {
-      animation-delay: #{180 + ($i * 28)}ms;
+      animation-delay: #{170 + ($i * 38) - ($i * $i * 1.05)}ms;
     }
   }
 }
@@ -754,7 +759,13 @@ function getLocalDateKey(date: Date) {
   circle {
     fill: var(--text);
     opacity: 0;
-    animation: analytics-dot-in 500ms ease 760ms both;
+    animation: analytics-dot-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @for $i from 1 through 24 {
+    circle:nth-of-type(#{$i}) {
+      animation-delay: #{520 + ($i * 26) - ($i * $i * 0.48)}ms;
+    }
   }
 }
 
@@ -873,10 +884,24 @@ function getLocalDateKey(date: Date) {
 @keyframes analytics-tick-in {
   from {
     opacity: 0;
+    stroke-dashoffset: 16;
   }
 
   to {
     opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes analytics-value-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -907,10 +932,29 @@ function getLocalDateKey(date: Date) {
   .metric-cell,
   .metric-cell::after,
   .radial-chart line,
+  .radial-value,
   .volume-bars span,
   .line-path,
   .line-chart circle {
     animation: none;
+  }
+
+  .analytics-head,
+  .metric-cell,
+  .radial-chart line,
+  .radial-value,
+  .line-chart circle {
+    opacity: 1;
+    transform: none;
+  }
+
+  .radial-chart line,
+  .line-path {
+    stroke-dashoffset: 0;
+  }
+
+  .volume-bars span {
+    transform: none;
   }
 }
 </style>

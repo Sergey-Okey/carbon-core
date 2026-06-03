@@ -360,11 +360,20 @@ function formatTaskCount(count: number) {
   aspect-ratio: 1;
   border-radius: var(--border-radius-pill);
   background: color-mix(in srgb, var(--ui-border-color) 82%, transparent);
+  opacity: 0;
+  transform: scale(0.35);
+  animation: stats-dot-in 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
   transition: background var(--transition-standard);
   justify-self: center;
 
   &--active {
     background: var(--accent);
+  }
+
+  @for $i from 1 through 20 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{110 + ($i * 22) - ($i * $i * 0.42)}ms;
+    }
   }
 }
 
@@ -374,6 +383,8 @@ function formatTaskCount(count: number) {
   font-weight: 500;
   color: var(--dim);
   margin-left: 4px;
+  opacity: 0;
+  animation: stats-value-in 300ms cubic-bezier(0.16, 1, 0.3, 1) 520ms both;
 }
 
 .task-counters {
@@ -624,8 +635,39 @@ function formatTaskCount(count: number) {
   }
 }
 
+@keyframes stats-dot-in {
+  from {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes stats-value-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .stat-item {
+    animation: none;
+  }
+
+  .dot,
+  .stat-item__progress {
+    opacity: 1;
+    transform: none;
     animation: none;
   }
 
