@@ -91,6 +91,9 @@ const emit = defineEmits<{
 <style scoped lang="scss">
 .task-sections {
   display: grid;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   gap: 24px;
   padding-bottom: 24px;
 
@@ -103,6 +106,8 @@ const emit = defineEmits<{
 .task-section-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  min-width: 0;
+  max-width: 100%;
   gap: 20px;
 
   @include mobile {

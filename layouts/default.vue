@@ -22,7 +22,10 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
   position: relative;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 100vw;
   height: 100vh;
+  overflow-x: hidden;
   background-color: var(--bg);
   background-position: center;
   background-repeat: no-repeat;
@@ -40,6 +43,8 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
 .layout-content {
   display: flex;
   flex: 1;
+  width: 100%;
+  min-width: 0;
   min-height: 0;
   overflow: hidden;
 
@@ -58,7 +63,10 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
   display: flex;
   flex-direction: column;
   flex: 1;
+  width: 100%;
+  min-width: 0;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   padding: 16px;
   scroll-behavior: smooth;

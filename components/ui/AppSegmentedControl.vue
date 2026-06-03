@@ -44,7 +44,9 @@ const emit = defineEmits<{
   grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;
   gap: 2px;
+  width: 100%;
   min-width: 0;
+  max-width: 100%;
   min-height: var(--control-height-md);
   padding: 2px;
   border: var(--ui-border);
@@ -56,6 +58,7 @@ const emit = defineEmits<{
   align-items: center;
   justify-content: center;
   min-width: 0;
+  max-width: 100%;
   margin: 0;
   padding: 0 10px;
   overflow: hidden;

@@ -819,6 +819,9 @@ function resetAllData() {
 <style scoped lang="scss">
 .settings-page {
   display: grid;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   gap: 14px;
   padding-bottom: 24px;
 
@@ -831,6 +834,8 @@ function resetAllData() {
   @include glass;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  min-width: 0;
+  max-width: 100%;
   align-items: center;
   gap: 18px;
   padding: 16px;
@@ -865,7 +870,9 @@ function resetAllData() {
 
 .settings-layout {
   display: block;
+  width: 100%;
   min-width: 0;
+  max-width: 100%;
 }
 
 .settings-nav {
@@ -875,6 +882,7 @@ function resetAllData() {
   justify-content: flex-end;
   gap: 6px;
   width: fit-content;
+  max-width: 100%;
   padding: 5px;
   border: var(--ui-border);
   border-radius: var(--border-radius-pill);
@@ -882,6 +890,7 @@ function resetAllData() {
   @include mobile {
     justify-self: stretch;
     width: 100%;
+    min-width: 0;
     padding: 6px;
     border-radius: var(--border-radius-pill);
   }
@@ -948,13 +957,17 @@ function resetAllData() {
 }
 
 .settings-content {
+  width: 100%;
   min-width: 0;
+  max-width: 980px;
   max-width: 980px;
   margin: 0;
 }
 
 .settings-group {
   @include glass;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
@@ -997,6 +1010,7 @@ function resetAllData() {
   @include mobile {
     align-items: center;
     flex-direction: row;
+    min-width: 0;
     padding: 14px;
     text-align: left;
 
@@ -1028,6 +1042,8 @@ function resetAllData() {
 
   @include mobile {
     grid-template-columns: 1fr;
+    min-width: 0;
+    max-width: 100%;
     gap: 12px;
     min-height: 0;
     padding: 12px;
@@ -1059,6 +1075,7 @@ function resetAllData() {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   min-width: 220px;
+  max-width: 100%;
 
   &.two {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1107,6 +1124,7 @@ function resetAllData() {
   @include mobile {
     width: 100%;
     min-width: 0;
+    max-width: 100%;
   }
 }
 
@@ -1123,10 +1141,13 @@ function resetAllData() {
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
   min-height: var(--control-height-md);
 
   @include mobile {
-    justify-content: center;
+    justify-content: stretch;
+    width: 100%;
   }
 }
 
@@ -1142,6 +1163,7 @@ function resetAllData() {
 
 .time-range label {
   display: grid;
+  min-width: 0;
   gap: 4px;
   color: var(--dim);
   font-size: 0.75rem;
@@ -1161,6 +1183,8 @@ function resetAllData() {
 .data-note,
 .mode-summary {
   display: flex;
+  min-width: 0;
+  max-width: 100%;
   align-items: center;
   gap: 8px;
   margin: 12px 0 18px;
@@ -1206,6 +1230,8 @@ function resetAllData() {
 .action-group {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+  max-width: 100%;
   gap: 10px;
 
   @include mobile {
@@ -1217,6 +1243,7 @@ function resetAllData() {
   min-width: 180px;
 
   @include mobile {
+    min-width: 0;
     width: 100%;
   }
 }
@@ -1236,6 +1263,7 @@ function resetAllData() {
 
   @include mobile {
     grid-template-columns: 1fr;
+    min-width: 0;
   }
 }
 
