@@ -152,7 +152,6 @@ const branchColor = computed(() => {
 const nodeStyle = computed(() => ({
   '--node-marker-color': branchColor.value,
   '--node-handle-color': branchColor.value,
-  background: 'var(--glass-surface)',
 }))
 
 const sourceHandleStyle = computed(() => ({
@@ -244,6 +243,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 .branch-node {
   @include glass;
   width: 240px;
+  min-height: 138px;
   padding: 12px;
   position: relative;
   overflow: visible;
@@ -252,6 +252,8 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     background var(--transition-standard);
   border: var(--ui-border);
   background: var(--glass-surface);
+  backdrop-filter: var(--glass-strong-filter) !important;
+  -webkit-backdrop-filter: var(--glass-strong-filter) !important;
 
   &.selected {
     border-color: var(--text);
@@ -399,10 +401,35 @@ top: 45px;           /* фиксированный отступ от верхн�
   }
 
   .node-details {
-    margin-top: 12px;
-    padding-top: 12px;
+    @include glass;
+    position: absolute;
+    left: 0;
+    top: calc(100% + 8px);
+    z-index: 80;
+    width: 100%;
+    box-sizing: border-box;
+    max-height: 220px;
+    padding: 12px;
+    overflow-y: auto;
+    border-radius: var(--border-radius-md);
     font-size: 0.85rem;
     word-wrap: break-word;
+    backdrop-filter: var(--glass-strong-filter) !important;
+    -webkit-backdrop-filter: var(--glass-strong-filter) !important;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--ui-border-color);
+      border-radius: var(--border-radius-sm);
+    }
+
     p {
       margin-bottom: 8px;
       color: var(--text);
@@ -516,6 +543,6 @@ top: 45px;           /* фиксированный отступ от верхн�
 .expand-enter-from,
 .expand-leave-to {
   opacity: 0;
-  transform: translateY(-8px);
+  transform: translateY(-6px);
 }
 </style>

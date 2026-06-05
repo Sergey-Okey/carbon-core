@@ -208,16 +208,7 @@ async function submit() {
   background: color-mix(in srgb, var(--accent) 5%, transparent);
   z-index: 0;
   filter: blur(40px);
-  animation: ambientShift 16s ease-in-out infinite alternate;
-}
-
-@keyframes ambientShift {
-  0% {
-    transform: scale(1) translate(0, 0);
-  }
-  100% {
-    transform: scale(1.1) translate(2%, -1%);
-  }
+  animation: app-glow-breathe 16s ease-in-out infinite alternate;
 }
 
 .auth-grid {

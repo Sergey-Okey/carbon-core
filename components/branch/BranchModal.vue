@@ -76,7 +76,7 @@
         <AppButton type="button" variant="secondary" @click="emit('close')">
           Отмена
         </AppButton>
-        <AppButton type="submit" variant="primary" :disabled="!canSubmit">
+        <AppButton type="submit" variant="primary" :disabled="!canSubmit" data-tour="branch-save">
           {{ branch ? 'Сохранить' : 'Создать' }}
         </AppButton>
       </div>

@@ -58,6 +58,8 @@
       <AnalyticsPanel v-if="uiStore.activeNav === 'analytics'" />
       <SettingsPanel v-if="uiStore.activeNav === 'settings'" />
     </section>
+
+    <GuidedTourOverlay />
   </div>
 </template>
 
@@ -77,11 +79,14 @@ import TaskForm from '~/components/task/TaskForm.vue'
 import TaskSections from '~/components/task/TaskSections.vue'
 import TaskToolbar from '~/components/task/TaskToolbar.vue'
 import SettingsPanel from '~/components/settings/SettingsPanel.vue'
+import GuidedTourOverlay from '~/components/guided/GuidedTourOverlay.vue'
+import { useGuidedTourStore } from '~/stores/guidedTour.store'
 import type { Task, TaskType } from '~/types/task.types'
 
 const uiStore = useUIStore()
 const settingsStore = useSettingsStore()
 const tasksStore = useTasksStore()
+const guidedTour = useGuidedTourStore()
 const { addNotification } = useNotification()
 const { saveTask } = useTaskActions()
 const showTaskForm = ref(false)
@@ -115,6 +120,7 @@ function openTaskCreator(type: TaskType) {
   activeTaskType.value = type
   editingTask.value = undefined
   showTaskForm.value = true
+  guidedTour.handleAction('task-form-open')
 }
 
 function openTaskEditor(task: Task) {
@@ -133,7 +139,10 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
     editingTask: editingTask.value,
     fallbackType: activeTaskType.value,
   })
-  if (saved) closeTaskForm()
+  if (saved) {
+    guidedTour.handleAction('task-created')
+    closeTaskForm()
+  }
 }
 </script>
 

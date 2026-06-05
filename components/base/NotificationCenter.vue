@@ -7,7 +7,7 @@
       title="Уведомления"
       aria-label="Открыть уведомления"
       :aria-expanded="isOpen"
-      @click="isOpen = !isOpen"
+      @click="togglePanel"
     >
       <Bell :size="20" />
       <span v-if="notificationHistory.length" class="badge">
@@ -144,6 +144,13 @@ function formatTime(value?: string) {
   })
 }
 
+function togglePanel() {
+  isOpen.value = !isOpen.value
+  if (isOpen.value) {
+    window.dispatchEvent(new CustomEvent('cof:close-profile-panel'))
+  }
+}
+
 function handleDocumentClick(event: MouseEvent) {
   const target = event.target as Node
   if (!root.value?.contains(target) && !panel.value?.contains(target)) {
@@ -151,12 +158,18 @@ function handleDocumentClick(event: MouseEvent) {
   }
 }
 
+function closePanel() {
+  isOpen.value = false
+}
+
 onMounted(() => {
   document.addEventListener('click', handleDocumentClick)
+  window.addEventListener('cof:close-notifications', closePanel)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleDocumentClick)
+  window.removeEventListener('cof:close-notifications', closePanel)
 })
 </script>
 

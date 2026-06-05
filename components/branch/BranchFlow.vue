@@ -117,6 +117,7 @@ import {
 import { Background, BackgroundVariant } from '@vue-flow/background'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useSettingsStore } from '~/stores/settings.store'
+import { useGuidedTourStore } from '~/stores/guidedTour.store'
 import { useAutoLayout } from '~/composables/useAutoLayout'
 import { useConfirm } from '~/composables/useConfirm'
 import { useNotification } from '~/composables/useNotification'
@@ -133,6 +134,7 @@ import '@vue-flow/core/dist/theme-default.css'
 
 const branchesStore = useBranchesStore()
 const settingsStore = useSettingsStore()
+const guidedTour = useGuidedTourStore()
 const { fitView, zoomIn: vfZoomIn, zoomOut: vfZoomOut } = useVueFlow()
 const { applyLayout } = useAutoLayout()
 const { confirm } = useConfirm()
@@ -567,6 +569,7 @@ function openMilestoneCreator() {
   )
   emptyMilestone.markerColor = sourceBranch?.markerColor || sourceBranch?.backgroundColor || '#d6d6d6'
   creatingMilestone.value = true
+  guidedTour.handleAction('milestone-modal-open')
 }
 
 function addMilestoneToSelectedBranch(sourceNodeId?: string) {
@@ -597,6 +600,7 @@ function handleCreateMilestone(data: Partial<Milestone>) {
   if (!newMilestone) return
 
   creatingMilestone.value = false
+  guidedTour.handleAction('milestone-created')
   saveToHistory()
   refocusBoard()
 }
@@ -640,9 +644,11 @@ function openAddBranchModal() {
   selectedEdge.value = null
 
   branchModal.value = { visible: true, branch: null }
+  guidedTour.handleAction('branch-modal-open')
 }
 
 function handleSaveBranch(data: any) {
+  const isCreating = !branchModal.value.branch
   if (branchModal.value.branch) {
     branchesStore.updateBranch(branchModal.value.branch.id, {
       ...data,
@@ -658,6 +664,7 @@ function handleSaveBranch(data: any) {
     )
   }
   branchModal.value.visible = false
+  if (isCreating) guidedTour.handleAction('branch-created')
   saveToHistory()
 }
 
@@ -805,6 +812,21 @@ watch(
   background: transparent;
   width: 100%;
   height: 100%;
+}
+
+:deep(.vue-flow__viewport),
+:deep(.vue-flow__nodes) {
+  overflow: visible;
+}
+
+:deep(.vue-flow__node) {
+  z-index: 1;
+}
+
+:deep(.vue-flow__node:has(.branch-node.expanded)),
+:deep(.vue-flow__node:has(.milestone-node.expanded)),
+:deep(.vue-flow__node.selected) {
+  z-index: 120 !important;
 }
 
 :deep(.vue-flow__background) {

@@ -156,9 +156,14 @@
             }"
           >
             <div class="hero-cta">
-              <button class="cta-button" @click="finishOnboarding">
+              <button
+                class="cta-button cta-button--details"
+                type="button"
+                aria-label="Подробнее"
+                @click="scrollToProductSlide"
+              >
                 Начать
-                <ArrowRight :size="20" class="btn-icon" />
+                <ChevronRight :size="20" class="btn-icon" />
               </button>
               <button
                 class="apk-button"
@@ -973,6 +978,17 @@ function finishOnboarding() {
   router.push(authStore.isAuthenticated ? '/' : '/register')
 }
 
+function scrollToProductSlide() {
+  const container = scrollContainer.value
+  const target = document.getElementById('step-product')
+  if (!container || !target) return
+
+  container.scrollTo({
+    top: target.offsetTop,
+    behavior: 'smooth',
+  })
+}
+
 function downloadApk() {
   if (!apkDownloadUrl) return
   const anchor = document.createElement('a')
@@ -1077,7 +1093,7 @@ onUnmounted(() => {
   mix-blend-mode: screen;
   opacity: 0.4;
   filter: blur(34px);
-  animation: ambientGlow var(--light-duration) ease-in-out var(--light-delay)
+  animation: app-glow-breathe var(--light-duration) ease-in-out var(--light-delay)
     infinite alternate;
 }
 
@@ -1188,18 +1204,6 @@ onUnmounted(() => {
   }
   100% {
     transform: rotate(-4deg) translate3d(40px, 28px, 0);
-  }
-}
-
-@keyframes ambientGlow {
-  0% {
-    transform: translate3d(0, 0, 0) scale(0.94);
-  }
-  50% {
-    transform: translate3d(2.2%, -1.6%, 0) scale(1);
-  }
-  100% {
-    transform: translate3d(-2%, 2%, 0) scale(1.06);
   }
 }
 
@@ -1415,7 +1419,79 @@ onUnmounted(() => {
     transition: color var(--transition-standard);
   }
 }
+
+.cta-button--details {
+  position: relative;
+  overflow: hidden;
+  font-size: 0;
+  animation: details-cta-in 760ms cubic-bezier(0.16, 1, 0.3, 1) 420ms both;
+
+  &::before {
+    content: 'Подробнее';
+    position: relative;
+    z-index: 1;
+    font-size: 1.1rem;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      110deg,
+      transparent 0%,
+      color-mix(in srgb, var(--bg) 22%, transparent) 45%,
+      transparent 70%
+    );
+    opacity: 0;
+    transform: translateX(-120%);
+    animation: app-glow-scan 1800ms ease 960ms both;
+  }
+
+  .btn-icon {
+    position: relative;
+    z-index: 1;
+    animation: details-icon-drift 1450ms ease-in-out infinite;
+  }
+
+  &:hover .btn-icon {
+    animation-duration: 820ms;
+  }
+}
+
+@keyframes details-cta-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes details-icon-drift {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  45% {
+    transform: translateX(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-button--details,
+  .cta-button--details::after,
+  .cta-button--details .btn-icon {
+    animation: none;
+  }
+}
+
 .hint-text {
+  display: none;
   font-family: 'Manrope', sans-serif;
   font-size: 0.9rem;
   color: var(--dim);

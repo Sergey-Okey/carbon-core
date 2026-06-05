@@ -93,7 +93,7 @@
     <template #footer>
       <div class="modal-actions">
         <AppButton variant="secondary" @click="emit('close')">Отмена</AppButton>
-        <AppButton type="submit" variant="primary">
+        <AppButton type="submit" variant="primary" data-tour="task-save">
           {{ editing ? 'Сохранить' : submitButtonText }}
         </AppButton>
       </div>

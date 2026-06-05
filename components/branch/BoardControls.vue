@@ -21,6 +21,7 @@
         @click="$emit('add-branch')"
         aria-label="Добавить ветку"
         data-tooltip="Добавить ветку"
+        data-tour="board-add-branch"
         :disabled="!canAddBranch"
       >
         <Plus :size="18" />
@@ -29,6 +30,7 @@
         @click="$emit('add-milestone')"
         :aria-label="milestoneTooltip"
         :data-tooltip="milestoneTooltip"
+        data-tour="board-add-milestone"
         :disabled="!canAddMilestone"
       >
         <PlusCircle :size="18" />

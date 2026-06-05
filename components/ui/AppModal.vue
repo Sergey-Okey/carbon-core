@@ -207,11 +207,17 @@ function handleBackdrop() {
   .app-modal-overlay {
     align-items: center;
     padding: max(10px, env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .app-modal {
     width: min(100%, calc(100vw - 20px));
     max-height: calc(100dvh - 20px);
+
+    &.allow-overflow {
+      overflow: hidden;
+    }
   }
 
   .app-modal-header,
@@ -226,6 +232,13 @@ function handleBackdrop() {
 
   .app-modal-body {
     padding: 14px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &.allow-overflow {
+      overflow-y: auto;
+      overflow-x: visible;
+    }
   }
 }
 </style>

@@ -1,7 +1,26 @@
 <template>
-  <div class="stats-bar">
+  <div class="stats-bar" :class="{ 'is-collapsed': isCollapsed }">
+    <button
+      type="button"
+      class="stats-collapse-button"
+      :aria-label="isCollapsed ? 'Развернуть статистику' : 'Свернуть статистику'"
+      :aria-expanded="!isCollapsed"
+      @click="toggleCollapsed"
+    >
+      <ChevronDown v-if="isCollapsed" :size="16" />
+      <ChevronUp v-else :size="16" />
+    </button>
+    <div v-if="isCollapsed" class="stats-collapsed-row">
+      <span>
+        <Zap :size="15" />
+        Ур. {{ userStore.level }}
+      </span>
+      <span>{{ userStore.league }}</span>
+      <span>{{ completed.day }}/3 сегодня</span>
+      <span>{{ leagueProgressPercent }}% лига</span>
+    </div>
     <!-- Уровень и точки прогресса -->
-    <div class="stat-item">
+    <div v-if="!isCollapsed" class="stat-item">
       <div class="stat-item__header">
         <Zap :size="18" />
         <span>Ур. {{ userStore.level }}</span>
@@ -22,7 +41,7 @@
     </div>
 
     <!-- Лига и точки прогресса -->
-    <div class="stat-item">
+    <div v-if="!isCollapsed" class="stat-item">
       <div class="stat-item__header">
         <component :is="leagueIcon" :size="18" :class="leagueClass" />
         <span>{{ userStore.league }}</span>
@@ -41,7 +60,7 @@
     </div>
 
     <!-- Активность за 7 дней -->
-    <div class="stat-item stat-item--chart">
+    <div v-if="!isCollapsed" class="stat-item stat-item--chart">
       <div class="chart-summary">
         <span>Активность</span>
       </div>
@@ -70,7 +89,7 @@
     </div>
 
     <!-- Счётчики задач -->
-    <div class="stat-item stat-item--tasks">
+    <div v-if="!isCollapsed" class="stat-item stat-item--tasks">
       <div class="stat-item__body">
         <div class="task-counters">
           <div
@@ -108,14 +127,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Zap, Medal, Award, Gem, Crown } from 'lucide-vue-next'
+import { computed, onMounted, ref } from 'vue'
+import { Award, ChevronDown, ChevronUp, Crown, Gem, Medal, Zap } from 'lucide-vue-next'
 import { useUserStore } from '~/stores/user.store'
 import { useTasksStore } from '~/stores/tasks.store'
 import type { Task } from '~/types/task.types'
 
 const userStore = useUserStore()
 const tasksStore = useTasksStore()
+const isCollapsed = ref(false)
+const storageKey = 'cof-stats-overview-collapsed'
 
 const tasksNeededForNextLevel = computed(() => {
   const val = levelSize.value
@@ -267,23 +288,108 @@ function formatTaskCount(count: number) {
   if (count > 1 && count < 5) return `${count} задачи закрыто`
   return `${count} задач закрыто`
 }
+function toggleCollapsed() {
+  isCollapsed.value = !isCollapsed.value
+  if (import.meta.client) {
+    localStorage.setItem(storageKey, String(isCollapsed.value))
+  }
+}
+
+onMounted(() => {
+  isCollapsed.value = localStorage.getItem(storageKey) === 'true'
+})
 </script>
 
 <style scoped lang="scss">
 .stats-bar {
+  position: relative;
   display: grid;
   align-items: center;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   @include glass;
   border-radius: var(--border-radius-lg);
-  padding: 12px 18px;
+  padding: 12px 42px 12px 18px;
   border: var(--ui-border);
 
   @include mobile {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
-    padding: 12px;
+    padding: 12px 42px 12px 12px;
+  }
+
+  &.is-collapsed {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 44px;
+    padding: 10px 42px 10px 14px;
+  }
+}
+
+.stats-collapse-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  color: var(--dim);
+  cursor: pointer;
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard);
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    color: var(--text);
+  }
+
+  .is-collapsed & {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
+
+.stats-collapsed-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dim);
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  span:first-child {
+    color: var(--text);
+  }
+
+  span:not(:first-child) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @include mobile {
+    gap: 10px;
+    font-size: 0.78rem;
+
+    span:nth-child(n + 4) {
+      display: none;
+    }
   }
 }
 
@@ -560,15 +666,16 @@ function formatTaskCount(count: number) {
   position: absolute;
   bottom: calc(100% + 6px);
   left: 50%;
-  z-index: 2;
+  z-index: 20;
   width: max-content;
   max-width: 150px;
-  padding: 5px 8px;
+  padding: 7px 10px;
   border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--border-radius-pill);
   color: var(--text);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 600;
+  line-height: 1.18;
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 0);

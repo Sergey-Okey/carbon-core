@@ -1,36 +1,11 @@
 <template>
-  <section class="profile-page">
-    <div class="profile-topbar">
-      <button class="back-btn" type="button" @click="goToWorkspace('board')">
-        <ChevronLeft :size="16" />
-        В приложение
-      </button>
-
-      <div class="topbar-actions">
-        <button class="nav-chip" type="button" @click="goToWorkspace('tasks')">
-          <LayoutGrid :size="16" />
-          Задачи
-        </button>
-        <button
-          class="nav-chip"
-          type="button"
-          @click="goToWorkspace('settings')"
-        >
-          <Settings :size="16" />
-          Настройки
-        </button>
-      </div>
-    </div>
-
-    <div class="profile-hero">
-      <div class="hero-main">
+  <section class="profile-page" aria-label="Профиль">
+    <header class="profile-head">
+      <div class="identity">
         <button class="avatar-button" type="button" @click="triggerFileInput">
-          <img v-if="form.avatar" :src="form.avatar" alt="avatar" />
-          <UserCircle2 v-else :size="56" />
-          <span class="avatar-overlay">
-            <Camera :size="16" />
-            Аватар
-          </span>
+          <img v-if="form.avatar" :src="form.avatar" alt="" />
+          <UserCircle2 v-else :size="42" />
+          <span><Camera :size="14" />Аватар</span>
         </button>
 
         <input
@@ -41,181 +16,181 @@
           @change="handleAvatarChange"
         />
 
-        <div class="hero-copy">
-          <div class="eyebrow">Профиль</div>
-          <h1>{{ previewName }}</h1>
+        <div class="identity-copy">
+          <span class="eyebrow">User profile</span>
+          <h3>{{ previewName }}</h3>
           <p>{{ previewBio }}</p>
         </div>
       </div>
 
-      <div class="hero-actions">
-        <button class="ghost-btn" type="button" @click="triggerFileInput">
-          Сменить аватар
-        </button>
-        <button
-          v-if="form.avatar"
-          class="ghost-btn danger"
-          type="button"
-          @click="removeAvatar"
-        >
-          Удалить аватар
-        </button>
+      <div class="head-actions">
+        <AppButton type="button" variant="secondary" @click="goToWorkspace('board')">
+          <ChevronLeft :size="16" />
+          В приложение
+        </AppButton>
+        <AppButton type="button" variant="secondary" @click="goToWorkspace('settings')">
+          <Settings :size="16" />
+          Настройки
+        </AppButton>
       </div>
-    </div>
+    </header>
 
-    <div class="profile-tabs">
-      <button
-        v-for="tab in tabs"
-        :key="tab.key"
-        class="tab-btn"
-        :class="{ active: activeTab === tab.key }"
-        @click="activeTab = tab.key"
-      >
-        {{ tab.label }}
-      </button>
-    </div>
-
-    <div class="profile-content">
-      <div v-if="activeTab === 'general'" class="tab-content">
-        <GlassCard class="profile-card editor-card">
-          <div class="section-head">
-            <h2>Редактирование</h2>
-            <span
-              >Имя, email, био и аватар сохраняются локально и попадают в
-              backup</span
-            >
-          </div>
-
-          <form class="profile-form" @submit.prevent="saveProfile">
-            <label class="field">
-              <span>Имя</span>
-              <input v-model.trim="form.name" type="text" maxlength="40" />
-            </label>
-
-            <label class="field">
-              <span>Email</span>
-              <input
-                v-model.trim="form.email"
-                type="email"
-                autocomplete="email"
+    <div class="profile-grid">
+      <article class="profile-cell profile-cell--progress">
+        <div class="cell-title">
+          <span>Готовность</span>
+          <strong>{{ completionRate }}%</strong>
+        </div>
+        <div class="radial-wrap">
+          <svg viewBox="0 0 160 160" class="radial-chart" aria-label="Прогресс задач">
+            <g>
+              <line
+                v-for="tick in radialTicks"
+                :key="tick.index"
+                x1="80"
+                y1="20"
+                x2="80"
+                y2="34"
+                :class="{ active: tick.active }"
+                :transform="`rotate(${tick.angle} 80 80)`"
               />
-            </label>
+            </g>
+          </svg>
+          <div class="radial-value">
+            <strong>{{ completedTasks }}</strong>
+            <span>готово</span>
+          </div>
+        </div>
+      </article>
 
-            <label class="field">
-              <span>О себе</span>
-              <textarea
-                v-model.trim="form.bio"
-                :rows="5"
-                maxlength="240"
-              ></textarea>
-            </label>
+      <article class="profile-cell profile-cell--wide">
+        <div class="cell-title">
+          <span>Активность</span>
+          <strong>{{ completedThisWeek }} за неделю</strong>
+        </div>
+        <div class="activity-bars" aria-label="Выполненные задачи за 14 дней">
+          <span
+            v-for="day in activitySeries"
+            :key="day.date"
+            :class="{ active: day.count > 0 }"
+            :style="{ '--bar-level': `${Math.max(day.ratio * 100, day.count ? 14 : 4)}%` }"
+            :title="`${day.label}: ${day.count}`"
+          />
+        </div>
+        <div class="axis-row">
+          <span>{{ activitySeries[0]?.label }}</span>
+          <span>{{ activitySeries[activitySeries.length - 1]?.label }}</span>
+        </div>
+      </article>
 
-            <div class="save-row">
-              <p v-if="error" class="error-text">{{ error }}</p>
-              <p v-else-if="savedMessage" class="saved-text">
-                {{ savedMessage }}
-              </p>
-            </div>
+      <article class="profile-cell profile-cell--stack">
+        <div class="cell-title">
+          <span>Рабочий контур</span>
+          <strong>{{ activeTasks }}</strong>
+        </div>
+        <div class="metric-list">
+          <div>
+            <span>Активные задачи</span>
+            <strong>{{ activeTasks }}</strong>
+          </div>
+          <div>
+            <span>Привычки</span>
+            <strong>{{ habitsCount }}</strong>
+          </div>
+          <div>
+            <span>Ветки</span>
+            <strong>{{ branchesStore.branches.length }}</strong>
+          </div>
+        </div>
+      </article>
 
-            <div class="form-actions">
-              <button class="primary-btn" type="submit">
-                Сохранить профиль
-              </button>
-            </div>
-          </form>
-        </GlassCard>
-      </div>
+      <article class="profile-cell profile-cell--form">
+        <div class="cell-title">
+          <span>Данные профиля</span>
+          <strong>{{ createdAtLabel }}</strong>
+        </div>
 
-      <div v-if="activeTab === 'progress'" class="tab-content">
-        <GlassCard class="profile-card">
-          <div class="section-head">
-            <h2>Прогресс</h2>
-            <span>Ключевые метрики текущего профиля</span>
+        <form class="profile-form" @submit.prevent="saveProfile">
+          <label class="field">
+            <span>Имя</span>
+            <input v-model.trim="form.name" type="text" maxlength="40" />
+          </label>
+
+          <label class="field">
+            <span>Email</span>
+            <input v-model.trim="form.email" type="email" autocomplete="email" />
+          </label>
+
+          <label class="field">
+            <span>О себе</span>
+            <textarea v-model.trim="form.bio" maxlength="240" rows="5" />
+          </label>
+
+          <div class="feedback-row">
+            <p v-if="error" class="error-text">{{ error }}</p>
+            <p v-else-if="savedMessage" class="saved-text">{{ savedMessage }}</p>
           </div>
 
-          <div class="stats-grid">
-            <div class="stat-tile">
-              <Zap :size="18" />
-              <strong>{{ userStore.level }}</strong>
-              <span>Уровень</span>
-            </div>
-            <div class="stat-tile">
-              <Coins :size="18" />
-              <strong>{{ userStore.coins }}</strong>
-              <span>Монеты</span>
-            </div>
-            <div class="stat-tile">
-              <Award :size="18" />
-              <strong>{{ userStore.league }}</strong>
-              <span>Лига</span>
-            </div>
-            <div class="stat-tile">
-              <Star :size="18" />
-              <strong>{{ userStore.totalXP }}</strong>
-              <span>XP</span>
-            </div>
+          <div class="form-actions">
+            <AppButton type="submit" variant="primary">Сохранить</AppButton>
+            <AppButton v-if="form.avatar" type="button" variant="secondary" @click="removeAvatar">
+              Убрать аватар
+            </AppButton>
           </div>
-        </GlassCard>
-      </div>
+        </form>
+      </article>
 
-      <div v-if="activeTab === 'account'" class="tab-content">
-        <GlassCard class="profile-card">
-          <div class="section-head">
-            <h2>Аккаунт</h2>
-            <span>Сессия и регистрационные данные</span>
-          </div>
+      <article class="profile-cell profile-cell--account">
+        <div class="cell-title">
+          <span>Аккаунт</span>
+          <strong>{{ authStore.isAuthenticated ? 'Активен' : 'Гость' }}</strong>
+        </div>
 
-          <div class="meta-list">
-            <div class="meta-row">
-              <span>Дата регистрации</span>
-              <strong>{{ createdAtLabel }}</strong>
-            </div>
-            <div class="meta-row">
-              <span>Текущий email</span>
-              <strong>{{ authStore.currentUser?.email || 'Не указан' }}</strong>
-            </div>
-            <div class="meta-row">
-              <span>Состояние</span>
-              <strong>{{
-                authStore.isAuthenticated ? 'Авторизован' : 'Гость'
-              }}</strong>
-            </div>
+        <div class="account-list">
+          <div>
+            <span>Email</span>
+            <strong>{{ authStore.currentUser?.email || form.email || 'Не указан' }}</strong>
           </div>
+          <div>
+            <span>Создан</span>
+            <strong>{{ createdAtLabel }}</strong>
+          </div>
+          <div>
+            <span>Фокус сегодня</span>
+            <strong>{{ focusSessionsToday }}</strong>
+          </div>
+        </div>
 
-          <div class="account-actions">
-            <button class="ghost-btn" type="button" @click="logout">
-              Выйти
-            </button>
-            <button
-              class="ghost-btn danger"
-              type="button"
-              @click="deleteAccount"
-            >
-              Удалить аккаунт
-            </button>
-          </div>
-        </GlassCard>
-      </div>
+        <div class="danger-zone">
+          <AppButton type="button" variant="secondary" @click="logout">
+            <LogOut :size="16" />
+            Выйти
+          </AppButton>
+          <AppButton type="button" variant="danger" @click="deleteAccount">
+            <Trash2 :size="16" />
+            Удалить
+          </AppButton>
+        </div>
+      </article>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import {
-  Award,
   Camera,
   ChevronLeft,
-  Coins,
-  LayoutGrid,
+  LogOut,
   Settings,
-  Star,
+  Trash2,
   UserCircle2,
-  Zap,
 } from 'lucide-vue-next'
-import GlassCard from '~/components/base/GlassCard.vue'
+import AppButton from '~/components/ui/AppButton.vue'
 import { useNotification } from '~/composables/useNotification'
 import { useAuthStore } from '~/stores/auth.store'
+import { useBranchesStore } from '~/stores/branches.store'
+import { useTasksStore } from '~/stores/tasks.store'
 import { useUIStore } from '~/stores/ui.store'
 import { useUserStore } from '~/stores/user.store'
 
@@ -223,6 +198,8 @@ const MAX_AVATAR_DIMENSION = 320
 const AVATAR_QUALITY = 0.82
 
 const authStore = useAuthStore()
+const branchesStore = useBranchesStore()
+const tasksStore = useTasksStore()
 const uiStore = useUIStore()
 const userStore = useUserStore()
 const { addNotification } = useNotification()
@@ -230,13 +207,7 @@ const router = useRouter()
 const fileInput = ref<HTMLInputElement | null>(null)
 const error = ref('')
 const savedMessage = ref('')
-const activeTab = ref('general')
-
-const tabs = [
-  { key: 'general', label: 'Общее' },
-  { key: 'progress', label: 'Прогресс' },
-  { key: 'account', label: 'Аккаунт' },
-]
+const focusSessionsToday = ref(0)
 
 const form = reactive({
   name: '',
@@ -258,19 +229,87 @@ watch(
 
 const previewName = computed(() => form.name || userStore.displayName)
 const previewBio = computed(
-  () =>
-    form.bio ||
-    'Добавьте короткое описание, чтобы профиль выглядел в духе остального интерфейса приложения.'
+  () => form.bio || 'Короткое описание поможет профилю чувствоваться частью системы.'
+)
+
+const actionableTasks = computed(() =>
+  tasksStore.tasks.filter((task) => task.type !== 'HABIT')
+)
+const activeTasks = computed(() => actionableTasks.value.filter((task) => !task.done).length)
+const completedTasks = computed(() => actionableTasks.value.filter((task) => task.done).length)
+const habitsCount = computed(() => tasksStore.tasks.filter((task) => task.type === 'HABIT').length)
+const completionRate = computed(() => {
+  if (!actionableTasks.value.length) return 0
+  return Math.round((completedTasks.value / actionableTasks.value.length) * 100)
+})
+
+const radialTicks = computed(() => {
+  const active = Math.round((completionRate.value / 100) * 44)
+  return Array.from({ length: 44 }, (_, index) => ({
+    index,
+    angle: index * (360 / 44),
+    active: index < active,
+  }))
+})
+
+const activitySeries = computed(() => {
+  const days = createDateRange(14)
+  const max = Math.max(...tasksStore.completedTasksHistory.map((item) => item.count), 1)
+
+  return days.map((date) => {
+    const item = tasksStore.completedTasksHistory.find((history) => history.date === date.key)
+    const count = item?.count ?? 0
+    return {
+      date: date.key,
+      label: date.label,
+      count,
+      ratio: count / max,
+    }
+  })
+})
+
+const completedThisWeek = computed(() =>
+  activitySeries.value.slice(-7).reduce((sum, day) => sum + day.count, 0)
 )
 
 const createdAtLabel = computed(() => {
-  if (!authStore.currentUser?.createdAt) return 'Неизвестно'
+  if (!authStore.currentUser?.createdAt) return 'Локально'
   return new Date(authStore.currentUser.createdAt).toLocaleDateString('ru-RU', {
     day: '2-digit',
-    month: 'long',
+    month: 'short',
     year: 'numeric',
   })
 })
+
+function createDateRange(daysCount: number) {
+  const dates: { key: string; label: string }[] = []
+  const now = new Date()
+
+  for (let offset = daysCount - 1; offset >= 0; offset -= 1) {
+    const date = new Date(now)
+    date.setDate(now.getDate() - offset)
+    dates.push({
+      key: getLocalDateKey(date),
+      label: date.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' }),
+    })
+  }
+
+  return dates
+}
+
+function getLocalDateKey(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function loadFocusSessions() {
+  if (!import.meta.client) return
+  const value = window.localStorage.getItem(`cof-focus-sessions-${getLocalDateKey(new Date())}`)
+  const parsed = value ? Number(value) : 0
+  focusSessionsToday.value = Number.isFinite(parsed) ? Math.max(0, parsed) : 0
+}
 
 function triggerFileInput() {
   fileInput.value?.click()
@@ -297,14 +336,9 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 async function compressAvatar(file: File): Promise<string> {
   const rawDataUrl = await readFileAsDataUrl(file)
   const image = await loadImage(rawDataUrl)
-
-  const scale = Math.min(
-    1,
-    MAX_AVATAR_DIMENSION / Math.max(image.width, image.height)
-  )
+  const scale = Math.min(1, MAX_AVATAR_DIMENSION / Math.max(image.width, image.height))
   const width = Math.max(1, Math.round(image.width * scale))
   const height = Math.max(1, Math.round(image.height * scale))
-
   const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = height
@@ -324,6 +358,7 @@ async function handleAvatarChange(event: Event) {
     form.avatar = await compressAvatar(file)
     error.value = ''
     savedMessage.value = ''
+    persistAvatar()
   } catch {
     error.value = 'Не удалось обработать изображение'
   }
@@ -334,6 +369,26 @@ function removeAvatar() {
   error.value = ''
   savedMessage.value = ''
   if (fileInput.value) fileInput.value.value = ''
+  persistAvatar()
+}
+
+function persistAvatar() {
+  if (authStore.currentUser) {
+    const result = authStore.updateProfile({ avatar: form.avatar })
+
+    if (!result.success) {
+      error.value = result.error || 'Не удалось сохранить аватар'
+      return
+    }
+  } else {
+    userStore.updateProfile({ avatar: form.avatar })
+  }
+
+  savedMessage.value = form.avatar ? 'Аватар сохранен' : 'Аватар удален'
+  addNotification({
+    type: 'success',
+    message: savedMessage.value,
+  })
 }
 
 function saveProfile() {
@@ -363,10 +418,10 @@ function saveProfile() {
   }
 
   savedMessage.value = 'Изменения сохранены'
-  addNotification({ type: 'success', message: 'Профиль обновлён' })
+  addNotification({ type: 'success', message: 'Профиль обновлен' })
 }
 
-async function goToWorkspace(section: 'board' | 'tasks' | 'settings') {
+async function goToWorkspace(section: 'board' | 'settings') {
   uiStore.setActiveNav(section)
   await router.push('/')
 }
@@ -378,144 +433,75 @@ function logout() {
 }
 
 function deleteAccount() {
-  if (!confirm('Удалить аккаунт? Доступ к нему будет потерян.')) return
+  if (!confirm('Удалить аккаунт? Это действие нельзя отменить.')) return
 
   authStore.deleteAccount()
-  addNotification({ type: 'success', message: 'Аккаунт удалён' })
+  addNotification({ type: 'success', message: 'Аккаунт удален' })
   router.push('/auth')
 }
+
+onMounted(loadFocusSessions)
 </script>
 
 <style scoped lang="scss">
 .profile-page {
   display: grid;
-  gap: 18px;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
 }
 
-.profile-tabs {
+.profile-head,
+.profile-cell {
   @include glass;
-  display: flex;
-  gap: 8px;
-  width: fit-content;
-  padding: 8px;
   border: var(--ui-border);
+}
+
+.profile-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px;
   border-radius: var(--border-radius-lg);
 
-  @media (max-width: 640px) {
-    width: 100%;
+  @include mobile {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 14px;
   }
 }
 
-.tab-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: var(--border-radius-pill);
-  background: transparent;
-  color: var(--dim);
-  font-size: 0.9rem;
-  font-weight: 500;
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+
+  @include mobile {
+    align-items: flex-start;
+  }
+}
+
+.avatar-button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--text);
   cursor: pointer;
   transition:
     background var(--transition-standard),
     color var(--transition-standard);
 
   &:hover {
-    background: var(--glass-surface);
-    color: var(--text);
-  }
-
-  &.active {
-    background: var(--accent);
-    color: var(--bg);
-  }
-
-  &.active:hover {
-    background: var(--accent);
-    color: var(--bg);
-  }
-}
-
-.profile-content {
-  display: grid;
-  gap: 18px;
-}
-
-.tab-content {
-  display: grid;
-  gap: 16px;
-}
-
-.profile-topbar {
-  @include glass;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
-
-  @media (max-width: 640px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
-.topbar-actions,
-.hero-actions,
-.account-actions,
-.form-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.profile-hero {
-  @include glass;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 28px;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
-
-  @media (max-width: 860px) {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
-
-.hero-main {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-
-  @media (max-width: 640px) {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
-
-.avatar-button {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  overflow: hidden;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
-  background: var(--glass-surface);
-  color: var(--dim);
-  cursor: pointer;
-  transition:
-    background var(--transition-standard),
-    color var(--transition-standard),
-    border-color var(--transition-standard);
-
-  &:hover {
-    background: var(--glass-surface);
-    color: var(--text);
-    border-color: var(--ui-border-color);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
   }
 
   img {
@@ -523,148 +509,225 @@ function deleteAccount() {
     height: 100%;
     object-fit: cover;
   }
-}
 
-.avatar-overlay {
-  position: absolute;
-  inset: auto 10px 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 10px;
-  border-radius: var(--border-radius-pill);
-  background: color-mix(in srgb, var(--bg) 68%, transparent);
-  color: var(--text);
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.hero-copy {
-  .eyebrow {
-    margin-bottom: 10px;
-    color: var(--dim);
-    font-size: 0.8rem;
+  span {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 28px;
+    border-radius: var(--border-radius-pill);
+    background: color-mix(in srgb, var(--bg) 72%, transparent);
+    color: var(--text);
+    font-size: 0.74rem;
     font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
   }
 
-  h1 {
-    margin: 0 0 8px;
+  @include mobile {
+    width: 78px;
+    height: 78px;
+    border-radius: var(--border-radius-md);
+  }
+}
+
+.identity-copy {
+  min-width: 0;
+
+  h3 {
+    margin: 4px 0 6px;
+    overflow-wrap: anywhere;
     color: var(--text);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(2rem, 5vw, 3rem);
-    line-height: 0.98;
-    letter-spacing: -0.04em;
+    font-size: clamp(1.55rem, 4vw, 2.35rem);
+    font-weight: 700;
+    line-height: 1;
   }
 
   p {
-    max-width: 56ch;
+    max-width: 62ch;
     margin: 0;
     color: var(--dim);
-    line-height: 1.7;
+    font-size: 0.92rem;
+    line-height: 1.5;
   }
 }
 
-.profile-card {
-  border: var(--ui-border);
+.eyebrow {
+  color: var(--dim);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
-.section-head {
-  margin-bottom: 20px;
-
-  h2 {
-    margin: 0 0 8px;
-    color: var(--text);
-    font-size: 1.2rem;
-  }
-
-  span {
-    color: var(--dim);
-    line-height: 1.6;
-  }
+.head-actions,
+.form-actions,
+.danger-zone {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.profile-form {
-  display: grid;
-  gap: 16px;
-}
+.head-actions {
+  justify-content: flex-end;
 
-.field {
-  display: grid;
-  gap: 8px;
-
-  span {
-    color: var(--dim);
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  input,
-  textarea {
-    width: 100%;
-    padding: 14px 16px;
-    border: var(--ui-border);
-    border-radius: var(--border-radius-md);
-    background: var(--glass-surface);
-    color: var(--text);
-    font-size: 1rem;
-    transition: border-color var(--transition-standard);
-
-    &:focus {
-      outline: none;
-      border-color: var(--ui-border-color);
+  @include mobile {
+    :deep(.app-button) {
+      flex: 1 1 140px;
     }
   }
+}
 
-  textarea {
-    resize: vertical;
-    min-height: 140px;
+.profile-grid {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.8fr) minmax(0, 1.35fr) minmax(240px, 0.85fr);
+  gap: 14px;
+
+  @media (max-width: 1080px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include mobile {
+    grid-template-columns: 1fr;
   }
 }
 
-.stats-grid {
+.profile-cell {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 16px;
+  min-width: 0;
+  padding: 18px;
+  border-radius: var(--border-radius-lg);
 }
 
-.stat-tile {
-  display: grid;
-  gap: 8px;
-  padding: 16px;
-  @include glass;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
+.profile-cell--wide,
+.profile-cell--form {
+  @media (min-width: 1081px) {
+    grid-column: span 2;
+  }
+}
 
-  svg {
-    color: var(--text);
+.profile-cell--form {
+  @media (max-width: 1080px) {
+    grid-column: 1 / -1;
+  }
+}
+
+.cell-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+
+  span {
+    overflow: hidden;
+    color: var(--dim);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 
   strong {
     color: var(--text);
-    font-size: 1.05rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+  }
+}
+
+.radial-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(240px, 100%);
+  margin: 0 auto;
+  aspect-ratio: 1;
+}
+
+.radial-chart {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+
+  line {
+    stroke: color-mix(in srgb, var(--accent) 16%, transparent);
+    stroke-linecap: round;
+    stroke-width: 3;
+
+    &.active {
+      stroke: var(--accent);
+    }
+  }
+}
+
+.radial-value {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+
+  strong {
+    color: var(--text);
+    font-size: clamp(2.4rem, 7vw, 4.2rem);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
   }
 
   span {
     color: var(--dim);
-    font-size: 0.92rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
   }
 }
 
-.meta-list {
+.activity-bars {
   display: grid;
-  gap: 12px;
-  margin-bottom: 18px;
+  grid-template-columns: repeat(14, minmax(6px, 1fr));
+  align-items: end;
+  gap: 5px;
+  min-height: 128px;
+
+  span {
+    display: block;
+    height: var(--bar-level);
+    min-height: 6px;
+    border-radius: var(--border-radius-pill);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+
+    &.active {
+      background: var(--accent);
+    }
+  }
 }
 
-.meta-row {
+.axis-row {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 0;
+  color: var(--dim);
+  font-size: 0.74rem;
+}
+
+.metric-list,
+.account-list {
+  display: grid;
+  gap: 2px;
+}
+
+.metric-list div,
+.account-list div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
   border-bottom: var(--ui-border);
 
   &:last-child {
@@ -673,76 +736,102 @@ function deleteAccount() {
 
   span {
     color: var(--dim);
+    font-size: 0.86rem;
   }
 
   strong {
+    min-width: 0;
+    overflow: hidden;
     color: var(--text);
+    font-size: 0.92rem;
     text-align: right;
-  }
-
-  @media (max-width: 480px) {
-    flex-direction: column;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
-.save-row {
-  min-height: 22px;
+.profile-form {
+  display: grid;
+  gap: 14px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+
+  span {
+    color: var(--dim);
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    min-width: 0;
+    border: var(--ui-border);
+    border-radius: var(--border-radius-md);
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    transition:
+      background var(--transition-standard),
+      border-color var(--transition-standard);
+
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      background: color-mix(in srgb, var(--accent) 5%, transparent);
+      border-color: var(--ui-border-color);
+    }
+  }
+
+  input {
+    min-height: 44px;
+    padding: 0 13px;
+  }
+
+  textarea {
+    min-height: 132px;
+    padding: 12px 13px;
+    resize: vertical;
+  }
+}
+
+.feedback-row {
+  min-height: 20px;
+
+  p {
+    margin: 0;
+    font-size: 0.86rem;
+  }
 }
 
 .error-text {
-  margin: 0;
   color: var(--error);
 }
 
 .saved-text {
-  margin: 0;
   color: var(--success);
 }
 
-.primary-btn,
-.ghost-btn,
-.nav-chip,
-.back-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 18px;
-  border-radius: var(--border-radius-md);
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background var(--transition-standard),
-    color var(--transition-standard),
-    border-color var(--transition-standard);
-}
+.danger-zone {
+  align-content: end;
+  margin-top: auto;
 
-.primary-btn {
-  border: none;
-  background: var(--accent);
-  color: var(--bg);
-
-  &:hover {
-    background: var(--accent);
+  :deep(.app-button) {
+    flex: 1 1 120px;
   }
 }
 
-.ghost-btn,
-.nav-chip,
-.back-btn {
-  border: var(--ui-border);
-  background: var(--glass-surface);
-  color: var(--text);
-
-  &:hover {
-    background: var(--glass-surface);
-    color: var(--text);
+@include mobile {
+  .profile-cell {
+    padding: 14px;
   }
-}
 
-.ghost-btn.danger {
-  color: var(--error);
-  border-color: var(--ui-border-color);
+  .activity-bars {
+    min-height: 112px;
+  }
 }
 </style>

@@ -113,7 +113,7 @@
         <AppButton type="button" variant="secondary" @click="emit('close')">
           Отмена
         </AppButton>
-        <AppButton type="submit" variant="primary" :disabled="!canSubmit">
+        <AppButton type="submit" variant="primary" :disabled="!canSubmit" data-tour="milestone-save">
           {{ props.isCreateMode ? 'Создать' : 'Сохранить' }}
         </AppButton>
       </div>
@@ -499,6 +499,11 @@ async function handleDelete() {
 
   .task-row {
     grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .tasks-list {
+    position: static;
+    max-height: 260px;
   }
 
   .task-marker {

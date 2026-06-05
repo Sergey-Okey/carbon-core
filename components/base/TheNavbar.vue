@@ -14,6 +14,7 @@
         :aria-label="item.label"
         :aria-current="uiStore.activeNav === item.id ? 'page' : undefined"
         :data-tooltip="item.label"
+        :data-tour="`nav-${item.id}`"
         data-tooltip-position="right"
         @click="handleNavClick(item.id)"
       >
@@ -35,8 +36,10 @@ import {
   Timer,
 } from 'lucide-vue-next'
 import { useUIStore, type NavSection } from '~/stores/ui.store'
+import { useGuidedTourStore } from '~/stores/guidedTour.store'
 
 const uiStore = useUIStore()
+const guidedTour = useGuidedTourStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -66,6 +69,7 @@ onUnmounted(() => {
 
 async function handleNavClick(section: NavSection) {
   uiStore.setActiveNav(section)
+  guidedTour.handleAction(`nav:${section}`)
 
   if (route.path !== '/') {
     await router.push('/')

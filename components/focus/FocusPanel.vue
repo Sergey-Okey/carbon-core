@@ -38,7 +38,7 @@
         </div>
 
         <div class="timer-actions">
-          <AppButton type="button" variant="primary" @click="toggleTimer">
+          <AppButton type="button" variant="primary" data-tour="focus-start" @click="toggleTimer">
             <Pause v-if="isRunning" :size="16" />
             <Play v-else :size="16" />
             {{ isRunning ? 'Пауза' : 'Старт' }}
@@ -100,10 +100,12 @@ import {
 } from 'lucide-vue-next'
 import AppButton from '~/components/ui/AppButton.vue'
 import { useNotification } from '~/composables/useNotification'
+import { useGuidedTourStore } from '~/stores/guidedTour.store'
 
 type PresetKey = 'focus' | 'short' | 'long'
 
 const { addNotification } = useNotification()
+const guidedTour = useGuidedTourStore()
 
 const presets = [
   { key: 'focus' as const, label: 'Фокус', minutes: 25, icon: Target },
@@ -172,6 +174,7 @@ function toggleTimer() {
   }
 
   isRunning.value = true
+  guidedTour.handleAction('focus-started')
   intervalId = window.setInterval(tick, 1000)
 }
 
@@ -287,7 +290,7 @@ onBeforeUnmount(stopTimer)
   min-height: 36px;
   padding: 0 12px;
   border-radius: var(--border-radius-pill);
-  background: color-mix(in srgb, var(--text) 8%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
   color: var(--text);
   font-size: 0.86rem;
   font-weight: 700;
@@ -329,8 +332,14 @@ onBeforeUnmount(stopTimer)
   position: relative;
   display: grid;
   place-items: center;
-  width: min(420px, 100%);
+  width: clamp(260px, 58vw, 420px);
+  max-width: 100%;
   aspect-ratio: 1;
+  flex: 0 0 auto;
+
+  @include mobile {
+    width: clamp(238px, 78vw, 340px);
+  }
 }
 
 .timer-ring {
@@ -340,7 +349,7 @@ onBeforeUnmount(stopTimer)
 }
 
 .ring-ticks line {
-  stroke: color-mix(in srgb, var(--text) 16%, transparent);
+  stroke: color-mix(in srgb, var(--accent) 18%, transparent);
   stroke-dasharray: 14;
   stroke-dashoffset: 14;
   stroke-linecap: round;
@@ -352,7 +361,7 @@ onBeforeUnmount(stopTimer)
     opacity var(--transition-standard);
 
   &.active {
-    stroke: var(--text);
+    stroke: var(--accent);
     opacity: 1;
   }
 }
@@ -363,28 +372,60 @@ onBeforeUnmount(stopTimer)
 
 .timer-center {
   position: absolute;
+  inset: 0;
   display: grid;
+  align-content: center;
   justify-items: center;
   gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 0 13%;
+  box-sizing: border-box;
   color: var(--text);
   opacity: 0;
   transform: scale(0.97);
   animation: focus-value-in 460ms cubic-bezier(0.16, 1, 0.3, 1) 520ms both;
+  pointer-events: none;
 
   strong {
-    min-width: 5ch;
-    font-size: clamp(3.2rem, 11vw, 5.8rem);
+    display: block;
+    width: 5.2ch;
+    max-width: 100%;
+    font-size: clamp(3.1rem, 10vw, 5.8rem);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     line-height: 1;
     text-align: center;
+    white-space: nowrap;
   }
 
   span {
+    max-width: 100%;
+    overflow: hidden;
     color: var(--dim);
     font-size: 0.86rem;
     font-weight: 700;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
+
+  @include mobile {
+    padding: 0 12%;
+    gap: 7px;
+
+    strong {
+      font-size: clamp(2.9rem, 15vw, 4.7rem);
+    }
+
+    span {
+      font-size: 0.78rem;
+    }
+  }
+}
+
+.timer-center svg {
+  color: var(--accent);
 }
 
 .timer-actions {
@@ -430,7 +471,7 @@ onBeforeUnmount(stopTimer)
   }
 
   strong {
-    color: var(--text);
+    color: var(--accent);
     font-size: 0.92rem;
   }
 }
@@ -479,6 +520,7 @@ onBeforeUnmount(stopTimer)
   color: var(--text);
 
   strong {
+    color: var(--accent);
     font-size: clamp(2.4rem, 7vw, 4.1rem);
     line-height: 0.92;
   }

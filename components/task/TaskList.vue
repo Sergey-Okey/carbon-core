@@ -33,6 +33,7 @@
         class="add-btn"
         :class="{ limited: isAddLimited }"
         :aria-label="addButtonTitle"
+        :data-tour="tourTarget"
         @click="handleAddClick"
       >
         <Plus :size="20" />
@@ -141,6 +142,11 @@ const isAddLimited = computed(() => {
 const addButtonTitle = computed(() =>
   isAddLimited.value ? 'Завершите одну задачу, чтобы добавить новую' : 'Добавить'
 )
+
+const tourTarget = computed(() => {
+  const type = props.defaultType || props.taskType
+  return type === 'TASK_DAY' ? 'task-add-day' : undefined
+})
 
 const ruleTooltipStyle = computed(() => ({
   left: `${ruleTooltipPosition.value.x}px`,
@@ -464,17 +470,17 @@ function handleSave(taskData: any) {
   gap: 3px;
   width: max-content;
   max-width: min(240px, calc(100vw - 24px));
-  padding: 9px 10px;
+  padding: 7px 10px;
   border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--border-radius-pill);
   color: var(--text);
-  font-size: 0.75rem;
-  font-weight: 400;
-  line-height: 1.4;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.18;
   text-align: left;
   white-space: normal;
   pointer-events: none;
-  z-index: 5000;
+  z-index: 7000;
   transform: translate(-50%, -100%);
 
   .tooltip-title {

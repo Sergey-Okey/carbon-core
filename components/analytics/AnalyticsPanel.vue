@@ -514,12 +514,12 @@ function getLocalDateKey(date: Date) {
     background: linear-gradient(
       110deg,
       transparent 0%,
-      color-mix(in srgb, var(--text) 10%, transparent) 43%,
+      color-mix(in srgb, var(--accent) 10%, transparent) 43%,
       transparent 62%
     );
     opacity: 0;
     transform: translateX(-120%);
-    animation: analytics-scan 1100ms ease both;
+    animation: app-glow-scan 1100ms ease both;
     animation-delay: inherit;
     pointer-events: none;
   }
@@ -618,7 +618,7 @@ function getLocalDateKey(date: Date) {
   height: clamp(142px, 16vw, 168px);
 
   line {
-    stroke: color-mix(in srgb, var(--text) 18%, transparent);
+    stroke: color-mix(in srgb, var(--accent) 18%, transparent);
     stroke-dasharray: 16;
     stroke-dashoffset: 16;
     stroke-linecap: round;
@@ -627,7 +627,7 @@ function getLocalDateKey(date: Date) {
     animation: analytics-tick-in 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
 
     &.active {
-      stroke: var(--text);
+      stroke: var(--accent);
     }
   }
 
@@ -654,6 +654,7 @@ function getLocalDateKey(date: Date) {
   animation: analytics-value-in 420ms cubic-bezier(0.16, 1, 0.3, 1) 760ms both;
 
   strong {
+    color: var(--accent);
     font-size: 1.65rem;
     line-height: 1;
   }
@@ -675,13 +676,13 @@ function getLocalDateKey(date: Date) {
     height: var(--bar-level);
     min-height: 5px;
     border-radius: var(--border-radius-pill);
-    background: color-mix(in srgb, var(--text) 14%, transparent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
     transform: scaleY(0.2);
     transform-origin: bottom;
     animation: analytics-bar-in 700ms ease both;
 
     &.active {
-      background: var(--text);
+      background: var(--accent);
     }
   }
 
@@ -736,18 +737,18 @@ function getLocalDateKey(date: Date) {
 
   .line-grid {
     fill: none;
-    stroke: color-mix(in srgb, var(--text) 10%, transparent);
+    stroke: color-mix(in srgb, var(--accent) 10%, transparent);
     stroke-width: 1;
   }
 
   .line-fill {
-    fill: color-mix(in srgb, var(--text) 8%, transparent);
+    fill: color-mix(in srgb, var(--accent) 8%, transparent);
     stroke: none;
   }
 
   .line-path {
     fill: none;
-    stroke: var(--text);
+    stroke: var(--accent);
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 2;
@@ -757,7 +758,7 @@ function getLocalDateKey(date: Date) {
   }
 
   circle {
-    fill: var(--text);
+    fill: var(--accent);
     opacity: 0;
     animation: analytics-dot-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
@@ -804,14 +805,14 @@ function getLocalDateKey(date: Date) {
   height: 7px;
   overflow: hidden;
   border-radius: var(--border-radius-pill);
-  background: color-mix(in srgb, var(--text) 10%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 
   i {
     display: block;
     height: 100%;
     min-width: 3px;
     border-radius: inherit;
-    background: var(--text);
+    background: var(--accent);
   }
 }
 
@@ -833,7 +834,7 @@ function getLocalDateKey(date: Date) {
     box-sizing: border-box;
     padding: 0 12px;
     border-radius: var(--border-radius-pill);
-    background: color-mix(in srgb, var(--text) 10%, transparent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
     color: var(--text);
     font-size: 0.8rem;
     font-weight: 700;
@@ -862,22 +863,6 @@ function getLocalDateKey(date: Date) {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes analytics-scan {
-  0% {
-    opacity: 0;
-    transform: translateX(-120%);
-  }
-
-  25% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateX(120%);
   }
 }
 

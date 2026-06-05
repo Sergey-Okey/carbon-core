@@ -1,5 +1,5 @@
 <template>
-  <header class="header">
+  <header ref="headerRoot" class="header">
     <div class="brand">
       <img class="brand-mark" src="/favicon.svg" alt="" aria-hidden="true" />
       <div class="brand-text">
@@ -30,7 +30,7 @@
         aria-label="Открыть профиль"
         data-tooltip="Профиль"
         data-tooltip-position="bottom"
-        @click="openProfile"
+        @click="toggleProfilePanel"
       >
         <div v-if="userStore.profile.avatar" class="avatar-small">
           <img :src="userStore.profile.avatar" alt="" />
@@ -38,18 +38,60 @@
         <UserCircle v-else :size="20" />
       </button>
     </div>
+    <Teleport to="body">
+      <Transition name="profile-panel">
+        <section
+          v-if="isProfileModalOpen"
+          ref="profilePanel"
+          class="profile-panel"
+          @click.stop
+        >
+          <header class="profile-panel-header">
+            <div class="account-preview">
+              <div class="account-avatar">
+                <img v-if="userStore.profile.avatar" :src="userStore.profile.avatar" alt="" />
+                <UserCircle v-else :size="28" />
+              </div>
+              <div>
+                <h3>{{ userName }}</h3>
+                <span>{{ userEmail }}</span>
+              </div>
+            </div>
+          </header>
+
+          <div class="account-modal-actions">
+            <AppButton type="button" variant="ghost" @click="openProfile">
+              <UserCircle :size="16" />
+              Профиль
+            </AppButton>
+            <AppButton type="button" variant="danger" @click="logout">
+              <LogOut :size="16" />
+              Выйти
+            </AppButton>
+          </div>
+        </section>
+      </Transition>
+    </Teleport>
   </header>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { HelpCircle, UserCircle } from 'lucide-vue-next'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { HelpCircle, LogOut, UserCircle } from 'lucide-vue-next'
+import AppButton from '~/components/ui/AppButton.vue'
 import NotificationCenter from '~/components/base/NotificationCenter.vue'
+import { useNotification } from '~/composables/useNotification'
+import { useAuthStore } from '~/stores/auth.store'
 import { useUserStore } from '~/stores/user.store'
 import { useUIStore, type NavSection } from '~/stores/ui.store'
 
+const authStore = useAuthStore()
 const userStore = useUserStore()
 const uiStore = useUIStore()
+const { addNotification } = useNotification()
+const isProfileModalOpen = ref(false)
+const headerRoot = ref<HTMLElement | null>(null)
+const profilePanel = ref<HTMLElement | null>(null)
 
 const sectionTitles: Record<NavSection, string> = {
   board: 'Доска',
@@ -60,14 +102,54 @@ const sectionTitles: Record<NavSection, string> = {
 }
 
 const currentSectionTitle = computed(() => sectionTitles[uiStore.activeNav])
+const userName = computed(() => userStore.displayName || 'COF User')
+const userEmail = computed(
+  () => userStore.profile.email || authStore.currentUser?.email || 'Локальный профиль'
+)
 
 function openProfile() {
+  isProfileModalOpen.value = false
   navigateTo('/profile')
 }
 
 function openOnboarding() {
   navigateTo('/onboarding')
 }
+
+function toggleProfilePanel() {
+  isProfileModalOpen.value = !isProfileModalOpen.value
+  if (isProfileModalOpen.value) {
+    window.dispatchEvent(new CustomEvent('cof:close-notifications'))
+  }
+}
+
+function logout() {
+  isProfileModalOpen.value = false
+  authStore.logout()
+  addNotification({ type: 'info', message: 'Вы вышли из аккаунта' })
+  navigateTo('/auth')
+}
+
+function handleDocumentClick(event: MouseEvent) {
+  const target = event.target as Node
+  if (!headerRoot.value?.contains(target) && !profilePanel.value?.contains(target)) {
+    isProfileModalOpen.value = false
+  }
+}
+
+function closeProfilePanel() {
+  isProfileModalOpen.value = false
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleDocumentClick)
+  window.addEventListener('cof:close-profile-panel', closeProfilePanel)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleDocumentClick)
+  window.removeEventListener('cof:close-profile-panel', closeProfilePanel)
+})
 </script>
 
 <style scoped lang="scss">
@@ -255,6 +337,103 @@ function openOnboarding() {
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+}
+
+.account-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.profile-panel {
+  @include glass;
+  position: fixed;
+  top: 72px;
+  right: 12px;
+  z-index: 4300;
+  width: min(320px, calc(100vw - 24px));
+  overflow: hidden;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
+  background: transparent;
+  color: var(--text);
+}
+
+.profile-panel-header {
+  padding: 14px;
+  border-bottom: var(--ui-border);
+}
+
+.account-avatar {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: var(--border-radius-md);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--text);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.account-preview h3,
+.account-preview span {
+  display: block;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-preview h3 {
+  color: var(--text);
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.account-preview span {
+  margin-top: 4px;
+  color: var(--dim);
+  font-size: 0.84rem;
+}
+
+.account-modal-actions {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+
+  :deep(.app-button) {
+    justify-content: flex-start;
+  }
+}
+
+.profile-panel-enter-active,
+.profile-panel-leave-active {
+  transition:
+    opacity var(--transition-standard),
+    transform var(--transition-standard);
+}
+
+.profile-panel-enter-from,
+.profile-panel-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+@media (max-width: 640px) {
+  .profile-panel {
+    top: 70px;
+    left: 12px;
+    right: 12px;
+    width: auto;
   }
 }
 </style>
