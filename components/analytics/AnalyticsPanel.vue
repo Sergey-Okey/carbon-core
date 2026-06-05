@@ -1,5 +1,5 @@
 <template>
-  <section class="analytics-page" aria-label="Аналитика">
+  <section class="analytics-page" aria-label="Аналитика" data-tour="analytics-page">
     <header class="analytics-head">
       <div>
         <span class="eyebrow">System overview</span>

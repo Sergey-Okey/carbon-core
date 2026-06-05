@@ -81,7 +81,9 @@
           :class="{ done: isCompleted }"
           @click="handleToggle"
           :disabled="disableToggle || isCompleted"
-          :aria-label="completeButtonTitle" :data-tooltip="completeButtonTitle"
+          :aria-label="completeButtonTitle"
+          :data-tooltip="completeButtonTitle"
+          :data-tour="completeTourTarget"
         >
           <CheckCircle v-if="isCompleted" :size="18" />
           <Circle v-else :size="18" />
@@ -177,6 +179,9 @@ const typeLabel = computed(() => {
 
   return map[props.task.type] || props.task.type.charAt(0).toUpperCase()
 })
+const completeTourTarget = computed(() =>
+  props.task.type !== 'HABIT' && !props.task.done ? 'task-complete' : undefined
+)
 
 const typeTitle = computed(() => {
   const map: Record<string, string> = {

@@ -591,6 +591,7 @@ function selectMobileNode(nodeId: string | null) {
   selectedNodeId.value = nodeId
   selectedEdgeId.value = null
   selectedEdge.value = null
+  if (nodeId) guidedTour.handleAction('branch-selected')
 }
 
 function handleCreateMilestone(data: Partial<Milestone>) {
@@ -716,6 +717,7 @@ function onNodeClick({ node }: { node: Node }) {
   selectedNodeId.value = node.id
   selectedEdgeId.value = null
   selectedEdge.value = null
+  guidedTour.handleAction('branch-selected')
 }
 
 function onEdgeClick({ edge }: { edge: Edge }) {

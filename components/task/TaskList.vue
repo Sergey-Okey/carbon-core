@@ -145,6 +145,7 @@ const addButtonTitle = computed(() =>
 
 const tourTarget = computed(() => {
   const type = props.defaultType || props.taskType
+  if (type === 'HABIT') return 'habit-add'
   return type === 'TASK_DAY' ? 'task-add-day' : undefined
 })
 

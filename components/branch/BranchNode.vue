@@ -8,6 +8,7 @@
       selected: selected,
     }"
     :style="nodeStyle"
+    data-tour="board-branch-node"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
   >

@@ -2,11 +2,11 @@
   <div class="branch-mobile-view">
     <!-- Панель инструментов -->
     <div class="mobile-controls">
-      <button @click="addBranch">
+      <button data-tour="board-add-branch" @click="addBranch">
         <Plus :size="20" />
         <span>Ветка</span>
       </button>
-      <button @click="addMilestoneToSelectedBranch">
+      <button data-tour="board-add-milestone" @click="addMilestoneToSelectedBranch">
         <PlusCircle :size="20" />
         <span>Этап</span>
       </button>
@@ -20,6 +20,7 @@
         class="branch-item"
         :class="{ expanded: expandedBranch === branch.id }"
         :style="{ '--node-marker-color': branch.markerColor || branch.backgroundColor || '#d6d6d6' }"
+        data-tour="board-branch-node"
       >
         <!-- Заголовок ветки -->
         <div class="branch-header" @click="toggleBranch(branch.id)">

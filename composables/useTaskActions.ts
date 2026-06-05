@@ -1,6 +1,7 @@
 import { useTasksStore } from '~/stores/tasks.store'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useNotification } from '~/composables/useNotification'
+import { useGuidedTourStore } from '~/stores/guidedTour.store'
 import type { Task, TaskType } from '~/types/task.types'
 
 type TaskFormData = Partial<Task> & {
@@ -15,6 +16,7 @@ type SaveTaskOptions = {
 export function useTaskActions() {
   const tasksStore = useTasksStore()
   const branchesStore = useBranchesStore()
+  const guidedTour = useGuidedTourStore()
   const { addNotification } = useNotification()
 
   function saveTask(taskData: TaskFormData, options: SaveTaskOptions = {}): boolean {
@@ -58,7 +60,12 @@ export function useTaskActions() {
   }
 
   function toggleTask(taskId: string) {
+    const taskBefore = tasksStore.tasks.find((task) => task.id === taskId)
     tasksStore.completeTask(taskId)
+    const taskAfter = tasksStore.tasks.find((task) => task.id === taskId)
+    if (taskBefore?.type !== 'HABIT' && !taskBefore?.done && taskAfter?.done) {
+      guidedTour.handleAction('task-completed')
+    }
   }
 
   function removeTask(taskId: string) {

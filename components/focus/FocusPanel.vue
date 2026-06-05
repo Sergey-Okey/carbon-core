@@ -1,5 +1,5 @@
 <template>
-  <section class="focus-page" aria-label="Фокус">
+  <section class="focus-page" aria-label="Фокус" data-tour="focus-page">
     <header class="focus-head">
       <div>
         <span class="eyebrow">Deep work</span>
@@ -56,7 +56,7 @@
             <span>Режим</span>
             <strong>{{ activePreset.minutes }} мин</strong>
           </div>
-          <div class="preset-grid">
+          <div class="preset-grid" data-tour="focus-presets">
             <button
               v-for="preset in presets"
               :key="preset.key"
@@ -336,6 +336,7 @@ onBeforeUnmount(stopTimer)
   max-width: 100%;
   aspect-ratio: 1;
   flex: 0 0 auto;
+  margin-inline: auto;
 
   @include mobile {
     width: clamp(238px, 78vw, 340px);
@@ -343,9 +344,13 @@ onBeforeUnmount(stopTimer)
 }
 
 .timer-ring {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  overflow: visible;
 }
 
 .ring-ticks line {
@@ -372,18 +377,19 @@ onBeforeUnmount(stopTimer)
 
 .timer-center {
   position: absolute;
-  inset: 0;
+  top: 50%;
+  left: 50%;
   display: grid;
   align-content: center;
   justify-items: center;
   gap: 8px;
-  width: 100%;
+  width: min(74%, 300px);
   min-width: 0;
-  padding: 0 13%;
+  padding: 0;
   box-sizing: border-box;
   color: var(--text);
   opacity: 0;
-  transform: scale(0.97);
+  transform: translate(-50%, -50%) scale(0.97);
   animation: focus-value-in 460ms cubic-bezier(0.16, 1, 0.3, 1) 520ms both;
   pointer-events: none;
 
@@ -411,7 +417,7 @@ onBeforeUnmount(stopTimer)
   }
 
   @include mobile {
-    padding: 0 12%;
+    width: min(76%, 260px);
     gap: 7px;
 
     strong {
@@ -567,7 +573,7 @@ onBeforeUnmount(stopTimer)
 @keyframes focus-value-in {
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -576,7 +582,7 @@ onBeforeUnmount(stopTimer)
   .timer-center {
     animation: none;
     opacity: 1;
-    transform: none;
+    transform: translate(-50%, -50%);
     stroke-dashoffset: 0;
   }
 }

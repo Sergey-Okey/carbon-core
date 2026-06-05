@@ -120,7 +120,7 @@ function openTaskCreator(type: TaskType) {
   activeTaskType.value = type
   editingTask.value = undefined
   showTaskForm.value = true
-  guidedTour.handleAction('task-form-open')
+  guidedTour.handleAction(type === 'HABIT' ? 'habit-form-open' : 'task-form-open')
 }
 
 function openTaskEditor(task: Task) {
@@ -140,7 +140,8 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
     fallbackType: activeTaskType.value,
   })
   if (saved) {
-    guidedTour.handleAction('task-created')
+    const savedType = (taskData.type as TaskType | undefined) || activeTaskType.value
+    guidedTour.handleAction(savedType === 'HABIT' ? 'habit-created' : 'task-created')
     closeTaskForm()
   }
 }

@@ -7,92 +7,157 @@ export type GuidedTourStep = {
   title: string
   text: string
   action?: string
+  hint?: string
+  optional?: boolean
+  recoveryText?: string
+  requiredCount?: number
 }
 
 const STEPS: GuidedTourStep[] = [
   {
     id: 'tasks',
     target: 'nav-tasks',
-    title: 'Первый шаг',
-    text: 'Откройте раздел задач. Здесь пользователь собирает дневной, недельный и долгий фокус.',
+    title: 'Сначала соберите задачи',
+    text: 'Откройте раздел задач. Здесь начинается работа: короткие задачи на день и привычки, которые повторяются.',
     action: 'nav:tasks',
+    hint: 'Нажмите иконку задач в навигации.',
   },
   {
     id: 'task-add',
     target: 'task-add-day',
-    title: 'Создайте задачу',
-    text: 'Нажмите плюс в блоке задач на день. Обучение продолжится после открытия формы.',
+    title: 'Создайте задачу на сегодня',
+    text: 'Нажмите плюс в блоке “Сегодня” и добавьте одну простую задачу. Например: “Разобрать почту”.',
     action: 'task-form-open',
+    hint: 'Обучение подождет, пока откроется форма.',
   },
   {
     id: 'task-save',
     target: 'task-save',
-    title: 'Заполните задачу',
-    text: 'Введите короткое название и сохраните. Так пользователь сразу получает первый рабочий объект.',
+    title: 'Сохраните задачу',
+    text: 'Введите название и сохраните. Описание, дату и теги можно оставить пустыми.',
     action: 'task-created',
+    recoveryText: 'Если форма закрылась, вернитесь назад и снова нажмите плюс в блоке “Сегодня”.',
+  },
+  {
+    id: 'habit-add',
+    target: 'habit-add',
+    title: 'Добавьте привычку',
+    text: 'Теперь создайте привычку. Это действие, которое можно отмечать каждый день.',
+    action: 'habit-form-open',
+    hint: 'Нажмите плюс в блоке “Привычки”.',
+  },
+  {
+    id: 'habit-save',
+    target: 'task-save',
+    title: 'Сохраните привычку',
+    text: 'Назовите привычку коротко: “Вода”, “Чтение”, “Тренировка”.',
+    action: 'habit-created',
+    recoveryText: 'Если форма закрылась, вернитесь назад и снова нажмите плюс в блоке “Привычки”.',
+  },
+  {
+    id: 'second-task-add',
+    target: 'task-add-day',
+    title: 'Добавьте еще одну задачу',
+    text: 'Для первого ритма лучше иметь пару маленьких задач. Добавьте вторую задачу на сегодня.',
+    action: 'task-form-open',
+    hint: 'Пусть это будет что-то быстрое и понятное.',
+  },
+  {
+    id: 'second-task-save',
+    target: 'task-save',
+    title: 'Сохраните вторую задачу',
+    text: 'Введите название и сохраните. Теперь можно увидеть, как работает выполнение.',
+    action: 'task-created',
+    recoveryText: 'Если форма закрылась, вернитесь назад и снова нажмите плюс в блоке “Сегодня”.',
+  },
+  {
+    id: 'complete-tasks',
+    target: 'task-complete',
+    title: 'Выполните пару задач',
+    text: 'Отметьте выполненными две обычные задачи. Так аналитика и доска начнут показывать реальное движение.',
+    action: 'task-completed',
+    requiredCount: 2,
+    hint: 'Можно выполнить задачи из любого периода, кроме привычек.',
+    recoveryText: 'Если кнопки выполнения не видно, добавьте еще одну задачу на сегодня или прокрутите список активных задач.',
   },
   {
     id: 'board',
     target: 'nav-board',
-    title: 'Перейдите на доску',
-    text: 'Доска связывает задачи, этапы и ветки в понятную карту движения.',
+    title: 'Теперь посмотрите доску',
+    text: 'Доска нужна, чтобы увидеть направления, этапы и связи между ними, а не держать все в голове.',
     action: 'nav:board',
   },
   {
-    id: 'branch-add',
+    id: 'branches',
     target: 'board-add-branch',
-    title: 'Добавьте ветку',
-    text: 'Нажмите создание ветки. Это основной контейнер для направления, проекта или цели.',
-    action: 'branch-modal-open',
+    title: 'Ветки - это направления',
+    text: 'Ветка может быть проектом, целью или областью жизни. Здесь вы собираете крупные направления.',
+    optional: true,
+    hint: 'Создавать ветку сейчас не обязательно. Просто посмотрите, где находится действие.',
   },
   {
-    id: 'branch-save',
-    target: 'branch-save',
-    title: 'Сохраните ветку',
-    text: 'Задайте название и сохраните ветку. После этого можно добавлять этапы и связи.',
-    action: 'branch-created',
+    id: 'milestones',
+    target: 'board-add-milestone',
+    title: 'Этапы - это следующие шаги',
+    text: 'Этапы добавляются к выбранной ветке и помогают разложить направление на понятные части.',
+    optional: true,
+    hint: 'Если кнопка неактивна, это нормально: сначала нужно выбрать ветку.',
+  },
+  {
+    id: 'analytics',
+    target: 'nav-analytics',
+    title: 'Проверьте аналитику',
+    text: 'Аналитика показывает темп, выполненные задачи и лучшие часы работы. Она становится полезнее после действий.',
+    action: 'nav:analytics',
+  },
+  {
+    id: 'analytics-view',
+    target: 'analytics-page',
+    title: 'Здесь виден прогресс',
+    text: 'Смотрите не на красивые цифры, а на ритм: когда вы чаще завершаете задачи и где проседает фокус.',
+    optional: true,
   },
   {
     id: 'focus',
     target: 'nav-shop',
-    title: 'Откройте фокус',
-    text: 'Фокус помогает превратить задачи в рабочие сессии, а не просто список.',
+    title: 'Фокус - для рабочих сессий',
+    text: 'Фокус не обязателен для старта. Это отдельная страница, где можно включить таймер, когда задача уже выбрана.',
     action: 'nav:shop',
   },
   {
-    id: 'focus-start',
-    target: 'focus-start',
-    title: 'Запустите таймер',
-    text: 'Стартуйте короткую сессию. Счетчик дня сохранит завершенные подходы.',
-    action: 'focus-started',
+    id: 'focus-view',
+    target: 'focus-page',
+    title: 'Таймер помогает начать',
+    text: 'Выберите режим и работайте короткими сессиями. Завершенные подходы сохраняются в блоке “Сегодня”.',
+    optional: true,
   },
   {
     id: 'complete',
-    title: 'Обучение пройдено',
-    text: 'Готово. Пользователь увидел базовый путь: задача, доска, ветка и фокус.',
+    title: 'Готово',
+    text: 'Основной путь пройден: задача, привычка, выполнение, доска, аналитика и фокус.',
   },
 ]
 
-export const useGuidedTourStore = defineStore(
-  'guided-tour',
-  () => {
+export const useGuidedTourStore = defineStore('guided-tour', () => {
     const isActive = ref(false)
     const isCompleted = ref(false)
     const currentStepIndex = ref(0)
+    const actionProgress = ref<Record<string, number>>({})
 
     const steps = computed(() => STEPS)
     const currentStep = computed(() => steps.value[currentStepIndex.value] || steps.value[0])
     const isFinishStep = computed(() => currentStep.value?.id === 'complete')
+    const canGoBack = computed(() => currentStepIndex.value > 0)
+    const currentProgress = computed(() => actionProgress.value[currentStep.value.id] || 0)
+    const currentRequired = computed(() => currentStep.value.requiredCount || 0)
+    const hasProgress = computed(() => currentRequired.value > 0)
 
     function start(force = false) {
       if (isCompleted.value && !force) return
       currentStepIndex.value = 0
+      actionProgress.value = {}
       isActive.value = true
       isCompleted.value = false
-    }
-
-    function startIfNeeded() {
-      if (!isCompleted.value && !isActive.value) start()
     }
 
     function skip() {
@@ -115,30 +180,45 @@ export const useGuidedTourStore = defineStore(
       currentStepIndex.value += 1
     }
 
+    function back() {
+      if (currentStepIndex.value === 0) return
+      currentStepIndex.value -= 1
+    }
+
     function handleAction(action: string) {
       if (!isActive.value || isCompleted.value) return
-      if (currentStep.value?.action !== action) return
+      const step = currentStep.value
+      if (step.action !== action) return
+
+      if (step.requiredCount && step.requiredCount > 1) {
+        const nextProgress = Math.min((actionProgress.value[step.id] || 0) + 1, step.requiredCount)
+        actionProgress.value = {
+          ...actionProgress.value,
+          [step.id]: nextProgress,
+        }
+        if (nextProgress < step.requiredCount) return
+      }
+
       next()
     }
 
-    return {
-      isActive,
-      isCompleted,
-      currentStepIndex,
-      steps,
-      currentStep,
-      isFinishStep,
-      start,
-      startIfNeeded,
-      skip,
-      finish,
-      next,
-      handleAction,
-    }
-  },
-  {
-    persist: import.meta.client
-      ? { key: 'carbon-guided-tour', storage: localStorage }
-      : undefined,
+  return {
+    isActive,
+    isCompleted,
+    currentStepIndex,
+    actionProgress,
+    steps,
+    currentStep,
+    isFinishStep,
+    canGoBack,
+    currentProgress,
+    currentRequired,
+    hasProgress,
+    start,
+    skip,
+    finish,
+    next,
+    back,
+    handleAction,
   }
-)
+})

@@ -84,10 +84,13 @@ import { useNotification } from '~/composables/useNotification'
 import { useAuthStore } from '~/stores/auth.store'
 import { useUserStore } from '~/stores/user.store'
 import { useUIStore, type NavSection } from '~/stores/ui.store'
+import { useGuidedTourStore } from '~/stores/guidedTour.store'
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
 const uiStore = useUIStore()
+const guidedTour = useGuidedTourStore()
+const route = useRoute()
 const { addNotification } = useNotification()
 const isProfileModalOpen = ref(false)
 const headerRoot = ref<HTMLElement | null>(null)
@@ -112,8 +115,13 @@ function openProfile() {
   navigateTo('/profile')
 }
 
-function openOnboarding() {
-  navigateTo('/onboarding')
+async function openOnboarding() {
+  isProfileModalOpen.value = false
+  window.dispatchEvent(new CustomEvent('cof:close-notifications'))
+  if (route.path !== '/') {
+    await navigateTo('/')
+  }
+  guidedTour.start(true)
 }
 
 function toggleProfilePanel() {
