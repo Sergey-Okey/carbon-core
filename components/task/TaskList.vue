@@ -73,7 +73,7 @@ import { useTaskActions } from '~/composables/useTaskActions'
 import TaskCard from './TaskCard.vue'
 import TaskForm from './TaskForm.vue'
 import { Plus, Info } from 'lucide-vue-next'
-import type { Task, TaskType } from '~/types/task.types'
+import type { Task, TaskFormData, TaskType } from '~/types/task.types'
 
 const props = defineProps<{
   taskType: TaskType | 'HABITS'
@@ -219,7 +219,7 @@ function closeForm() {
   editingTask.value = undefined
 }
 
-function handleSave(taskData: any) {
+function handleSave(taskData: TaskFormData) {
   const saved = saveTask(taskData, {
     editingTask: editingTask.value,
     fallbackType: props.defaultType || (props.taskType as TaskType),

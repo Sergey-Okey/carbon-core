@@ -134,6 +134,7 @@ export const useUserStore = defineStore(
       league,
       addXP,
       addCoins,
+      addGold,
       incrementCompletedTasks,
       getMilestoneBonus,
       reduceLeaguePoints,

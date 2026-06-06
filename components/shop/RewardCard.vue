@@ -18,8 +18,9 @@ import { useRewardsStore } from '~/stores/rewards.store'
 import { useUserStore } from '~/stores/user.store'
 import GlassCard from '~/components/base/GlassCard.vue'
 import { Coins } from 'lucide-vue-next'
+import type { Reward } from '~/types/reward.types'
 
-const props = defineProps<{ reward: any }>()
+const props = defineProps<{ reward: Reward }>()
 const rewardsStore = useRewardsStore()
 const userStore = useUserStore()
 

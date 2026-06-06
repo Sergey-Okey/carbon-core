@@ -161,18 +161,18 @@ import AppSelect from '~/components/ui/AppSelect.vue'
 import AppSwitch from '~/components/ui/AppSwitch.vue'
 import type { AppSelectOption } from '~/types/ui.types'
 import type { BranchId } from '~/types/branch.types'
-import type { Task, TaskTag } from '~/types/task.types'
+import type { Task, TaskFormData, TaskTag, TaskType } from '~/types/task.types'
 import type { Tag, TagScope } from '~/types/tag.types'
 
 const props = defineProps<{
   task?: Task
-  defaultType?: string
+  defaultType?: TaskType
   hideType?: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'save', data: any): void
+  (e: 'save', data: TaskFormData): void
 }>()
 
 const tagsStore = useTagsStore()

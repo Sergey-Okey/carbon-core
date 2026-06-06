@@ -708,6 +708,40 @@ definePageMeta({
   layout: false,
 })
 
+useSeoMeta({
+  title: 'Управление задачами, привычками и целями',
+  description:
+    'Core of Life объединяет задачи, привычки, цели, аналитику и фокус в одном приложении.',
+  ogTitle: 'Core of Life',
+  ogDescription:
+    'Управляйте задачами, привычками, целями и фокусом в едином личном пространстве.',
+  ogType: 'website',
+  twitterCard: 'summary',
+  robots: 'index, follow',
+})
+
+useHead({
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'Core of Life',
+        applicationCategory: 'ProductivityApplication',
+        operatingSystem: 'Web',
+        description:
+          'Приложение для управления задачами, привычками, целями, аналитикой и фокусом.',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+        },
+      }),
+    },
+  ],
+})
+
 const onboardingStore = useOnboardingStore()
 const authStore = useAuthStore()
 const router = useRouter()

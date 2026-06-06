@@ -33,3 +33,7 @@ export interface Task {
   createdAt: number
   updatedAt?: number
 }
+
+export type TaskFormData = Partial<Task> & {
+  createBranch?: boolean
+}

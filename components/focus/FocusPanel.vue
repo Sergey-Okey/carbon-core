@@ -117,7 +117,7 @@ const activePresetKey = ref<PresetKey>('focus')
 const remainingSeconds = ref(presets[0].minutes * 60)
 const isRunning = ref(false)
 const completedSessions = ref(0)
-let intervalId: ReturnType<typeof window.setInterval> | null = null
+let intervalId: number | null = null
 
 const activePreset = computed(() =>
   presets.find((preset) => preset.key === activePresetKey.value) ?? presets[0]

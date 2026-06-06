@@ -8,4 +8,10 @@ import AuthPanel from '~/components/auth/AuthPanel.vue'
 definePageMeta({
   layout: 'auth',
 })
+
+useSeoMeta({
+  title: 'Регистрация',
+  description: 'Создание профиля Core of Life.',
+  robots: 'noindex, nofollow',
+})
 </script>

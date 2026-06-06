@@ -55,7 +55,7 @@ export const useTagsStore = defineStore(
         }
 
         const scopes = getScopesUsingTag(tag.id, tasks)
-        const targetScopes = scopes.length ? scopes : ['task']
+        const targetScopes: TagScope[] = scopes.length ? scopes : ['task']
 
         targetScopes.forEach((scope, index) => {
           const scopedTag: InternalTag = {

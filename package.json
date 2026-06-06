@@ -7,6 +7,8 @@
     "dev:local": "node node_modules/nuxt/bin/nuxt.mjs dev --host 0.0.0.0 --port 3005",
     "dev:clean": "node node_modules/nuxt/bin/nuxt.mjs cleanup && node node_modules/nuxt/bin/nuxt.mjs dev --host 0.0.0.0 --port 3000",
     "build": "node node_modules/nuxt/bin/nuxt.mjs build",
+    "typecheck": "vue-tsc --noEmit",
+    "check": "npm run typecheck && npm run build",
     "start": "node .output/server/index.mjs",
     "preview": "node node_modules/nuxt/bin/nuxt.mjs preview"
   },

@@ -105,7 +105,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, nextTick, computed } from 'vue'
+import { ref, shallowRef, watch, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import {
   VueFlow,
   ConnectionMode,
@@ -156,13 +156,13 @@ const nodeTypes = {
   'branch-node': BranchNode as any,
   'milestone-node': MilestoneNode as any,
 } as any
-const nodes = ref<Node<BranchNodeData>[]>([])
-const edges = ref<Edge[]>([])
+const nodes = shallowRef<Node<BranchNodeData>[]>([])
+const edges = shallowRef<Edge[]>([])
 const isMobile = ref(false)
 const selectedNodeId = ref<string | null>(null)
 const selectedEdgeId = ref<string | null>(null)
-const selectedEdge = ref<Edge | null>(null)
-const edgeSnapshot = ref<Edge[]>([])
+const selectedEdge = shallowRef<Edge | null>(null)
+const edgeSnapshot = shallowRef<Edge[]>([])
 const isSyncingFlow = ref(false)
 const isAutoLayoutAnimating = ref(false)
 const editingMilestone = ref<Milestone | null>(null)
@@ -284,21 +284,26 @@ function syncNodesAndEdges() {
 
   const existingIds = new Set(newNodes.map((node) => node.id))
   nodes.value = newNodes
-  edges.value = branchesStore.edges.filter(
-    (edge) => existingIds.has(edge.source) && existingIds.has(edge.target)
-  ).map((edge) => ({
-    ...defaultEdgeOptions,
-    ...edge,
-    pathOptions: {
-      ...defaultEdgeOptions.pathOptions,
-      ...(edge.pathOptions || {}),
-    },
-    style: {
-      ...(edge.style || {}),
-      ...defaultEdgeOptions.style,
-      stroke: getEdgeColor(edge),
-    },
-  }))
+  const storedEdges = branchesStore.edges as Edge[]
+  edges.value = storedEdges
+    .filter((edge) => existingIds.has(edge.source) && existingIds.has(edge.target))
+    .map(
+      (edge) =>
+        ({
+          ...defaultEdgeOptions,
+          ...edge,
+          pathOptions: {
+            ...defaultEdgeOptions.pathOptions,
+            ...((edge as Edge & { pathOptions?: typeof defaultEdgeOptions.pathOptions })
+              .pathOptions || {}),
+          },
+          style: {
+            ...(edge.style || {}),
+            ...defaultEdgeOptions.style,
+            stroke: getEdgeColor(edge),
+          },
+        }) as Edge
+    )
   edgeSnapshot.value = JSON.parse(JSON.stringify(edges.value))
   nextTick(() => {
     isSyncingFlow.value = false

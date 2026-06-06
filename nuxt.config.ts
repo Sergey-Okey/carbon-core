@@ -43,19 +43,26 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'ru' },
-      title: 'COF',
+      title: 'Core of Life',
+      titleTemplate: '%s · COF',
       meta: [
         { charset: 'utf-8' },
         {
           name: 'viewport',
-          content:
-            'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
+          content: 'width=device-width, initial-scale=1, viewport-fit=cover',
         },
-        { name: 'description', content: 'Core of Life - Управление жизнью' },
-        { name: 'og:type', content: 'website' },
+        {
+          name: 'description',
+          content: 'Core of Life помогает управлять задачами, привычками, целями и фокусом.',
+        },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: 'Core of Life' },
+        { name: 'twitter:card', content: 'summary' },
+        { name: 'theme-color', content: '#121212' },
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'manifest', href: '/site.webmanifest' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         {
           rel: 'preconnect',

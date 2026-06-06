@@ -83,6 +83,12 @@ import GuidedTourOverlay from '~/components/guided/GuidedTourOverlay.vue'
 import { useGuidedTourStore } from '~/stores/guidedTour.store'
 import type { Task, TaskType } from '~/types/task.types'
 
+useSeoMeta({
+  title: 'Приложение',
+  description: 'Личное пространство Core of Life.',
+  robots: 'noindex, nofollow',
+})
+
 const uiStore = useUIStore()
 const settingsStore = useSettingsStore()
 const tasksStore = useTasksStore()

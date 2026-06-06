@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import type { Edge } from '@vue-flow/core'
 import { v4 as uuidv4 } from 'uuid'
 import type { Branch, BranchId, Milestone } from '~/types/branch.types'
@@ -141,7 +141,8 @@ export const useBranchesStore = defineStore(
       },
     ])
 
-    const edges = ref<Edge[]>([
+    // Vue Flow consumes edge collections as snapshots; deep proxying every edge is unnecessary.
+    const edges = shallowRef<Edge[]>([
       {
         id: 'edge-cof-m1',
         source: 'COF',
@@ -324,9 +325,11 @@ export const useBranchesStore = defineStore(
           edge.targetHandle ||
           targetPort(edge.target, isMostlyVertical && dy > 0 ? 'top' : 'left'),
         type: edge.type || 'smoothstep',
-        pathOptions: edge.pathOptions || edgePathOptions,
+        pathOptions:
+          (edge as Edge & { pathOptions?: typeof edgePathOptions }).pathOptions ||
+          edgePathOptions,
         style: edgeStyle,
-      }
+      } as Edge
     }
 
     function getAllMilestones(): Milestone[] {
@@ -339,7 +342,7 @@ export const useBranchesStore = defineStore(
       )
       const visited = new Set<string>()
       const queue = [startId]
-      const normalizedEdges = edges.value.map(normalizeEdgePorts)
+      const normalizedEdges: Edge[] = (edges.value as Edge[]).map(normalizeEdgePorts)
 
       while (queue.length) {
         const currentId = queue.shift()!
@@ -362,7 +365,7 @@ export const useBranchesStore = defineStore(
       const visitedNodes = new Set<string>(initialIds)
       const visitedMilestones = new Set<string>()
       const queue = [...initialIds]
-      const normalizedEdges = edges.value.map(normalizeEdgePorts)
+      const normalizedEdges: Edge[] = (edges.value as Edge[]).map(normalizeEdgePorts)
 
       initialIds.forEach((id) => {
         if (milestoneIds.has(id)) visitedMilestones.add(id)
@@ -596,7 +599,11 @@ export const useBranchesStore = defineStore(
 
     function updateEdge(updatedEdge: Edge) {
       const index = edges.value.findIndex((edge) => edge.id === updatedEdge.id)
-      if (index !== -1) edges.value[index] = updatedEdge
+      if (index !== -1) {
+        edges.value = edges.value.map((edge, edgeIndex) =>
+          edgeIndex === index ? updatedEdge : edge
+        )
+      }
       normalizeBoard()
     }
 
@@ -724,7 +731,7 @@ export const useBranchesStore = defineStore(
       }
 
       branch.milestones.push(milestone)
-      edges.value.push(createEdge(sourceId, milestone.id))
+      edges.value = [...edges.value, createEdge(sourceId, milestone.id)]
       normalizeBoard()
       return milestone
     }
@@ -802,7 +809,7 @@ export const useBranchesStore = defineStore(
       })
 
       const source = attachAfterMilestoneId || targetBranch.id
-      edges.value.push(createEdge(source, milestoneId))
+      edges.value = [...edges.value, createEdge(source, milestoneId)]
 
       if (sourceBranch.id !== targetBranch.id) {
         deleteBranchIfEmpty(sourceBranch.id)
@@ -841,7 +848,7 @@ export const useBranchesStore = defineStore(
         },
       }
       branches.value.push(newBranch)
-      edges.value.push(createEdge(newBranchId, milestone.id))
+      edges.value = [...edges.value, createEdge(newBranchId, milestone.id)]
 
       deleteBranchIfEmpty(sourceBranch.id)
       normalizeBoard()

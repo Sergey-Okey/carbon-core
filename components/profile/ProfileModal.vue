@@ -62,7 +62,7 @@
       </div>
       <div class="stat-item">
         <Coins :size="18" />
-        <span>{{ userStore.gold }} золота</span>
+        <span>{{ userStore.coins }} золота</span>
       </div>
     </div>
 

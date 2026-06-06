@@ -1,0 +1,17 @@
+{
+  "name": "Core of Life",
+  "short_name": "COF",
+  "description": "Управление задачами, привычками, целями и фокусом.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#121212",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

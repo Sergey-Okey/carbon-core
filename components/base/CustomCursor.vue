@@ -17,6 +17,7 @@ const cursorRef = ref<HTMLElement | null>(null)
 
 let hasPosition = false
 
+// Direct coordinates keep the visual tip aligned with the browser hit target.
 function handleMouseMove(event: MouseEvent) {
   const cursor = cursorRef.value
   if (!cursor) return

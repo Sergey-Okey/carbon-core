@@ -27,11 +27,12 @@ import { useQuestsStore } from '~/stores/quests.store'
 import QuestCard from './QuestCard.vue'
 import QuestForm from './QuestForm.vue'
 import { Plus } from 'lucide-vue-next'
+import type { Quest } from '~/types/quest.types'
 
 const questsStore = useQuestsStore()
 const showForm = ref(false)
 
-function handleSave(questData: any) {
+function handleSave(questData: Omit<Quest, 'id' | 'createdAt' | 'done'>) {
   questsStore.addQuest(questData)
   showForm.value = false
 }
