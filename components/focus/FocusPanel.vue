@@ -298,7 +298,7 @@ onBeforeUnmount(stopTimer)
 
   @include mobile {
     flex: 0 0 auto;
-    min-height: 34px;
+    min-height: 44px;
     padding: 0 10px;
     font-size: 0.82rem;
   }

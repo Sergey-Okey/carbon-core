@@ -212,8 +212,8 @@ function handleBackdrop() {
   }
 
   .app-modal {
-    width: min(100%, calc(100vw - 20px));
-    max-height: calc(100dvh - 20px);
+    inline-size: 100%;
+    max-block-size: calc(100dvh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
 
     &.allow-overflow {
       overflow: hidden;

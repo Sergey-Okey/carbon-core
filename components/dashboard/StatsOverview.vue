@@ -315,7 +315,7 @@ onMounted(() => {
   @include mobile {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
-    padding: 12px 42px 12px 12px;
+    padding: 12px;
   }
 
   &.is-collapsed {
@@ -354,6 +354,16 @@ onMounted(() => {
     top: 50%;
     transform: translateY(-50%);
   }
+
+  @include mobile {
+    z-index: 2;
+    top: 8px;
+    right: 8px;
+
+    .is-collapsed & {
+      top: 50%;
+    }
+  }
 }
 
 .stats-collapsed-row {
@@ -385,6 +395,7 @@ onMounted(() => {
 
   @include mobile {
     gap: 10px;
+    padding-right: 34px;
     font-size: 0.78rem;
 
     span:nth-child(n + 4) {

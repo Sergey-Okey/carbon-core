@@ -859,6 +859,12 @@ function resetAllData() {
   }
 }
 
+@media (pointer: coarse), (max-width: 767px) {
+  .schedule-time input {
+    min-height: 44px;
+  }
+}
+
 .backup-info,
 .data-note,
 .mode-summary {

@@ -326,6 +326,14 @@ function handleSave(taskData: any) {
     }
   }
 
+  @media (pointer: coarse), (max-width: 767px) {
+    .add-btn {
+      width: 44px;
+      height: 44px;
+      min-height: 44px;
+    }
+  }
+
   .tasks {
     display: flex;
     flex-direction: column;

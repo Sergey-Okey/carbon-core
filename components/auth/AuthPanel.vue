@@ -191,7 +191,8 @@ async function submit() {
 
 <style scoped lang="scss">
 .auth-page {
-  min-height: 100vh;
+  min-block-size: 100vh;
+  min-block-size: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;

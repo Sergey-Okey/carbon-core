@@ -24,7 +24,10 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
   flex-direction: column;
   width: 100%;
   max-width: 100%;
-  height: 100vh;
+  min-block-size: 100vh;
+  min-block-size: 100dvh;
+  block-size: 100vh;
+  block-size: 100dvh;
   overflow: hidden;
   background-color: var(--bg);
   background-position: center;
@@ -55,7 +58,8 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
 
   @include desktop {
     flex-direction: row;
-    padding: 4px 12px 12px;
+    padding-block: 4px 12px;
+    padding-inline: 12px;
     gap: 12px;
   }
 }
@@ -71,7 +75,8 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 16px;
+  padding-block: clamp(14px, 2vw, 20px);
+  padding-inline: clamp(12px, 3vw, 24px);
   scroll-behavior: smooth;
 
   html.compact-ui & {
@@ -79,11 +84,18 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
   }
 
   @include desktop {
-    padding: 20px 12px 20px 16px;
+    padding-block: 20px;
+    padding-inline: 16px 12px;
 
     html.compact-ui & {
       padding: 14px 8px 14px 12px;
     }
+  }
+
+  @include mobile {
+    padding-inline-start: max(12px, env(safe-area-inset-left, 0px));
+    padding-inline-end: max(12px, env(safe-area-inset-right, 0px));
+    padding-block-end: calc(96px + env(safe-area-inset-bottom, 0px));
   }
 
   &::-webkit-scrollbar {
@@ -98,8 +110,10 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
     background: var(--ui-border-color);
     border-radius: 3px;
 
-    &:hover {
-      background: var(--dim);
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: var(--dim);
+      }
     }
   }
 }

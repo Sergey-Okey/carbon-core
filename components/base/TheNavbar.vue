@@ -96,19 +96,21 @@ async function handleNavClick(section: NavSection) {
 
   @include desktop {
     align-self: center;
-    width: 56px;
-    margin: 0 auto;
-    padding: 10px 0;
+    inline-size: 56px;
+    margin-block: 0;
+    margin-inline: auto;
+    padding-block: 10px;
     border: var(--ui-border);
   }
 
   @include mobile {
     position: fixed;
-    left: 50%;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
-    width: auto;
-    max-width: calc(100vw - 24px);
-    padding: 10px 13px;
+    inset-inline-start: 50%;
+    inset-block-end: calc(env(safe-area-inset-bottom, 0px) + 14px);
+    inline-size: auto;
+    max-inline-size: calc(100dvw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    padding-block: 10px;
+    padding-inline: 13px;
     transform: translateX(-50%);
     border-radius: var(--border-radius-pill);
     backdrop-filter: var(--glass-strong-filter);
@@ -151,9 +153,11 @@ async function handleNavClick(section: NavSection) {
     background var(--transition-standard),
     color var(--transition-standard);
 
-  &:hover:not(.active) {
-    background: color-mix(in srgb, var(--accent) 7%, transparent);
-    color: var(--text);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(.active) {
+      background: color-mix(in srgb, var(--accent) 7%, transparent);
+      color: var(--text);
+    }
   }
 
   &.active,
@@ -170,6 +174,13 @@ async function handleNavClick(section: NavSection) {
     width: 44px;
     min-width: 44px;
     height: 44px;
+  }
+}
+
+@media (horizontal-viewport-segments: 2) and (max-width: 767px) {
+  .nav-island {
+    inset-inline-start: calc(env(viewport-segment-left 0 0) + (env(viewport-segment-width 0 0) / 2));
+    max-inline-size: calc(env(viewport-segment-width 0 0) - 24px);
   }
 }
 

@@ -36,19 +36,17 @@ const { notifications, removeNotification } = useNotification()
   flex-direction: column;
   gap: 8px;
   pointer-events: none;
-  top: calc(env(safe-area-inset-top, 0px) + 72px);
-  right: 16px;
-  left: auto;
+  inset-block-start: calc(env(safe-area-inset-top, 0px) + 72px);
+  inset-inline-end: max(16px, env(safe-area-inset-right, 0px));
   align-items: flex-end;
-  width: min(360px, calc(100vw - 32px));
+  inline-size: min(360px, calc(100dvw - 32px));
 
   @include mobile {
-    top: calc(env(safe-area-inset-top, 0px) + 66px);
-    bottom: auto;
-    left: 12px;
-    right: 12px;
+    inset-block-start: calc(env(safe-area-inset-top, 0px) + 66px);
+    inset-inline-start: max(12px, env(safe-area-inset-left, 0px));
+    inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
     align-items: center;
-    width: auto;
+    inline-size: auto;
   }
 }
 
@@ -61,8 +59,8 @@ const { notifications, removeNotification } = useNotification()
   gap: 8px;
   align-self: flex-end;
   width: fit-content;
-  min-width: 168px;
-  max-width: 100%;
+  min-inline-size: 168px;
+  max-inline-size: 100%;
   min-height: 34px;
   padding: 8px 10px 8px 12px;
   border-radius: var(--border-radius-lg);
@@ -113,9 +111,18 @@ const { notifications, removeNotification } = useNotification()
     cursor: pointer;
     transition: opacity var(--transition-standard);
 
-    &:hover {
-      opacity: 0.8;
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        opacity: 0.8;
+      }
     }
+  }
+}
+
+@media (pointer: coarse), (max-width: 767px) {
+  .toast,
+  .toast-action {
+    min-height: 44px;
   }
 }
 

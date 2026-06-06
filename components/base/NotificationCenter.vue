@@ -183,9 +183,14 @@ onBeforeUnmount(() => {
   border: var(--ui-border);
   background: transparent;
 
-  &:hover,
   &:focus-visible {
     background: var(--glass-surface);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: var(--glass-surface);
+    }
   }
 
   @media (max-width: 767px) {
@@ -214,10 +219,10 @@ onBeforeUnmount(() => {
 .notification-panel {
   @include glass;
   position: fixed;
-  top: 72px;
-  right: 12px;
+  inset-block-start: calc(72px + env(safe-area-inset-top, 0px));
+  inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
   z-index: 4300;
-  width: min(380px, calc(100vw - 24px));
+  inline-size: min(380px, calc(100dvw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
@@ -394,10 +399,10 @@ onBeforeUnmount(() => {
 
 @media (max-width: 640px) {
   .notification-panel {
-    top: 70px;
-    left: 12px;
-    right: 12px;
-    width: auto;
+    inset-block-start: calc(70px + env(safe-area-inset-top, 0px));
+    inset-inline-start: max(12px, env(safe-area-inset-left, 0px));
+    inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
+    inline-size: auto;
   }
 }
 </style>

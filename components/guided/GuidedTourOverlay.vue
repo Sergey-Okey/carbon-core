@@ -8,6 +8,7 @@
       />
 
       <article
+        ref="cardRef"
         class="guided-tour__card"
         :class="[
           `is-${cardPlacement}`,
@@ -24,7 +25,7 @@
             type="button"
             class="guided-tour__close"
             aria-label="Закрыть обучение"
-            @click="tour.skip"
+            @click="tour.pause"
           >
             <X :size="14" />
           </button>
@@ -89,13 +90,17 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useGuidedTourStore } from '~/stores/guidedTour.store'
 
 const tour = useGuidedTourStore()
+const cardRef = ref<HTMLElement | null>(null)
 const targetRect = ref<DOMRect | null>(null)
 const isMobile = ref(false)
 const isTargetMissing = ref(false)
 const cardPlacement = ref<'top' | 'right' | 'bottom' | 'left' | 'center'>('right')
+const cardSize = ref({ width: 330, height: 240 })
+const viewportSize = ref({ width: 0, height: 0 })
 let activeTarget: HTMLElement | null = null
 let frameId: number | null = null
 let stepChangeUpdate = false
+let cardResizeObserver: ResizeObserver | null = null
 
 const currentNumber = computed(() =>
   Math.min(tour.currentStepIndex + 1, tour.steps.length)
@@ -118,44 +123,69 @@ const spotStyle = computed(() => {
 })
 
 const cardStyle = computed(() => {
-  if (!targetRect.value || tour.isFinishStep || isMobile.value) return {}
+  if (!targetRect.value || tour.isFinishStep || isTargetMissing.value) return {}
 
-  const width = 330
-  const height = 210
-  const gap = 14
+  const edge = isMobile.value ? 10 : 12
+  const gap = isMobile.value ? 12 : 14
+  const safeTop = edge
+  const safeBottom = isMobile.value ? 86 : edge
+  const viewportWidth = viewportSize.value.width || window.innerWidth
+  const viewportHeight = viewportSize.value.height || window.innerHeight
+  const width = isMobile.value
+    ? Math.min(cardSize.value.width, viewportWidth - edge * 2)
+    : cardSize.value.width
+  const height = Math.min(cardSize.value.height, viewportHeight - safeTop - safeBottom)
   const rect = targetRect.value
+  const spaces = {
+    right: viewportWidth - edge - rect.right - gap,
+    left: rect.left - edge - gap,
+    bottom: viewportHeight - safeBottom - rect.bottom - gap,
+    top: rect.top - safeTop - gap,
+  }
   const options = [
     {
       placement: 'right' as const,
       left: rect.right + gap,
       top: rect.top + rect.height / 2 - height / 2,
-      fits: rect.right + gap + width <= window.innerWidth - 12,
+      available: spaces.right,
+      needed: width,
     },
     {
       placement: 'left' as const,
       left: rect.left - width - gap,
       top: rect.top + rect.height / 2 - height / 2,
-      fits: rect.left - width - gap >= 12,
+      available: spaces.left,
+      needed: width,
     },
     {
       placement: 'bottom' as const,
       left: rect.left + rect.width / 2 - width / 2,
       top: rect.bottom + gap,
-      fits: rect.bottom + gap + height <= window.innerHeight - 12,
+      available: spaces.bottom,
+      needed: height,
     },
     {
       placement: 'top' as const,
       left: rect.left + rect.width / 2 - width / 2,
       top: rect.top - height - gap,
-      fits: rect.top - height - gap >= 12,
+      available: spaces.top,
+      needed: height,
     },
   ]
-  const best = options.find((option) => option.fits) || options[2]
+  const fitting = options
+    .filter((option) => option.available >= option.needed)
+    .sort((a, b) => b.available - a.available)
+  const best =
+    fitting[0] ||
+    [...options].sort(
+      (a, b) => b.available / Math.max(1, b.needed) - a.available / Math.max(1, a.needed)
+    )[0]
   cardPlacement.value = best.placement
 
   return {
     width: `${width}px`,
-    transform: `translate(${clamp(best.left, 12, window.innerWidth - width - 12)}px, ${clamp(best.top, 12, window.innerHeight - height - 12)}px)`,
+    maxHeight: `${Math.max(180, viewportHeight - safeTop - safeBottom)}px`,
+    transform: `translate(${clamp(best.left, edge, viewportWidth - width - edge)}px, ${clamp(best.top, safeTop, viewportHeight - height - safeBottom)}px)`,
   }
 })
 
@@ -170,9 +200,22 @@ function clearTargetClass() {
 }
 
 function findTarget() {
-  return tour.currentStep.target
-    ? document.querySelector<HTMLElement>(`[data-tour="${tour.currentStep.target}"]`)
-    : null
+  if (!tour.currentStep.target) return null
+
+  return (
+    Array.from(
+      document.querySelectorAll<HTMLElement>(`[data-tour="${tour.currentStep.target}"]`)
+    ).find((element) => {
+      const rect = element.getBoundingClientRect()
+      const style = window.getComputedStyle(element)
+      return (
+        rect.width > 0 &&
+        rect.height > 0 &&
+        style.display !== 'none' &&
+        style.visibility !== 'hidden'
+      )
+    }) || null
+  )
 }
 
 function focusTarget() {
@@ -195,6 +238,10 @@ function updateTarget() {
 
   clearTargetClass()
   isMobile.value = window.innerWidth < 768
+  viewportSize.value = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }
 
   const target = findTarget()
 
@@ -210,16 +257,29 @@ function updateTarget() {
   activeTarget.classList.add('tour-target-active')
   const rect = target.getBoundingClientRect()
 
-  if (isMobile.value) {
-    cardPlacement.value = rect.top > window.innerHeight / 2 ? 'top' : 'bottom'
-  }
-
   if (stepChangeUpdate) {
     stepChangeUpdate = false
     focusTarget()
   }
 
   targetRect.value = rect
+  nextTick(measureCard)
+}
+
+function measureCard() {
+  const card = cardRef.value
+  if (!card) return
+  const rect = card.getBoundingClientRect()
+  const nextSize = {
+    width: isMobile.value ? Math.min(360, window.innerWidth - 20) : rect.width,
+    height: rect.height,
+  }
+  if (
+    Math.abs(nextSize.width - cardSize.value.width) > 1 ||
+    Math.abs(nextSize.height - cardSize.value.height) > 1
+  ) {
+    cardSize.value = nextSize
+  }
 }
 
 function scheduleUpdate() {
@@ -236,9 +296,20 @@ watch(
   }
 )
 
+watch(cardRef, (card, previousCard) => {
+  if (previousCard) cardResizeObserver?.unobserve(previousCard)
+  if (card) {
+    cardResizeObserver?.observe(card)
+    nextTick(measureCard)
+  }
+})
+
 onMounted(() => {
+  tour.hydrate()
   stepChangeUpdate = true
   nextTick(scheduleUpdate)
+  cardResizeObserver = new ResizeObserver(measureCard)
+  if (cardRef.value) cardResizeObserver.observe(cardRef.value)
   window.addEventListener('resize', scheduleUpdate)
   window.addEventListener('scroll', scheduleUpdate, true)
 })
@@ -246,6 +317,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   clearTargetClass()
   if (frameId) window.cancelAnimationFrame(frameId)
+  cardResizeObserver?.disconnect()
   window.removeEventListener('resize', scheduleUpdate)
   window.removeEventListener('scroll', scheduleUpdate, true)
 })
@@ -405,6 +477,13 @@ onBeforeUnmount(() => {
   font-size: 13px;
 }
 
+@media (pointer: coarse), (max-width: 767px) {
+  .guided-tour__ghost,
+  .guided-tour__primary {
+    min-height: 44px;
+  }
+}
+
 .guided-tour__primary {
   background: var(--accent);
   color: var(--bg);
@@ -437,23 +516,15 @@ onBeforeUnmount(() => {
     border-radius: var(--border-radius-md);
   }
 
-  .guided-tour__card,
-  .guided-tour__card.is-centered,
-  .guided-tour__card.is-missing {
-    top: auto;
-    right: 10px;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 86px);
-    left: 10px;
-    width: auto;
-    max-height: min(44vh, 360px);
+  .guided-tour__card {
+    max-width: calc(100dvw - 20px);
     overflow: auto;
-    transform: none;
     padding: 13px;
   }
 
-  .guided-tour__card.is-top:not(.is-centered):not(.is-missing) {
-    top: calc(env(safe-area-inset-top, 0px) + 12px);
-    bottom: auto;
+  .guided-tour__card.is-centered,
+  .guided-tour__card.is-missing {
+    width: min(360px, calc(100dvw - 20px));
   }
 
   .guided-tour__actions {

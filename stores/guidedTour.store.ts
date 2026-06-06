@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 export type GuidedTourStep = {
   id: string
@@ -139,10 +139,13 @@ const STEPS: GuidedTourStep[] = [
 ]
 
 export const useGuidedTourStore = defineStore('guided-tour', () => {
+    const storageKey = 'cof-guided-tour-progress'
     const isActive = ref(false)
     const isCompleted = ref(false)
+    const hasStarted = ref(false)
     const currentStepIndex = ref(0)
     const actionProgress = ref<Record<string, number>>({})
+    const isHydrated = ref(false)
 
     const steps = computed(() => STEPS)
     const currentStep = computed(() => steps.value[currentStepIndex.value] || steps.value[0])
@@ -153,21 +156,27 @@ export const useGuidedTourStore = defineStore('guided-tour', () => {
     const hasProgress = computed(() => currentRequired.value > 0)
 
     function start(force = false) {
-      if (isCompleted.value && !force) return
-      currentStepIndex.value = 0
-      actionProgress.value = {}
+      if (force || isCompleted.value) {
+        currentStepIndex.value = 0
+        actionProgress.value = {}
+      }
+      hasStarted.value = true
       isActive.value = true
       isCompleted.value = false
     }
 
-    function skip() {
+    function pause() {
       isActive.value = false
-      isCompleted.value = true
+    }
+
+    function skip() {
+      pause()
     }
 
     function finish() {
       isActive.value = false
       isCompleted.value = true
+      hasStarted.value = false
       currentStepIndex.value = steps.value.length - 1
     }
 
@@ -186,7 +195,7 @@ export const useGuidedTourStore = defineStore('guided-tour', () => {
     }
 
     function handleAction(action: string) {
-      if (!isActive.value || isCompleted.value) return
+      if (!hasStarted.value || isCompleted.value) return
       const step = currentStep.value
       if (step.action !== action) return
 
@@ -202,9 +211,61 @@ export const useGuidedTourStore = defineStore('guided-tour', () => {
       next()
     }
 
+    function hydrate() {
+      if (!import.meta.client || isHydrated.value) return
+      isHydrated.value = true
+
+      try {
+        const raw = localStorage.getItem(storageKey)
+        if (!raw) return
+        const saved = JSON.parse(raw) as {
+          isActive?: boolean
+          isCompleted?: boolean
+          hasStarted?: boolean
+          currentStepIndex?: number
+          actionProgress?: Record<string, number>
+        }
+
+        currentStepIndex.value = Math.min(
+          Math.max(0, Number(saved.currentStepIndex) || 0),
+          steps.value.length - 1
+        )
+        actionProgress.value =
+          saved.actionProgress && typeof saved.actionProgress === 'object'
+            ? saved.actionProgress
+            : {}
+        isCompleted.value = saved.isCompleted === true
+        hasStarted.value = saved.hasStarted === true || saved.isActive === true
+        isActive.value = saved.isActive === true && !isCompleted.value
+      } catch {
+        localStorage.removeItem(storageKey)
+      }
+    }
+
+    if (import.meta.client) {
+      hydrate()
+      watch(
+        [isActive, isCompleted, hasStarted, currentStepIndex, actionProgress],
+        () => {
+          localStorage.setItem(
+            storageKey,
+            JSON.stringify({
+              isActive: isActive.value,
+              isCompleted: isCompleted.value,
+              hasStarted: hasStarted.value,
+              currentStepIndex: currentStepIndex.value,
+              actionProgress: actionProgress.value,
+            })
+          )
+        },
+        { deep: true }
+      )
+    }
+
   return {
     isActive,
     isCompleted,
+    hasStarted,
     currentStepIndex,
     actionProgress,
     steps,
@@ -215,10 +276,12 @@ export const useGuidedTourStore = defineStore('guided-tour', () => {
     currentRequired,
     hasProgress,
     start,
+    pause,
     skip,
     finish,
     next,
     back,
     handleAction,
+    hydrate,
   }
 })

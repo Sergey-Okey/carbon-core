@@ -1,5 +1,16 @@
 <template>
-  <div class="tasks-toolbar">
+  <div class="tasks-toolbar" :class="{ collapsed: isCollapsed }">
+    <button
+      type="button"
+      class="toolbar-toggle"
+      :aria-expanded="!isCollapsed"
+      @click="isCollapsed = !isCollapsed"
+    >
+      <span>Поиск и фильтры</span>
+      <ChevronDown v-if="isCollapsed" :size="18" />
+      <ChevronUp v-else :size="18" />
+    </button>
+
     <div class="search-field">
       <label for="task-search">Поиск</label>
       <div class="control-wrapper">
@@ -39,14 +50,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Search, Tags } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
+import { ChevronDown, ChevronUp, Search, Tags } from 'lucide-vue-next'
 import AppInput from '~/components/ui/AppInput.vue'
 import AppSelect from '~/components/ui/AppSelect.vue'
 import AppSegmentedControl from '~/components/ui/AppSegmentedControl.vue'
 import type { AppSelectOption } from '~/types/ui.types'
 
 type TaskView = 'active' | 'all' | 'completed'
+
+const isCollapsed = ref(false)
 
 const props = defineProps<{
   search: string
@@ -101,6 +114,10 @@ const viewModel = computed({
   }
 }
 
+.toolbar-toggle {
+  display: none;
+}
+
 label,
 .control-label {
   display: block;
@@ -118,14 +135,15 @@ label,
   align-items: center;
 
   :deep(.app-input) {
-    padding-left: 34px;
+    padding-inline-start: 34px;
     font-size: 0.9rem;
   }
 }
 
 .control-icon {
   position: absolute;
-  left: 12px;
+  inset-inline-start: 12px;
+  z-index: 1;
   color: var(--dim);
   pointer-events: none;
 }
@@ -133,13 +151,67 @@ label,
 @media (max-width: 768px) {
   .tasks-toolbar {
     position: relative;
-    gap: 14px;
+    gap: 12px;
+    padding: 12px;
+
+    &.collapsed {
+      gap: 0;
+      padding: 3px;
+
+      .search-field,
+      .filter-field,
+      .view-switch {
+        display: none;
+      }
+    }
+  }
+
+  .toolbar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+    padding-inline: 12px;
+    border: none;
+    border-radius: var(--border-radius-md);
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    svg {
+      color: var(--dim);
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .toolbar-toggle:hover {
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+    }
+  }
+
+  .view-switch {
+    :deep(.app-segmented) {
+      min-height: var(--control-height-sm);
+      padding: 2px;
+    }
+
+    :deep(.segment-option) {
+      min-height: var(--control-height-sm);
+      border-radius: calc(var(--border-radius-md) - 2px);
+    }
   }
 }
 
 @media (max-width: 480px) {
   .tasks-toolbar {
     padding: 12px;
+
+    &.collapsed {
+      padding: 3px;
+    }
   }
 }
 </style>

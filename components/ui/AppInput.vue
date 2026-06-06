@@ -68,9 +68,9 @@ function handleInput(event: Event) {
   @include glass;
   appearance: none;
   -webkit-appearance: none;
-  width: 100%;
+  inline-size: 100%;
   min-height: var(--control-height-md);
-  padding: 0 14px;
+  padding-inline: 14px;
   border: var(--ui-border);
   border-radius: var(--border-radius-md);
   color: var(--text);
@@ -139,9 +139,9 @@ input[type='search'].app-input {
   }
 }
 
-@media (max-width: 640px) {
+@media (pointer: coarse), (max-width: 640px) {
   .app-input {
-    min-height: var(--control-height-md);
+    min-height: 44px;
     font-size: 16px;
   }
 }

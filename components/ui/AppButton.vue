@@ -61,21 +61,21 @@ withDefaults(
 
 .size-md {
   min-height: var(--control-height-md);
-  padding: 0 16px;
+  padding-inline: 16px;
   font-size: 0.92rem;
 }
 
 .size-sm {
   min-height: var(--control-height-sm);
-  padding: 0 12px;
+  padding-inline: 12px;
   font-size: 0.85rem;
 }
 
 .icon {
-  width: var(--control-icon-size);
-  height: var(--control-icon-size);
+  inline-size: var(--control-icon-size);
+  block-size: var(--control-icon-size);
   min-height: var(--control-icon-size);
-  padding: 0;
+  padding-inline: 0;
   border: none;
   border-radius: var(--border-radius-pill);
 }
@@ -123,15 +123,15 @@ withDefaults(
   }
 }
 
-@include mobile {
+@media (pointer: coarse), (max-width: 767px) {
   .size-md,
   .size-sm {
     min-height: 44px;
   }
 
   .icon {
-    width: 44px;
-    height: 44px;
+    inline-size: 44px;
+    block-size: 44px;
     min-height: 44px;
   }
 }

@@ -216,9 +216,9 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  width: 100%;
+  inline-size: 100%;
   min-height: 40px;
-  padding: 0 14px;
+  padding-inline: 14px;
   border: var(--ui-border);
   border-radius: var(--border-radius-md);
   color: var(--text);
@@ -237,7 +237,7 @@ onUnmounted(() => {
   @include glass;
   position: fixed;
   z-index: 5200;
-  width: 284px;
+  inline-size: min(284px, calc(100dvw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
   max-height: min(332px, calc(100dvh - 24px));
   padding: 10px;
   overflow: hidden;
@@ -257,7 +257,7 @@ onUnmounted(() => {
 
   button {
     min-height: 28px;
-    padding: 0 8px;
+    padding-inline: 8px;
     border: none;
     border-radius: var(--border-radius-md);
     background: transparent;
@@ -332,5 +332,13 @@ onUnmounted(() => {
 
 .date-actions {
   margin-top: 12px;
+}
+
+@media (pointer: coarse), (max-width: 767px) {
+  .date-trigger,
+  .date-head button,
+  .date-actions button {
+    min-height: 44px;
+  }
 }
 </style>

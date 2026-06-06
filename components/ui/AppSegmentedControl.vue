@@ -44,7 +44,7 @@ const emit = defineEmits<{
   grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;
   gap: 2px;
-  min-width: 0;
+  min-inline-size: 0;
   min-height: var(--control-height-md);
   padding: 2px;
   border: var(--ui-border);
@@ -55,9 +55,9 @@ const emit = defineEmits<{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 0;
+  min-inline-size: 0;
   margin: 0;
-  padding: 0 10px;
+  padding-inline: 10px;
   overflow: hidden;
   border: none;
   border-radius: calc(var(--border-radius-md) - 4px);
@@ -86,6 +86,25 @@ const emit = defineEmits<{
   &.active:hover {
     background: var(--accent);
     color: var(--bg);
+  }
+}
+
+@media (pointer: coarse), (max-width: 767px) {
+  .app-segmented,
+  .segment-option {
+    min-height: 44px;
+  }
+
+  .segment-option {
+    padding-inline: 6px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .segment-option {
+    padding-inline: 2px;
+    font-size: 0.7rem;
   }
 }
 </style>

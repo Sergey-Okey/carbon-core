@@ -41,7 +41,7 @@ function toggle() {
 <style scoped lang="scss">
 .app-switch {
   justify-self: end;
-  margin-left: auto;
+  margin-inline-start: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -69,7 +69,7 @@ function toggle() {
 
   @include mobile {
     justify-self: end;
-    margin-left: 0;
+    margin-inline-start: 0;
     width: 46px;
     min-width: 46px;
     height: 44px;

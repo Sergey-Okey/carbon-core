@@ -133,7 +133,7 @@ function handleSubmit() {
   align-items: center;
   gap: 8px;
   min-height: 36px;
-  padding: 0 12px;
+  padding-inline: 12px;
   border: var(--ui-border);
   border-radius: var(--border-radius-md);
   color: var(--text);
@@ -143,8 +143,10 @@ function handleSubmit() {
     background var(--transition-standard),
     border-color var(--transition-standard);
 
-  &:hover {
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--ui-border-color));
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--ui-border-color));
+    }
   }
 
   input {
@@ -167,6 +169,10 @@ function handleSubmit() {
   .modal-actions {
     flex-direction: column-reverse;
     gap: 8px;
+  }
+
+  .radio-option {
+    min-height: 44px;
   }
 }
 </style>

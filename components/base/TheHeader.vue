@@ -121,7 +121,7 @@ async function openOnboarding() {
   if (route.path !== '/') {
     await navigateTo('/')
   }
-  guidedTour.start(true)
+  guidedTour.start()
 }
 
 function toggleProfilePanel() {
@@ -168,9 +168,12 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: 12px;
-  margin: 12px 12px 4px;
-  padding: 8px 14px;
+  gap: clamp(8px, 1.5vw, 12px);
+  margin-block: max(12px, env(safe-area-inset-top, 0px)) 4px;
+  margin-inline-start: max(12px, env(safe-area-inset-left, 0px));
+  margin-inline-end: max(12px, env(safe-area-inset-right, 0px));
+  padding-block: 8px;
+  padding-inline: clamp(10px, 2vw, 14px);
   border-radius: var(--border-radius-lg);
   @include glass;
   background: transparent;
@@ -181,12 +184,12 @@ onBeforeUnmount(() => {
 
   @include mobile {
     position: fixed;
-    left: 0;
-    right: 0;
+    inset-inline: 0;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px;
     margin: 0;
-    padding: calc(env(safe-area-inset-top, 0px) + 8px) 12px 8px;
+    padding-block: calc(env(safe-area-inset-top, 0px) + 8px) 8px;
+    padding-inline: max(12px, env(safe-area-inset-left, 0px)) max(12px, env(safe-area-inset-right, 0px));
     border: none;
     border-bottom: var(--ui-border);
     border-radius: 0;
@@ -286,9 +289,11 @@ onBeforeUnmount(() => {
     background var(--transition-standard),
     color var(--transition-standard);
 
-  &:hover {
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
-    color: var(--text);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+      color: var(--text);
+    }
   }
 
   &:active {
@@ -358,10 +363,10 @@ onBeforeUnmount(() => {
 .profile-panel {
   @include glass;
   position: fixed;
-  top: 72px;
-  right: 12px;
+  inset-block-start: calc(72px + env(safe-area-inset-top, 0px));
+  inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
   z-index: 4300;
-  width: min(320px, calc(100vw - 24px));
+  inline-size: min(320px, calc(100dvw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
@@ -438,10 +443,10 @@ onBeforeUnmount(() => {
 
 @media (max-width: 640px) {
   .profile-panel {
-    top: 70px;
-    left: 12px;
-    right: 12px;
-    width: auto;
+    inset-block-start: calc(70px + env(safe-area-inset-top, 0px));
+    inset-inline-start: max(12px, env(safe-area-inset-left, 0px));
+    inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
+    inline-size: auto;
   }
 }
 </style>

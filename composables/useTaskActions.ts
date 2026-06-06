@@ -61,9 +61,13 @@ export function useTaskActions() {
 
   function toggleTask(taskId: string) {
     const taskBefore = tasksStore.tasks.find((task) => task.id === taskId)
+    const wasDone = taskBefore?.done === true
+    const wasHabit = taskBefore?.type === 'HABIT'
+
     tasksStore.completeTask(taskId)
+
     const taskAfter = tasksStore.tasks.find((task) => task.id === taskId)
-    if (taskBefore?.type !== 'HABIT' && !taskBefore?.done && taskAfter?.done) {
+    if (!wasHabit && !wasDone && taskAfter?.done) {
       guidedTour.handleAction('task-completed')
     }
   }

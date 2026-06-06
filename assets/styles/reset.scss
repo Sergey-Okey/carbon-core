@@ -13,13 +13,22 @@ html {
 }
 
 body {
+  min-inline-size: 320px;
   font-family: 'Inter', sans-serif;
   background: transparent;
   color: var(--text);
   line-height: 1.5;
+  overflow-wrap: anywhere;
   transition:
     background 0.3s,
     color 0.3s;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-inline-size: 100%;
 }
 
 a {
@@ -33,4 +42,10 @@ button {
   cursor: pointer;
   font: inherit;
   color: inherit;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
 }

@@ -203,7 +203,7 @@ onBeforeUnmount(() => {
 <style scoped lang="scss">
 .app-select {
   position: relative;
-  width: 100%;
+  inline-size: 100%;
 
   &.disabled {
     opacity: 0.6;
@@ -217,9 +217,9 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
-  height: var(--control-height-md);
-  padding: 0 34px 0 12px;
+  inline-size: 100%;
+  min-block-size: var(--control-height-md);
+  padding-inline: 12px 34px;
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--border-radius-md);
@@ -227,15 +227,20 @@ onBeforeUnmount(() => {
   font: inherit;
   font-size: 0.9rem;
   line-height: 1;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
   transition:
     border-color var(--transition-standard),
     background var(--transition-standard);
 
-  &:hover:not(:disabled),
   .app-select.open & {
     border-color: color-mix(in srgb, var(--accent) 45%, var(--ui-border-color));
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:disabled) {
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--ui-border-color));
+    }
   }
 
   &:focus-visible {
@@ -273,8 +278,8 @@ onBeforeUnmount(() => {
 
 .select-arrow {
   position: absolute;
-  right: 12px;
-  top: 50%;
+  inset-inline-end: 12px;
+  inset-block-start: 50%;
   color: var(--dim);
   pointer-events: none;
   transform: translateY(-50%);
@@ -301,16 +306,16 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  width: 100%;
+  inline-size: 100%;
   min-height: var(--control-height-sm);
-  padding: 0 10px;
+  padding-inline: 10px;
   border: none;
   border-radius: calc(var(--border-radius-md) - 4px);
   background: transparent;
   color: var(--text);
   font: inherit;
   font-size: 0.88rem;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
   transition:
     background var(--transition-standard),
@@ -328,8 +333,7 @@ onBeforeUnmount(() => {
     cursor: not-allowed;
   }
 
-  &.highlighted,
-  &:hover:not(:disabled) {
+  &.highlighted {
     background: var(--glass-surface);
   }
 
@@ -339,10 +343,27 @@ onBeforeUnmount(() => {
     font-weight: 600;
   }
 
-  &.active:hover,
   &.active.highlighted {
     background: var(--accent);
     color: var(--bg);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .select-option:hover:not(:disabled) {
+    background: var(--glass-surface);
+  }
+
+  .select-option.active:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+}
+
+@media (pointer: coarse), (max-width: 767px) {
+  .select-trigger,
+  .select-option {
+    min-height: 44px;
   }
 }
 

@@ -3,6 +3,7 @@
     <NuxtPage />
     <ConfirmDialog />
   </NuxtLayout>
+  <CustomCursor />
   <SpeedInsights />
 </template>
 
@@ -11,6 +12,7 @@ import { onMounted, onUnmounted, watch, ref, watchEffect } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 import { useDebounceFn } from '@vueuse/core'
 import { SpeedInsights } from '@vercel/speed-insights/vue'
+import CustomCursor from '~/components/base/CustomCursor.vue'
 import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 import { useAuthStore } from '~/stores/auth.store'
 import { useBranchesStore } from '~/stores/branches.store'
