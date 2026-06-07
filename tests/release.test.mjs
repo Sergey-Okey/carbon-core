@@ -7,6 +7,11 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8')
 test('public trust pages remain accessible without authentication', async () => {
   const middleware = await read('middleware/entry.global.ts')
   for (const route of ['/privacy', '/terms', '/support']) assert.match(middleware, new RegExp(route))
+  const privacy = await read('pages/privacy.vue')
+  const terms = await read('pages/terms.vue')
+  assert.match(privacy, /Cookies и внешние сервисы/)
+  assert.match(privacy, /Срок хранения/)
+  assert.match(terms, /Аккаунт и безопасность/)
 })
 
 test('registration requires explicit legal consent', async () => {
