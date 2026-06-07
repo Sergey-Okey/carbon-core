@@ -117,7 +117,7 @@
             </button>
           </div>
 
-          <div class="auth-mode" role="group" aria-label="Режим хранения">
+          <div v-if="!isRegister" class="auth-mode" role="group" aria-label="Режим хранения">
             <button
               type="button"
               :class="{ active: authMode === 'cloud' }"
@@ -133,7 +133,7 @@
               Только устройство
             </button>
           </div>
-          <p class="mode-note">
+          <p v-if="!isRegister" class="mode-note">
             {{ authMode === 'cloud'
               ? 'Данные синхронизируются между устройствами.'
               : 'Данные останутся только на этом устройстве.' }}
@@ -237,7 +237,7 @@ async function submit() {
   }
 
   const result = isRegister.value
-    ? await authStore.register(form.email, form.password, form.name, authMode.value, form.acceptedTerms)
+    ? await authStore.register(form.email, form.password, form.name, 'cloud', form.acceptedTerms)
     : await authStore.login(form.email, form.password, authMode.value)
 
   if (!result.success) {

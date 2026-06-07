@@ -22,6 +22,8 @@ test('registration requires explicit legal consent', async () => {
 test('onboarding does not use CSS gradients', async () => {
   const onboarding = await read('pages/onboarding.vue')
   assert.doesNotMatch(onboarding, /(?:linear|radial|conic)-gradient\(/)
+  assert.equal([...onboarding.matchAll(/<section id="step-\d+"/g)].length, 7)
+  assert.doesNotMatch(onboarding, /id="step-product"/)
 })
 
 test('Android targets API 35 and release signing is externalized', async () => {

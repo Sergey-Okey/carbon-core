@@ -147,7 +147,7 @@
                 class="cta-button cta-button--details"
                 type="button"
                 aria-label="Подробнее"
-                @click="scrollToProductSlide"
+                @click="scrollToNextStep"
               >
                 Подробнее
                 <ChevronRight :size="20" class="btn-icon" />
@@ -183,93 +183,6 @@
             >
               {{ tag.label }}
             </span>
-          </div>
-        </div>
-      </section>
-
-      <section id="step-product" class="section product-section">
-        <div class="section-content product-content">
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
-          >
-            <div class="section-label">Интерфейс</div>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 100 },
-            }"
-          >
-            <h2 class="section-title">Один ритм для всего дня</h2>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 180 },
-            }"
-          >
-            <p class="section-text">
-              Доска, задачи, аналитика и фокус живут в одном минималистичном стеклянном интерфейсе:
-              без визуального шума, но с ясной структурой для ежедневной работы.
-            </p>
-          </div>
-
-          <div
-            ref="productCarousel"
-            class="product-showcase"
-            @scroll.passive="handleProductCarouselScroll"
-          >
-            <article
-              v-for="(widget, i) in productWidgets"
-              :key="widget.title"
-              v-motion
-              :initial="{ opacity: 0, y: 24 }"
-              :visible-once="{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 520, delay: 220 + i * 90 },
-              }"
-              class="screen-card"
-            >
-              <div class="screen-meta">
-                <component :is="widget.icon" :size="20" />
-                <div>
-                  <strong>{{ widget.title }}</strong>
-                  <span>{{ widget.caption }}</span>
-                </div>
-              </div>
-              <div
-                class="real-widget-frame"
-                :class="`real-widget-frame--${widget.variant}`"
-              >
-                <div class="widget-placeholder__bar">
-                  <span></span>
-                  <span></span>
-                </div>
-                <div class="widget-placeholder__hero"></div>
-                <div class="widget-placeholder__grid">
-                  <span v-for="cell in 4" :key="cell"></span>
-                </div>
-              </div>
-            </article>
-          </div>
-          <div class="carousel-dots" aria-label="Слайды интерфейса">
-            <button
-              v-for="(widget, index) in productWidgets"
-              :key="widget.variant"
-              type="button"
-              :class="{ active: activeProductSlide === index }"
-              :aria-label="`Показать слайд ${index + 1}`"
-              @click="scrollToProductCard(index)"
-            ></button>
           </div>
         </div>
       </section>
@@ -482,12 +395,12 @@
             }"
           >
             <p class="section-text">
-              Всё хранится локально на устройстве. Экспорт, импорт, бэкапы —
-              ваши данные принадлежат только вам.
+              Облачный аккаунт синхронизирует данные между устройствами, а
+              экспорт, импорт и локальные резервные копии оставляют контроль у вас.
             </p>
           </div>
           <div class="security-badges">
-            <div class="badge"><Shield :size="20" /> Локальное хранение</div>
+            <div class="badge"><Shield :size="20" /> Синхронизация</div>
             <div class="badge"><Download :size="20" /> Экспорт</div>
             <div class="badge"><Upload :size="20" /> Импорт</div>
           </div>
@@ -654,8 +567,6 @@ import {
   Palette,
   GitBranch,
   LayoutGrid,
-  BarChart2,
-  Timer,
   Target,
   Move,
   Shield,
@@ -710,35 +621,9 @@ const authStore = useAuthStore()
 const router = useRouter()
 
 const scrollContainer = ref<HTMLElement | null>(null)
-const productCarousel = ref<HTMLElement | null>(null)
-const activeProductSlide = ref(0)
 const progress = ref(0)
 const showDonation = ref(false)
 const apkDownloadUrl = '/downloads/core-of-life.apk'
-
-const productWidgets = [
-  {
-    title: 'Статистика',
-    caption: 'уровень, лига и активность',
-    icon: LayoutGrid,
-    variant: 'stats',
-    alt: 'Виджет статистики Core of Life с уровнем, лигой и активностью',
-  },
-  {
-    title: 'Аналитика',
-    caption: 'пульс прогресса',
-    icon: BarChart2,
-    variant: 'analytics',
-    alt: 'Экран аналитики Core of Life с общим прогрессом',
-  },
-  {
-    title: 'Фокус',
-    caption: 'таймер глубоких сессий',
-    icon: Timer,
-    variant: 'focus',
-    alt: 'Экран фокуса Core of Life с таймером глубокой работы',
-  },
-] as const
 
 const particles = [
   {
@@ -959,34 +844,15 @@ function finishOnboarding() {
   router.push(authStore.isAuthenticated ? '/' : '/register')
 }
 
-function scrollToProductSlide() {
+function scrollToNextStep() {
   const container = scrollContainer.value
-  const target = document.getElementById('step-product')
+  const target = document.getElementById('step-2')
   if (!container || !target) return
 
   container.scrollTo({
     top: target.offsetTop,
     behavior: 'smooth',
   })
-}
-
-function handleProductCarouselScroll() {
-  const carousel = productCarousel.value
-  if (!carousel) return
-  const firstCard = carousel.firstElementChild as HTMLElement | null
-  if (!firstCard) return
-  const gap = Number.parseFloat(getComputedStyle(carousel).columnGap) || 0
-  activeProductSlide.value = Math.min(
-    productWidgets.length - 1,
-    Math.max(0, Math.round(carousel.scrollLeft / (firstCard.offsetWidth + gap)))
-  )
-}
-
-function scrollToProductCard(index: number) {
-  const carousel = productCarousel.value
-  const card = carousel?.children[index] as HTMLElement | undefined
-  if (!carousel || !card) return
-  carousel.scrollTo({ left: card.offsetLeft - carousel.offsetLeft, behavior: 'smooth' })
 }
 
 function downloadApk() {
@@ -1443,159 +1309,6 @@ onUnmounted(() => {
   }
 }
 
-.product-section {
-  align-items: center;
-}
-
-.product-content {
-  width: min(100%, 1120px);
-}
-
-.product-showcase {
-  display: flex;
-  gap: clamp(16px, 3vw, 28px);
-  margin-top: 20px;
-  padding: 20px max(4px, calc((100% - min(82vw, 920px)) / 2)) 28px;
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-/* Public onboarding stays intentionally short before launch. */
-.rule-section,
-.visual-section,
-.tools-section,
-.security-section,
-.about-section {
-  display: none;
-}
-
-.screen-card {
-  display: grid;
-  flex: 0 0 min(82vw, 920px);
-  gap: 14px;
-  min-width: 0;
-  padding: clamp(14px, 2vw, 22px);
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  backdrop-filter: var(--glass-filter);
-  -webkit-backdrop-filter: var(--glass-filter);
-  box-shadow: 0 18px 50px color-mix(in srgb, var(--bg) 46%, transparent);
-  scroll-snap-align: center;
-}
-
-.screen-meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  color: var(--accent);
-
-  svg {
-    flex: 0 0 auto;
-  }
-
-  div {
-    display: grid;
-    min-width: 0;
-    gap: 2px;
-  }
-
-  strong {
-    overflow: hidden;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  span {
-    overflow: hidden;
-    color: var(--dim);
-    font-size: 0.78rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-}
-
-.real-widget-frame {
-  position: relative;
-  min-width: 0;
-  overflow: hidden;
-  border: var(--ui-border);
-  min-height: clamp(280px, 42vw, 460px);
-  padding: clamp(18px, 3vw, 34px);
-  border-radius: var(--border-radius-md);
-  background: color-mix(in srgb, var(--surface) 64%, transparent);
-}
-
-.widget-placeholder__bar {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-
-  span {
-    display: block;
-    inline-size: 30%;
-    block-size: 12px;
-    border-radius: var(--border-radius-pill);
-    background: color-mix(in srgb, var(--accent) 16%, transparent);
-  }
-}
-
-.widget-placeholder__hero {
-  block-size: 42%;
-  min-block-size: 110px;
-  margin-block: clamp(22px, 4vw, 42px);
-  border: var(--ui-border);
-  border-radius: var(--border-radius-md);
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
-  box-shadow: 0 12px 30px color-mix(in srgb, var(--bg) 38%, transparent);
-}
-
-.widget-placeholder__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(10px, 2vw, 18px);
-
-  span {
-    min-block-size: clamp(48px, 7vw, 76px);
-    border: var(--ui-border);
-    border-radius: var(--border-radius-sm);
-    background: color-mix(in srgb, var(--surface) 78%, transparent);
-  }
-}
-
-.carousel-dots {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 2px;
-
-  button {
-    inline-size: 8px;
-    block-size: 8px;
-    min-block-size: 8px;
-    padding: 0;
-    border-radius: var(--border-radius-pill);
-    background: var(--dim);
-    opacity: 0.42;
-  }
-
-  button.active {
-    inline-size: 26px;
-    background: var(--accent);
-    opacity: 1;
-  }
-}
-
 .hero-visual {
   display: flex;
   justify-content: center;
@@ -1922,10 +1635,6 @@ onUnmounted(() => {
     gap: 28px;
   }
 
-  .product-showcase {
-    padding-inline: 12px;
-  }
-
   .ambient-light {
     opacity: 0.3;
     filter: blur(28px);
@@ -2068,22 +1777,6 @@ onUnmounted(() => {
 
   .feature-row {
     width: 100%;
-  }
-
-  .product-showcase {
-    gap: 14px;
-    margin-top: 18px;
-    padding-inline: 8px;
-  }
-
-  .screen-card {
-    flex-basis: min(88vw, 520px);
-    padding: 12px;
-    border-radius: 20px;
-  }
-
-  .real-widget-frame {
-    border-radius: 18px;
   }
 
   .tools-grid {
