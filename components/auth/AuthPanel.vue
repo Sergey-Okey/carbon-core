@@ -92,6 +92,22 @@
             </AppButton>
           </form>
 
+          <div class="oauth-divider"><span>или</span></div>
+          <div class="oauth-actions">
+            <button
+              v-for="provider in oauthProviders"
+              :key="provider.key"
+              type="button"
+              class="oauth-button"
+              :disabled="!provider.enabled"
+              :title="provider.enabled ? provider.label : `${provider.label}: не настроено`"
+              @click="startOAuth(provider.key)"
+            >
+              <span class="oauth-mark">{{ provider.mark }}</span>
+              <span>{{ provider.label }}</span>
+            </button>
+          </div>
+
           <div class="card-footer">
             <span>{{ footerText }}</span>
             <NuxtLink :to="switchLink">{{ switchLabel }}</NuxtLink>
@@ -103,7 +119,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { Shield, Download, UserCircle } from 'lucide-vue-next'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppFormField from '~/components/ui/AppFormField.vue'
@@ -128,6 +144,11 @@ const form = reactive({
 })
 
 const error = ref('')
+const providerAvailability = ref({ google: false, yandex: false })
+const oauthProviders = computed(() => [
+  { key: 'google' as const, label: 'Google', mark: 'G', enabled: providerAvailability.value.google },
+  { key: 'yandex' as const, label: 'Яндекс', mark: 'Я', enabled: providerAvailability.value.yandex },
+])
 
 const isRegister = computed(() => props.mode === 'register')
 const title = computed(() =>
@@ -187,6 +208,19 @@ async function submit() {
 
   router.push('/')
 }
+
+function startOAuth(provider: 'google' | 'yandex') {
+  if (!providerAvailability.value[provider]) return
+  window.location.assign(`/api/auth/${provider}`)
+}
+
+onMounted(async () => {
+  try {
+    providerAvailability.value = await $fetch('/api/auth/providers')
+  } catch {
+    providerAvailability.value = { google: false, yandex: false }
+  }
+})
 </script>
 
 <style scoped lang="scss">
@@ -374,6 +408,70 @@ async function submit() {
       text-decoration: underline;
     }
   }
+}
+
+.oauth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-block: 18px 14px;
+  color: var(--dim);
+  font-size: 0.78rem;
+
+  &::before,
+  &::after {
+    flex: 1;
+    height: 1px;
+    background: color-mix(in srgb, var(--text) 12%, transparent);
+    content: '';
+  }
+}
+
+.oauth-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.oauth-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 0;
+  min-height: 44px;
+  padding-inline: 12px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard),
+    opacity var(--transition-standard);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+  }
+}
+
+.oauth-mark {
+  display: grid;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: var(--ui-border);
+  border-radius: 50%;
+  font-size: 0.75rem;
 }
 
 @keyframes spin {

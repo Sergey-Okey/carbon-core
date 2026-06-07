@@ -8,6 +8,12 @@
   "theme_color": "#121212",
   "icons": [
     {
+      "src": "/app.ico",
+      "sizes": "256x256",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
       "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",

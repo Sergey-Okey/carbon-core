@@ -1,2 +1,0 @@
-import {b,d,e}from'../chunk-OYLVEKC4.mjs';import'../chunk-OD65R6MQ.mjs';import'../chunk-JFPP44S3.mjs';var l=(r,p,h)=>{r.prototype.toHsv=function(){return b(this._rawRgb())},r.prototype.toHsvString=function(){let{h:s,s:e,v:i,alpha:v}=this.toHsv();return v<1?`hsva(${s}, ${e}%, ${i}%, ${v})`:`hsv(${s}, ${e}%, ${i}%)`},p.push(d,e),h.push([d,"hsv"],[e,"hsv"]);},c=l;export{c as default};//# sourceMappingURL=hsv.mjs.map
-//# sourceMappingURL=hsv.mjs.map

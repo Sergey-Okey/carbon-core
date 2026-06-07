@@ -2,6 +2,7 @@ import { useTasksStore } from '~/stores/tasks.store'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useNotification } from '~/composables/useNotification'
 import { useGuidedTourStore } from '~/stores/guidedTour.store'
+import { useFeedback } from '~/composables/useFeedback'
 import type { Task, TaskType } from '~/types/task.types'
 
 type TaskFormData = Partial<Task> & {
@@ -18,6 +19,7 @@ export function useTaskActions() {
   const branchesStore = useBranchesStore()
   const guidedTour = useGuidedTourStore()
   const { addNotification } = useNotification()
+  const { trigger } = useFeedback()
 
   function saveTask(taskData: TaskFormData, options: SaveTaskOptions = {}): boolean {
     const { createBranch, ...cleanTaskData } = taskData
@@ -63,12 +65,16 @@ export function useTaskActions() {
     const taskBefore = tasksStore.tasks.find((task) => task.id === taskId)
     const wasDone = taskBefore?.done === true
     const wasHabit = taskBefore?.type === 'HABIT'
+    const previousHabitCompletion = taskBefore?.lastCompletedAt
 
     tasksStore.completeTask(taskId)
 
     const taskAfter = tasksStore.tasks.find((task) => task.id === taskId)
     if (!wasHabit && !wasDone && taskAfter?.done) {
       guidedTour.handleAction('task-completed')
+      void trigger('success')
+    } else if (wasHabit && taskAfter?.lastCompletedAt !== previousHabitCompletion) {
+      void trigger('success')
     }
   }
 

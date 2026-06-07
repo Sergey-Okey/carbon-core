@@ -24,6 +24,7 @@ const notificationHistory = ref<Notification[]>([])
 
 export function useNotification() {
   const settingsStore = useSettingsStore()
+  const { trigger } = useFeedback()
 
   function addNotification(
     notification: Omit<Notification, 'id' | 'createdAt' | 'category'> & {
@@ -55,13 +56,8 @@ export function useNotification() {
       notifications.value.push(newNotification)
     }
 
-    const shouldPlaySound =
-      !notification.silent &&
-      settingsStore.soundEnabled &&
-      ['warning', 'error'].includes(notification.type)
-
-    if (shouldPlaySound) {
-      playNotificationSound(notification.type)
+    if (!notification.silent && ['warning', 'error'].includes(notification.type)) {
+      void trigger(notification.type === 'error' ? 'error' : 'warning')
     }
 
     if (!notification.silent && (newNotification.duration ?? 0) > 0) {
@@ -92,30 +88,5 @@ export function useNotification() {
     removeNotification,
     removeHistoryItem,
     clearNotificationHistory,
-  }
-}
-
-function playNotificationSound(type: NotificationType) {
-  try {
-    const ctx = new (
-      window.AudioContext || (window as any).webkitAudioContext
-    )()
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    osc.connect(gain)
-    gain.connect(ctx.destination)
-
-    const freqs: Record<NotificationType, number> = {
-      success: 620,
-      error: 180,
-      warning: 330,
-      info: 480,
-    }
-    osc.frequency.value = freqs[type] || 660
-    gain.gain.setValueAtTime(0.08, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15)
-    osc.start(ctx.currentTime)
-    osc.stop(ctx.currentTime + 0.15)
-  } catch {
   }
 }

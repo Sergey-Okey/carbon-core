@@ -39,6 +39,8 @@ export const useSettingsStore = defineStore(
     const animationsEnabled = ref<boolean>(true)
     const animationSpeed = ref<number>(1) // multiplier, 0.5 = slower, 2 = faster
     const soundEnabled = ref<boolean>(false)
+    const soundVolume = ref<number>(0.65)
+    const hapticsEnabled = ref<boolean>(true)
     const notificationsEnabled = ref<boolean>(true)
     const toastDuration = ref<number>(4)
     const showSettingsStats = ref<boolean>(false)
@@ -159,6 +161,12 @@ export const useSettingsStore = defineStore(
 
     function setSoundEnabled(val: boolean) {
       soundEnabled.value = val
+    }
+    function setSoundVolume(val: number) {
+      soundVolume.value = Math.min(1, Math.max(0, val))
+    }
+    function setHapticsEnabled(val: boolean) {
+      hapticsEnabled.value = val
     }
     function setNotificationsEnabled(val: boolean) {
       notificationsEnabled.value = val
@@ -297,6 +305,8 @@ export const useSettingsStore = defineStore(
       animationsEnabled,
       animationSpeed,
       soundEnabled,
+      soundVolume,
+      hapticsEnabled,
       notificationsEnabled,
       toastDuration,
       showSettingsStats,
@@ -319,6 +329,8 @@ export const useSettingsStore = defineStore(
       setAnimationsEnabled,
       setAnimationSpeed,
       setSoundEnabled,
+      setSoundVolume,
+      setHapticsEnabled,
       setNotificationsEnabled,
       setToastDuration,
       setShowSettingsStats,

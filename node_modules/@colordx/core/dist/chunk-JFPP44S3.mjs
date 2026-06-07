@@ -1,2 +1,0 @@
-var o=(n,e,r)=>Math.min(Math.max(n,e),r),t=(n,e=0)=>{let r=10**e;return Math.round(r*n)/r},u=n=>n>=0&&n<360?n:(n%360+360)%360,s={deg:1,grad:.9,turn:360,rad:360/(2*Math.PI)},m=n=>typeof n=="number"&&!Number.isNaN(n)&&Number.isFinite(n),b=n=>typeof n=="number",i=n=>Number.isNaN(n)?0:n,c=n=>typeof n=="object"&&n!==null&&!Array.isArray(n),a=(n,e)=>e.every(r=>r in n);export{o as a,t as b,u as c,s as d,m as e,b as f,i as g,c as h,a as i};//# sourceMappingURL=chunk-JFPP44S3.mjs.map
-//# sourceMappingURL=chunk-JFPP44S3.mjs.map

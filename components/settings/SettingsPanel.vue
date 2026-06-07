@@ -36,6 +36,30 @@
           <div class="group-body">
             <div class="setting-row">
               <div class="setting-info">
+                <span class="label">Звуки действий</span>
+                <span class="desc">Короткие сигналы при завершении задач, предупреждениях и окончании фокуса.</span>
+              </div>
+              <AppSwitch
+                :model-value="settingsStore.soundEnabled"
+                aria-label="Звуки действий"
+                @update:model-value="toggleSounds"
+              />
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="label">Вибрация</span>
+                <span class="desc">Тактильный отклик на поддерживаемых телефонах и в Android-приложении.</span>
+              </div>
+              <AppSwitch
+                :model-value="settingsStore.hapticsEnabled"
+                aria-label="Вибрация"
+                @update:model-value="toggleHaptics"
+              />
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
                 <span class="label">Светлая тема</span>
                 <span class="desc">{{ themeLabel }}</span>
               </div>
@@ -447,6 +471,14 @@ function setPresetAccent(color: string) {
 
 function toggleTopStats(checked: boolean) {
   settingsStore.setShowTopStats(checked)
+}
+
+function toggleSounds(checked: boolean) {
+  settingsStore.setSoundEnabled(checked)
+}
+
+function toggleHaptics(checked: boolean) {
+  settingsStore.setHapticsEnabled(checked)
 }
 
 function toggleSettingsStats(checked: boolean) {

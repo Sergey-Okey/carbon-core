@@ -162,7 +162,7 @@
                 aria-label="Подробнее"
                 @click="scrollToProductSlide"
               >
-                Начать
+                Подробнее
                 <ChevronRight :size="20" class="btn-icon" />
               </button>
               <button
@@ -237,8 +237,8 @@
 
           <div class="product-showcase">
             <article
-              v-for="(screen, i) in productScreens"
-              :key="screen.title"
+              v-for="(widget, i) in productWidgets"
+              :key="widget.title"
               v-motion
               :initial="{ opacity: 0, y: 24 }"
               :visible-once="{
@@ -249,51 +249,22 @@
               class="screen-card"
             >
               <div class="screen-meta">
-                <component :is="screen.icon" :size="20" />
+                <component :is="widget.icon" :size="20" />
                 <div>
-                  <strong>{{ screen.title }}</strong>
-                  <span>{{ screen.caption }}</span>
+                  <strong>{{ widget.title }}</strong>
+                  <span>{{ widget.caption }}</span>
                 </div>
               </div>
-              <div class="ui-snapshot" :class="`snapshot-${screen.variant}`">
-                <div class="snapshot-top">
-                  <i />
-                  <span />
-                  <span />
-                </div>
-                <div class="snapshot-body">
-                  <template v-if="screen.variant === 'board'">
-                    <div class="node start" />
-                    <div class="node mid" />
-                    <div class="node end" />
-                    <div class="edge edge-a" />
-                    <div class="edge edge-b" />
-                  </template>
-                  <template v-else-if="screen.variant === 'tasks'">
-                    <div v-for="row in 4" :key="row" class="task-line">
-                      <i />
-                      <span />
-                    </div>
-                  </template>
-                  <template v-else-if="screen.variant === 'analytics'">
-                    <div class="bars">
-                      <i
-                        v-for="bar in 12"
-                        :key="bar"
-                        :style="{ '--bar': `${28 + (bar % 5) * 13}%` }"
-                      />
-                    </div>
-                    <div class="radial-mini">
-                      <span v-for="tick in 18" :key="tick" />
-                    </div>
-                  </template>
-                  <template v-else>
-                    <div class="focus-mini">
-                      <span v-for="tick in 28" :key="tick" />
-                      <strong>25:00</strong>
-                    </div>
-                  </template>
-                </div>
+              <div
+                class="real-widget-frame"
+                :class="`real-widget-frame--${widget.variant}`"
+              >
+                <img
+                  :src="widget.image"
+                  :alt="widget.alt"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
             </article>
           </div>
@@ -405,18 +376,6 @@
               <Move :size="28" />
               <span>Меняйте траекторию</span>
             </div>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, scale: 0.95 }"
-            :visible-once="{
-              opacity: 1,
-              scale: 1,
-              transition: { duration: 600, delay: 400 },
-            }"
-            class="placeholder-card"
-          >
-            <p>Интерактивная доска ждёт вас внутри</p>
           </div>
         </div>
       </section>
@@ -606,8 +565,6 @@
           </div>
           <div class="contacts">
             <a href="mailto:sergeyborisov_1@vk.ru"><Mail :size="20" /></a>
-            <a href="#"><Send :size="20" /></a>
-            <a href="#"><Instagram :size="20" /></a>
           </div>
         </div>
       </section>
@@ -688,7 +645,6 @@ import {
   Palette,
   GitBranch,
   LayoutGrid,
-  CheckSquare,
   BarChart2,
   Timer,
   Target,
@@ -698,8 +654,6 @@ import {
   Upload,
   Heart,
   Mail,
-  Send,
-  Instagram,
 } from 'lucide-vue-next'
 import { useOnboardingStore } from '~/stores/onboarding.store'
 import { useAuthStore } from '~/stores/auth.store'
@@ -749,32 +703,32 @@ const router = useRouter()
 const scrollContainer = ref<HTMLElement | null>(null)
 const progress = ref(0)
 const showDonation = ref(false)
-const apkDownloadUrl = ''
+const apkDownloadUrl = '/downloads/core-of-life.apk'
 
-const productScreens = [
+const productWidgets = [
   {
-    title: 'Доска',
-    caption: 'ветки, этапы и связи',
+    title: 'Статистика',
+    caption: 'уровень, лига и активность',
     icon: LayoutGrid,
-    variant: 'board',
-  },
-  {
-    title: 'Задачи',
-    caption: 'день, неделя, месяц, год',
-    icon: CheckSquare,
-    variant: 'tasks',
+    variant: 'stats',
+    image: '/images/onboarding/stats-preview.jpg',
+    alt: 'Виджет статистики Core of Life с уровнем, лигой и активностью',
   },
   {
     title: 'Аналитика',
     caption: 'пульс прогресса',
     icon: BarChart2,
     variant: 'analytics',
+    image: '/images/onboarding/analytics-preview.jpg',
+    alt: 'Экран аналитики Core of Life с общим прогрессом',
   },
   {
     title: 'Фокус',
     caption: 'таймер глубоких сессий',
     icon: Timer,
     variant: 'focus',
+    image: '/images/onboarding/focus-preview.jpg',
+    alt: 'Экран фокуса Core of Life с таймером глубокой работы',
   },
 ] as const
 
@@ -1027,7 +981,7 @@ function downloadApk() {
   if (!apkDownloadUrl) return
   const anchor = document.createElement('a')
   anchor.href = apkDownloadUrl
-  anchor.download = 'cof.apk'
+  anchor.download = 'core-of-life.apk'
   anchor.click()
 }
 
@@ -1455,36 +1409,10 @@ onUnmounted(() => {
 }
 
 .cta-button--details {
-  position: relative;
-  overflow: hidden;
-  font-size: 0;
+  font-size: 1.1rem;
   animation: details-cta-in 760ms cubic-bezier(0.16, 1, 0.3, 1) 420ms both;
 
-  &::before {
-    content: 'Подробнее';
-    position: relative;
-    z-index: 1;
-    font-size: 1.1rem;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      110deg,
-      transparent 0%,
-      color-mix(in srgb, var(--bg) 22%, transparent) 45%,
-      transparent 70%
-    );
-    opacity: 0;
-    transform: translateX(-120%);
-    animation: app-glow-scan 1800ms ease 960ms both;
-  }
-
   .btn-icon {
-    position: relative;
-    z-index: 1;
     animation: details-icon-drift 1450ms ease-in-out infinite;
   }
 
@@ -1518,7 +1446,6 @@ onUnmounted(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .cta-button--details,
-  .cta-button--details::after,
   .cta-button--details .btn-icon {
     animation: none;
   }
@@ -1573,7 +1500,7 @@ onUnmounted(() => {
 
 .product-showcase {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   margin-top: 20px;
 }
@@ -1625,187 +1552,19 @@ onUnmounted(() => {
   }
 }
 
-.ui-snapshot {
+.real-widget-frame {
   position: relative;
-  min-height: 210px;
+  min-width: 0;
   overflow: hidden;
   border: var(--ui-border);
   border-radius: 22px;
-  background:
-    linear-gradient(color-mix(in srgb, var(--bg) 38%, transparent), color-mix(in srgb, var(--bg) 38%, transparent)),
-    radial-gradient(circle at 20% 18%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 36%),
-    var(--glass-surface);
-}
-
-.snapshot-top {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 10px;
-  border-bottom: var(--ui-border);
-
-  i,
-  span {
-    display: block;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--accent) 28%, transparent);
-  }
-
-  i {
-    width: 10px;
-    height: 10px;
-  }
-
-  span {
-    width: 36px;
-    height: 6px;
-  }
-}
-
-.snapshot-body {
-  position: relative;
-  height: 176px;
-  padding: 14px;
-}
-
-.node {
-  position: absolute;
-  z-index: 2;
-  width: 58px;
-  height: 40px;
-  border: var(--ui-border);
-  border-radius: 14px;
   background: color-mix(in srgb, var(--surface) 64%, transparent);
 
-  &.start {
-    left: 16px;
-    top: 62px;
-  }
-
-  &.mid {
-    left: calc(50% - 29px);
-    top: 30px;
-  }
-
-  &.end {
-    right: 16px;
-    top: 86px;
-  }
-}
-
-.edge {
-  position: absolute;
-  height: 1px;
-  background: color-mix(in srgb, var(--accent) 42%, transparent);
-  transform-origin: left center;
-
-  &.edge-a {
-    left: 72px;
-    top: 80px;
-    width: 86px;
-    transform: rotate(-19deg);
-  }
-
-  &.edge-b {
-    left: calc(50% + 28px);
-    top: 62px;
-    width: 82px;
-    transform: rotate(26deg);
-  }
-}
-
-.task-line {
-  display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-  min-height: 34px;
-  margin-bottom: 10px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
-
-  i,
-  span {
+  img {
     display: block;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--accent) 42%, transparent);
+    width: 100%;
+    height: auto;
   }
-
-  i {
-    width: 12px;
-    height: 12px;
-  }
-
-  span {
-    width: 72%;
-    height: 7px;
-  }
-}
-
-.bars {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 18px;
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  align-items: end;
-  gap: 5px;
-  height: 82px;
-
-  i {
-    height: var(--bar);
-    min-height: 8px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--accent) 50%, transparent);
-  }
-}
-
-.radial-mini,
-.focus-mini {
-  position: absolute;
-  left: 50%;
-  top: 20px;
-  width: 84px;
-  height: 84px;
-  transform: translateX(-50%);
-}
-
-.radial-mini span,
-.focus-mini span {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: 2px;
-  height: 12px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 48%, transparent);
-  transform-origin: 1px 42px;
-}
-
-@for $i from 1 through 28 {
-  .focus-mini span:nth-child(#{$i}) {
-    transform: rotate(#{($i - 1) * 12.86}deg);
-  }
-}
-
-@for $i from 1 through 18 {
-  .radial-mini span:nth-child(#{$i}) {
-    transform: rotate(#{($i - 1) * 20}deg);
-  }
-}
-
-.focus-mini strong {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  color: var(--accent);
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.05rem;
-  font-variant-numeric: tabular-nums;
 }
 
 .hero-visual {
@@ -1904,18 +1663,6 @@ onUnmounted(() => {
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
 }
-.placeholder-card {
-  margin-top: 30px;
-  padding: 60px 40px;
-  background: var(--glass-surface);
-  border: var(--ui-border);
-  border-radius: 30px;
-  text-align: center;
-  p {
-    color: var(--dim);
-  }
-}
-
 .tools-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -2125,7 +1872,7 @@ onUnmounted(() => {
   }
 
   .product-showcase {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .ambient-light {
@@ -2143,6 +1890,10 @@ onUnmounted(() => {
     --header-height: 68px;
   }
 
+  .section {
+    padding-inline: 20px;
+  }
+
   .fixed-header {
     padding: 12px 14px;
   }
@@ -2156,6 +1907,7 @@ onUnmounted(() => {
   }
 
   .skip-btn {
+    min-height: 44px;
     padding: 7px 12px;
     font-size: 0.82rem;
     border-radius: 14px;
@@ -2267,12 +2019,6 @@ onUnmounted(() => {
     width: 100%;
   }
 
-  .placeholder-card {
-    margin-top: 18px;
-    padding: 28px 18px;
-    border-radius: 20px;
-  }
-
   .product-showcase {
     grid-template-columns: 1fr;
     gap: 14px;
@@ -2284,13 +2030,14 @@ onUnmounted(() => {
     border-radius: 20px;
   }
 
-  .ui-snapshot {
-    min-height: 170px;
+  .real-widget-frame {
     border-radius: 18px;
   }
 
-  .snapshot-body {
-    height: 136px;
+  .real-widget-frame--stats img {
+    aspect-ratio: 3 / 1;
+    object-fit: cover;
+    object-position: center;
   }
 
   .tools-grid {

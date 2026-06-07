@@ -40,5 +40,7 @@ Thumbs.db
 # Vercel
 .vercel
 
-# Prisma
-/generated/prisma
+# Android build output and local SDK configuration
+android/.gradle
+android/local.properties
+android/**/build

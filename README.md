@@ -1,25 +1,26 @@
 # Core of Life
 
-Core of Life is a Vue 3 and Nuxt application for managing tasks, habits, goals,
-focus sessions, rewards, and progress analytics.
+Core of Life is a Nuxt application for managing tasks, habits, goals, focus
+sessions, rewards, and progress analytics.
 
 ## Stack
 
 - Nuxt 3 and Vue 3
 - Pinia with persisted client state
 - Vue Flow for the goal board
-- Chart.js for analytics
 - SCSS design tokens and reusable glass surfaces
-- Prisma and Neon for server-side persistence
+- Optional Neon persistence through the Nitro sync API
 
 ## Local Development
 
 ```bash
-npm install
+npm ci
+copy .env.example .env
 npm run dev:local
 ```
 
 The local application is available at `http://127.0.0.1:3005`.
+`DATABASE_URL` is optional. Without it, the application runs in local-only mode.
 
 ## Quality Checks
 
@@ -32,6 +33,35 @@ npm run check
 `npm run check` is the required pre-commit verification command. It runs the
 strict TypeScript check followed by a production build.
 
+## Production
+
+Build and run the Node server locally:
+
+```bash
+npm ci
+npm run check
+npm start
+```
+
+The production server listens on `http://localhost:3000` by default. Verify
+readiness with `GET /api/health`.
+
+## Android APK
+
+The Capacitor Android project lives in `android`. To refresh its bundled web
+application and build a debug APK:
+
+```bash
+npm run android:build
+```
+
+The downloadable APK used by onboarding is stored at
+`public/downloads/core-of-life.apk`.
+
+For Vercel, connect the repository and add `DATABASE_URL` in project
+environment variables when cloud sync is required. The Vercel build uses the
+Nitro serverless preset automatically.
+
 ## Project Structure
 
 - `components/base`: global navigation, notifications, cursor, and shared shell
@@ -42,6 +72,7 @@ strict TypeScript check followed by a production build.
 - `stores`: domain state and persistence boundaries
 - `composables`: reusable actions and algorithms
 - `pages`: route-level composition and route metadata
+- `server/api`: health and optional cloud-sync endpoints
 - `assets/styles`: global tokens, mixins, reset, and shared styles
 
 ## Engineering Rules
@@ -67,6 +98,18 @@ while keeping authenticated application routes client-only.
 
 ## Environment
 
-Runtime secrets belong in `.env` and must never be committed. See
-`prisma/schema.prisma` and the server API configuration for required database
-variables.
+Runtime secrets belong in `.env` and must never be committed. Copy
+`.env.example` to `.env`. `DATABASE_URL` must be a PostgreSQL/Neon connection
+string with permission to create and update the `cof_sync_state` table.
+
+Authentication profiles currently live in the browser. Cloud sync is keyed by
+a random per-device identifier and synchronizes product state, not account
+credentials.
+
+Google and Yandex OAuth use server-side authorization-code flows with CSRF
+state validation and an HttpOnly signed session cookie. Configure
+`AUTH_SESSION_SECRET` and the corresponding provider client ID/secret values to
+enable their buttons. Register these callback URLs with the providers:
+
+- `https://your-domain/api/auth/google/callback`
+- `https://your-domain/api/auth/yandex/callback`

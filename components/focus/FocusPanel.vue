@@ -101,11 +101,13 @@ import {
 import AppButton from '~/components/ui/AppButton.vue'
 import { useNotification } from '~/composables/useNotification'
 import { useGuidedTourStore } from '~/stores/guidedTour.store'
+import { useFeedback } from '~/composables/useFeedback'
 
 type PresetKey = 'focus' | 'short' | 'long'
 
 const { addNotification } = useNotification()
 const guidedTour = useGuidedTourStore()
+const { trigger } = useFeedback()
 
 const presets = [
   { key: 'focus' as const, label: 'Фокус', minutes: 25, icon: Target },
@@ -192,6 +194,7 @@ function tick() {
     type: 'success',
     message: `${activePreset.value.label} завершен`,
   })
+  void trigger('focusComplete')
 }
 
 function resetTimer() {

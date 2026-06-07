@@ -1,32 +1,52 @@
-const isProduction = process.env.NODE_ENV === 'production'
+const isVercel = Boolean(process.env.VERCEL)
 
 export default defineNuxtConfig({
   compatibilityDate: '2026-04-08',
   devtools: { enabled: process.env.NUXT_DEVTOOLS === 'true' },
   telemetry: false,
   devServer: { host: '0.0.0.0', port: 3000 },
-  experimental: { appManifest: false },
+  experimental: { appManifest: false, viteEnvironmentApi: true },
   modules: [
     '@pinia/nuxt',
     '@vueuse/nuxt',
     '@vueuse/motion',
-    ...(isProduction ? ['@vercel/speed-insights', '@vercel/analytics'] : []),
+    ...(isVercel ? ['@vercel/speed-insights', '@vercel/analytics'] : []),
   ],
   css: ['~/assets/styles/reset.scss', '~/assets/styles/global.scss'],
-  nitro: { preset: 'vercel' },
+  nitro: isVercel ? { preset: 'vercel' } : {},
+  runtimeConfig: {
+    databaseUrl: process.env.DATABASE_URL || '',
+    authSessionSecret: process.env.AUTH_SESSION_SECRET || '',
+    googleClientId: process.env.GOOGLE_CLIENT_ID || '',
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    yandexClientId: process.env.YANDEX_CLIENT_ID || '',
+    yandexClientSecret: process.env.YANDEX_CLIENT_SECRET || '',
+    public: {
+      enableVercelAnalytics: isVercel,
+    },
+  },
+  routeRules: {
+    '/api/**': {
+      headers: {
+        'cache-control': 'no-store',
+        'x-content-type-options': 'nosniff',
+      },
+    },
+    '/images/**': {
+      headers: {
+        'cache-control': 'public, max-age=86400',
+      },
+    },
+  },
   vite: {
     optimizeDeps: {
       include: [
         '@vue-flow/core',
         '@vue-flow/background',
-        '@vue-flow/controls',
-        '@vue-flow/minimap',
-        'chart.js',
         'dagre',
         'lucide-vue-next',
         'pinia-plugin-persistedstate',
         'uuid',
-        'vue-chartjs',
       ],
     },
     css: {
@@ -61,6 +81,7 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#121212' },
       ],
       link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/app.ico' },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'manifest', href: '/site.webmanifest' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },

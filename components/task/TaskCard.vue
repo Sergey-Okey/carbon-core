@@ -102,7 +102,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import type { Task } from '~/types/task.types'
-// @ts-ignore: Vue SFC default export type can be missing in editor service
 import GlassCard from '~/components/base/GlassCard.vue'
 import { CheckCircle, Check, Circle, Trash2, Edit, Calendar, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { useTagsStore } from '~/stores/tags.store'

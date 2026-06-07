@@ -10,6 +10,7 @@ export interface User {
   bio: string
   avatar: string
   createdAt: string
+  provider?: 'google' | 'yandex'
 }
 
 function generateId(): string {
@@ -101,13 +102,38 @@ export const useAuthStore = defineStore(
       })
     }
 
-    function init() {
+    async function init() {
       if (!import.meta.client || initialized.value) return
 
       usersCount.value = getUsers().length
 
       if (currentUser.value && isAuthenticated.value) {
         syncUserProfile(currentUser.value)
+      }
+
+      try {
+        const session = (await $fetch('/api/auth/session')) as {
+          user?: {
+            id: string
+            email: string
+            name: string
+            avatar: string
+            provider: 'google' | 'yandex'
+          } | null
+        }
+        if (session.user) {
+          currentUser.value = {
+            ...session.user,
+            password: '',
+            bio: '',
+            createdAt: currentUser.value?.createdAt || new Date().toISOString(),
+          }
+          isAuthenticated.value = true
+          syncUserProfile(currentUser.value)
+          persistSession()
+        }
+      } catch {
+        // Local profiles remain available when the OAuth backend is offline.
       }
 
       initialized.value = true
@@ -199,6 +225,7 @@ export const useAuthStore = defineStore(
     }
 
     function logout(): void {
+      void $fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined)
       currentUser.value = null
       isAuthenticated.value = false
       syncUserProfile(null)
