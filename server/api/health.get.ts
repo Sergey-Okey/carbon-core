@@ -1,4 +1,5 @@
 import { getDatabaseHealth } from '../utils/syncStorage'
+import { getOAuthProviders } from '../utils/oauth'
 
 export default defineEventHandler(async () => {
   try {
@@ -7,6 +8,7 @@ export default defineEventHandler(async () => {
       status: !database.configured || database.reachable ? 'ok' : 'degraded',
       mode: database.configured ? 'database' : 'local',
       database,
+      oauth: getOAuthProviders(),
       timestamp: new Date().toISOString(),
     }
   } catch {
@@ -14,6 +16,7 @@ export default defineEventHandler(async () => {
       status: 'degraded',
       mode: 'database',
       database: { configured: true, reachable: false },
+      oauth: getOAuthProviders(),
       timestamp: new Date().toISOString(),
     }
   }

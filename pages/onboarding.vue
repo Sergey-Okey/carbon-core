@@ -46,19 +46,6 @@
           }"
         />
       </div>
-      <div
-        v-for="(shape, i) in shapes"
-        :key="i"
-        v-motion
-        :initial="{ opacity: 0, scale: 0.8 }"
-        :enter="{
-          opacity: 1,
-          scale: 1,
-          transition: { duration: 800, delay: i * 100 },
-        }"
-        :class="['floating-shape', `shape${i + 1}`]"
-        :style="{ background: shape.gradient }"
-      />
       <div class="particle-layer">
         <div
           v-for="(particle, i) in particles"
@@ -235,7 +222,11 @@
             </p>
           </div>
 
-          <div class="product-showcase">
+          <div
+            ref="productCarousel"
+            class="product-showcase"
+            @scroll.passive="handleProductCarouselScroll"
+          >
             <article
               v-for="(widget, i) in productWidgets"
               :key="widget.title"
@@ -259,14 +250,26 @@
                 class="real-widget-frame"
                 :class="`real-widget-frame--${widget.variant}`"
               >
-                <img
-                  :src="widget.image"
-                  :alt="widget.alt"
-                  loading="lazy"
-                  decoding="async"
-                />
+                <div class="widget-placeholder__bar">
+                  <span></span>
+                  <span></span>
+                </div>
+                <div class="widget-placeholder__hero"></div>
+                <div class="widget-placeholder__grid">
+                  <span v-for="cell in 4" :key="cell"></span>
+                </div>
               </div>
             </article>
+          </div>
+          <div class="carousel-dots" aria-label="Слайды интерфейса">
+            <button
+              v-for="(widget, index) in productWidgets"
+              :key="widget.variant"
+              type="button"
+              :class="{ active: activeProductSlide === index }"
+              :aria-label="`Показать слайд ${index + 1}`"
+              @click="scrollToProductCard(index)"
+            ></button>
           </div>
         </div>
       </section>
@@ -594,6 +597,7 @@
           </div>
           <div
             v-motion
+            class="final-actions"
             :initial="{ opacity: 0, scale: 0.9 }"
             :visible-once="{
               opacity: 1,
@@ -701,6 +705,8 @@ const authStore = useAuthStore()
 const router = useRouter()
 
 const scrollContainer = ref<HTMLElement | null>(null)
+const productCarousel = ref<HTMLElement | null>(null)
+const activeProductSlide = ref(0)
 const progress = ref(0)
 const showDonation = ref(false)
 const apkDownloadUrl = '/downloads/core-of-life.apk'
@@ -711,7 +717,6 @@ const productWidgets = [
     caption: 'уровень, лига и активность',
     icon: LayoutGrid,
     variant: 'stats',
-    image: '/images/onboarding/stats-preview.jpg',
     alt: 'Виджет статистики Core of Life с уровнем, лигой и активностью',
   },
   {
@@ -719,7 +724,6 @@ const productWidgets = [
     caption: 'пульс прогресса',
     icon: BarChart2,
     variant: 'analytics',
-    image: '/images/onboarding/analytics-preview.jpg',
     alt: 'Экран аналитики Core of Life с общим прогрессом',
   },
   {
@@ -727,25 +731,9 @@ const productWidgets = [
     caption: 'таймер глубоких сессий',
     icon: Timer,
     variant: 'focus',
-    image: '/images/onboarding/focus-preview.jpg',
     alt: 'Экран фокуса Core of Life с таймером глубокой работы',
   },
 ] as const
-
-const shapes = [
-  {
-    gradient:
-      'radial-gradient(circle at 30% 30%, rgba(var(--accent-rgb, 214, 214, 214), 0.14), transparent 70%)',
-  },
-  {
-    gradient:
-      'radial-gradient(circle at 70% 70%, rgba(var(--accent-rgb, 214, 214, 214), 0.12), transparent 70%)',
-  },
-  {
-    gradient:
-      'radial-gradient(circle at 50% 50%, rgba(var(--accent-rgb, 214, 214, 214), 0.1), transparent 70%)',
-  },
-]
 
 const particles = [
   {
@@ -977,6 +965,25 @@ function scrollToProductSlide() {
   })
 }
 
+function handleProductCarouselScroll() {
+  const carousel = productCarousel.value
+  if (!carousel) return
+  const firstCard = carousel.firstElementChild as HTMLElement | null
+  if (!firstCard) return
+  const gap = Number.parseFloat(getComputedStyle(carousel).columnGap) || 0
+  activeProductSlide.value = Math.min(
+    productWidgets.length - 1,
+    Math.max(0, Math.round(carousel.scrollLeft / (firstCard.offsetWidth + gap)))
+  )
+}
+
+function scrollToProductCard(index: number) {
+  const carousel = productCarousel.value
+  const card = carousel?.children[index] as HTMLElement | undefined
+  if (!carousel || !card) return
+  carousel.scrollTo({ left: card.offsetLeft - carousel.offsetLeft, behavior: 'smooth' })
+}
+
 function downloadApk() {
   if (!apkDownloadUrl) return
   const anchor = document.createElement('a')
@@ -1046,18 +1053,7 @@ onUnmounted(() => {
 .background-grid {
   position: absolute;
   inset: -30% -20%;
-  background-image:
-    linear-gradient(
-      to right,
-      color-mix(in srgb, var(--ui-border-color) 26%, transparent) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--ui-border-color) 24%, transparent) 1px,
-      transparent 1px
-    );
-  background-size: 54px 54px;
+  background: color-mix(in srgb, var(--surface) 28%, transparent);
   opacity: 0.3;
   transform: rotate(-4deg);
   animation: gridShift 30s linear infinite;
@@ -1073,11 +1069,7 @@ onUnmounted(() => {
 .ambient-light {
   position: absolute;
   border-radius: 999px;
-  background: radial-gradient(
-    circle at center,
-    color-mix(in srgb, var(--accent) 20%, transparent) 0%,
-    transparent 70%
-  );
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   mix-blend-mode: screen;
   opacity: 0.4;
   filter: blur(34px);
@@ -1123,34 +1115,6 @@ onUnmounted(() => {
   border-radius: 0;
 }
 
-.floating-shape {
-  position: absolute;
-  width: 80vmax;
-  height: 80vmax;
-  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-  animation: float 22s infinite alternate ease-in-out;
-  filter: blur(64px);
-  opacity: 0.42;
-  will-change: transform;
-  z-index: 2;
-  &.shape1 {
-    top: -30vh;
-    left: -20vw;
-  }
-  &.shape2 {
-    bottom: -20vh;
-    right: -15vw;
-    animation-duration: 28s;
-    animation-direction: alternate-reverse;
-  }
-  &.shape3 {
-    top: 40vh;
-    left: 50vw;
-    width: 60vmax;
-    height: 60vmax;
-    animation-duration: 20s;
-  }
-}
 .particle-layer {
   position: absolute;
   inset: 0;
@@ -1167,14 +1131,6 @@ onUnmounted(() => {
   will-change: transform;
 }
 
-@keyframes float {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  100% {
-    transform: translate(10%, 15%) rotate(8deg);
-  }
-}
 @keyframes particleFloat {
   0% {
     transform: translate3d(0, 0, 0) scale(0.95);
@@ -1212,11 +1168,7 @@ onUnmounted(() => {
   inset: 0;
   pointer-events: none;
   z-index: 6;
-  background: radial-gradient(
-    circle at 50% 50%,
-    color-mix(in srgb, var(--bg) 44%, transparent) 0%,
-    var(--bg) 100%
-  );
+  background: color-mix(in srgb, var(--bg) 58%, transparent);
   backdrop-filter: var(--glass-strong-filter);
 }
 
@@ -1237,11 +1189,7 @@ onUnmounted(() => {
   justify-content: space-between;
   gap: 14px;
   padding: 20px 40px;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--bg) 95%, transparent),
-    transparent
-  );
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
   backdrop-filter: var(--glass-strong-filter);
 }
 .logo {
@@ -1499,22 +1447,33 @@ onUnmounted(() => {
 }
 
 .product-showcase {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
+  display: flex;
+  gap: clamp(16px, 3vw, 28px);
   margin-top: 20px;
+  padding: 20px max(4px, calc((100% - min(82vw, 920px)) / 2)) 28px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .screen-card {
   display: grid;
+  flex: 0 0 min(82vw, 920px);
   gap: 14px;
   min-width: 0;
-  padding: 14px;
+  padding: clamp(14px, 2vw, 22px);
   border: var(--ui-border);
-  border-radius: 26px;
-  background: var(--glass-surface);
+  border-radius: var(--border-radius-lg);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
   backdrop-filter: var(--glass-filter);
   -webkit-backdrop-filter: var(--glass-filter);
+  box-shadow: 0 18px 50px color-mix(in srgb, var(--bg) 46%, transparent);
+  scroll-snap-align: center;
 }
 
 .screen-meta {
@@ -1557,13 +1516,69 @@ onUnmounted(() => {
   min-width: 0;
   overflow: hidden;
   border: var(--ui-border);
-  border-radius: 22px;
+  min-height: clamp(280px, 42vw, 460px);
+  padding: clamp(18px, 3vw, 34px);
+  border-radius: var(--border-radius-md);
   background: color-mix(in srgb, var(--surface) 64%, transparent);
+}
 
-  img {
+.widget-placeholder__bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+
+  span {
     display: block;
-    width: 100%;
-    height: auto;
+    inline-size: 30%;
+    block-size: 12px;
+    border-radius: var(--border-radius-pill);
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+  }
+}
+
+.widget-placeholder__hero {
+  block-size: 42%;
+  min-block-size: 110px;
+  margin-block: clamp(22px, 4vw, 42px);
+  border: var(--ui-border);
+  border-radius: var(--border-radius-md);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--bg) 38%, transparent);
+}
+
+.widget-placeholder__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(10px, 2vw, 18px);
+
+  span {
+    min-block-size: clamp(48px, 7vw, 76px);
+    border: var(--ui-border);
+    border-radius: var(--border-radius-sm);
+    background: color-mix(in srgb, var(--surface) 78%, transparent);
+  }
+}
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 2px;
+
+  button {
+    inline-size: 8px;
+    block-size: 8px;
+    min-block-size: 8px;
+    padding: 0;
+    border-radius: var(--border-radius-pill);
+    background: var(--dim);
+    opacity: 0.42;
+  }
+
+  button.active {
+    inline-size: 26px;
+    background: var(--accent);
+    opacity: 1;
   }
 }
 
@@ -1822,6 +1837,12 @@ onUnmounted(() => {
 
 .start-section {
   text-align: center;
+
+  .section-content {
+    display: grid;
+    justify-items: center;
+    width: min(100%, 760px);
+  }
   .final-title {
     font-family: 'Space Grotesk', sans-serif;
     font-size: clamp(3rem, 6vw, 4.5rem);
@@ -1831,14 +1852,21 @@ onUnmounted(() => {
     font-size: 1.2rem;
     color: var(--dim);
     margin-bottom: 40px;
+    max-width: 620px;
+  }
+  .final-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
   }
   .cta-button.large {
     padding: 22px 50px;
     font-size: 1.2rem;
-    margin: 0 10px 30px;
+    margin: 0 0 30px;
   }
   .final-apk {
-    margin: 0 10px 30px;
+    margin: 0 0 30px;
   }
   .final-hint {
     color: var(--dim);
@@ -1872,7 +1900,7 @@ onUnmounted(() => {
   }
 
   .product-showcase {
-    grid-template-columns: minmax(0, 1fr);
+    padding-inline: 12px;
   }
 
   .ambient-light {
@@ -2020,24 +2048,19 @@ onUnmounted(() => {
   }
 
   .product-showcase {
-    grid-template-columns: 1fr;
     gap: 14px;
     margin-top: 18px;
+    padding-inline: 8px;
   }
 
   .screen-card {
+    flex-basis: min(88vw, 520px);
     padding: 12px;
     border-radius: 20px;
   }
 
   .real-widget-frame {
     border-radius: 18px;
-  }
-
-  .real-widget-frame--stats img {
-    aspect-ratio: 3 / 1;
-    object-fit: cover;
-    object-position: center;
   }
 
   .tools-grid {
@@ -2075,18 +2098,40 @@ onUnmounted(() => {
     flex-direction: column;
     justify-content: center;
     text-align: center;
+
+    .section-content {
+      width: 100%;
+    }
+
     .final-title {
       font-size: clamp(2rem, 10vw, 2.8rem);
+      line-height: 1.08;
+      text-align: center;
     }
     .final-text {
+      width: min(100%, 34rem);
       font-size: 1rem;
       margin-bottom: 24px;
+      text-align: center;
+    }
+    .final-actions {
+      width: 100%;
+      flex-direction: column;
+      align-items: stretch;
     }
     .cta-button.large {
       width: 100%;
       padding: 16px 20px;
       font-size: 1rem;
       margin-bottom: 12px;
+    }
+    .final-apk {
+      width: 100%;
+      margin: 0;
+    }
+    .final-hint {
+      width: min(100%, 34rem);
+      text-align: center;
     }
   }
 }

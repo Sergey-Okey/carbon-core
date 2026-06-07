@@ -5,6 +5,7 @@ import {
   setOAuthSession,
   validateOAuthState,
 } from '../../../utils/oauth'
+import { upsertOAuthAccount } from '../../../utils/authStorage'
 
 export default defineEventHandler(async (event) => {
   const provider = getRouterParam(event, 'provider')
@@ -14,6 +15,6 @@ export default defineEventHandler(async (event) => {
   }
 
   validateOAuthState(event, provider, query.state)
-  setOAuthSession(event, await exchangeOAuthCode(event, provider, query.code))
+  setOAuthSession(event, await upsertOAuthAccount(await exchangeOAuthCode(event, provider, query.code)))
   return sendRedirect(event, '/?oauth=success')
 })

@@ -103,8 +103,12 @@ Runtime secrets belong in `.env` and must never be committed. Copy
 string with permission to create and update the `cof_sync_state` table.
 
 Authentication profiles currently live in the browser. Cloud sync is keyed by
-a random per-device identifier and synchronizes product state, not account
-credentials.
+a signed server session when `DATABASE_URL` is configured. If the backend is
+not configured or reachable, the app falls back to a local-only profile.
+
+Email/password accounts are stored in PostgreSQL with `scrypt` password
+hashing. Sync endpoints require an authenticated session whenever the database
+is configured.
 
 Google and Yandex OAuth use server-side authorization-code flows with CSRF
 state validation and an HttpOnly signed session cookie. Configure
@@ -113,3 +117,8 @@ enable their buttons. Register these callback URLs with the providers:
 
 - `https://your-domain/api/auth/google/callback`
 - `https://your-domain/api/auth/yandex/callback`
+
+Set `NUXT_PUBLIC_WEB_APP_URL=https://your-domain` before building Android so
+the static APK can reach the deployed OAuth endpoints. Without provider
+credentials and this HTTPS URL, the OAuth buttons remain available but explain
+that server login is not configured.

@@ -1,4 +1,5 @@
 <template>
+  <AppLaunchScreen />
   <NuxtLayout>
     <NuxtPage />
     <ConfirmDialog />
@@ -13,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { useDebounceFn } from '@vueuse/core'
 import { SpeedInsights } from '@vercel/speed-insights/vue'
 import CustomCursor from '~/components/base/CustomCursor.vue'
+import AppLaunchScreen from '~/components/base/AppLaunchScreen.vue'
 import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 import { useAuthStore } from '~/stores/auth.store'
 import { useBranchesStore } from '~/stores/branches.store'
@@ -23,6 +25,7 @@ import { useTasksStore } from '~/stores/tasks.store'
 import { useUIStore } from '~/stores/ui.store'
 import { useUserStore } from '~/stores/user.store'
 import { saveAutoBackup } from '~/utils/backup'
+import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
 
 const tasksStore = useTasksStore()
 const settingsStore = useSettingsStore()
@@ -33,7 +36,7 @@ const tagsStore = useTagsStore()
 const uiStore = useUIStore()
 const authStore = useAuthStore()
 const enableVercelAnalytics = useRuntimeConfig().public.enableVercelAnalytics
-const syncEndpoint: string = '/api/sync'
+const syncEndpoint = getBackendUrl('/api/sync')
 const syncUnsubscribers: Array<() => void> = []
 let dailyResetTimer: number | null = null
 
@@ -70,6 +73,7 @@ onMounted(async () => {
   try {
     const data = (await $fetch(syncEndpoint, {
       query: { userId: userId.value },
+      ...getBackendFetchOptions(),
     })) as SyncResponse
     if (data.user) userStore.$patch(data.user)
     if (data.tasks) tasksStore.$patch(data.tasks)
@@ -110,6 +114,7 @@ const syncToCloud = useDebounceFn(async () => {
   try {
     await $fetch(syncEndpoint, {
       method: 'POST',
+      ...getBackendFetchOptions(),
       body: {
         userId: userId.value,
         user: { ...userStore.$state },

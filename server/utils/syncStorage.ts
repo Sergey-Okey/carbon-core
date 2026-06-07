@@ -42,7 +42,7 @@ export function parseSyncPayload(value: unknown): SyncPayload {
 
 function getDatabase() {
   const databaseUrl = useRuntimeConfig().databaseUrl.trim()
-  return databaseUrl ? neon(databaseUrl) : null
+  return databaseUrl && !databaseUrl.includes('user:password@host/database') ? neon(databaseUrl) : null
 }
 
 async function ensureSyncTable(sql: NonNullable<ReturnType<typeof getDatabase>>) {

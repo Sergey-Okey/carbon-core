@@ -23,6 +23,7 @@ export default defineNuxtConfig({
     yandexClientSecret: process.env.YANDEX_CLIENT_SECRET || '',
     public: {
       enableVercelAnalytics: isVercel,
+      webAppUrl: process.env.NUXT_PUBLIC_WEB_APP_URL || '',
     },
   },
   routeRules: {

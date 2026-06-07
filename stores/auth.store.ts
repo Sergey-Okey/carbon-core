@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { useUserStore } from '~/stores/user.store'
+import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
 
 export interface User {
   id: string
@@ -10,7 +11,7 @@ export interface User {
   bio: string
   avatar: string
   createdAt: string
-  provider?: 'google' | 'yandex'
+  provider?: 'local' | 'google' | 'yandex'
 }
 
 function generateId(): string {
@@ -38,6 +39,12 @@ function getStorageErrorMessage(error: unknown): string {
   }
 
   return 'Ошибка локального сохранения'
+}
+
+function getHttpStatus(error: unknown) {
+  return typeof error === 'object' && error !== null && 'statusCode' in error
+    ? Number((error as { statusCode?: unknown }).statusCode)
+    : 0
 }
 
 export const useAuthStore = defineStore(
@@ -102,6 +109,13 @@ export const useAuthStore = defineStore(
       })
     }
 
+    function applyServerUser(user: Omit<User, 'password' | 'bio'>) {
+      currentUser.value = { ...user, password: '', bio: '' }
+      isAuthenticated.value = true
+      syncUserProfile(currentUser.value)
+      persistSession()
+    }
+
     async function init() {
       if (!import.meta.client || initialized.value) return
 
@@ -112,13 +126,16 @@ export const useAuthStore = defineStore(
       }
 
       try {
-        const session = (await $fetch('/api/auth/session')) as {
+        const session = (await $fetch(getBackendUrl('/api/auth/session'), {
+          ...getBackendFetchOptions(),
+        })) as {
           user?: {
             id: string
             email: string
             name: string
             avatar: string
-            provider: 'google' | 'yandex'
+            provider: 'local' | 'google' | 'yandex'
+            createdAt?: string
           } | null
         }
         if (session.user) {
@@ -147,6 +164,20 @@ export const useAuthStore = defineStore(
       isLoading.value = true
 
       try {
+        try {
+          const response = (await $fetch(getBackendUrl('/api/auth/register'), {
+              method: 'POST',
+              body: { email, password, name },
+              ...getBackendFetchOptions(),
+            })) as { user: Omit<User, 'password' | 'bio'> }
+          applyServerUser(response.user)
+          return { success: true }
+        } catch (error) {
+          const status = getHttpStatus(error)
+          if (status === 409) return { success: false, error: 'Этот email уже зарегистрирован' }
+          if (status && status !== 503) return { success: false, error: 'Не удалось создать аккаунт' }
+        }
+
         await new Promise((resolve) => setTimeout(resolve, 350))
         const users = getUsers()
 
@@ -194,6 +225,20 @@ export const useAuthStore = defineStore(
       isLoading.value = true
 
       try {
+        try {
+          const response = (await $fetch(getBackendUrl('/api/auth/login'), {
+              method: 'POST',
+              body: { email, password },
+              ...getBackendFetchOptions(),
+            })) as { user: Omit<User, 'password' | 'bio'> }
+          applyServerUser(response.user)
+          return { success: true }
+        } catch (error) {
+          const status = getHttpStatus(error)
+          if (status === 401) return { success: false, error: 'Неверный email или пароль' }
+          if (status && status !== 503) return { success: false, error: 'Не удалось выполнить вход' }
+        }
+
         await new Promise((resolve) => setTimeout(resolve, 300))
         const users = getUsers()
         const hashedPassword = hashPassword(password)
@@ -225,7 +270,10 @@ export const useAuthStore = defineStore(
     }
 
     function logout(): void {
-      void $fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined)
+      void $fetch(getBackendUrl('/api/auth/logout'), {
+        method: 'POST',
+        ...getBackendFetchOptions(),
+      }).catch(() => undefined)
       currentUser.value = null
       isAuthenticated.value = false
       syncUserProfile(null)

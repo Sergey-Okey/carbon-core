@@ -66,7 +66,7 @@
               <AppInput
                 v-model="form.password"
                 type="password"
-                placeholder="Не менее 6 символов"
+                placeholder="Не менее 8 символов"
                 :autocomplete="isRegister ? 'new-password' : 'current-password'"
               />
             </AppFormField>
@@ -99,7 +99,7 @@
               :key="provider.key"
               type="button"
               class="oauth-button"
-              :disabled="!provider.enabled"
+              :class="{ 'is-unavailable': !provider.enabled }"
               :title="provider.enabled ? provider.label : `${provider.label}: не настроено`"
               @click="startOAuth(provider.key)"
             >
@@ -127,6 +127,7 @@ import AppInput from '~/components/ui/AppInput.vue'
 import GlassCard from '~/components/base/GlassCard.vue'
 import { useNotification } from '~/composables/useNotification'
 import { useAuthStore } from '~/stores/auth.store'
+import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
 
 const props = defineProps<{
   mode: 'login' | 'register'
@@ -182,8 +183,8 @@ async function submit() {
     return
   }
 
-  if (form.password.length < 6) {
-    error.value = 'Пароль должен быть не короче 6 символов'
+  if (form.password.length < 8) {
+    error.value = 'Пароль должен быть не короче 8 символов'
     return
   }
 
@@ -210,13 +211,22 @@ async function submit() {
 }
 
 function startOAuth(provider: 'google' | 'yandex') {
-  if (!providerAvailability.value[provider]) return
-  window.location.assign(`/api/auth/${provider}`)
+  if (!providerAvailability.value[provider]) {
+    addNotification({
+      type: 'warning',
+      message: 'Вход через провайдера пока не настроен на сервере',
+    })
+    return
+  }
+
+  window.location.assign(getBackendUrl(`/api/auth/${provider}`))
 }
 
 onMounted(async () => {
   try {
-    providerAvailability.value = await $fetch('/api/auth/providers')
+    providerAvailability.value = await $fetch(getBackendUrl('/api/auth/providers'), {
+      ...getBackendFetchOptions(),
+    })
   } catch {
     providerAvailability.value = { google: false, yandex: false }
   }
@@ -461,6 +471,10 @@ onMounted(async () => {
     cursor: not-allowed;
     opacity: 0.42;
   }
+}
+
+.oauth-button.is-unavailable {
+  opacity: 0.62;
 }
 
 .oauth-mark {

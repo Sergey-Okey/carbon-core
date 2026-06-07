@@ -27,12 +27,17 @@ export default defineNuxtRouteMiddleware((to) => {
   const hasSeenOnboarding = Boolean(onboardingState?.hasSeenOnboarding)
   const hasUsers = users.length > 0
   const isPublicRoute = ['/auth', '/register', '/onboarding'].includes(to.path)
+  const isNative = Capacitor.isNativePlatform()
 
-  if (!hasSeenOnboarding && !hasUsers && to.path !== '/onboarding') {
+  if (isNative && to.path === '/onboarding') {
+    return navigateTo(hasUsers ? '/auth' : '/register')
+  }
+
+  if (!isNative && !hasSeenOnboarding && !hasUsers && to.path !== '/onboarding') {
     return navigateTo('/onboarding')
   }
 
-  if (to.path === '/auth' && !hasSeenOnboarding && !hasUsers) {
+  if (!isNative && to.path === '/auth' && !hasSeenOnboarding && !hasUsers) {
     return navigateTo('/onboarding')
   }
 
@@ -41,6 +46,7 @@ export default defineNuxtRouteMiddleware((to) => {
   }
 
   if (!isAuthenticated && !isPublicRoute) {
-    return navigateTo(hasSeenOnboarding || hasUsers ? '/auth' : '/onboarding')
+    return navigateTo(isNative || hasSeenOnboarding || hasUsers ? '/auth' : '/onboarding')
   }
 })
+import { Capacitor } from '@capacitor/core'

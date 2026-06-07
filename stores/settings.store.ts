@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { Capacitor } from '@capacitor/core'
 
 export const ACCENT_COLORS = [
   { name: 'Графит', value: '#2b2b2b' },
@@ -38,7 +39,7 @@ export const useSettingsStore = defineStore(
     const backgroundIntensity = ref<'soft' | 'normal' | 'contrast'>('normal')
     const animationsEnabled = ref<boolean>(true)
     const animationSpeed = ref<number>(1) // multiplier, 0.5 = slower, 2 = faster
-    const soundEnabled = ref<boolean>(false)
+    const soundEnabled = ref<boolean>(true)
     const soundVolume = ref<number>(0.65)
     const hapticsEnabled = ref<boolean>(true)
     const notificationsEnabled = ref<boolean>(true)
@@ -270,6 +271,15 @@ export const useSettingsStore = defineStore(
       }
     }
 
+    function enableNativeFeedbackDefaults() {
+      if (!import.meta.client || !Capacitor.isNativePlatform()) return
+      const migrationKey = 'cof-native-feedback-v1'
+      if (localStorage.getItem(migrationKey)) return
+      soundEnabled.value = true
+      hapticsEnabled.value = true
+      localStorage.setItem(migrationKey, 'done')
+    }
+
     function applyRuntimeSettings() {
       const resolved = resolveTheme(themeMode.value)
       theme.value = resolved
@@ -286,6 +296,7 @@ export const useSettingsStore = defineStore(
         await store.$persistedState.isReady
       }
       hydratePersistedSettings()
+      enableNativeFeedbackDefaults()
       applyRuntimeSettings()
       ready.value = true
     }

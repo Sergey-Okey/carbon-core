@@ -3,13 +3,15 @@ import type { H3Event } from 'h3'
 import { deleteCookie, getCookie, getRequestURL, setCookie } from 'h3'
 
 export type OAuthProvider = 'google' | 'yandex'
+export type AuthProvider = OAuthProvider | 'local'
 
 export type OAuthProfile = {
   id: string
   email: string
   name: string
   avatar: string
-  provider: OAuthProvider
+  provider: AuthProvider
+  createdAt?: string
 }
 
 const stateCookie = 'cof_oauth_state'
@@ -36,7 +38,8 @@ export function getOAuthProviders() {
 }
 
 function getCallbackUrl(event: H3Event, provider: OAuthProvider) {
-  const origin = getRequestURL(event).origin
+  const configuredOrigin = useRuntimeConfig().public.webAppUrl.trim().replace(/\/$/, '')
+  const origin = configuredOrigin || getRequestURL(event).origin
   return `${origin}/api/auth/${provider}/callback`
 }
 
@@ -181,10 +184,11 @@ function safeEqual(left: string, right: string) {
 }
 
 function cookieOptions(event: H3Event, maxAge: number) {
+  const secure = getRequestURL(event).protocol === 'https:'
   return {
     httpOnly: true,
-    sameSite: 'lax' as const,
-    secure: getRequestURL(event).protocol === 'https:',
+    sameSite: secure ? ('none' as const) : ('lax' as const),
+    secure,
     path: '/',
     maxAge,
   }
