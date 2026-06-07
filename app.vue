@@ -26,6 +26,7 @@ import { useUIStore } from '~/stores/ui.store'
 import { useUserStore } from '~/stores/user.store'
 import { saveAutoBackup } from '~/utils/backup'
 import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
+import { useSyncStatus } from '~/composables/useSyncStatus'
 
 const tasksStore = useTasksStore()
 const settingsStore = useSettingsStore()
@@ -35,6 +36,7 @@ const rewardsStore = useRewardsStore()
 const tagsStore = useTagsStore()
 const uiStore = useUIStore()
 const authStore = useAuthStore()
+const syncStatus = useSyncStatus()
 const enableVercelAnalytics = useRuntimeConfig().public.enableVercelAnalytics
 const syncEndpoint = getBackendUrl('/api/sync')
 const syncUnsubscribers: Array<() => void> = []
@@ -70,7 +72,13 @@ onMounted(async () => {
   await settingsStore.ready
   authStore.init()
 
+  syncStatus.setRetry(() => void syncToCloud())
+  window.addEventListener('online', handleOnline)
+  window.addEventListener('offline', handleOffline)
+  if (!navigator.onLine) syncStatus.setState('offline')
+
   try {
+    syncStatus.setState('syncing')
     const data = (await $fetch(syncEndpoint, {
       query: { userId: userId.value },
       ...getBackendFetchOptions(),
@@ -91,7 +99,9 @@ onMounted(async () => {
       settingsStore.$patch(data.settings)
       settingsStore.applyRuntimeSettings()
     }
+    syncStatus.setState(authStore.authMode === 'local' ? 'local' : 'synced')
   } catch {
+    syncStatus.setState(navigator.onLine ? 'error' : 'offline')
     console.warn(
       'Облачная синхронизация недоступна, используются локальные данные'
     )
@@ -111,7 +121,16 @@ onMounted(async () => {
 })
 
 const syncToCloud = useDebounceFn(async () => {
+  if (authStore.authMode === 'local') {
+    syncStatus.setState('local')
+    return
+  }
+  if (!navigator.onLine) {
+    syncStatus.setState('offline')
+    return
+  }
   try {
+    syncStatus.setState('syncing')
     await $fetch(syncEndpoint, {
       method: 'POST',
       ...getBackendFetchOptions(),
@@ -126,14 +145,27 @@ const syncToCloud = useDebounceFn(async () => {
         settings: { ...settingsStore.$state },
       },
     })
-  } catch {}
+    syncStatus.setState('synced')
+  } catch {
+    syncStatus.setState(navigator.onLine ? 'error' : 'offline')
+  }
 }, 2000)
 
 onUnmounted(() => {
   window.removeEventListener('beforeunload', autoBackupOnUnload)
+  window.removeEventListener('online', handleOnline)
+  window.removeEventListener('offline', handleOffline)
   if (dailyResetTimer !== null) window.clearTimeout(dailyResetTimer)
   syncUnsubscribers.splice(0).forEach((unsubscribe) => unsubscribe())
 })
+
+function handleOnline() {
+  void syncToCloud()
+}
+
+function handleOffline() {
+  syncStatus.setState('offline')
+}
 
 function scheduleNextReset() {
   const now = new Date()

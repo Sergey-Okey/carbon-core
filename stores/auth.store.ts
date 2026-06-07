@@ -13,6 +13,7 @@ export interface User {
   createdAt: string
   provider?: 'local' | 'google' | 'yandex'
 }
+export type AuthMode = 'cloud' | 'local'
 
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2)
@@ -55,6 +56,7 @@ export const useAuthStore = defineStore(
     const isLoading = ref(false)
     const initialized = ref(false)
     const usersCount = ref(0)
+    const authMode = ref<AuthMode>('cloud')
 
     const userInitials = computed(() => {
       if (!currentUser.value) return ''
@@ -109,8 +111,8 @@ export const useAuthStore = defineStore(
       })
     }
 
-    function applyServerUser(user: Omit<User, 'password' | 'bio'>) {
-      currentUser.value = { ...user, password: '', bio: '' }
+    function applyServerUser(user: Omit<User, 'password' | 'bio'> & { bio?: string }) {
+      currentUser.value = { ...user, password: '', bio: user.bio || '' }
       isAuthenticated.value = true
       syncUserProfile(currentUser.value)
       persistSession()
@@ -159,23 +161,26 @@ export const useAuthStore = defineStore(
     async function register(
       email: string,
       password: string,
-      name: string
+      name: string,
+      mode: AuthMode = 'cloud'
     ): Promise<{ success: boolean; error?: string }> {
       isLoading.value = true
 
       try {
-        try {
+        if (mode === 'cloud') try {
           const response = (await $fetch(getBackendUrl('/api/auth/register'), {
               method: 'POST',
               body: { email, password, name },
               ...getBackendFetchOptions(),
             })) as { user: Omit<User, 'password' | 'bio'> }
           applyServerUser(response.user)
+          authMode.value = 'cloud'
           return { success: true }
         } catch (error) {
           const status = getHttpStatus(error)
           if (status === 409) return { success: false, error: 'Этот email уже зарегистрирован' }
           if (status && status !== 503) return { success: false, error: 'Не удалось создать аккаунт' }
+          return { success: false, error: 'Облачная регистрация недоступна. Выберите локальный режим' }
         }
 
         await new Promise((resolve) => setTimeout(resolve, 350))
@@ -207,6 +212,7 @@ export const useAuthStore = defineStore(
 
         currentUser.value = newUser
         isAuthenticated.value = true
+        authMode.value = 'local'
         syncUserProfile(newUser)
         persistSession()
 
@@ -220,23 +226,26 @@ export const useAuthStore = defineStore(
 
     async function login(
       email: string,
-      password: string
+      password: string,
+      mode: AuthMode = 'cloud'
     ): Promise<{ success: boolean; error?: string }> {
       isLoading.value = true
 
       try {
-        try {
+        if (mode === 'cloud') try {
           const response = (await $fetch(getBackendUrl('/api/auth/login'), {
               method: 'POST',
               body: { email, password },
               ...getBackendFetchOptions(),
             })) as { user: Omit<User, 'password' | 'bio'> }
           applyServerUser(response.user)
+          authMode.value = 'cloud'
           return { success: true }
         } catch (error) {
           const status = getHttpStatus(error)
           if (status === 401) return { success: false, error: 'Неверный email или пароль' }
           if (status && status !== 503) return { success: false, error: 'Не удалось выполнить вход' }
+          return { success: false, error: 'Облачный вход недоступен. Выберите локальный режим' }
         }
 
         await new Promise((resolve) => setTimeout(resolve, 300))
@@ -258,6 +267,7 @@ export const useAuthStore = defineStore(
 
         currentUser.value = user
         isAuthenticated.value = true
+        authMode.value = 'local'
         syncUserProfile(user)
         persistSession()
 
@@ -280,9 +290,9 @@ export const useAuthStore = defineStore(
       persistSession()
     }
 
-    function updateProfile(
+    async function updateProfile(
       updates: Partial<Pick<User, 'name' | 'bio' | 'email' | 'avatar'>>
-    ): { success: boolean; error?: string } {
+    ): Promise<{ success: boolean; error?: string }> {
       if (!currentUser.value) {
         return { success: false, error: 'Пользователь не авторизован' }
       }
@@ -309,6 +319,16 @@ export const useAuthStore = defineStore(
       }
 
       try {
+        if (authMode.value === 'cloud') {
+          const response = (await $fetch(getBackendUrl('/api/auth/account'), {
+            method: 'PATCH',
+            body: updates,
+            ...getBackendFetchOptions(),
+          })) as { user: Omit<User, 'password' | 'bio'> }
+          applyServerUser({ ...response.user, bio: updates.bio ?? previousUser.bio })
+          return { success: true }
+        }
+
         currentUser.value = nextUser
 
         const index = users.findIndex((user) => user.id === nextUser.id)
@@ -328,12 +348,24 @@ export const useAuthStore = defineStore(
       }
     }
 
-    function deleteAccount(): void {
-      if (!currentUser.value) return
+    async function deleteAccount(): Promise<{ success: boolean; error?: string }> {
+      if (!currentUser.value) return { success: false }
+
+      if (authMode.value === 'cloud') {
+        try {
+          await $fetch(getBackendUrl('/api/auth/account'), {
+            method: 'DELETE',
+            ...getBackendFetchOptions(),
+          })
+        } catch {
+          return { success: false, error: 'Не удалось удалить облачный аккаунт' }
+        }
+      }
 
       const users = getUsers().filter((user) => user.id !== currentUser.value?.id)
       saveUsers(users)
       logout()
+      return { success: true }
     }
 
     function checkAuth(): boolean {
@@ -346,6 +378,7 @@ export const useAuthStore = defineStore(
       isAuthenticated,
       isLoading,
       initialized,
+      authMode,
       userInitials,
       hasRegisteredUsers,
       init,

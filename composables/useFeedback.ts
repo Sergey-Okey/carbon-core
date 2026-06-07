@@ -22,7 +22,9 @@ export function useFeedback() {
 
     await Promise.allSettled([
       settingsStore.hapticsEnabled ? playHaptic(type) : Promise.resolve(),
-      settingsStore.soundEnabled ? playTone(type, settingsStore.soundVolume) : Promise.resolve(),
+      settingsStore.soundEnabled && type !== 'selection'
+        ? playTone(type, settingsStore.soundVolume)
+        : Promise.resolve(),
     ])
   }
 

@@ -108,9 +108,36 @@
             </button>
           </div>
 
+          <div class="auth-mode" role="group" aria-label="Режим хранения">
+            <button
+              type="button"
+              :class="{ active: authMode === 'cloud' }"
+              @click="authMode = 'cloud'"
+            >
+              Облако
+            </button>
+            <button
+              type="button"
+              :class="{ active: authMode === 'local' }"
+              @click="authMode = 'local'"
+            >
+              Только устройство
+            </button>
+          </div>
+          <p class="mode-note">
+            {{ authMode === 'cloud'
+              ? 'Данные синхронизируются между устройствами.'
+              : 'Данные останутся только на этом устройстве.' }}
+          </p>
+
           <div class="card-footer">
             <span>{{ footerText }}</span>
             <NuxtLink :to="switchLink">{{ switchLabel }}</NuxtLink>
+          </div>
+          <div class="legal-links">
+            <NuxtLink to="/privacy">Конфиденциальность</NuxtLink>
+            <NuxtLink to="/terms">Условия</NuxtLink>
+            <NuxtLink to="/support">Поддержка</NuxtLink>
           </div>
         </GlassCard>
       </div>
@@ -145,6 +172,7 @@ const form = reactive({
 })
 
 const error = ref('')
+const authMode = ref<'cloud' | 'local'>('cloud')
 const providerAvailability = ref({ google: false, yandex: false })
 const oauthProviders = computed(() => [
   { key: 'google' as const, label: 'Google', mark: 'G', enabled: providerAvailability.value.google },
@@ -194,8 +222,8 @@ async function submit() {
   }
 
   const result = isRegister.value
-    ? await authStore.register(form.email, form.password, form.name)
-    : await authStore.login(form.email, form.password)
+    ? await authStore.register(form.email, form.password, form.name, authMode.value)
+    : await authStore.login(form.email, form.password, authMode.value)
 
   if (!result.success) {
     error.value = result.error || 'Не удалось выполнить действие'
@@ -418,6 +446,47 @@ onMounted(async () => {
       text-decoration: underline;
     }
   }
+}
+
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+  color: var(--dim);
+  font-size: 0.7rem;
+}
+
+.auth-mode {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 8px;
+  padding: 4px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-md);
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+
+  button {
+    min-height: 40px;
+    border-radius: var(--border-radius-sm);
+    color: var(--dim);
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  button.active {
+    background: var(--accent);
+    color: var(--bg);
+  }
+}
+
+.mode-note {
+  margin-bottom: 16px;
+  color: var(--dim);
+  font-size: 0.78rem;
+  line-height: 1.4;
 }
 
 .oauth-divider {

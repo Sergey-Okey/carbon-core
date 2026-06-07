@@ -58,6 +58,15 @@ npm run android:build
 The downloadable APK used by onboarding is stored at
 `public/downloads/core-of-life.apk`.
 
+For a signed Google Play App Bundle, provide the four `ANDROID_KEY_*`
+environment variables documented in `.env.example`, then run:
+
+```bash
+npm run android:bundle
+```
+
+The signed bundle is written to `dist/core-of-life-release.aab`.
+
 For Vercel, connect the repository and add `DATABASE_URL` in project
 environment variables when cloud sync is required. The Vercel build uses the
 Nitro serverless preset automatically.

@@ -632,6 +632,11 @@
             <p class="final-hint">
               В любой момент вернитесь к гайду через иконку вопроса в хедере.
             </p>
+            <div class="final-links">
+              <NuxtLink to="/privacy">Конфиденциальность</NuxtLink>
+              <NuxtLink to="/terms">Условия</NuxtLink>
+              <NuxtLink to="/support">Поддержка</NuxtLink>
+            </div>
           </div>
         </div>
       </section>
@@ -1461,6 +1466,15 @@ onUnmounted(() => {
   }
 }
 
+/* Public onboarding stays intentionally short before launch. */
+.rule-section,
+.visual-section,
+.tools-section,
+.security-section,
+.about-section {
+  display: none;
+}
+
 .screen-card {
   display: grid;
   flex: 0 0 min(82vw, 920px);
@@ -1870,6 +1884,15 @@ onUnmounted(() => {
   }
   .final-hint {
     color: var(--dim);
+  }
+  .final-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 16px;
+    color: var(--dim);
+    font-size: 0.75rem;
   }
 }
 

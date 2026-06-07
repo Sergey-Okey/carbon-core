@@ -358,23 +358,23 @@ async function handleAvatarChange(event: Event) {
     form.avatar = await compressAvatar(file)
     error.value = ''
     savedMessage.value = ''
-    persistAvatar()
+    await persistAvatar()
   } catch {
     error.value = 'Не удалось обработать изображение'
   }
 }
 
-function removeAvatar() {
+async function removeAvatar() {
   form.avatar = ''
   error.value = ''
   savedMessage.value = ''
   if (fileInput.value) fileInput.value.value = ''
-  persistAvatar()
+  await persistAvatar()
 }
 
-function persistAvatar() {
+async function persistAvatar() {
   if (authStore.currentUser) {
-    const result = authStore.updateProfile({ avatar: form.avatar })
+    const result = await authStore.updateProfile({ avatar: form.avatar })
 
     if (!result.success) {
       error.value = result.error || 'Не удалось сохранить аватар'
@@ -391,7 +391,7 @@ function persistAvatar() {
   })
 }
 
-function saveProfile() {
+async function saveProfile() {
   error.value = ''
   savedMessage.value = ''
 
@@ -405,7 +405,7 @@ function saveProfile() {
     return
   }
 
-  const result = authStore.updateProfile({
+  const result = await authStore.updateProfile({
     name: form.name,
     email: form.email,
     bio: form.bio,
@@ -432,10 +432,14 @@ function logout() {
   router.push('/auth')
 }
 
-function deleteAccount() {
+async function deleteAccount() {
   if (!confirm('Удалить аккаунт? Это действие нельзя отменить.')) return
 
-  authStore.deleteAccount()
+  const result = await authStore.deleteAccount()
+  if (!result.success) {
+    addNotification({ type: 'error', message: result.error || 'Не удалось удалить аккаунт' })
+    return
+  }
   addNotification({ type: 'success', message: 'Аккаунт удален' })
   router.push('/auth')
 }

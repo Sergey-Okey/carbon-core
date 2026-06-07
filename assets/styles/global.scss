@@ -288,22 +288,25 @@ html[data-background-mode='image'] body::before {
 }
 
 html[data-background-mode='image'] .layout {
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--bg) 40%, transparent), color-mix(in srgb, var(--bg) 40%, transparent)),
-    var(--custom-bg-image);
+  background-image: var(--custom-bg-image);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
 }
 
-html[data-background-mode='image'][data-background-intensity='soft'] .layout {
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--bg) 58%, transparent), color-mix(in srgb, var(--bg) 58%, transparent)),
-    var(--custom-bg-image);
+html[data-background-mode='image'] .layout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: color-mix(in srgb, var(--bg) 40%, transparent);
+  pointer-events: none;
 }
 
-html[data-background-mode='image'][data-background-intensity='contrast'] .layout {
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--bg) 26%, transparent), color-mix(in srgb, var(--bg) 26%, transparent)),
-    var(--custom-bg-image);
+html[data-background-mode='image'][data-background-intensity='soft'] .layout::before {
+  background: color-mix(in srgb, var(--bg) 58%, transparent);
+}
+
+html[data-background-mode='image'][data-background-intensity='contrast'] .layout::before {
+  background: color-mix(in srgb, var(--bg) 26%, transparent);
 }

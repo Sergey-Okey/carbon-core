@@ -12,7 +12,7 @@ function getDatabase() {
 }
 
 export function isAuthDatabaseConfigured() {
-  return Boolean(getDatabase())
+  return Boolean(getDatabase()) && useRuntimeConfig().authSessionSecret.trim().length >= 32
 }
 
 async function ensureUsersTable(sql: NonNullable<ReturnType<typeof getDatabase>>) {
@@ -90,6 +90,50 @@ export async function upsertOAuthAccount(profile: OAuthProfile) {
     RETURNING id, email, name, avatar, provider, created_at
   `
   return mapAccount(rows[0])
+}
+
+export async function updateAccount(
+  id: string,
+  updates: { name?: string; email?: string; avatar?: string }
+) {
+  const sql = getDatabase()
+  if (!sql) throw createError({ statusCode: 503, statusMessage: 'Account database is not configured' })
+  await ensureUsersTable(sql)
+  const currentRows = await sql`
+    SELECT id, email, name, avatar, provider, created_at FROM cof_users WHERE id = ${id} LIMIT 1
+  `
+  const current = currentRows[0] as Record<string, unknown> | undefined
+  if (!current) throw createError({ statusCode: 404, statusMessage: 'Account not found' })
+
+  const email = updates.email?.trim().toLowerCase() || String(current.email)
+  const name = updates.name?.trim() || String(current.name)
+  const avatar = updates.avatar ?? String(current.avatar || '')
+  try {
+    const rows = await sql`
+      UPDATE cof_users
+      SET email = ${email}, name = ${name}, avatar = ${avatar}, updated_at = NOW()
+      WHERE id = ${id}
+      RETURNING id, email, name, avatar, provider, created_at
+    `
+    return mapAccount(rows[0])
+  } catch {
+    throw createError({ statusCode: 409, statusMessage: 'Email is already in use' })
+  }
+}
+
+export async function deleteAccount(id: string) {
+  const sql = getDatabase()
+  if (!sql) throw createError({ statusCode: 503, statusMessage: 'Account database is not configured' })
+  await ensureUsersTable(sql)
+  await sql`
+    CREATE TABLE IF NOT EXISTS cof_sync_state (
+      user_id TEXT PRIMARY KEY,
+      payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
+  await sql`DELETE FROM cof_sync_state WHERE user_id = ${id}`
+  await sql`DELETE FROM cof_users WHERE id = ${id}`
 }
 
 function hashPassword(password: string) {

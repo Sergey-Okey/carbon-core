@@ -506,24 +506,6 @@ function getLocalDateKey(date: Date) {
   overflow: hidden;
   animation: analytics-cell-in 620ms ease both;
 
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: linear-gradient(
-      110deg,
-      transparent 0%,
-      color-mix(in srgb, var(--accent) 10%, transparent) 43%,
-      transparent 62%
-    );
-    opacity: 0;
-    transform: translateX(-120%);
-    animation: app-glow-scan 1100ms ease both;
-    animation-delay: inherit;
-    pointer-events: none;
-  }
-
   &:nth-last-child(1) {
     border-bottom-width: 0;
   }

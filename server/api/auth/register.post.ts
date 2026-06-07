@@ -1,8 +1,13 @@
 import { readBody } from 'h3'
-import { registerAccount } from '../../utils/authStorage'
+import { isAuthDatabaseConfigured, registerAccount } from '../../utils/authStorage'
 import { setOAuthSession } from '../../utils/oauth'
+import { enforceRateLimit } from '../../utils/rateLimit'
 
 export default defineEventHandler(async (event) => {
+  enforceRateLimit(event, 'register', 5, 15 * 60 * 1000)
+  if (!isAuthDatabaseConfigured()) {
+    throw createError({ statusCode: 503, statusMessage: 'Cloud accounts are not configured' })
+  }
   const body = await readBody<Record<string, unknown>>(event)
   const email = typeof body?.email === 'string' ? body.email.trim() : ''
   const password = typeof body?.password === 'string' ? body.password : ''

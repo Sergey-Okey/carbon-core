@@ -307,10 +307,8 @@ function apply() {
   border: var(--ui-border);
   border-radius: 50%;
   cursor: crosshair;
-  background:
-    radial-gradient(circle at 50% 50%, #fff 0 7%, transparent 43%),
-    conic-gradient(red, #ff0, lime, cyan, blue, magenta, red);
-  box-shadow: none;
+  background: color-mix(in srgb, var(--custom-color) 72%, var(--surface));
+  box-shadow: inset 0 0 0 8px color-mix(in srgb, var(--bg) 20%, transparent);
   overflow: hidden;
   touch-action: none;
 }

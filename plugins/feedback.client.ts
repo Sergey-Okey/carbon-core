@@ -3,9 +3,6 @@ import { useFeedback } from '~/composables/useFeedback'
 const interactiveSelector = [
   'button:not(:disabled)',
   'a[href]',
-  'input:not(:disabled)',
-  'select:not(:disabled)',
-  'textarea:not(:disabled)',
   '[role="button"]:not([aria-disabled="true"])',
   '[role="switch"]:not([aria-disabled="true"])',
   '[role="tab"]:not([aria-disabled="true"])',

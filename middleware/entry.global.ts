@@ -26,14 +26,14 @@ export default defineNuxtRouteMiddleware((to) => {
   )
   const hasSeenOnboarding = Boolean(onboardingState?.hasSeenOnboarding)
   const hasUsers = users.length > 0
-  const isPublicRoute = ['/auth', '/register', '/onboarding'].includes(to.path)
+  const isPublicRoute = ['/auth', '/register', '/onboarding', '/privacy', '/terms', '/support'].includes(to.path)
   const isNative = Capacitor.isNativePlatform()
 
   if (isNative && to.path === '/onboarding') {
     return navigateTo(hasUsers ? '/auth' : '/register')
   }
 
-  if (!isNative && !hasSeenOnboarding && !hasUsers && to.path !== '/onboarding') {
+  if (!isNative && !hasSeenOnboarding && !hasUsers && !isPublicRoute) {
     return navigateTo('/onboarding')
   }
 

@@ -14,6 +14,18 @@
 
     <div class="actions">
       <button
+        class="sync-status"
+        type="button"
+        :class="`is-${syncStatus.state.value}`"
+        :aria-label="syncStatus.label.value"
+        :data-tooltip="syncStatus.label.value"
+        data-tooltip-position="bottom"
+        @click="syncStatus.retry"
+      >
+        <span></span>
+        <span class="sync-label">{{ syncStatus.label.value }}</span>
+      </button>
+      <button
         class="action-btn"
         type="button"
         aria-label="Открыть обучение"
@@ -85,11 +97,13 @@ import { useAuthStore } from '~/stores/auth.store'
 import { useUserStore } from '~/stores/user.store'
 import { useUIStore, type NavSection } from '~/stores/ui.store'
 import { useGuidedTourStore } from '~/stores/guidedTour.store'
+import { useSyncStatus } from '~/composables/useSyncStatus'
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
 const uiStore = useUIStore()
 const guidedTour = useGuidedTourStore()
+const syncStatus = useSyncStatus()
 const route = useRoute()
 const { addNotification } = useNotification()
 const isProfileModalOpen = ref(false)
@@ -270,6 +284,47 @@ onBeforeUnmount(() => {
 
   @include mobile {
     gap: 4px;
+  }
+}
+
+.sync-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding-inline: 10px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-pill);
+  color: var(--dim);
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  > span:first-child {
+    inline-size: 7px;
+    block-size: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  &.is-synced {
+    color: var(--success);
+  }
+
+  &.is-error,
+  &.is-offline {
+    color: var(--warning);
+  }
+
+  @include mobile {
+    inline-size: 44px;
+    block-size: 44px;
+    justify-content: center;
+    padding: 0;
+    border: none;
+
+    .sync-label {
+      display: none;
+    }
   }
 }
 

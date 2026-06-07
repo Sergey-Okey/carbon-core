@@ -11,9 +11,12 @@
     "build": "node node_modules/nuxt/bin/nuxt.mjs build",
     "generate": "node node_modules/nuxt/bin/nuxt.mjs generate",
     "typecheck": "vue-tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "release:check": "node scripts/release-check.mjs",
     "check": "npm run typecheck && npm run build",
     "android:sync": "node scripts/sync-android.mjs",
     "android:build": "powershell -ExecutionPolicy Bypass -File scripts/build-android.ps1",
+    "android:bundle": "powershell -ExecutionPolicy Bypass -File scripts/build-android-release.ps1",
     "start": "node .output/server/index.mjs",
     "preview": "node node_modules/nuxt/bin/nuxt.mjs preview"
   },

@@ -152,12 +152,17 @@ function normalizeProfile(
 }
 
 export function setOAuthSession(event: H3Event, profile: OAuthProfile) {
-  const payload = Buffer.from(JSON.stringify(profile)).toString('base64url')
+  const sessionProfile = {
+    ...profile,
+    avatar: profile.avatar.length <= 1024 ? profile.avatar : '',
+  }
+  const payload = Buffer.from(JSON.stringify(sessionProfile)).toString('base64url')
   const signature = sign(payload)
   setCookie(event, sessionCookie, `${payload}.${signature}`, cookieOptions(event, 60 * 60 * 24 * 30))
 }
 
 export function readOAuthSession(event: H3Event): OAuthProfile | null {
+  if (useRuntimeConfig().authSessionSecret.trim().length < 32) return null
   const raw = getCookie(event, sessionCookie)
   if (!raw) return null
   const [payload, signature] = raw.split('.')
@@ -174,7 +179,11 @@ export function clearOAuthSession(event: H3Event) {
 }
 
 function sign(payload: string) {
-  return createHmac('sha256', useRuntimeConfig().authSessionSecret).update(payload).digest('base64url')
+  const secret = useRuntimeConfig().authSessionSecret.trim()
+  if (secret.length < 32) {
+    throw createError({ statusCode: 503, statusMessage: 'Session secret is not configured' })
+  }
+  return createHmac('sha256', secret).update(payload).digest('base64url')
 }
 
 function safeEqual(left: string, right: string) {

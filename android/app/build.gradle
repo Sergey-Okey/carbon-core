@@ -16,8 +16,19 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (project.hasProperty('COF_KEYSTORE_PATH')) {
+                storeFile file(project.property('COF_KEYSTORE_PATH'))
+                storePassword project.property('COF_KEYSTORE_PASSWORD')
+                keyAlias project.property('COF_KEY_ALIAS')
+                keyPassword project.property('COF_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
