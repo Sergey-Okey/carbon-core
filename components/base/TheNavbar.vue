@@ -21,9 +21,6 @@
         <span class="icon-shell">
           <component :is="item.icon" :size="isMobile ? 20 : 18" />
         </span>
-        <span v-if="isMobile && uiStore.activeNav === item.id" class="mobile-label">
-          {{ item.label }}
-        </span>
       </button>
     </div>
   </nav>
@@ -178,20 +175,7 @@ async function handleNavClick(section: NavSection) {
     min-width: 44px;
     height: 44px;
 
-    &.active {
-      width: auto;
-      padding-inline: 9px 12px;
-    }
   }
-}
-
-.mobile-label {
-  max-width: 72px;
-  overflow: hidden;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 @media (horizontal-viewport-segments: 2) and (max-width: 767px) {
