@@ -25,10 +25,14 @@ async function ensureUsersTable(sql: NonNullable<ReturnType<typeof getDatabase>>
       avatar TEXT NOT NULL DEFAULT '',
       provider TEXT NOT NULL,
       provider_id TEXT,
+      terms_accepted_at TIMESTAMPTZ,
+      terms_version TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `
+  await sql`ALTER TABLE cof_users ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ`
+  await sql`ALTER TABLE cof_users ADD COLUMN IF NOT EXISTS terms_version TEXT`
   await sql`
     CREATE UNIQUE INDEX IF NOT EXISTS cof_users_provider_identity
     ON cof_users(provider, provider_id)
@@ -36,7 +40,7 @@ async function ensureUsersTable(sql: NonNullable<ReturnType<typeof getDatabase>>
   `
 }
 
-export async function registerAccount(email: string, password: string, name: string) {
+export async function registerAccount(email: string, password: string, name: string, termsVersion: string) {
   const sql = getDatabase()
   if (!sql) throw createError({ statusCode: 503, statusMessage: 'Account database is not configured' })
   await ensureUsersTable(sql)
@@ -47,8 +51,8 @@ export async function registerAccount(email: string, password: string, name: str
 
   const id = `local:${randomBytes(16).toString('hex')}`
   const rows = await sql`
-    INSERT INTO cof_users (id, email, password_hash, name, provider)
-    VALUES (${id}, ${normalizedEmail}, ${hashPassword(password)}, ${name.trim()}, 'local')
+    INSERT INTO cof_users (id, email, password_hash, name, provider, terms_accepted_at, terms_version)
+    VALUES (${id}, ${normalizedEmail}, ${hashPassword(password)}, ${name.trim()}, 'local', NOW(), ${termsVersion})
     RETURNING id, email, name, avatar, provider, created_at
   `
   return mapAccount(rows[0])

@@ -9,6 +9,16 @@ test('public trust pages remain accessible without authentication', async () => 
   for (const route of ['/privacy', '/terms', '/support']) assert.match(middleware, new RegExp(route))
 })
 
+test('registration requires explicit legal consent', async () => {
+  const authPanel = await read('components/auth/AuthPanel.vue')
+  const registerApi = await read('server/api/auth/register.post.ts')
+  const privacy = await read('pages/privacy.vue')
+  assert.match(authPanel, /form\.acceptedTerms/)
+  assert.match(registerApi, /acceptedTerms === true/)
+  assert.match(privacy, /Отзыв согласия/)
+  assert.match(privacy, /Удаление данных/)
+})
+
 test('onboarding does not use CSS gradients', async () => {
   const onboarding = await read('pages/onboarding.vue')
   assert.doesNotMatch(onboarding, /(?:linear|radial|conic)-gradient\(/)

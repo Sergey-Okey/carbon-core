@@ -11,6 +11,8 @@ export interface User {
   bio: string
   avatar: string
   createdAt: string
+  consentAt?: string
+  termsVersion?: string
   provider?: 'local' | 'google' | 'yandex'
 }
 export type AuthMode = 'cloud' | 'local'
@@ -162,15 +164,20 @@ export const useAuthStore = defineStore(
       email: string,
       password: string,
       name: string,
-      mode: AuthMode = 'cloud'
+      mode: AuthMode = 'cloud',
+      acceptedTerms = false
     ): Promise<{ success: boolean; error?: string }> {
       isLoading.value = true
 
       try {
+        if (!acceptedTerms) {
+          return { success: false, error: 'Необходимо принять условия использования' }
+        }
+
         if (mode === 'cloud') try {
           const response = (await $fetch(getBackendUrl('/api/auth/register'), {
               method: 'POST',
-              body: { email, password, name },
+              body: { email, password, name, acceptedTerms, termsVersion: '2026-06-07' },
               ...getBackendFetchOptions(),
             })) as { user: Omit<User, 'password' | 'bio'> }
           applyServerUser(response.user)
@@ -205,6 +212,8 @@ export const useAuthStore = defineStore(
           bio: '',
           avatar: '',
           createdAt: new Date().toISOString(),
+          consentAt: new Date().toISOString(),
+          termsVersion: '2026-06-07',
         }
 
         users.push(newUser)

@@ -80,12 +80,21 @@
               />
             </AppFormField>
 
+            <div v-if="isRegister" class="consent-control">
+              <input id="registration-consent" v-model="form.acceptedTerms" type="checkbox" />
+              <span>
+                <label for="registration-consent">Я принимаю</label>
+                <NuxtLink to="/terms">условия использования</NuxtLink>
+                и <NuxtLink to="/privacy">политику конфиденциальности</NuxtLink>
+              </span>
+            </div>
+
             <p v-if="error" class="error-text">{{ error }}</p>
 
             <AppButton
               type="submit"
               variant="primary"
-              :disabled="authStore.isLoading"
+              :disabled="authStore.isLoading || (isRegister && !form.acceptedTerms)"
             >
               <span v-if="authStore.isLoading" class="spinner"></span>
               <span>{{ submitLabel }}</span>
@@ -169,6 +178,7 @@ const form = reactive({
   email: '',
   password: '',
   confirmPassword: '',
+  acceptedTerms: false,
 })
 
 const error = ref('')
@@ -221,8 +231,13 @@ async function submit() {
     return
   }
 
+  if (isRegister.value && !form.acceptedTerms) {
+    error.value = 'Подтвердите согласие с условиями и политикой конфиденциальности'
+    return
+  }
+
   const result = isRegister.value
-    ? await authStore.register(form.email, form.password, form.name, authMode.value)
+    ? await authStore.register(form.email, form.password, form.name, authMode.value, form.acceptedTerms)
     : await authStore.login(form.email, form.password, authMode.value)
 
   if (!result.success) {
@@ -239,6 +254,11 @@ async function submit() {
 }
 
 function startOAuth(provider: 'google' | 'yandex') {
+  if (isRegister.value && !form.acceptedTerms) {
+    error.value = 'Подтвердите согласие перед регистрацией через внешний сервис'
+    return
+  }
+
   if (!providerAvailability.value[provider]) {
     addNotification({
       type: 'warning',
@@ -445,6 +465,34 @@ onMounted(async () => {
     &:hover {
       text-decoration: underline;
     }
+  }
+}
+
+.consent-control {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  color: var(--dim);
+  cursor: pointer;
+  font-size: 0.78rem;
+  line-height: 1.45;
+
+  input {
+    width: 18px;
+    height: 18px;
+    margin: 1px 0 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  a {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  label {
+    cursor: pointer;
   }
 }
 
