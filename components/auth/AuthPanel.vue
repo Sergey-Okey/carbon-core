@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-page">
+  <div class="auth-page" :class="{ 'is-register': isRegister }">
     <div class="bg-ambient"></div>
 
     <div class="auth-grid">
@@ -87,7 +87,10 @@
             </AppFormField>
 
             <div v-if="isRegister" class="consent-control">
-              <input id="registration-consent" v-model="form.acceptedTerms" type="checkbox" />
+              <label class="consent-check" for="registration-consent">
+                <input id="registration-consent" v-model="form.acceptedTerms" type="checkbox" />
+                <span aria-hidden="true"></span>
+              </label>
               <span>
                 <label for="registration-consent">Я принимаю</label>
                 <NuxtLink to="/terms">условия использования</NuxtLink>
@@ -477,20 +480,69 @@ onMounted(async () => {
 
 .consent-control {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
-  align-items: start;
-  gap: 10px;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-block-size: 44px;
   color: var(--dim);
   cursor: pointer;
   font-size: 0.78rem;
   line-height: 1.45;
 
-  input {
-    width: 18px;
-    height: 18px;
-    margin: 1px 0 0;
-    accent-color: var(--accent);
+  .consent-check {
+    position: relative;
+    display: grid;
+    place-items: center;
+    inline-size: 44px;
+    block-size: 44px;
     cursor: pointer;
+
+    input {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      opacity: 0;
+    }
+
+    span {
+      position: relative;
+      inline-size: 22px;
+      block-size: 22px;
+      border: var(--ui-border);
+      border-radius: var(--border-radius-sm);
+      background: color-mix(in srgb, var(--surface) 72%, transparent);
+      transition:
+        background var(--transition-standard),
+        border-color var(--transition-standard);
+
+      &::after {
+        position: absolute;
+        inset-block-start: 4px;
+        inset-inline-start: 7px;
+        inline-size: 5px;
+        block-size: 9px;
+        border: solid var(--bg);
+        border-width: 0 2px 2px 0;
+        content: '';
+        opacity: 0;
+        rotate: 45deg;
+        transition: opacity var(--transition-standard);
+      }
+    }
+
+    input:checked + span {
+      border-color: var(--accent);
+      background: var(--accent);
+
+      &::after {
+        opacity: 1;
+      }
+    }
+
+    input:focus-visible + span {
+      outline: 2px solid color-mix(in srgb, var(--accent) 32%, transparent);
+      outline-offset: 3px;
+    }
   }
 
   a {
@@ -511,6 +563,79 @@ onMounted(async () => {
   margin-top: 14px;
   color: var(--dim);
   font-size: 0.7rem;
+}
+
+.auth-page.is-register {
+  padding-block: clamp(12px, 2vw, 24px);
+
+  .auth-grid {
+    gap: clamp(22px, 4vw, 44px);
+  }
+
+  .auth-card {
+    padding: 24px 28px;
+
+    .card-header {
+      margin-bottom: 12px;
+
+      h2 {
+        margin-top: 8px;
+      }
+
+      p {
+        margin-top: 5px;
+        line-height: 1.35;
+      }
+    }
+  }
+
+  .local-notice {
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 7px 10px;
+    font-size: 0.72rem;
+    line-height: 1.3;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .auth-form {
+    gap: 9px;
+  }
+
+  .auth-form :deep(.app-form-field) {
+    gap: 5px;
+  }
+
+  .consent-control {
+    gap: 6px;
+    font-size: 0.72rem;
+    line-height: 1.3;
+  }
+
+  .card-footer {
+    margin-top: 10px;
+    font-size: 0.78rem;
+  }
+
+  .legal-links {
+    margin-top: 8px;
+  }
+
+  @media (max-width: 480px) {
+    padding-block: 8px;
+
+    .auth-card {
+      padding: 18px;
+    }
+
+    .local-notice {
+      margin-bottom: 10px;
+    }
+  }
 }
 
 .oauth-divider {
