@@ -16,9 +16,11 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
 <style scoped lang="scss">
 .auth-layout {
   position: relative;
-  min-block-size: 100vh;
-  min-block-size: 100dvh;
-  overflow: hidden;
+  block-size: 100vh;
+  block-size: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
   background: transparent;
 }
 

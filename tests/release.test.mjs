@@ -22,6 +22,8 @@ test('registration requires explicit legal consent', async () => {
   assert.match(registerApi, /acceptedTerms === true/)
   assert.match(privacy, /Отзыв согласия/)
   assert.match(privacy, /Удаление данных/)
+  assert.match(authPanel, /register\(form\.email, form\.password, form\.name, 'local'/)
+  assert.doesNotMatch(authPanel, /class="auth-mode"/)
 })
 
 test('onboarding does not use CSS gradients', async () => {

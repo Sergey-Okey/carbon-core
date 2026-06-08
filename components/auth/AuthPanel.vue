@@ -26,7 +26,7 @@
             </div>
             <div class="feature-card">
               <UserCircle :size="20" />
-              <span>Профиль всегда с вами</span>
+              <span>Локальный профиль</span>
             </div>
           </div>
         </div>
@@ -42,6 +42,12 @@
           <div class="card-header">
             <div class="badge">{{ badge }}</div>
             <h2>{{ heading }}</h2>
+            <p>{{ formDescription }}</p>
+          </div>
+
+          <div class="local-notice">
+            <Shield :size="18" />
+            <span>Аккаунт и данные сохраняются только на этом устройстве.</span>
           </div>
 
           <form class="auth-form" @submit.prevent="submit">
@@ -101,43 +107,21 @@
             </AppButton>
           </form>
 
-          <div class="oauth-divider"><span>или</span></div>
-          <div class="oauth-actions">
-            <button
-              v-for="provider in oauthProviders"
-              :key="provider.key"
-              type="button"
-              class="oauth-button"
-              :class="{ 'is-unavailable': !provider.enabled }"
-              :title="provider.enabled ? provider.label : `${provider.label}: не настроено`"
-              @click="startOAuth(provider.key)"
-            >
-              <span class="oauth-mark">{{ provider.mark }}</span>
-              <span>{{ provider.label }}</span>
-            </button>
+          <div v-if="oauthProviders.length" class="oauth-section">
+            <div class="oauth-divider"><span>или войдите через</span></div>
+            <div class="oauth-actions">
+              <button
+                v-for="provider in oauthProviders"
+                :key="provider.key"
+                type="button"
+                class="oauth-button"
+                @click="startOAuth(provider.key)"
+              >
+                <span class="oauth-mark">{{ provider.mark }}</span>
+                <span>{{ provider.label }}</span>
+              </button>
+            </div>
           </div>
-
-          <div v-if="!isRegister" class="auth-mode" role="group" aria-label="Режим хранения">
-            <button
-              type="button"
-              :class="{ active: authMode === 'cloud' }"
-              @click="authMode = 'cloud'"
-            >
-              Облако
-            </button>
-            <button
-              type="button"
-              :class="{ active: authMode === 'local' }"
-              @click="authMode = 'local'"
-            >
-              Только устройство
-            </button>
-          </div>
-          <p v-if="!isRegister" class="mode-note">
-            {{ authMode === 'cloud'
-              ? 'Данные синхронизируются между устройствами.'
-              : 'Данные останутся только на этом устройстве.' }}
-          </p>
 
           <div class="card-footer">
             <span>{{ footerText }}</span>
@@ -182,26 +166,34 @@ const form = reactive({
 })
 
 const error = ref('')
-const authMode = ref<'cloud' | 'local'>('cloud')
 const providerAvailability = ref({ google: false, yandex: false })
-const oauthProviders = computed(() => [
-  { key: 'google' as const, label: 'Google', mark: 'G', enabled: providerAvailability.value.google },
-  { key: 'yandex' as const, label: 'Яндекс', mark: 'Я', enabled: providerAvailability.value.yandex },
-])
+const oauthProviders = computed(() =>
+  isRegister.value
+    ? []
+    : [
+    { key: 'google' as const, label: 'Google', mark: 'G', enabled: providerAvailability.value.google },
+    { key: 'yandex' as const, label: 'Яндекс', mark: 'Я', enabled: providerAvailability.value.yandex },
+      ].filter((provider) => provider.enabled)
+)
 
 const isRegister = computed(() => props.mode === 'register')
 const title = computed(() =>
   isRegister.value
-    ? 'Ваше пространство начинается здесь'
-    : 'Продолжите с того места, где остановились'
+    ? 'Начните с трёх важных задач'
+    : 'Вернитесь к своему плану'
 )
 const description = computed(() =>
   isRegister.value
-    ? 'Пара шагов — и вы получите доступ к системе осознанного управления задачами.'
-    : 'Войдите, чтобы восстановить свои задачи, привычки и прогресс.'
+    ? 'Создайте локальное пространство без облака и лишней настройки.'
+    : 'Войдите в локальный профиль на этом устройстве.'
 )
 const badge = computed(() => (isRegister.value ? 'Регистрация' : 'Вход'))
 const heading = computed(() => (isRegister.value ? 'Создать аккаунт' : 'Войти'))
+const formDescription = computed(() =>
+  isRegister.value
+    ? 'Понадобятся имя, email и пароль.'
+    : 'Используйте данные локального аккаунта.'
+)
 const submitLabel = computed(() =>
   isRegister.value ? 'Создать аккаунт' : 'Войти'
 )
@@ -237,8 +229,8 @@ async function submit() {
   }
 
   const result = isRegister.value
-    ? await authStore.register(form.email, form.password, form.name, 'cloud', form.acceptedTerms)
-    : await authStore.login(form.email, form.password, authMode.value)
+    ? await authStore.register(form.email, form.password, form.name, 'local', form.acceptedTerms)
+    : await authStore.login(form.email, form.password, 'local')
 
   if (!result.success) {
     error.value = result.error || 'Не удалось выполнить действие'
@@ -254,23 +246,12 @@ async function submit() {
 }
 
 function startOAuth(provider: 'google' | 'yandex') {
-  if (isRegister.value && !form.acceptedTerms) {
-    error.value = 'Подтвердите согласие перед регистрацией через внешний сервис'
-    return
-  }
-
-  if (!providerAvailability.value[provider]) {
-    addNotification({
-      type: 'warning',
-      message: 'Вход через провайдера пока не настроен на сервере',
-    })
-    return
-  }
-
   window.location.assign(getBackendUrl(`/api/auth/${provider}`))
 }
 
 onMounted(async () => {
+  if (isRegister.value) return
+
   try {
     providerAvailability.value = await $fetch(getBackendUrl('/api/auth/providers'), {
       ...getBackendFetchOptions(),
@@ -290,9 +271,9 @@ onMounted(async () => {
   justify-content: center;
   background: transparent;
   font-family: 'Inter', sans-serif;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
-  padding: 32px 16px;
+  padding: clamp(18px, 4vw, 40px) 16px;
 }
 
 .bg-ambient {
@@ -307,8 +288,8 @@ onMounted(async () => {
 .auth-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 48px;
-  max-width: 1100px;
+  gap: clamp(28px, 5vw, 56px);
+  max-width: 1040px;
   width: 100%;
   align-items: center;
   position: relative;
@@ -396,13 +377,20 @@ onMounted(async () => {
   }
 
   .card-header {
-    margin-bottom: 24px;
+    margin-bottom: 18px;
 
     h2 {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 1.5rem;
       color: var(--text);
       margin: 12px 0 0;
+    }
+
+    p {
+      margin-top: 8px;
+      color: var(--dim);
+      font-size: 0.82rem;
+      line-height: 1.45;
     }
   }
 
@@ -468,6 +456,25 @@ onMounted(async () => {
   }
 }
 
+.local-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 10px 12px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-sm);
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  color: var(--dim);
+  font-size: 0.76rem;
+  line-height: 1.4;
+
+  svg {
+    flex: 0 0 auto;
+    color: var(--text);
+  }
+}
+
 .consent-control {
   display: grid;
   grid-template-columns: 20px minmax(0, 1fr);
@@ -504,37 +511,6 @@ onMounted(async () => {
   margin-top: 14px;
   color: var(--dim);
   font-size: 0.7rem;
-}
-
-.auth-mode {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
-  margin-bottom: 8px;
-  padding: 4px;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-md);
-  background: color-mix(in srgb, var(--surface) 72%, transparent);
-
-  button {
-    min-height: 40px;
-    border-radius: var(--border-radius-sm);
-    color: var(--dim);
-    font-size: 0.82rem;
-    font-weight: 600;
-  }
-
-  button.active {
-    background: var(--accent);
-    color: var(--bg);
-  }
-}
-
-.mode-note {
-  margin-bottom: 16px;
-  color: var(--dim);
-  font-size: 0.78rem;
-  line-height: 1.4;
 }
 
 .oauth-divider {
