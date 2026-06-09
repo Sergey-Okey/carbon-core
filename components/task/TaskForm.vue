@@ -29,7 +29,7 @@
       <AppFormField label="Теги">
         <div class="tags-cloud">
           <template v-for="tag in form.tags" :key="tag.id">
-            <div class="tag-wrapper">
+            <div class="tag-wrapper" :style="{ '--tag-color': tag.color || 'var(--accent)' }">
               <button
                 type="button"
                 class="tag-btn active"
@@ -43,7 +43,8 @@
                 type="button"
                 class="tag-delete"
                 @click.stop="deleteTag(tag.id)"
-                title="Удалить тег"
+                aria-label="Отвязать тег"
+                data-tooltip="Отвязать тег"
               >
                 <X :size="14" />
               </button>
@@ -53,7 +54,8 @@
             type="button"
             class="tag-btn add-tag-btn"
             @click="openAddTagModal"
-            title="Добавить тег"
+            aria-label="Добавить тег"
+            data-tooltip="Добавить тег"
           >
             <Plus :size="16" />
             <span class="tag-name">Добавить</span>
@@ -146,7 +148,6 @@
 <script setup lang="ts">
 import { reactive, watch, ref, computed } from 'vue'
 import { X, Plus } from 'lucide-vue-next'
-import { v4 as uuidv4 } from 'uuid'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useTagsStore } from '~/stores/tags.store'
 import { useNotification } from '~/composables/useNotification'
@@ -162,7 +163,7 @@ import AppSwitch from '~/components/ui/AppSwitch.vue'
 import type { AppSelectOption } from '~/types/ui.types'
 import type { BranchId } from '~/types/branch.types'
 import type { Task, TaskFormData, TaskTag, TaskType } from '~/types/task.types'
-import type { Tag, TagScope } from '~/types/tag.types'
+import type { Tag } from '~/types/tag.types'
 
 const props = defineProps<{
   task?: Task
@@ -203,10 +204,6 @@ const form = reactive({
   tagIds: [] as string[],
   tags: [] as TaskTag[],
 })
-
-const currentScope = computed<TagScope>(() =>
-  form.type === 'HABIT' ? 'habit' : 'task'
-)
 
 const allTags = computed<Tag[]>(() => tagsStore.tags)
 const availableTags = computed<Tag[]>(() =>
@@ -269,7 +266,7 @@ function handleSubmit() {
     ...form,
     title: form.title.trim(),
     description: form.description.trim(),
-    tagIds: [],
+    tagIds: [...form.tagIds],
     tags: form.tags.map((tag, index) => ({ ...tag, order: index })),
     createBranch: !editing.value && createBranch.value,
   })
@@ -295,15 +292,13 @@ function createTag() {
   if (newTagBranchId.value && !branchesStore.branches.some((branch) => branch.id === newTagBranchId.value)) return
 
   const name = newTagName.value.trim()
-  const existingGlobal = tagsStore.tags.find(
-    (tag) => tag.name.toLowerCase() === name.toLowerCase()
-  )
+  const existingGlobal = tagsStore.findTagByName(name, newTagBranchId.value)
   if (existingGlobal) {
     if (!form.tagIds.includes(existingGlobal.id)) {
       selectExistingTag(existingGlobal)
-      addNotification({ type: 'success', message: `Тег «${name}» добавлен к задаче` })
+      addNotification({ type: 'success', message: `Тег «${name}» добавлен` })
     } else {
-      addNotification({ type: 'warning', message: 'Такой тег уже существует' })
+      addNotification({ type: 'warning', message: 'Этот тег уже выбран' })
     }
     closeAddTagModal()
     return
@@ -313,14 +308,13 @@ function createTag() {
     name,
     branchId: newTagBranchId.value,
     color: newTagColor.value,
-    scope: currentScope.value,
     order: tagsStore.tags.length,
   })
 
   form.tags.push({ ...tag, order: form.tags.length })
   form.tagIds.push(tag.id)
 
-  addNotification({ type: 'success', message: `Тег «${name}» добавлен` })
+  addNotification({ type: 'success', message: `Тег «${name}» создан` })
   closeAddTagModal()
 }
 
@@ -341,7 +335,7 @@ function deleteTag(tagId: string) {
   if (index === -1) return
   form.tags.splice(index, 1)
   form.tagIds = form.tagIds.filter((id) => id !== tagId)
-  addNotification({ type: 'success', message: 'Тег удалён' })
+  addNotification({ type: 'success', message: 'Тег отвязан' })
 }
 
 function getTaskTags(task: Task): TaskTag[] {
@@ -350,7 +344,7 @@ function getTaskTags(task: Task): TaskTag[] {
   }
 
   return tagsStore.getTagsByIds(task.tagIds).map((tag, index) => ({
-    id: uuidv4(),
+    id: tag.id,
     name: tag.name,
     branchId: tag.branchId,
     color: tag.color,
@@ -402,9 +396,10 @@ function getTaskTags(task: Task): TaskTag[] {
   gap: 8px;
 
   .tag-wrapper {
-    position: relative;
     display: inline-flex;
     align-items: center;
+    border-radius: var(--border-radius-pill);
+    background: color-mix(in srgb, var(--tag-color, var(--accent)) 10%, transparent);
   }
 
   .tag-btn {
@@ -416,7 +411,7 @@ function getTaskTags(task: Task): TaskTag[] {
     padding: 7px 10px;
     border: none;
     border-radius: var(--border-radius-pill);
-    color: var(--tag-color, var(--accent));
+    color: var(--text);
     background: transparent;
     font-size: 0.85rem;
     font-weight: 500;
@@ -427,12 +422,13 @@ function getTaskTags(task: Task): TaskTag[] {
 
     &:hover {
       background: color-mix(in srgb, var(--tag-color, var(--accent)) 8%, transparent);
-      color: var(--tag-color, var(--accent));
+      color: var(--text);
     }
 
     &.active {
-      background: color-mix(in srgb, var(--tag-color, var(--accent)) 12%, transparent);
-      color: var(--tag-color, var(--accent));
+      padding-right: 4px;
+      background: transparent;
+      color: var(--text);
     }
   }
 
@@ -445,29 +441,24 @@ function getTaskTags(task: Task): TaskTag[] {
   }
 
   .tag-delete {
-    position: absolute;
-    top: -7px;
-    right: -7px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    margin-right: 3px;
+    padding: 0;
     border-radius: var(--border-radius-pill);
-    background: color-mix(in srgb, var(--bg) 50%, transparent);
+    background: transparent;
     border: none;
     color: var(--dim);
     cursor: pointer;
     transition:
-      background 0.1s,
-      color 0.1s,
-      border-color 0.1s;
-    padding: 0;
+      background var(--transition-standard),
+      color var(--transition-standard);
 
     &:hover {
-      background: var(--error);
-      color: var(--surface);
-      border-color: var(--error);
+      background: color-mix(in srgb, var(--error) 10%, transparent);
+      color: var(--error);
     }
   }
 
@@ -510,6 +501,11 @@ function getTaskTags(task: Task): TaskTag[] {
       min-height: 44px;
       padding: 6px 12px;
       font-size: 0.8rem;
+    }
+
+    .tag-delete {
+      width: 44px;
+      height: 44px;
     }
   }
 }

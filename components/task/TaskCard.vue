@@ -444,7 +444,7 @@ async function handleDelete() {
     border: none;
     border-radius: var(--border-radius-pill);
     font-size: 0.7rem;
-    color: var(--tag-color, var(--accent));
+    color: var(--text);
     white-space: nowrap;
     transition:
       background var(--transition-standard),

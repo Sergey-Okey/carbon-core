@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
-import type { Task } from '~/types/task.types'
-import type { Tag, TagScope } from '~/types/tag.types'
+import { ref } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
+import type { Tag, TagScope } from '~/types/tag.types'
+import type { Task, TaskTag } from '~/types/task.types'
 
 type InternalTag = Tag & { isSystem?: boolean }
 
@@ -14,12 +14,48 @@ const TAG_COLORS = [
   'var(--accent)',
 ]
 
+function normalizeTagName(name: string): string {
+  return name.trim().replace(/\s+/g, ' ')
+}
+
+function getTagIdentity(tag: Pick<Tag, 'name' | 'branchId'>): string {
+  return `${tag.branchId || ''}:${normalizeTagName(tag.name).toLocaleLowerCase()}`
+}
+
+function syncEmbeddedTag(task: Task, tag: Tag) {
+  const embedded = task.tags?.find((item) => item.id === tag.id)
+  if (!embedded) return
+
+  embedded.name = tag.name
+  embedded.branchId = tag.branchId
+  embedded.color = tag.color
+}
+
+function replaceTagReference(task: Task, sourceId: string, target: Tag) {
+  if (!task.tagIds.includes(sourceId)) return
+
+  task.tagIds = task.tagIds
+    .map((id) => (id === sourceId ? target.id : id))
+    .filter((id, index, ids) => ids.indexOf(id) === index)
+
+  if (!task.tags?.length) return
+
+  const sourceOrder = task.tags.find((tag) => tag.id === sourceId)?.order ?? task.tags.length
+  task.tags = task.tags.filter((tag) => tag.id !== sourceId && tag.id !== target.id)
+  task.tags.push({
+    id: target.id,
+    name: target.name,
+    branchId: target.branchId,
+    color: target.color,
+    order: sourceOrder,
+  })
+  task.tags.sort((a, b) => a.order - b.order)
+}
+
 export const useTagsStore = defineStore(
   'tags',
   () => {
     const tags = ref<InternalTag[]>([])
-
-    normalizeTags()
 
     async function initTagsAfterHydration() {
       const store = useTagsStore()
@@ -29,104 +65,144 @@ export const useTagsStore = defineStore(
       normalizeTags()
     }
 
-    function normalizeTags(tasks?: Task[]) {
-      const userTags = tags.value.filter((tag) => !tag.isSystem)
-      if (userTags.length !== tags.value.length) {
-        tags.value = userTags
-      }
+    function normalizeTags(tasks: Task[] = []) {
+      const canonicalByIdentity = new Map<string, InternalTag>()
+      const replacements = new Map<string, InternalTag>()
+      const normalized: InternalTag[] = []
 
-      if (tasks) {
-        splitLegacyTagsByScope(tasks)
-      }
-
-      tags.value.forEach((tag, index) => {
-        if (!tag.color) tag.color = TAG_COLORS[index % TAG_COLORS.length]
-      })
-    }
-
-    function splitLegacyTagsByScope(tasks: Task[]) {
-      const nextTags: InternalTag[] = []
-      const replacements = new Map<string, Partial<Record<TagScope, string>>>()
-
-      tags.value.forEach((tag) => {
-        if (tag.scope) {
-          nextTags.push(tag)
-          return
-        }
-
-        const scopes = getScopesUsingTag(tag.id, tasks)
-        const targetScopes: TagScope[] = scopes.length ? scopes : ['task']
-
-        targetScopes.forEach((scope, index) => {
-          const scopedTag: InternalTag = {
+      tags.value
+        .filter((tag) => !tag.isSystem)
+        .forEach((tag) => {
+          const cleanTag: InternalTag = {
             ...tag,
-            id: index === 0 ? tag.id : uuidv4(),
-            scope,
+            name: normalizeTagName(tag.name),
+            scope: undefined,
             isSystem: false,
           }
-          nextTags.push(scopedTag)
-          replacements.set(tag.id, {
-            ...replacements.get(tag.id),
-            [scope]: scopedTag.id,
+          const identity = getTagIdentity(cleanTag)
+          const canonical = canonicalByIdentity.get(identity)
+
+          if (canonical) {
+            replacements.set(cleanTag.id, canonical)
+            return
+          }
+
+          cleanTag.color ||= TAG_COLORS[normalized.length % TAG_COLORS.length]
+          cleanTag.order = normalized.length
+          canonicalByIdentity.set(identity, cleanTag)
+          normalized.push(cleanTag)
+        })
+
+      tags.value = normalized
+      if (!tasks.length) return
+
+      replacements.forEach((target, sourceId) => {
+        tasks.forEach((task) => replaceTagReference(task, sourceId, target))
+      })
+
+      tasks.forEach((task) => {
+        task.tagIds = task.tagIds.filter((id, index, ids) => {
+          return tags.value.some((tag) => tag.id === id) && ids.indexOf(id) === index
+        })
+        const embeddedTags: TaskTag[] = []
+        task.tagIds.forEach((id, order) => {
+          const tag = getTagById(id)
+          if (!tag) return
+          embeddedTags.push({
+            id: tag.id,
+            name: tag.name,
+            branchId: tag.branchId,
+            color: tag.color,
+            order,
           })
         })
+        task.tags = embeddedTags
       })
-
-      if (replacements.size === 0) return
-
-      tags.value = nextTags
-      tasks.forEach((task) => {
-        const scope = getScopeForTask(task)
-        task.tagIds = task.tagIds
-          .map((tagId) => replacements.get(tagId)?.[scope] || tagId)
-          .filter((tagId, index, ids) => ids.indexOf(tagId) === index)
-      })
-    }
-
-    function getScopesUsingTag(tagId: string, tasks: Task[]): TagScope[] {
-      const scopes = new Set<TagScope>()
-      tasks.forEach((task) => {
-        if (task.tagIds.includes(tagId)) scopes.add(getScopeForTask(task))
-      })
-      return [...scopes]
-    }
-
-    function getScopeForTask(task: Pick<Task, 'type'>): TagScope {
-      return task.type === 'HABIT' ? 'habit' : 'task'
     }
 
     function getTagById(id: string): InternalTag | undefined {
-      return tags.value.find((t) => t.id === id)
+      return tags.value.find((tag) => tag.id === id)
     }
 
     function getTagsByIds(ids: string[]): InternalTag[] {
-      return tags.value.filter((t) => ids.includes(t.id))
+      const order = new Map(ids.map((id, index) => [id, index]))
+      return tags.value
+        .filter((tag) => order.has(tag.id))
+        .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
     }
 
-    function getTagsByScope(scope: TagScope): InternalTag[] {
-      return tags.value.filter((tag) => tag.scope === scope)
+    function getTagsByScope(_scope: TagScope): InternalTag[] {
+      return [...tags.value]
+    }
+
+    function findTagByName(name: string, branchId: Tag['branchId'] = '') {
+      const identity = getTagIdentity({ name, branchId })
+      return tags.value.find((tag) => getTagIdentity(tag) === identity)
     }
 
     function addTag(tagData: Omit<Tag, 'id'>) {
-      const newTag: InternalTag = { ...tagData, id: uuidv4(), isSystem: false }
+      const existing = findTagByName(tagData.name, tagData.branchId)
+      if (existing) return existing
+
+      const newTag: InternalTag = {
+        ...tagData,
+        id: uuidv4(),
+        name: normalizeTagName(tagData.name),
+        scope: undefined,
+        order: tags.value.length,
+        color: tagData.color || TAG_COLORS[tags.value.length % TAG_COLORS.length],
+        isSystem: false,
+      }
       tags.value.push(newTag)
       return newTag
     }
 
-    function deleteTag(id: string): boolean {
-      const index = tags.value.findIndex((t) => t.id === id)
+    function updateTag(id: string, updates: Partial<Omit<Tag, 'id'>>, tasks: Task[] = []) {
+      const tag = getTagById(id)
+      if (!tag) return null
+
+      const nextName = updates.name === undefined ? tag.name : normalizeTagName(updates.name)
+      const nextBranchId = updates.branchId === undefined ? tag.branchId : updates.branchId
+      const duplicate = findTagByName(nextName, nextBranchId)
+
+      if (duplicate && duplicate.id !== id) {
+        mergeTags(id, duplicate.id, tasks)
+        return duplicate
+      }
+
+      Object.assign(tag, updates, {
+        name: nextName,
+        branchId: nextBranchId,
+        scope: undefined,
+      })
+      tasks.forEach((task) => syncEmbeddedTag(task, tag))
+      return tag
+    }
+
+    function deleteTag(id: string, tasks: Task[] = []): boolean {
+      const index = tags.value.findIndex((tag) => tag.id === id)
       if (index === -1) return false
+
       tags.value.splice(index, 1)
+      tags.value.forEach((tag, order) => {
+        tag.order = order
+      })
+      tasks.forEach((task) => {
+        task.tagIds = task.tagIds.filter((tagId) => tagId !== id)
+        task.tags = task.tags?.filter((tag) => tag.id !== id)
+      })
       return true
     }
 
-    watch(
-      tags,
-      () => {
-        normalizeTags()
-      },
-      { deep: true }
-    )
+    function mergeTags(sourceId: string, targetId: string, tasks: Task[] = []): boolean {
+      if (sourceId === targetId) return false
+      const source = getTagById(sourceId)
+      const target = getTagById(targetId)
+      if (!source || !target) return false
+
+      tasks.forEach((task) => replaceTagReference(task, sourceId, target))
+      return deleteTag(sourceId)
+    }
 
     return {
       tags,
@@ -135,8 +211,11 @@ export const useTagsStore = defineStore(
       getTagById,
       getTagsByIds,
       getTagsByScope,
+      findTagByName,
       addTag,
+      updateTag,
       deleteTag,
+      mergeTags,
     }
   },
   {
