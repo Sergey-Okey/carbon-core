@@ -784,40 +784,52 @@ onUnmounted(() => {
   width: min(58vw, 660px);
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
+  filter: drop-shadow(0 24px 54px color-mix(in srgb, var(--accent) 8%, transparent));
 }
 
 .sphere-core {
   position: absolute;
   inset: 35%;
-  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
   border-radius: 50%;
   background: color-mix(in srgb, var(--surface) 42%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--accent) 7%, transparent);
+  outline-offset: 12px;
   box-shadow:
     inset 12px 14px 22px color-mix(in srgb, var(--accent) 8%, transparent),
     inset -18px -22px 34px color-mix(in srgb, var(--bg) 42%, transparent),
-    0 0 48px color-mix(in srgb, var(--accent) 8%, transparent);
+    0 0 48px color-mix(in srgb, var(--accent) 8%, transparent),
+    0 0 0 24px color-mix(in srgb, var(--surface) 4%, transparent);
 }
 
 .marker-orbit {
   position: absolute;
-  border: 1px solid color-mix(in srgb, var(--accent) 9%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 13%, transparent);
   border-radius: 50%;
   will-change: transform;
+  transform-origin: center;
+  box-shadow:
+    inset 0 0 24px color-mix(in srgb, var(--accent) 3%, transparent),
+    0 0 18px color-mix(in srgb, var(--accent) 3%, transparent);
 }
 
 .marker-orbit--outer {
-  inset: 2%;
-  animation: orbit-spin-outer 38s linear infinite;
+  inset: 8% -8% 20%;
+  border-style: dashed;
+  animation: orbit-spin-outer 42s linear infinite;
 }
 
 .marker-orbit--middle {
-  inset: 18%;
-  animation: orbit-spin-middle 29s linear infinite;
+  inset: 17% 4% 12%;
+  border-color: color-mix(in srgb, var(--accent) 18%, transparent);
+  animation: orbit-spin-middle 31s linear infinite;
 }
 
 .marker-orbit--inner {
-  inset: 29%;
-  animation: orbit-spin-inner 22s linear infinite;
+  inset: 27% 17% 25%;
+  border-style: dotted;
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+  animation: orbit-spin-inner 24s linear infinite;
 }
 
 .board-marker {
@@ -826,7 +838,9 @@ onUnmounted(() => {
   height: 10px;
   border: none;
   background: var(--accent);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 46%, transparent);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--accent) 7%, transparent),
+    0 0 18px color-mix(in srgb, var(--accent) 52%, transparent);
   transition:
     top 1.8s ease-in-out,
     left 1.8s ease-in-out,
@@ -892,28 +906,28 @@ onUnmounted(() => {
 
 @keyframes orbit-spin-outer {
   from {
-    transform: rotate(0deg);
+    transform: rotate(-14deg);
   }
   to {
-    transform: rotate(360deg);
+    transform: rotate(346deg);
   }
 }
 
 @keyframes orbit-spin-middle {
   from {
-    transform: rotate(0deg);
+    transform: rotate(34deg);
   }
   to {
-    transform: rotate(-360deg);
+    transform: rotate(-326deg);
   }
 }
 
 @keyframes orbit-spin-inner {
   from {
-    transform: rotate(0deg);
+    transform: rotate(-52deg);
   }
   to {
-    transform: rotate(360deg);
+    transform: rotate(308deg);
   }
 }
 
