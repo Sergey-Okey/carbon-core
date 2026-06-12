@@ -552,7 +552,7 @@ async function submit() {
 
   .auth-grid {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
     height: calc(100dvh - 32px);
     overflow-x: auto;
@@ -612,11 +612,6 @@ async function submit() {
   .form-header,
   .subscription-header {
     margin-bottom: 20px;
-    text-align: center;
-  }
-
-  .auth-form-panel > * {
-    margin-inline: auto;
   }
 
   .subscription-header,
@@ -659,25 +654,9 @@ async function submit() {
     font-size: clamp(1.8rem, 8vw, 2.4rem);
   }
 
-  .intro-content {
-    justify-items: center;
-    max-width: none;
-    text-align: center;
-
-    p {
-      max-width: 36ch;
-      font-size: 0.84rem;
-      line-height: 1.5;
-    }
-  }
-
-  .back-action {
-    align-self: center;
-    margin-left: 0;
-  }
-
-  .legal-links {
-    justify-content: center;
+  .intro-content p {
+    font-size: 0.84rem;
+    line-height: 1.5;
   }
 
   .form-header h2,
