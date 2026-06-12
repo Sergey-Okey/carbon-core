@@ -219,6 +219,7 @@ async function submit() {
 .auth-page {
   --auth-gutter: clamp(14px, 2vw, 24px);
   --auth-gap: clamp(16px, 2.5vw, 32px);
+  height: 100dvh;
   min-height: 100dvh;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -231,6 +232,8 @@ async function submit() {
 }
 
 .auth-intro {
+  height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -284,15 +287,23 @@ async function submit() {
 }
 
 .auth-card {
-  align-self: center;
+  align-self: stretch;
   justify-self: stretch;
   width: 100%;
-  max-height: calc(100dvh - (var(--auth-gutter) * 2));
+  height: 100%;
+  min-height: 0;
   padding: clamp(22px, 3vw, 42px);
   border: var(--ui-border);
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: none;
   background: color-mix(in srgb, var(--surface) 76%, transparent);
   box-sizing: border-box;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .auth-card > :deep(*) {
@@ -318,6 +329,7 @@ async function submit() {
 
 @media (max-width: 860px) {
   .auth-page {
+    height: auto;
     grid-template-columns: 1fr;
     align-content: start;
     gap: var(--auth-gutter);
@@ -325,6 +337,7 @@ async function submit() {
   }
 
   .auth-intro {
+    height: auto;
     min-height: 180px;
     padding: clamp(18px, 5vw, 24px);
   }
@@ -341,8 +354,9 @@ async function submit() {
   }
 
   .auth-card {
+    height: auto;
     align-self: start;
-    max-height: none;
+    display: block;
     overflow: visible;
   }
 }
@@ -544,7 +558,7 @@ async function submit() {
 }
 
 .card-footer {
-  margin-top: 20px;
+  margin-top: auto;
   padding-top: 16px;
   border-top: var(--ui-border);
 }
@@ -562,6 +576,12 @@ async function submit() {
   .auth-intro,
   .auth-card {
     border-radius: var(--border-radius-md);
+  }
+}
+
+@media (max-width: 860px) {
+  .card-footer {
+    margin-top: 20px;
   }
 }
 </style>
