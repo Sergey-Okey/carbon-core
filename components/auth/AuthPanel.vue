@@ -1,6 +1,7 @@
 <template>
   <div class="auth-page">
-    <aside class="auth-intro">
+    <div class="auth-shell">
+      <aside class="auth-intro">
       <button type="button" class="back-button" aria-label="Вернуться назад" @click="goBack">
         <ArrowLeft :size="17" />
         <span>Вернуться</span>
@@ -11,8 +12,8 @@
         <p>{{ introDescription }}</p>
       </div>
       <span class="intro-mark">CORE OF LIFE</span>
-    </aside>
-    <GlassCard class="auth-card">
+      </aside>
+      <GlassCard class="auth-card">
       <template v-if="isRegister && !accessStore.hasSubscription">
         <div class="plan-head">
           <div class="paywall-icon"><LockKeyhole :size="22" /></div>
@@ -124,7 +125,8 @@
         <NuxtLink to="/terms">Условия</NuxtLink>
         <NuxtLink to="/support">Поддержка</NuxtLink>
       </div>
-    </GlassCard>
+      </GlassCard>
+    </div>
   </div>
 </template>
 
@@ -217,61 +219,66 @@ async function submit() {
 
 <style scoped lang="scss">
 .auth-page {
-  --auth-gutter: clamp(14px, 2vw, 24px);
-  --auth-gap: clamp(16px, 2.5vw, 32px);
-  height: 100dvh;
+  --auth-gutter: clamp(12px, 2.4vw, 32px);
   min-height: 100dvh;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: stretch;
-  gap: var(--auth-gap);
-  overflow: hidden;
   padding: var(--auth-gutter);
   box-sizing: border-box;
+  background: var(--bg);
   font-family: 'Inter', sans-serif;
 }
 
+.auth-shell {
+  --auth-panel-padding: clamp(28px, 4vw, 60px);
+  width: min(100%, 1440px);
+  height: calc(100dvh - (var(--auth-gutter) * 2));
+  min-height: 0;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: stretch;
+  overflow: hidden;
+  border: var(--ui-border);
+  border-radius: clamp(20px, 3vw, 34px);
+  background: color-mix(in srgb, var(--surface) 74%, var(--bg));
+}
+
 .auth-intro {
-  height: 100%;
   min-height: 0;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: clamp(22px, 3vw, 42px);
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
-  background: color-mix(in srgb, var(--surface) 44%, transparent);
-  backdrop-filter: blur(22px) saturate(130%);
-  -webkit-backdrop-filter: blur(22px) saturate(130%);
+  padding: var(--auth-panel-padding);
+  border-right: var(--ui-border);
+  background: color-mix(in srgb, var(--surface) 42%, var(--bg));
 }
 
 .intro-copy {
   display: grid;
   align-content: center;
   flex: 1;
-  max-width: 560px;
+  max-width: 500px;
 
   h1 {
-    max-width: 14ch;
-    margin: 12px 0 18px;
+    max-width: 12ch;
+    margin: 14px 0 22px;
     color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(2.5rem, 5vw, 5.4rem);
+    font-size: clamp(2.5rem, 4.4vw, 4.9rem);
     font-weight: 600;
-    line-height: 0.94;
-    letter-spacing: -0.055em;
+    line-height: 0.98;
+    letter-spacing: -0.05em;
     overflow-wrap: normal;
     word-break: normal;
     hyphens: none;
-    text-wrap: balance;
+    text-wrap: pretty;
   }
 
   p {
-    max-width: 48ch;
+    max-width: 43ch;
     margin: 0;
     color: var(--dim);
-    font-size: clamp(0.86rem, 1.2vw, 1rem);
-    line-height: 1.65;
+    font-size: clamp(0.84rem, 1vw, 0.96rem);
+    line-height: 1.7;
     overflow-wrap: normal;
     word-break: normal;
     hyphens: none;
@@ -281,24 +288,26 @@ async function submit() {
 
 .intro-mark {
   color: var(--dim);
-  font-size: 0.68rem;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.64rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.2em;
 }
 
 .auth-card {
-  align-self: stretch;
-  justify-self: stretch;
   width: 100%;
   height: 100%;
   min-height: 0;
-  padding: clamp(22px, 3vw, 42px);
-  border: var(--ui-border);
+  padding: var(--auth-panel-padding);
+  border: none;
+  border-radius: 0;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   scrollbar-width: none;
-  background: color-mix(in srgb, var(--surface) 76%, transparent);
+  background: transparent;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   box-sizing: border-box;
 
   &::-webkit-scrollbar {
@@ -307,7 +316,8 @@ async function submit() {
 }
 
 .auth-card > :deep(*) {
-  max-width: 520px;
+  width: min(100%, 480px);
+  max-width: 480px;
   margin-inline: auto;
 }
 
@@ -315,68 +325,40 @@ async function submit() {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 36px;
-  padding: 0 10px;
+  align-self: flex-start;
+  min-height: 34px;
+  padding: 0;
   border: none;
-  border-radius: var(--border-radius-pill);
   background: transparent;
   color: var(--dim);
   cursor: pointer;
   font: inherit;
   font-size: 0.76rem;
   font-weight: 700;
-}
+  transition: color var(--transition-standard);
 
-@media (max-width: 860px) {
-  .auth-page {
-    height: auto;
-    grid-template-columns: 1fr;
-    align-content: start;
-    gap: var(--auth-gutter);
-    overflow-y: auto;
-  }
-
-  .auth-intro {
-    height: auto;
-    min-height: 180px;
-    padding: clamp(18px, 5vw, 24px);
-  }
-
-  .intro-copy h1 {
-    max-width: 16ch;
-    margin: 8px 0 10px;
-    font-size: clamp(2rem, 9vw, 3.2rem);
-  }
-
-  .intro-copy p,
-  .intro-mark {
-    display: none;
-  }
-
-  .auth-card {
-    height: auto;
-    align-self: start;
-    display: block;
-    overflow: visible;
+  &:hover {
+    color: var(--text);
   }
 }
 
 .card-header {
-  margin-bottom: 22px;
+  margin-block: auto 24px;
 
   h1 {
-    margin: 8px 0 10px;
+    margin: 10px 0 12px;
     color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(1.65rem, 7vw, 2.2rem);
-    line-height: 1.1;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.04;
+    letter-spacing: -0.04em;
   }
 
   p {
     margin: 0;
     color: var(--dim);
-    font-size: 0.84rem;
-    line-height: 1.55;
+    font-size: 0.86rem;
+    line-height: 1.6;
   }
 }
 
@@ -391,70 +373,69 @@ async function submit() {
 
 .paywall-icon {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   flex: 0 0 auto;
   place-items: center;
   border: var(--ui-border);
-  border-radius: 50%;
+  border-radius: var(--border-radius-md);
   color: var(--text);
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
 }
 
 .plan-head {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 16px;
+  margin-block: auto 24px;
 
   h1 {
-    margin: 5px 0 0;
+    margin: 6px 0 0;
     color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(1.45rem, 6vw, 1.9rem);
-    line-height: 1.12;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.04;
+    letter-spacing: -0.04em;
   }
 }
 
-.plan-head {
-  padding-inline: 2px;
-}
-
 .plan-summary {
-  padding: 14px;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-md);
-  background: color-mix(in srgb, var(--surface) 62%, transparent);
+  padding-bottom: 20px;
+  border-bottom: var(--ui-border);
 
   p {
     margin: 0;
     color: var(--dim);
-    font-size: 0.78rem;
-    line-height: 1.45;
+    font-size: 0.86rem;
+    line-height: 1.6;
   }
 }
 
 .benefits {
   display: grid;
-  gap: 10px;
-  margin: 16px 0;
+  gap: 12px;
+  margin: 20px 0 22px;
   padding: 0;
   list-style: none;
 
   li {
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 10px;
     color: var(--dim);
-    font-size: 0.8rem;
+    font-size: 0.84rem;
+
+    svg {
+      color: var(--text);
+    }
   }
 }
 
 .plan-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 
   :deep(.app-button) {
     width: 100%;
@@ -475,7 +456,7 @@ async function submit() {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 44px;
+  min-height: var(--control-height-md);
   margin: 0;
   border-radius: var(--border-radius-md);
   background: var(--accent);
@@ -492,19 +473,22 @@ async function submit() {
 
 .auth-form {
   display: grid;
-  gap: 13px;
+  gap: 15px;
 }
 
 .consent-control {
   display: flex;
-  gap: 9px;
+  gap: 10px;
   align-items: flex-start;
   color: var(--dim);
-  font-size: 0.72rem;
-  line-height: 1.45;
+  font-size: 0.74rem;
+  line-height: 1.5;
 
   input {
-    margin-top: 2px;
+    width: 15px;
+    height: 15px;
+    margin: 1px 0 0;
+    accent-color: var(--accent);
   }
 
   a {
@@ -520,9 +504,11 @@ async function submit() {
 
 .demo-block {
   display: grid;
-  gap: 12px;
-  margin-top: 18px;
-  padding-top: 18px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  margin-top: 22px;
+  padding-top: 20px;
   border-top: var(--ui-border);
 
   div {
@@ -538,6 +524,11 @@ async function submit() {
   span {
     color: var(--dim);
     font-size: 0.7rem;
+    line-height: 1.45;
+  }
+
+  :deep(.app-button) {
+    width: auto;
   }
 }
 
@@ -545,8 +536,8 @@ async function submit() {
 .legal-links {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 6px 10px;
   color: var(--dim);
   font-size: 0.72rem;
 
@@ -559,7 +550,7 @@ async function submit() {
 
 .card-footer {
   margin-top: auto;
-  padding-top: 16px;
+  padding-top: 24px;
   border-top: var(--ui-border);
 }
 
@@ -568,20 +559,71 @@ async function submit() {
   font-size: 0.66rem;
 }
 
-@media (max-width: 420px) {
+@media (max-width: 860px) {
   .auth-page {
     --auth-gutter: 10px;
+    min-height: 100dvh;
+    overflow-y: auto;
   }
 
-  .auth-intro,
-  .auth-card {
+  .auth-shell {
+    --auth-panel-padding: clamp(20px, 6vw, 32px);
+    height: auto;
+    min-height: calc(100dvh - (var(--auth-gutter) * 2));
+    grid-template-columns: 1fr;
     border-radius: var(--border-radius-md);
+  }
+
+  .auth-intro {
+    min-height: 200px;
+    padding: var(--auth-panel-padding);
+    border-right: none;
+    border-bottom: var(--ui-border);
+  }
+
+  .intro-copy {
+    padding-block: 32px 14px;
+
+    h1 {
+      max-width: 16ch;
+      margin: 8px 0 0;
+      font-size: clamp(2rem, 9vw, 3.2rem);
+    }
+
+    p {
+      display: none;
+    }
+  }
+
+  .intro-mark {
+    display: none;
+  }
+
+  .auth-card {
+    height: auto;
+    min-height: 520px;
+    padding: var(--auth-panel-padding);
+    overflow: visible;
+  }
+
+  .card-header,
+  .plan-head {
+    margin-top: 0;
+  }
+
+  .card-footer {
+    margin-top: auto;
   }
 }
 
-@media (max-width: 860px) {
-  .card-footer {
-    margin-top: 20px;
+@media (max-width: 480px) {
+  .plan-actions,
+  .demo-block {
+    grid-template-columns: 1fr;
+  }
+
+  .demo-block :deep(.app-button) {
+    width: 100%;
   }
 }
 </style>
