@@ -218,11 +218,11 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   overflow: visible;
   transition:
     border-color var(--transition-standard),
-    background var(--transition-standard);
+    background-color var(--transition-standard);
   border: var(--ui-border);
-  background: var(--glass-surface);
-  backdrop-filter: var(--glass-strong-filter) !important;
-  -webkit-backdrop-filter: var(--glass-strong-filter) !important;
+  background: var(--board-card-surface) !important;
+  backdrop-filter: var(--board-card-filter) !important;
+  -webkit-backdrop-filter: var(--board-card-filter) !important;
 
   &.selected {
     border-color: var(--text);
@@ -236,6 +236,24 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     display: flex;
     flex-direction: column;
   }
+
+  // Nested backdrop filters do not compose, so the expanded card and details
+  // blur the board as sibling surfaces.
+  &.expanded {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+
+    .node-main {
+      margin: -12px;
+      padding: 12px;
+      border-radius: inherit;
+      background: var(--board-card-surface);
+      backdrop-filter: var(--board-card-filter);
+      -webkit-backdrop-filter: var(--board-card-filter);
+    }
+  }
+
   .node-header {
     display: flex;
     align-items: center;
@@ -374,11 +392,14 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     max-height: 220px;
     padding: 12px;
     overflow-y: auto;
+    border: var(--ui-border);
     border-radius: var(--border-radius-md);
+    background: var(--board-details-surface) !important;
+    box-shadow: 0 16px 42px color-mix(in srgb, var(--bg) 36%, transparent);
+    backdrop-filter: var(--board-details-filter) !important;
+    -webkit-backdrop-filter: var(--board-details-filter) !important;
     font-size: 0.85rem;
     word-wrap: break-word;
-    backdrop-filter: var(--glass-strong-filter) !important;
-    -webkit-backdrop-filter: var(--glass-strong-filter) !important;
 
     &::-webkit-scrollbar {
       width: 4px;
@@ -394,7 +415,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     }
 
     p {
-      margin-bottom: 8px;
+      margin: 0 0 8px;
       color: var(--text);
     }
     .placeholder {

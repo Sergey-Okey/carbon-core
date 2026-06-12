@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { accessAwareStorage } from '~/utils/accessStorage'
 
 export type NavSection = 'board' | 'tasks' | 'shop' | 'analytics' | 'settings'
 
@@ -41,7 +42,7 @@ export const useUIStore = defineStore(
   },
   {
     persist: import.meta.client
-      ? { key: 'carbon-ui', storage: localStorage }
+      ? { key: 'carbon-ui', storage: accessAwareStorage }
       : undefined,
   }
 )

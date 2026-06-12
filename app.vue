@@ -17,6 +17,7 @@ import CustomCursor from '~/components/base/CustomCursor.vue'
 import AppLaunchScreen from '~/components/base/AppLaunchScreen.vue'
 import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 import { useAuthStore } from '~/stores/auth.store'
+import { useAccessStore } from '~/stores/access.store'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useRewardsStore } from '~/stores/rewards.store'
 import { useSettingsStore } from '~/stores/settings.store'
@@ -36,6 +37,7 @@ const rewardsStore = useRewardsStore()
 const tagsStore = useTagsStore()
 const uiStore = useUIStore()
 const authStore = useAuthStore()
+const accessStore = useAccessStore()
 const syncStatus = useSyncStatus()
 const enableVercelAnalytics = useRuntimeConfig().public.enableVercelAnalytics
 const syncEndpoint = getBackendUrl('/api/sync')
@@ -77,7 +79,9 @@ onMounted(async () => {
   window.addEventListener('offline', handleOffline)
   if (!navigator.onLine) syncStatus.setState('offline')
 
-  try {
+  if (accessStore.isDemo) {
+    syncStatus.setState('local')
+  } else try {
     syncStatus.setState('syncing')
     const data = (await $fetch(syncEndpoint, {
       query: { userId: userId.value },
@@ -121,6 +125,10 @@ onMounted(async () => {
 })
 
 const syncToCloud = useDebounceFn(async () => {
+  if (accessStore.isDemo) {
+    syncStatus.setState('local')
+    return
+  }
   if (authStore.authMode === 'local') {
     syncStatus.setState('local')
     return
@@ -180,7 +188,7 @@ function scheduleNextReset() {
 }
 
 function autoBackupOnUnload() {
-  if (!settingsStore.autoBackup) return
+  if (accessStore.isDemo || !settingsStore.autoBackup) return
   saveAutoBackup()
   settingsStore.recordBackup()
 }

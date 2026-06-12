@@ -176,6 +176,8 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
     min-block-size: 0;
     padding-block-end: 0;
     overflow: hidden;
+    width: 100%;
+    height: 100dvh;
 
     @include mobile {
       block-size: auto;

@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import type { Task } from '~/types/task.types'
 import type { Tag, TagScope } from '~/types/tag.types'
 import { v4 as uuidv4 } from 'uuid'
+import { accessAwareStorage } from '~/utils/accessStorage'
 
 type InternalTag = Tag & { isSystem?: boolean }
 
@@ -141,7 +142,7 @@ export const useTagsStore = defineStore(
   },
   {
     persist: import.meta.client
-      ? { key: 'carbon-tags', storage: localStorage }
+      ? { key: 'carbon-tags', storage: accessAwareStorage }
       : undefined,
   }
 )

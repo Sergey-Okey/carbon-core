@@ -6,6 +6,7 @@ import { useUserStore } from './user.store'
 import { useBranchesStore } from './branches.store'
 import { useTagsStore } from './tags.store'
 import { useRewardsStore } from './rewards.store'
+import { accessAwareStorage } from '~/utils/accessStorage'
 
 type NewTaskData = Omit<Task, 'id' | 'createdAt' | 'done'> & {
   id?: string
@@ -98,7 +99,7 @@ export const useTasksStore = defineStore(
         if (tag.branchId) branchesStore.addXPToBranch(tag.branchId, baseXP)
       })
       userStore.addXP(baseXP * tags.length)
-      recordCompletion()
+      if (task.type !== 'PURCHASE') recordCompletion()
 
       if (task.type === 'PURCHASE' && task.purchaseRewardId) {
         rewardsStore.confirmPurchase(task.purchaseRewardId)
@@ -206,7 +207,7 @@ export const useTasksStore = defineStore(
   },
   {
     persist: import.meta.client
-      ? { key: 'carbon-tasks', storage: localStorage }
+      ? { key: 'carbon-tasks', storage: accessAwareStorage }
       : undefined,
   }
 )

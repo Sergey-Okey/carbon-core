@@ -113,7 +113,7 @@
       <article class="metric-cell metric-cell--types">
         <div class="cell-title">
           <span>Структура задач</span>
-          <strong>{{ tasksStore.tasks.length }}</strong>
+          <strong>{{ analyticsTasks.length }}</strong>
         </div>
         <div class="task-types">
           <div v-for="item in taskTypeStats" :key="item.key" class="type-row">
@@ -154,6 +154,34 @@
         </div>
       </article>
 
+      <article class="metric-cell metric-cell--tags">
+        <div class="cell-title">
+          <span>Активность по тегам</span>
+          <strong>{{ tagStats.length }}</strong>
+        </div>
+        <div class="insight-list">
+          <div v-for="tag in tagStats" :key="tag.id">
+            <span><i :style="{ background: tag.color }" />{{ tag.name }}</span>
+            <strong>{{ tag.done }}/{{ tag.total }}</strong>
+          </div>
+          <span v-if="!tagStats.length" class="muted">Добавьте теги к задачам</span>
+        </div>
+      </article>
+
+      <article class="metric-cell metric-cell--habits">
+        <div class="cell-title">
+          <span>Активность привычек</span>
+          <strong>{{ activeHabitsToday }}/{{ habitsCount }}</strong>
+        </div>
+        <div class="insight-list">
+          <div v-for="habit in habitStats" :key="habit.id">
+            <span>{{ habit.title }}</span>
+            <strong :class="{ active: habit.activeToday }">{{ habit.label }}</strong>
+          </div>
+          <span v-if="!habitStats.length" class="muted">Привычек пока нет</span>
+        </div>
+      </article>
+
       <article class="metric-cell metric-cell--focus">
         <div class="cell-title">
           <span>Фокус</span>
@@ -174,11 +202,13 @@ import { computed } from 'vue'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useUserStore } from '~/stores/user.store'
+import { useTagsStore } from '~/stores/tags.store'
 import type { TaskType } from '~/types/task.types'
 
 const tasksStore = useTasksStore()
 const userStore = useUserStore()
 const branchesStore = useBranchesStore()
+const tagsStore = useTagsStore()
 
 const taskTypeLabels: Record<TaskType, string> = {
   HABIT: 'Привычки',
@@ -192,15 +222,17 @@ const taskTypeLabels: Record<TaskType, string> = {
 const todayLabel = computed(() =>
   new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'short', year: 'numeric' })
 )
+const analyticsTasks = computed(() => tasksStore.tasks.filter((task) => task.type !== 'PURCHASE'))
+const analyticsTaskTypes: TaskType[] = ['HABIT', 'TASK_DAY', 'TASK_WEEK', 'TASK_MONTH', 'TASK_YEAR']
 
 const activeTasks = computed(() =>
-  tasksStore.tasks.filter((task) => !task.done && task.type !== 'HABIT').length
+  analyticsTasks.value.filter((task) => !task.done && task.type !== 'HABIT').length
 )
-const completedTasks = computed(() => tasksStore.tasks.filter((task) => task.done).length)
-const habitsCount = computed(() => tasksStore.tasks.filter((task) => task.type === 'HABIT').length)
+const completedTasks = computed(() => analyticsTasks.value.filter((task) => task.done).length)
+const habitsCount = computed(() => analyticsTasks.value.filter((task) => task.type === 'HABIT').length)
 
 const totalCompletionRate = computed(() => {
-  const actionable = tasksStore.tasks.filter((task) => task.type !== 'HABIT')
+  const actionable = analyticsTasks.value.filter((task) => task.type !== 'HABIT')
   if (!actionable.length) return 0
   return Math.round((actionable.filter((task) => task.done).length / actionable.length) * 100)
 })
@@ -231,7 +263,7 @@ const dailyAverage = computed(() => {
 })
 
 const completionEvents = computed(() =>
-  tasksStore.tasks
+  analyticsTasks.value
     .flatMap((task) => {
       const events: number[] = []
       if (task.done && task.completedAt) events.push(task.completedAt)
@@ -299,9 +331,9 @@ const radialTicks = computed(() => {
 })
 
 const taskTypeStats = computed(() => {
-  const total = Math.max(tasksStore.tasks.length, 1)
-  return (Object.keys(taskTypeLabels) as TaskType[]).map((type) => {
-    const count = tasksStore.tasks.filter((task) => task.type === type).length
+  const total = Math.max(analyticsTasks.value.length, 1)
+  return analyticsTaskTypes.map((type) => {
+    const count = analyticsTasks.value.filter((task) => task.type === type).length
     return {
       key: type,
       label: taskTypeLabels[type],
@@ -312,7 +344,7 @@ const taskTypeStats = computed(() => {
 })
 
 const completionShare = computed(() => {
-  const total = Math.max(tasksStore.tasks.length, 1)
+  const total = Math.max(analyticsTasks.value.length, 1)
   return {
     open: Math.max(8, Math.round((activeTasks.value / total) * 100)),
     done: Math.max(8, Math.round((completedTasks.value / total) * 100)),
@@ -350,7 +382,7 @@ const pendingMilestones = computed(() =>
 )
 
 const nextTaskTitle = computed(() => {
-  const task = tasksStore.tasks.find((item) => !item.done && item.type !== 'HABIT')
+  const task = analyticsTasks.value.find((item) => !item.done && item.type !== 'HABIT')
   return task?.title || 'нет активных задач'
 })
 
@@ -359,6 +391,40 @@ const focusLabel = computed(() => {
   if (habitsCount.value > 0) return 'привычки'
   return 'спокойно'
 })
+
+const tagStats = computed(() =>
+  tagsStore.tags
+    .map((tag) => {
+      const tasks = analyticsTasks.value.filter((task) => task.tagIds.includes(tag.id))
+      return {
+        id: tag.id,
+        name: tag.name,
+        color: tag.color || 'var(--accent)',
+        total: tasks.length,
+        done: tasks.filter((task) => task.done || (task.type === 'HABIT' && isToday(task.lastCompletedAt))).length,
+      }
+    })
+    .filter((tag) => tag.total > 0)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 8)
+)
+
+const habitStats = computed(() =>
+  analyticsTasks.value
+    .filter((task) => task.type === 'HABIT')
+    .map((habit) => ({
+      id: habit.id,
+      title: habit.title,
+      activeToday: isToday(habit.lastCompletedAt),
+      label: isToday(habit.lastCompletedAt) ? 'сегодня' : 'ожидает',
+    }))
+    .slice(0, 8)
+)
+const activeHabitsToday = computed(() => habitStats.value.filter((habit) => habit.activeToday).length)
+
+function isToday(timestamp?: number) {
+  return !!timestamp && getLocalDateKey(new Date(timestamp)) === getLocalDateKey(new Date())
+}
 
 function createDateRange(daysCount: number) {
   const today = new Date()
@@ -458,7 +524,8 @@ function getLocalDateKey(date: Date) {
     "progress pulse pulse"
     "speed trajectory trajectory"
     "resources types status"
-    "board board focus";
+    "board board focus"
+    "tags habits focus";
   grid-template-columns: minmax(220px, 0.82fr) minmax(320px, 1.28fr) minmax(240px, 0.92fr);
   gap: 0;
   overflow: hidden;
@@ -472,6 +539,7 @@ function getLocalDateKey(date: Date) {
       "resources trajectory"
       "types status"
       "board board"
+      "tags habits"
       "focus focus";
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -486,6 +554,8 @@ function getLocalDateKey(date: Date) {
       "types"
       "status"
       "board"
+      "tags"
+      "habits"
       "focus";
     grid-template-columns: 1fr;
   }
@@ -510,7 +580,7 @@ function getLocalDateKey(date: Date) {
     border-bottom-width: 0;
   }
 
-  @for $i from 1 through 9 {
+  @for $i from 1 through 11 {
     &:nth-child(#{$i}) {
       animation-delay: #{($i - 1) * 70}ms;
 
@@ -557,6 +627,14 @@ function getLocalDateKey(date: Date) {
 
 .metric-cell--board {
   grid-area: board;
+}
+
+.metric-cell--tags {
+  grid-area: tags;
+}
+
+.metric-cell--habits {
+  grid-area: habits;
 }
 
 .metric-cell--focus {
@@ -682,9 +760,47 @@ function getLocalDateKey(date: Date) {
 }
 
 .resource-lines,
-.focus-list {
+.focus-list,
+.insight-list {
   display: grid;
   gap: 12px;
+}
+
+.insight-list div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: var(--ui-border);
+  color: var(--text);
+  font-size: 0.84rem;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  i {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+  }
+
+  strong {
+    color: var(--dim);
+    white-space: nowrap;
+
+    &.active {
+      color: var(--accent);
+    }
+  }
 }
 
 .resource-lines div {

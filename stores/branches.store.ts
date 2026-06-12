@@ -4,6 +4,7 @@ import type { Edge } from '@vue-flow/core'
 import { v4 as uuidv4 } from 'uuid'
 import type { Branch, BranchId, Milestone } from '~/types/branch.types'
 import { useTasksStore } from './tasks.store'
+import { accessAwareStorage } from '~/utils/accessStorage'
 
 const edgeStyle = { stroke: 'var(--dim)', strokeWidth: 1.15 }
 const edgePathOptions = { borderRadius: 50, offset: 24 }
@@ -256,6 +257,7 @@ export const useBranchesStore = defineStore(
         style: edgeStyle,
       },
     ])
+    const graphRevision = ref(0)
 
     function getBranch(branchId: string): Branch | undefined {
       return branches.value.find((branch) => branch.id === branchId)
@@ -394,9 +396,8 @@ export const useBranchesStore = defineStore(
     }
 
     function collectBranchMilestoneIds(branchId: string): Set<string> {
-      const branch = getBranch(branchId)
-      const ownMilestoneIds = branch?.milestones.map((milestone) => milestone.id) || []
-      return collectRelatedMilestoneIds([branchId, ...ownMilestoneIds])
+      graphRevision.value
+      return collectRelatedMilestoneIds(branchId)
     }
 
     function findBranchByMilestone(milestoneId: string): Branch | undefined {
@@ -408,13 +409,18 @@ export const useBranchesStore = defineStore(
     }
 
     function collectBranchTaskIds(branch: Branch): string[] {
-      const ids = new Set<string>()
       const reachableMilestoneIds = collectBranchMilestoneIds(branch.id)
-      getAllMilestones()
-        .filter((milestone) => reachableMilestoneIds.has(milestone.id))
-        .forEach((milestone) => {
-          milestone.taskIds.forEach((id) => ids.add(id))
-        })
+      const reachableMilestones = getAllMilestones().filter((milestone) =>
+        reachableMilestoneIds.has(milestone.id)
+      )
+      const milestoneTaskIds = new Set(reachableMilestones.flatMap((milestone) => milestone.taskIds))
+      if (!branch.directTaskIds) {
+        branch.directTaskIds = (branch.taskIds || []).filter((id) => !milestoneTaskIds.has(id))
+      }
+      const ids = new Set<string>(branch.directTaskIds)
+      reachableMilestones.forEach((milestone) => {
+        milestone.taskIds.forEach((id) => ids.add(id))
+      })
       return [...ids]
     }
 
@@ -446,6 +452,7 @@ export const useBranchesStore = defineStore(
     }
 
     function normalizeBoard() {
+      graphRevision.value += 1
       branches.value.forEach((branch, index) => {
         branch.order = index
         updateBranchStatus(branch)
@@ -508,6 +515,11 @@ export const useBranchesStore = defineStore(
       let changed = false
 
       branches.value.forEach((branch) => {
+        const nextDirectTaskIds = (branch.directTaskIds || []).filter((id) => id !== taskId)
+        if (nextDirectTaskIds.length !== (branch.directTaskIds || []).length) {
+          branch.directTaskIds = nextDirectTaskIds
+          changed = true
+        }
         branch.milestones.forEach((milestone) => {
           const nextTaskIds = milestone.taskIds.filter((id) => id !== taskId)
           if (nextTaskIds.length !== milestone.taskIds.length) {
@@ -621,9 +633,10 @@ export const useBranchesStore = defineStore(
         displayName,
         icon,
         description,
-        markerColor,
-        taskIds,
-        milestones: [],
+          markerColor,
+          taskIds,
+          directTaskIds: [...taskIds],
+          milestones: [],
         order: branches.value.length,
         position: { x: lastPosition.x, y: lastPosition.y + 180 },
       }
@@ -634,7 +647,9 @@ export const useBranchesStore = defineStore(
     function updateBranch(branchId: string, updates: Partial<Branch>) {
       const branch = branches.value.find((item) => item.id === branchId)
       if (!branch) return
-      Object.assign(branch, updates)
+      const { taskIds, ...branchUpdates } = updates
+      Object.assign(branch, branchUpdates)
+      if (taskIds) branch.directTaskIds = [...taskIds]
       branch.milestones.forEach((milestone) => {
         milestone.icon = branch.icon
       })
@@ -838,9 +853,10 @@ export const useBranchesStore = defineStore(
         displayName: milestone.name,
         icon: 'help-circle',
         description: '',
-        markerColor: defaultMarkerColor,
-        taskIds: [],
-        milestones: [milestone],
+          markerColor: defaultMarkerColor,
+          taskIds: [],
+          directTaskIds: [],
+          milestones: [milestone],
         order: branches.value.length,
         position: {
           x: Math.max(40, milestone.position.x - 280),
@@ -926,6 +942,7 @@ export const useBranchesStore = defineStore(
     return {
       branches,
       edges,
+      graphRevision,
       addXPToBranch,
       addBranch,
       deleteBranch,
@@ -957,7 +974,7 @@ export const useBranchesStore = defineStore(
   },
   {
     persist: import.meta.client
-      ? { key: 'carbon-branches', storage: localStorage }
+      ? { key: 'carbon-branches', storage: accessAwareStorage }
       : undefined,
   }
 )

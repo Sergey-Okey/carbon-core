@@ -696,7 +696,7 @@ function animateTags(time: number) {
 
 function finishOnboarding() {
   onboardingStore.markAsSeen()
-  router.push(authStore.isAuthenticated ? '/' : '/register')
+  router.push(authStore.isAuthenticated ? '/' : '/auth')
 }
 
 function scrollToNextStep() {
@@ -790,10 +790,9 @@ onUnmounted(() => {
   inset: 35%;
   border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 34% 30%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 42%),
-    color-mix(in srgb, var(--surface) 42%, transparent);
+  background: color-mix(in srgb, var(--surface) 42%, transparent);
   box-shadow:
+    inset 12px 14px 22px color-mix(in srgb, var(--accent) 8%, transparent),
     inset -18px -22px 34px color-mix(in srgb, var(--bg) 42%, transparent),
     0 0 48px color-mix(in srgb, var(--accent) 8%, transparent);
 }
@@ -1007,9 +1006,7 @@ onUnmounted(() => {
   inset: 0;
   pointer-events: none;
   z-index: 6;
-  background:
-    radial-gradient(circle at center, transparent 14%, color-mix(in srgb, var(--bg) 44%, transparent) 70%),
-    color-mix(in srgb, var(--bg) 34%, transparent);
+  background: color-mix(in srgb, var(--bg) 34%, transparent);
 }
 
 .fixed-header,

@@ -1,5 +1,5 @@
 <template>
-  <div class="layout">
+  <div class="layout" :class="{ 'is-board': uiStore.activeNav === 'board' }">
     <TheHeader />
     <div class="layout-content">
       <TheNavbar />
@@ -15,6 +15,9 @@
 import TheHeader from '~/components/base/TheHeader.vue'
 import TheNavbar from '~/components/base/TheNavbar.vue'
 import ToastContainer from '~/components/base/ToastContainer.vue'
+import { useUIStore } from '~/stores/ui.store'
+
+const uiStore = useUIStore()
 </script>
 
 <style scoped lang="scss">
@@ -61,6 +64,44 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
     padding-block: 4px 12px;
     padding-inline: 12px;
     gap: 12px;
+  }
+}
+
+.layout.is-board {
+  .layout-content {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    gap: 0;
+  }
+
+  .main {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  :deep(.header) {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: 3000;
+  }
+
+  :deep(.nav-island) {
+    position: fixed;
+    inset-block-start: 50%;
+    inset-inline-start: 12px;
+    z-index: 3000;
+    margin: 0;
+    transform: translateY(-50%);
+  }
+
+  @include mobile {
+    :deep(.nav-island) {
+      inset-block-start: auto;
+      inset-inline-start: 50%;
+      transform: translateX(-50%);
+    }
   }
 }
 

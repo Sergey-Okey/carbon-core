@@ -17,6 +17,7 @@
             ref="paletteRef"
             type="button"
             class="palette-wheel"
+            data-cursor="precision"
             :style="{ '--custom-color': safeDraftColor }"
             aria-label="Выбрать цвет из палитры"
             @pointerdown="pickFromPalette"

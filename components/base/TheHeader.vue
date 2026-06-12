@@ -14,16 +14,15 @@
 
     <div class="actions">
       <button
-        class="sync-status"
+        v-if="accessStore.isDemo"
+        class="demo-access"
         type="button"
-        :class="`is-${syncStatus.state.value}`"
-        :aria-label="syncStatus.label.value"
-        :data-tooltip="syncStatus.label.value"
+        aria-label="Открыть подписку"
+        data-tooltip="Демо: данные не сохраняются"
         data-tooltip-position="bottom"
-        @click="syncStatus.retry"
+        @click="navigateTo('/register')"
       >
-        <span></span>
-        <span class="sync-label">{{ syncStatus.label.value }}</span>
+        Демо
       </button>
       <button
         class="action-btn"
@@ -97,13 +96,13 @@ import { useAuthStore } from '~/stores/auth.store'
 import { useUserStore } from '~/stores/user.store'
 import { useUIStore, type NavSection } from '~/stores/ui.store'
 import { useGuidedTourStore } from '~/stores/guidedTour.store'
-import { useSyncStatus } from '~/composables/useSyncStatus'
+import { useAccessStore } from '~/stores/access.store'
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
 const uiStore = useUIStore()
 const guidedTour = useGuidedTourStore()
-const syncStatus = useSyncStatus()
+const accessStore = useAccessStore()
 const route = useRoute()
 const { addNotification } = useNotification()
 const isProfileModalOpen = ref(false)
@@ -287,10 +286,9 @@ onBeforeUnmount(() => {
   }
 }
 
-.sync-status {
+.demo-access {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
   min-height: 36px;
   padding-inline: 10px;
   border: var(--ui-border);
@@ -298,33 +296,11 @@ onBeforeUnmount(() => {
   color: var(--dim);
   font-size: 0.72rem;
   font-weight: 600;
-
-  > span:first-child {
-    inline-size: 7px;
-    block-size: 7px;
-    border-radius: 50%;
-    background: currentColor;
-  }
-
-  &.is-synced {
-    color: var(--success);
-  }
-
-  &.is-error,
-  &.is-offline {
-    color: var(--warning);
-  }
+  cursor: pointer;
 
   @include mobile {
-    inline-size: 44px;
-    block-size: 44px;
-    justify-content: center;
-    padding: 0;
-    border: none;
-
-    .sync-label {
-      display: none;
-    }
+    min-height: 32px;
+    padding-inline: 8px;
   }
 }
 

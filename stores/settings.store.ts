@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { Capacitor } from '@capacitor/core'
+import { accessAwareStorage } from '~/utils/accessStorage'
 
 export const ACCENT_COLORS = [
   { name: 'Графит', value: '#2b2b2b' },
@@ -14,7 +15,7 @@ export const ACCENT_COLORS = [
 
 function resolveAccentColor(color: string, light = false): string {
   if (isGraphiteAccent(color)) {
-    return light ? '#2b2b2b' : '#d6d6d6'
+    return light ? '#2b2b2b' : '#ffffff'
   }
 
   return color
@@ -22,7 +23,7 @@ function resolveAccentColor(color: string, light = false): string {
 
 function isGraphiteAccent(color: string): boolean {
   const normalized = color.toLowerCase()
-  return normalized === '#2b2b2b' || normalized === '#d6d6d6'
+  return normalized === '#2b2b2b' || normalized === '#d6d6d6' || normalized === '#ffffff'
 }
 
 export const useSettingsStore = defineStore(
@@ -49,8 +50,6 @@ export const useSettingsStore = defineStore(
     const confirmDangerActions = ref<boolean>(true)
     const autoBackup = ref<boolean>(true)
     const lastBackupDate = ref<string | null>(null)
-    const boardAutoFocus = ref<boolean>(true)
-    const boardFocusAfterAction = ref<boolean>(true)
     const boardConfirmEdgeDelete = ref<boolean>(true)
     const boardConfirmBranchDelete = ref<boolean>(true)
     const boardLayoutDensity = ref<'compact' | 'normal' | 'wide'>('normal')
@@ -207,12 +206,6 @@ export const useSettingsStore = defineStore(
       backgroundIntensity.value = val
       applyUiPreferences()
     }
-    function setBoardAutoFocus(val: boolean) {
-      boardAutoFocus.value = val
-    }
-    function setBoardFocusAfterAction(val: boolean) {
-      boardFocusAfterAction.value = val
-    }
     function setBoardConfirmEdgeDelete(val: boolean) {
       boardConfirmEdgeDelete.value = val
     }
@@ -325,8 +318,6 @@ export const useSettingsStore = defineStore(
       confirmDangerActions,
       autoBackup,
       lastBackupDate,
-      boardAutoFocus,
-      boardFocusAfterAction,
       boardConfirmEdgeDelete,
       boardConfirmBranchDelete,
       boardLayoutDensity,
@@ -353,8 +344,6 @@ export const useSettingsStore = defineStore(
       setAppBackgroundMode,
       setCustomBackgroundImage,
       setBackgroundIntensity,
-      setBoardAutoFocus,
-      setBoardFocusAfterAction,
       setBoardConfirmEdgeDelete,
       setBoardConfirmBranchDelete,
       setBoardLayoutDensity,
@@ -365,7 +354,7 @@ export const useSettingsStore = defineStore(
   },
   {
     persist: import.meta.client
-      ? { key: 'carbon-settings', storage: localStorage }
+      ? { key: 'carbon-settings', storage: accessAwareStorage }
       : undefined,
   }
 )

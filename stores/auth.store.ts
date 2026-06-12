@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { useUserStore } from '~/stores/user.store'
+import { useAccessStore } from '~/stores/access.store'
 import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
 
 export interface User {
@@ -170,6 +171,11 @@ export const useAuthStore = defineStore(
       isLoading.value = true
 
       try {
+        const accessStore = useAccessStore()
+        if (!accessStore.hasSubscription) {
+          return { success: false, error: 'Для регистрации нужна активная подписка' }
+        }
+
         if (!acceptedTerms) {
           return { success: false, error: 'Необходимо принять условия использования' }
         }

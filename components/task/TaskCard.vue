@@ -24,6 +24,14 @@
 
     <div class="task-bottom">
       <div class="task-info">
+        <span
+          v-for="branch in linkedBranches"
+          :key="branch.id"
+          class="branch-link"
+          :data-tooltip="branch.displayName"
+        >
+          {{ branch.displayName }}
+        </span>
         <div v-if="task.type !== 'HABIT' && task.targetDate" class="due-date">
           <Calendar :size="14" />
           {{ formattedDate }}
@@ -105,6 +113,7 @@ import type { Task } from '~/types/task.types'
 import GlassCard from '~/components/base/GlassCard.vue'
 import { CheckCircle, Check, Circle, Trash2, Edit, Calendar, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { useTagsStore } from '~/stores/tags.store'
+import { useBranchesStore } from '~/stores/branches.store'
 import { useNotification } from '~/composables/useNotification'
 import { useConfirm } from '~/composables/useConfirm'
 
@@ -116,6 +125,7 @@ const emit = defineEmits<{
 }>()
 
 const tagsStore = useTagsStore()
+const branchesStore = useBranchesStore()
 const { addNotification } = useNotification()
 const { confirm } = useConfirm()
 
@@ -123,6 +133,13 @@ const taskTags = computed(() => {
   if (props.task.tags?.length) return props.task.tags
   return tagsStore.getTagsByIds(props.task.tagIds)
 })
+const linkedBranches = computed(() =>
+  branchesStore.branches.filter(
+    (branch) =>
+      branch.directTaskIds?.includes(props.task.id) ||
+      branch.milestones.some((milestone) => milestone.taskIds.includes(props.task.id))
+  )
+)
 
 const tagsElement = ref<HTMLElement | null>(null)
 const hasTagOverflow = ref(false)
@@ -368,6 +385,19 @@ async function handleDelete() {
     background: color-mix(in srgb, var(--accent) 6%, transparent);
     padding: 2px 6px;
     border-radius: var(--border-radius-pill);
+    white-space: nowrap;
+  }
+
+  .branch-link {
+    display: inline-block;
+    max-width: 116px;
+    padding: 2px 7px;
+    overflow: hidden;
+    border: var(--ui-border);
+    border-radius: var(--border-radius-pill);
+    color: var(--text);
+    font-size: 0.7rem;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
 

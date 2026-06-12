@@ -15,6 +15,9 @@
       <button @click="$emit('align-layout')" aria-label="Выровнять доску" data-tooltip="Выровнять доску">
         <LayoutGrid :size="18" />
       </button>
+      <button @click="$emit('export-png')" aria-label="Экспортировать доску в PNG" data-tooltip="Экспортировать доску в PNG">
+        <ImageDown :size="18" />
+      </button>
       <div class="divider"></div>
 
       <button
@@ -73,6 +76,7 @@ import {
   Undo,
   Redo,
   LayoutGrid,
+  ImageDown,
 } from 'lucide-vue-next'
 
 const props = defineProps<{
@@ -89,6 +93,7 @@ defineEmits([
   'zoom-in',
   'zoom-out',
   'align-layout',
+  'export-png',
   'add-branch',
   'add-milestone',
   'delete-selected',

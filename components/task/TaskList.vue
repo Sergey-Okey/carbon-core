@@ -4,22 +4,27 @@
       <div class="title-group">
         <div class="title-wrapper">
           <h3>{{ title }}</h3>
-          <div
+          <button
             v-if="taskType !== 'HABITS' && !hideRuleHint"
+            type="button"
             class="info-badge"
             :aria-label="ruleHint"
+            :aria-expanded="isRuleTooltipVisible"
             @mouseenter="showRuleTooltip"
             @mouseleave="hideRuleTooltip"
             @focus="showRuleTooltip"
             @blur="hideRuleTooltip"
+            @click.stop="showRuleTooltip"
           >
             <Info :size="14" />
-          </div>
+          </button>
           <Teleport to="body">
             <span
               v-if="isRuleTooltipVisible"
               class="task-rule-tooltip"
+              :class="`is-${ruleTooltipPlacement}`"
               :style="ruleTooltipStyle"
+              role="tooltip"
             >
               <span class="tooltip-title">Лимит задач</span>
               <span>{{ ruleHint }}</span>
@@ -99,6 +104,7 @@ const showForm = ref(false)
 const editingTask = ref<Task | undefined>(undefined)
 const isRuleTooltipVisible = ref(false)
 const ruleTooltipPosition = ref({ x: 0, y: 0 })
+const ruleTooltipPlacement = ref<'top' | 'bottom'>('top')
 
 const tasks = computed(() => {
   if (props.tasksOverride) return props.tasksOverride
@@ -159,9 +165,14 @@ function showRuleTooltip(event: MouseEvent | FocusEvent) {
   if (!target) return
 
   const rect = target.getBoundingClientRect()
+  const tooltipWidth = Math.min(280, window.innerWidth - 24)
+  const centeredLeft = rect.left + rect.width / 2 - tooltipWidth / 2
+  const left = Math.min(window.innerWidth - tooltipWidth - 12, Math.max(12, centeredLeft))
+  const showBelow = rect.top < 110
+  ruleTooltipPlacement.value = showBelow ? 'bottom' : 'top'
   ruleTooltipPosition.value = {
-    x: rect.left + rect.width / 2,
-    y: Math.max(12, rect.top - 10),
+    x: left,
+    y: showBelow ? rect.bottom + 8 : rect.top - 8,
   }
   isRuleTooltipVisible.value = true
 }
@@ -477,11 +488,10 @@ function handleSave(taskData: TaskFormData) {
   position: fixed;
   display: grid;
   gap: 3px;
-  width: max-content;
-  max-width: min(240px, calc(100vw - 24px));
-  padding: 7px 10px;
+  width: min(280px, calc(100vw - 24px));
+  padding: 10px 12px;
   border: var(--ui-border);
-  border-radius: var(--border-radius-pill);
+  border-radius: var(--border-radius-md);
   color: var(--text);
   font-size: 0.72rem;
   font-weight: 600;
@@ -490,13 +500,26 @@ function handleSave(taskData: TaskFormData) {
   white-space: normal;
   pointer-events: none;
   z-index: 7000;
-  transform: translate(-50%, -100%);
+  transform: translateY(-100%);
+
+  &.is-bottom {
+    transform: none;
+  }
 
   .tooltip-title {
     color: var(--text);
     font-size: 0.7rem;
     font-weight: 700;
     line-height: 1.1;
+  }
+}
+
+@media (max-width: 480px) {
+  .task-rule-tooltip {
+    width: calc(100vw - 24px);
+    padding: 11px 12px;
+    font-size: 0.76rem;
+    line-height: 1.3;
   }
 }
 </style>

@@ -110,6 +110,7 @@
                 <label>
                   <span>Светлая</span>
                   <input
+                    class="time-input"
                     type="time"
                     :value="settingsStore.lightThemeFrom"
                     @input="setLightThemeFrom"
@@ -118,6 +119,7 @@
                 <label>
                   <span>Темная</span>
                   <input
+                    class="time-input"
                     type="time"
                     :value="settingsStore.darkThemeFrom"
                     @input="setDarkThemeFrom"
@@ -148,7 +150,7 @@
             <div class="setting-row">
               <div class="setting-info">
                 <span class="label">Сбросить оформление</span>
-                <span class="desc">Вернуть темную тему и базовый графитовый акцент.</span>
+                <span class="desc">Вернуть темную тему и базовый белый акцент.</span>
               </div>
               <AppButton class="action-btn" type="button" variant="secondary" @click="resetAppearance">
                 <RotateCcw :size="16" />
@@ -211,28 +213,6 @@
           </div>
 
           <div class="group-body">
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Фокусировать доску при открытии</span>
-                <span class="desc">Доска сразу готова к горячим клавишам и навигации с клавиатуры.</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.boardAutoFocus"
-                @update:model-value="toggleBoardAutoFocus"
-              />
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Возвращать фокус после действий</span>
-                <span class="desc">После создания, редактирования и удаления фокус возвращается на доску.</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.boardFocusAfterAction"
-                @update:model-value="toggleBoardFocusAfterAction"
-              />
-            </div>
-
             <div class="setting-row">
               <div class="setting-info">
                 <span class="label">Показывать типы узлов</span>
@@ -313,19 +293,19 @@
             </div>
 
             <div class="action-group">
-              <AppButton class="action-btn" type="button" variant="secondary" @click="createBackup">
+              <AppButton class="action-btn" type="button" variant="secondary" :disabled="accessStore.isDemo" @click="createBackup">
                 <Download :size="16" />
                 Создать бэкап
               </AppButton>
-              <AppButton class="action-btn" type="button" variant="secondary" @click="exportData">
+              <AppButton class="action-btn" type="button" variant="secondary" :disabled="accessStore.isDemo" @click="exportData">
                 <FileJson :size="16" />
                 Экспорт JSON
               </AppButton>
-              <AppButton class="action-btn" type="button" variant="secondary" @click="importData">
+              <AppButton class="action-btn" type="button" variant="secondary" :disabled="accessStore.isDemo" @click="importData">
                 <Upload :size="16" />
                 Импорт JSON
               </AppButton>
-              <AppButton class="action-btn" type="button" variant="secondary" @click="restoreAutoBackup">
+              <AppButton class="action-btn" type="button" variant="secondary" :disabled="accessStore.isDemo" @click="restoreAutoBackup">
                 <RotateCcw :size="16" />
                 Восстановить
               </AppButton>
@@ -374,6 +354,8 @@ import AppCustomColorPicker from '~/components/ui/AppCustomColorPicker.vue'
 import AppSwitch from '~/components/ui/AppSwitch.vue'
 import { useConfirm } from '~/composables/useConfirm'
 import { useNotification } from '~/composables/useNotification'
+import { useAccessStore } from '~/stores/access.store'
+import { ACCESS_STORAGE_KEY } from '~/utils/accessStorage'
 import { ACCENT_COLORS, useSettingsStore } from '~/stores/settings.store'
 import {
   buildBackupPayload,
@@ -385,6 +367,7 @@ import {
 type SettingsTab = 'appearance' | 'focus' | 'board' | 'data'
 
 const settingsStore = useSettingsStore()
+const accessStore = useAccessStore()
 const { confirm } = useConfirm()
 const { addNotification } = useNotification()
 const activeTab = ref<SettingsTab>('appearance')
@@ -397,10 +380,18 @@ const tabs = [
 ]
 
 const accentOptions = computed(() =>
-  ACCENT_COLORS.map((color) => ({
-    label: color.name,
+  ACCENT_COLORS.map((color, index) => ({
+    label: index === 0 ? adaptiveAccentName.value : color.name,
     value: color.value,
+    color: index === 0 ? adaptiveAccentColor.value : color.value,
   }))
+)
+
+const adaptiveAccentName = computed(() =>
+  settingsStore.theme === 'dark' ? 'Белый' : 'Графитовый'
+)
+const adaptiveAccentColor = computed(() =>
+  settingsStore.theme === 'dark' ? '#ffffff' : '#2b2b2b'
 )
 
 const themeLabel = computed(() =>
@@ -413,6 +404,7 @@ const scheduleDescription = computed(() =>
 
 const accentLabel = computed(() => {
   const found = ACCENT_COLORS.find((color) => color.value === settingsStore.accentColor)
+  if (found === ACCENT_COLORS[0]) return adaptiveAccentName.value
   return found?.name ?? 'Пользовательский'
 })
 
@@ -489,14 +481,6 @@ function toggleDangerConfirm(checked: boolean) {
 
 function toggleAutoBackup(checked: boolean) {
   settingsStore.setAutoBackup(checked)
-}
-
-function toggleBoardAutoFocus(checked: boolean) {
-  settingsStore.setBoardAutoFocus(checked)
-}
-
-function toggleBoardFocusAfterAction(checked: boolean) {
-  settingsStore.setBoardFocusAfterAction(checked)
 }
 
 function toggleBoardConfirmEdgeDelete(checked: boolean) {
@@ -589,7 +573,13 @@ async function resetAllData() {
   )
   if (!confirmed) return
 
-  localStorage.clear()
+  if (accessStore.isDemo) {
+    sessionStorage.clear()
+  } else {
+    const accessState = localStorage.getItem(ACCESS_STORAGE_KEY)
+    localStorage.clear()
+    if (accessState) localStorage.setItem(ACCESS_STORAGE_KEY, accessState)
+  }
   addNotification({ type: 'success', message: 'Данные сброшены. Перезагрузка...' })
   setTimeout(() => window.location.reload(), 1000)
 }
@@ -883,15 +873,60 @@ async function resetAllData() {
     width: 100%;
     padding: 0 10px;
     border: var(--ui-border);
-    border-radius: var(--border-radius-md);
-    background: transparent;
+    border-radius: var(--border-radius-sm);
+    background: var(--glass-surface);
     color: var(--text);
+    color-scheme: dark;
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+
+    &:focus-visible {
+      border-color: color-mix(in srgb, var(--accent) 38%, transparent);
+      outline: 2px solid color-mix(in srgb, var(--accent) 12%, transparent);
+      outline-offset: 2px;
+    }
+
+    &::-webkit-calendar-picker-indicator {
+      padding: 4px;
+      border-radius: var(--border-radius-sm);
+      background-color: color-mix(in srgb, var(--accent) 9%, transparent);
+      cursor: pointer;
+      filter: invert(1);
+    }
+
+    :global(.light-theme) & {
+      color-scheme: light;
+
+      &::-webkit-calendar-picker-indicator {
+        filter: none;
+      }
+    }
   }
 }
 
 @media (pointer: coarse), (max-width: 767px) {
-  .schedule-time input {
+  .time-range {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .time-range label {
+    width: 100%;
+  }
+
+  .time-range input {
     min-height: 44px;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 16px;
+  }
+
+  @media (max-width: 380px) {
+    .time-range {
+      grid-template-columns: 1fr;
+    }
   }
 }
 

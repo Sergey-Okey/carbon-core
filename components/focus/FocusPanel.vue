@@ -102,6 +102,7 @@ import AppButton from '~/components/ui/AppButton.vue'
 import { useNotification } from '~/composables/useNotification'
 import { useGuidedTourStore } from '~/stores/guidedTour.store'
 import { useFeedback } from '~/composables/useFeedback'
+import { accessAwareStorage } from '~/utils/accessStorage'
 
 type PresetKey = 'focus' | 'short' | 'long'
 
@@ -120,6 +121,7 @@ const remainingSeconds = ref(presets[0].minutes * 60)
 const isRunning = ref(false)
 const completedSessions = ref(0)
 let intervalId: number | null = null
+const FOCUS_STATE_KEY = 'cof-focus-state'
 
 const activePreset = computed(() =>
   presets.find((preset) => preset.key === activePresetKey.value) ?? presets[0]
@@ -163,11 +165,13 @@ function setPreset(key: PresetKey) {
   activePresetKey.value = key
   stopTimer()
   remainingSeconds.value = activePreset.value.minutes * 60
+  persistState()
 }
 
 function toggleTimer() {
   if (isRunning.value) {
     stopTimer()
+    persistState()
     return
   }
 
@@ -178,11 +182,13 @@ function toggleTimer() {
   isRunning.value = true
   guidedTour.handleAction('focus-started')
   intervalId = window.setInterval(tick, 1000)
+  persistState()
 }
 
 function tick() {
   if (remainingSeconds.value > 1) {
     remainingSeconds.value -= 1
+    persistState()
     return
   }
 
@@ -195,11 +201,13 @@ function tick() {
     message: `${activePreset.value.label} завершен`,
   })
   void trigger('focusComplete')
+  persistState()
 }
 
 function resetTimer() {
   stopTimer()
   remainingSeconds.value = totalSeconds.value
+  persistState()
 }
 
 function stopTimer() {
@@ -211,17 +219,63 @@ function stopTimer() {
 }
 
 function loadSessions() {
-  const value = window.localStorage.getItem(storageKey.value)
+  const value = accessAwareStorage.getItem(storageKey.value)
   const parsed = value ? Number(value) : 0
   completedSessions.value = Number.isFinite(parsed) ? Math.max(0, parsed) : 0
 }
 
 function persistSessions() {
-  window.localStorage.setItem(storageKey.value, String(completedSessions.value))
+  accessAwareStorage.setItem(storageKey.value, String(completedSessions.value))
 }
 
-onMounted(loadSessions)
-onBeforeUnmount(stopTimer)
+function persistState() {
+  accessAwareStorage.setItem(
+    FOCUS_STATE_KEY,
+    JSON.stringify({
+      preset: activePresetKey.value,
+      remainingSeconds: remainingSeconds.value,
+      isRunning: isRunning.value,
+      endsAt: isRunning.value ? Date.now() + remainingSeconds.value * 1000 : null,
+    })
+  )
+}
+
+function restoreState() {
+  try {
+    const raw = accessAwareStorage.getItem(FOCUS_STATE_KEY)
+    if (!raw) return
+    const state = JSON.parse(raw) as {
+      preset?: PresetKey
+      remainingSeconds?: number
+      isRunning?: boolean
+      endsAt?: number | null
+    }
+    if (presets.some((preset) => preset.key === state.preset)) {
+      activePresetKey.value = state.preset as PresetKey
+    }
+    if (Number.isFinite(state.remainingSeconds)) {
+      remainingSeconds.value = Math.max(0, Number(state.remainingSeconds))
+    }
+    if (state.isRunning && state.endsAt) {
+      remainingSeconds.value = Math.max(0, Math.ceil((state.endsAt - Date.now()) / 1000))
+      if (remainingSeconds.value > 0) {
+        isRunning.value = true
+        intervalId = window.setInterval(tick, 1000)
+      }
+    }
+  } catch {
+    accessAwareStorage.removeItem(FOCUS_STATE_KEY)
+  }
+}
+
+onMounted(() => {
+  loadSessions()
+  restoreState()
+})
+onBeforeUnmount(() => {
+  persistState()
+  stopTimer()
+})
 </script>
 
 <style scoped lang="scss">

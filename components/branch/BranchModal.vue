@@ -3,7 +3,7 @@
     :title="branch ? 'Редактировать ветку' : 'Новая ветка'"
     kicker="Ветка"
     as-form
-    size="md"
+    size="lg"
     allow-overflow
     @close="emit('close')"
     @submit="handleSubmit"
@@ -36,17 +36,9 @@
       <div class="visual-row">
         <AppFormField label="Иконка">
           <div class="icon-section">
-            <button type="button" class="toggle-btn" @click="iconsExpanded = !iconsExpanded">
-              <span class="selected-icon">
-                <component :is="iconComponent(form.icon)" :size="20" />
-              </span>
-              <ChevronDown :size="16" :class="{ rotated: iconsExpanded }" />
-            </button>
-
-            <Transition name="expand">
-              <div v-if="iconsExpanded" class="icons-grid">
+              <TransitionGroup name="reveal-item" tag="div" class="icons-grid">
                 <button
-                  v-for="icon in iconOptions"
+                  v-for="icon in visibleIconOptions"
                   :key="icon"
                   type="button"
                   class="icon-option"
@@ -56,8 +48,11 @@
                 >
                   <component :is="iconComponent(icon)" :size="20" />
                 </button>
-              </div>
-            </Transition>
+              </TransitionGroup>
+              <button type="button" class="icons-toggle" @click="iconsExpanded = !iconsExpanded">
+                {{ iconsExpanded ? 'Скрыть иконки' : `Ещё ${iconOptions.length - 9}` }}
+                <ChevronDown :size="15" :class="{ rotated: iconsExpanded }" />
+              </button>
           </div>
         </AppFormField>
 
@@ -65,6 +60,33 @@
           <AppCustomColorPicker v-model="form.markerColor" label="Выбрать цвет" />
         </AppFormField>
       </div>
+
+      <AppFormField v-if="branch" label="Задачи ветки">
+        <div class="tasks-section">
+          <button type="button" class="toggle-btn" @click="tasksExpanded = !tasksExpanded">
+            <span>Выбрать задачи ({{ form.taskIds.length }})</span>
+            <ChevronDown :size="16" :class="{ rotated: tasksExpanded }" />
+          </button>
+          <Transition name="expand">
+            <div v-if="tasksExpanded" class="tasks-list">
+              <label
+                v-for="task in availableTasks"
+                :key="task.id"
+                class="task-row"
+                :class="{ selected: form.taskIds.includes(task.id) }"
+                @click.prevent="toggleTask(task.id)"
+              >
+                <component :is="taskIcon(task.type)" :size="16" class="task-icon" />
+                <input type="checkbox" :checked="form.taskIds.includes(task.id)" />
+                <span class="task-title">{{ task.title }}</span>
+              </label>
+              <button type="button" class="create-task-btn" @click="showQuickTask = true">
+                <Plus :size="16" /> Создать и привязать задачу
+              </button>
+            </div>
+          </Transition>
+        </div>
+      </AppFormField>
 
     </div>
 
@@ -82,26 +104,39 @@
       </div>
     </template>
   </AppModal>
+  <TaskForm v-if="showQuickTask" default-type="TASK_DAY" @close="showQuickTask = false" @save="handleQuickTask" />
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import {
   Award,
+  Bell,
   BookOpen,
   Brain,
   Briefcase,
-  Camera,
+  CalendarDays,
+  CheckSquare,
   ChevronDown,
   Code,
-  Coffee,
+  Compass,
   Dumbbell,
-  Globe,
+  Flag,
+  FolderKanban,
+  GraduationCap,
   Heart,
-  Music,
+  Home,
+  Lightbulb,
+  ListTodo,
+  Map,
+  Plane,
+  Rocket,
   Target,
   TrendingUp,
+  Trophy,
   Users,
+  WalletCards,
+  Plus,
 } from 'lucide-vue-next'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppCustomColorPicker from '~/components/ui/AppCustomColorPicker.vue'
@@ -109,6 +144,9 @@ import AppFormField from '~/components/ui/AppFormField.vue'
 import AppInput from '~/components/ui/AppInput.vue'
 import AppModal from '~/components/ui/AppModal.vue'
 import type { Branch } from '~/types/branch.types'
+import { useTasksStore } from '~/stores/tasks.store'
+import TaskForm from '~/components/task/TaskForm.vue'
+import type { TaskFormData } from '~/types/task.types'
 
 const props = defineProps<{ branch?: Branch | null }>()
 const emit = defineEmits<{
@@ -121,7 +159,16 @@ const emit = defineEmits<{
 }>()
 
 const iconsExpanded = ref(false)
+const tasksExpanded = ref(false)
 const nameTouched = ref(false)
+const showQuickTask = ref(false)
+const tasksStore = useTasksStore()
+const availableTasks = computed(() =>
+  tasksStore.tasks.filter(
+    (task) =>
+      form.taskIds.includes(task.id) || (task.type !== 'HABIT' && task.type !== 'PURCHASE')
+  )
+)
 
 const iconOptions = [
   'trending-up',
@@ -132,13 +179,22 @@ const iconOptions = [
   'briefcase',
   'heart',
   'book-open',
-  'globe',
   'award',
-  'coffee',
-  'music',
-  'camera',
   'code',
+  'rocket',
+  'flag',
+  'compass',
+  'map',
+  'plane',
+  'home',
+  'graduation-cap',
+  'lightbulb',
+  'trophy',
+  'wallet-cards',
+  'folder-kanban',
+  'calendar-days',
 ]
+const visibleIconOptions = computed(() => (iconsExpanded.value ? iconOptions : iconOptions.slice(0, 9)))
 
 const iconComponent = (name: string) => {
   const map: Record<string, any> = {
@@ -150,15 +206,27 @@ const iconComponent = (name: string) => {
     briefcase: Briefcase,
     heart: Heart,
     'book-open': BookOpen,
-    globe: Globe,
     award: Award,
-    coffee: Coffee,
-    music: Music,
-    camera: Camera,
     code: Code,
+    rocket: Rocket,
+    flag: Flag,
+    compass: Compass,
+    map: Map,
+    plane: Plane,
+    home: Home,
+    'graduation-cap': GraduationCap,
+    lightbulb: Lightbulb,
+    trophy: Trophy,
+    'wallet-cards': WalletCards,
+    'folder-kanban': FolderKanban,
+    'calendar-days': CalendarDays,
   }
   return map[name] || Target
 }
+
+const taskIcon = (type: string) =>
+  ({ TASK_DAY: CheckSquare, TASK_WEEK: CalendarDays, TASK_MONTH: Bell, TASK_YEAR: Flag })[type] ||
+  ListTodo
 
 const canSubmit = computed(() => form.name.trim().length > 0)
 
@@ -181,7 +249,7 @@ watch(
       form.icon = newBranch.icon
       form.description = newBranch.description || ''
       form.markerColor = newBranch.markerColor || newBranch.backgroundColor || '#d6d6d6'
-      form.taskIds = [...(newBranch.taskIds || [])]
+        form.taskIds = [...(newBranch.directTaskIds || newBranch.taskIds || [])]
     } else {
       form.name = ''
       form.icon = 'target'
@@ -198,20 +266,54 @@ function handleSubmit() {
   if (!canSubmit.value) return
   emit('save', { ...form, name: form.name.trim() })
 }
+
+function toggleTask(taskId: string) {
+  const index = form.taskIds.indexOf(taskId)
+  if (index === -1) form.taskIds.push(taskId)
+  else form.taskIds.splice(index, 1)
+}
+
+function handleQuickTask(data: TaskFormData) {
+  const task = tasksStore.addTask({
+    title: data.title || 'Новая задача',
+    description: data.description,
+    type: data.type || 'TASK_DAY',
+    targetDate: data.targetDate,
+    tagIds: data.tagIds || [],
+    tags: data.tags || [],
+  })
+  if (!task) return
+  form.taskIds.push(task.id)
+  tasksExpanded.value = true
+  showQuickTask.value = false
+}
 </script>
 
 <style scoped lang="scss">
 .board-form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 }
 
 .visual-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(180px, 0.65fr);
+  grid-template-columns: minmax(0, 1.35fr) 1px minmax(180px, 0.65fr);
   align-items: start;
-  gap: 14px;
+  column-gap: 18px;
+
+  > :last-child {
+    grid-column: 3;
+  }
+
+  &::after {
+    content: '';
+    grid-column: 2;
+    grid-row: 1;
+    align-self: stretch;
+    width: 1px;
+    background: var(--ui-border-color);
+  }
 }
 
 .icon-section {
@@ -219,6 +321,59 @@ function handleSubmit() {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.tasks-section {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.tasks-list {
+  display: grid;
+  gap: 6px;
+  max-height: 190px;
+  padding: 8px;
+  overflow-y: auto;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-filter);
+  -webkit-backdrop-filter: var(--glass-filter);
+}
+
+.task-row {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  border-radius: var(--border-radius-sm);
+  color: var(--dim);
+  font-size: 0.8rem;
+  cursor: pointer;
+
+  &.selected {
+    background: var(--accent);
+    color: var(--bg);
+
+    .task-icon {
+      color: var(--bg);
+    }
+  }
+
+  input {
+    accent-color: var(--accent);
+  }
+}
+
+.empty-list {
+  padding: 10px;
+  color: var(--dim);
+  font-size: 0.76rem;
+  text-align: center;
 }
 
 .toggle-btn {
@@ -238,6 +393,10 @@ function handleSubmit() {
     background var(--transition-standard),
     color var(--transition-standard);
 
+  svg {
+    transition: transform var(--transition-standard);
+  }
+
   &:hover {
     background: color-mix(in srgb, var(--accent) 8%, transparent);
     color: var(--text);
@@ -255,20 +414,54 @@ function handleSubmit() {
 }
 
 .icons-grid {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   width: 100%;
-  grid-template-columns: repeat(auto-fit, minmax(38px, 1fr));
-  gap: 8px;
+  gap: 6px;
+}
+
+.icons-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 5px 9px;
+  color: var(--dim);
+  font-size: 0.76rem;
+  background: transparent;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-pill);
+  cursor: pointer;
+
+  svg {
+    transition: transform var(--transition-standard);
+  }
+
+  .rotated {
+    transform: rotate(180deg);
+  }
+}
+
+.task-icon {
+  color: var(--dim);
+}
+
+.task-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .icon-option {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  aspect-ratio: 1;
+  width: 36px;
+  height: 36px;
   color: var(--dim);
   background: transparent;
-  border: none;
+  border: var(--ui-border);
   border-radius: var(--border-radius-pill);
   cursor: pointer;
   transition:
@@ -291,6 +484,22 @@ function handleSubmit() {
   }
 }
 
+.create-task-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 14px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-pill);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  color: var(--text);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
 .footer-actions {
   display: flex;
   justify-content: flex-end;
@@ -301,21 +510,54 @@ function handleSubmit() {
 .expand-enter-active,
 .expand-leave-active {
   transition:
-    opacity 0.16s ease,
-    transform 0.16s ease;
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  transform-origin: top center;
 }
 
 .expand-enter-from,
 .expand-leave-to {
   opacity: 0;
-  transform: translateY(-4px);
+  transform: translateY(-6px) scaleY(0.97);
+}
+
+.reveal-item-enter-active,
+.reveal-item-leave-active,
+.reveal-item-move {
+  transition:
+    opacity 0.2s ease,
+    transform 0.24s ease;
+}
+
+.reveal-item-enter-from,
+.reveal-item-leave-to {
+  opacity: 0;
+  transform: translateY(-5px) scale(0.88);
+}
+
+.reveal-item-leave-active {
+  position: absolute;
 }
 
 @media (max-width: 640px) {
   .visual-row {
     grid-template-columns: 1fr;
-    gap: 18px;
+    grid-template-rows: auto 1px auto;
+    row-gap: 18px;
+
+    > :last-child {
+      grid-column: 1;
+      grid-row: 3;
+    }
+
+    &::after {
+      grid-column: 1;
+      grid-row: 2;
+      width: auto;
+      height: 1px;
+    }
   }
+
 
   .footer-actions {
     width: 100%;

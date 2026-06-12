@@ -1,233 +1,205 @@
 <template>
-  <div class="auth-page" :class="{ 'is-register': isRegister }">
-    <div class="bg-ambient"></div>
+  <div class="auth-page">
+    <aside class="auth-intro">
+      <button type="button" class="back-button" aria-label="Вернуться назад" @click="goBack">
+        <ArrowLeft :size="17" />
+        <span>Вернуться</span>
+      </button>
+      <div class="intro-copy">
+        <span class="eyebrow">{{ isRegister ? 'Новая глава' : 'Продолжить путь' }}</span>
+        <h1>{{ isRegister ? 'Соберите свою систему жизни.' : 'Вернитесь к важному.' }}</h1>
+        <p>
+          {{
+            isRegister
+              ? 'Задачи, привычки и этапы складываются в ясную карту движения.'
+              : 'Ваше пространство для задач, привычек, веток развития и спокойного фокуса.'
+          }}
+        </p>
+      </div>
+      <span class="intro-mark">CORE OF LIFE</span>
+    </aside>
+    <GlassCard class="auth-card">
+      <header class="auth-topbar">
+        <span class="eyebrow">{{ isRegister ? 'Регистрация' : 'Вход' }}</span>
+      </header>
 
-    <div class="auth-grid">
-      <!-- Левая колонка: приветственный текст -->
-      <div
-        v-motion
-        :initial="{ opacity: 0, x: -30 }"
-        :enter="{ opacity: 1, x: 0, transition: { duration: 500, delay: 100 } }"
-        class="auth-intro"
-      >
-        <div class="intro-content">
-          <div class="eyebrow">Core of Life</div>
-          <h1>{{ title }}</h1>
-          <p>{{ description }}</p>
-
-          <div class="feature-cards">
-            <div class="feature-card">
-              <Shield :size="20" />
-              <span>Локальное хранение</span>
-            </div>
-            <div class="feature-card">
-              <Download :size="20" />
-              <span>Бэкапы в один клик</span>
-            </div>
-            <div class="feature-card">
-              <UserCircle :size="20" />
-              <span>Локальный профиль</span>
-            </div>
+      <template v-if="isRegister && !accessStore.hasSubscription">
+        <div class="plan-head">
+          <div class="paywall-icon"><LockKeyhole :size="22" /></div>
+          <div>
+            <span class="eyebrow">Полный доступ</span>
+            <h1>Подписка</h1>
           </div>
         </div>
+
+        <div class="plan-summary">
+          <p>
+            Откройте полный доступ ко всем возможностям приложения.
+          </p>
+        </div>
+
+        <ul class="benefits">
+          <li><Check :size="16" /> Регистрация и личный профиль</li>
+          <li><Check :size="16" /> Все инструменты и разделы COF</li>
+          <li><Check :size="16" /> Поддержка развития COF</li>
+        </ul>
+
+        <div class="plan-actions">
+          <a
+            class="payment-link"
+            :href="SUBSCRIPTION_PAYMENT_URL"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Оплатить {{ SUBSCRIPTION_PRICE }} ₽
+            <ArrowUpRight :size="17" />
+          </a>
+          <AppButton type="button" variant="secondary" @click="activateAfterPayment">
+            Уже оплатил
+          </AppButton>
+        </div>
+        <p class="activation-note">
+          Сейчас активация подтверждается вручную. Позже здесь появится автоматическая
+          проверка CloudTips.
+        </p>
+      </template>
+
+      <template v-else>
+        <div class="card-header">
+          <span class="eyebrow">{{ isRegister ? 'Регистрация' : 'Вход' }}</span>
+          <h1>{{ isRegister ? 'Создайте профиль' : 'С возвращением' }}</h1>
+          <p>
+            {{
+              isRegister
+                ? 'Создайте профиль и начните пользоваться COF.'
+                : 'Войдите в свой профиль COF.'
+            }}
+          </p>
+        </div>
+
+        <form class="auth-form" @submit.prevent="submit">
+          <AppFormField v-if="isRegister" label="Имя">
+            <AppInput v-model="form.name" placeholder="Ваше имя" autocomplete="name" />
+          </AppFormField>
+          <AppFormField label="Email">
+            <AppInput
+              v-model="form.email"
+              type="email"
+              placeholder="email@example.com"
+              autocomplete="email"
+            />
+          </AppFormField>
+          <AppFormField label="Пароль">
+            <AppInput
+              v-model="form.password"
+              type="password"
+              placeholder="Не менее 8 символов"
+              :autocomplete="isRegister ? 'new-password' : 'current-password'"
+            />
+          </AppFormField>
+
+          <label v-if="isRegister" class="consent-control">
+            <input v-model="form.acceptedTerms" type="checkbox" />
+            <span>
+              Принимаю <NuxtLink to="/terms">условия</NuxtLink> и
+              <NuxtLink to="/privacy">политику конфиденциальности</NuxtLink>
+            </span>
+          </label>
+
+          <p v-if="error" class="error-text">{{ error }}</p>
+          <AppButton
+            type="submit"
+            variant="primary"
+            :disabled="authStore.isLoading || (isRegister && !form.acceptedTerms)"
+          >
+            {{ authStore.isLoading ? 'Подождите…' : isRegister ? 'Создать профиль' : 'Войти' }}
+          </AppButton>
+        </form>
+
+        <div v-if="!isRegister" class="demo-block">
+          <div>
+            <strong>Сначала посмотреть?</strong>
+            <span>Данные демо удалятся после закрытия вкладки.</span>
+          </div>
+          <AppButton type="button" variant="secondary" @click="startDemo">
+            Открыть демо
+          </AppButton>
+        </div>
+      </template>
+
+      <div class="card-footer">
+        <span>{{ isRegister ? 'Уже есть профиль?' : 'Нужен полный доступ?' }}</span>
+        <NuxtLink :to="isRegister ? '/auth' : '/register'">
+          {{ isRegister ? 'Войти' : 'Оформить подписку' }}
+        </NuxtLink>
       </div>
-
-      <!-- Правая колонка: форма (стеклянная) -->
-      <div
-        v-motion
-        :initial="{ opacity: 0, x: 30 }"
-        :enter="{ opacity: 1, x: 0, transition: { duration: 500, delay: 200 } }"
-      >
-        <GlassCard class="auth-card">
-          <div class="card-header">
-            <div class="badge">{{ badge }}</div>
-            <h2>{{ heading }}</h2>
-            <p>{{ formDescription }}</p>
-          </div>
-
-          <div class="local-notice">
-            <Shield :size="18" />
-            <span>Аккаунт и данные сохраняются только на этом устройстве.</span>
-          </div>
-
-          <form class="auth-form" @submit.prevent="submit">
-            <AppFormField v-if="isRegister" label="Имя">
-              <AppInput
-                v-model="form.name"
-                placeholder="Ваше имя"
-                autocomplete="name"
-              />
-            </AppFormField>
-
-            <AppFormField label="Email">
-              <AppInput
-                v-model="form.email"
-                type="email"
-                placeholder="email@example.com"
-                autocomplete="email"
-              />
-            </AppFormField>
-
-            <AppFormField label="Пароль">
-              <AppInput
-                v-model="form.password"
-                type="password"
-                placeholder="Не менее 8 символов"
-                :autocomplete="isRegister ? 'new-password' : 'current-password'"
-              />
-            </AppFormField>
-
-            <AppFormField v-if="isRegister" label="Подтверждение">
-              <AppInput
-                v-model="form.confirmPassword"
-                type="password"
-                placeholder="Повторите пароль"
-                autocomplete="new-password"
-              />
-            </AppFormField>
-
-            <div v-if="isRegister" class="consent-control">
-              <label class="consent-check" for="registration-consent">
-                <input id="registration-consent" v-model="form.acceptedTerms" type="checkbox" />
-                <span aria-hidden="true"></span>
-              </label>
-              <span>
-                <label for="registration-consent">Я принимаю</label>
-                <NuxtLink to="/terms">условия использования</NuxtLink>
-                и <NuxtLink to="/privacy">политику конфиденциальности</NuxtLink>
-              </span>
-            </div>
-
-            <p v-if="error" class="error-text">{{ error }}</p>
-
-            <AppButton
-              type="submit"
-              variant="primary"
-              :disabled="authStore.isLoading || (isRegister && !form.acceptedTerms)"
-            >
-              <span v-if="authStore.isLoading" class="spinner"></span>
-              <span>{{ submitLabel }}</span>
-            </AppButton>
-          </form>
-
-          <div v-if="oauthProviders.length" class="oauth-section">
-            <div class="oauth-divider"><span>или войдите через</span></div>
-            <div class="oauth-actions">
-              <button
-                v-for="provider in oauthProviders"
-                :key="provider.key"
-                type="button"
-                class="oauth-button"
-                @click="startOAuth(provider.key)"
-              >
-                <span class="oauth-mark">{{ provider.mark }}</span>
-                <span>{{ provider.label }}</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="card-footer">
-            <span>{{ footerText }}</span>
-            <NuxtLink :to="switchLink">{{ switchLabel }}</NuxtLink>
-          </div>
-          <div class="legal-links">
-            <NuxtLink to="/privacy">Конфиденциальность</NuxtLink>
-            <NuxtLink to="/terms">Условия</NuxtLink>
-            <NuxtLink to="/support">Поддержка</NuxtLink>
-          </div>
-        </GlassCard>
+      <div class="legal-links">
+        <NuxtLink to="/privacy">Конфиденциальность</NuxtLink>
+        <NuxtLink to="/terms">Условия</NuxtLink>
+        <NuxtLink to="/support">Поддержка</NuxtLink>
       </div>
-    </div>
+    </GlassCard>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-import { Shield, Download, UserCircle } from 'lucide-vue-next'
+import { computed, reactive, ref } from 'vue'
+import { ArrowLeft, ArrowUpRight, Check, LockKeyhole } from 'lucide-vue-next'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppFormField from '~/components/ui/AppFormField.vue'
 import AppInput from '~/components/ui/AppInput.vue'
 import GlassCard from '~/components/base/GlassCard.vue'
-import { useNotification } from '~/composables/useNotification'
+import {
+  SUBSCRIPTION_PAYMENT_URL,
+  SUBSCRIPTION_PRICE,
+  useAccessStore,
+} from '~/stores/access.store'
 import { useAuthStore } from '~/stores/auth.store'
-import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
+import { useNotification } from '~/composables/useNotification'
 
-const props = defineProps<{
-  mode: 'login' | 'register'
-}>()
-
+const props = defineProps<{ mode: 'login' | 'register' }>()
+const accessStore = useAccessStore()
 const authStore = useAuthStore()
 const { addNotification } = useNotification()
 const router = useRouter()
-
-const form = reactive({
-  name: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
-  acceptedTerms: false,
-})
-
-const error = ref('')
-const providerAvailability = ref({ google: false, yandex: false })
-const oauthProviders = computed(() =>
-  isRegister.value
-    ? []
-    : [
-    { key: 'google' as const, label: 'Google', mark: 'G', enabled: providerAvailability.value.google },
-    { key: 'yandex' as const, label: 'Яндекс', mark: 'Я', enabled: providerAvailability.value.yandex },
-      ].filter((provider) => provider.enabled)
-)
-
 const isRegister = computed(() => props.mode === 'register')
-const title = computed(() =>
-  isRegister.value
-    ? 'Начните с трёх важных задач'
-    : 'Вернитесь к своему плану'
-)
-const description = computed(() =>
-  isRegister.value
-    ? 'Создайте локальное пространство без облака и лишней настройки.'
-    : 'Войдите в локальный профиль на этом устройстве.'
-)
-const badge = computed(() => (isRegister.value ? 'Регистрация' : 'Вход'))
-const heading = computed(() => (isRegister.value ? 'Создать аккаунт' : 'Войти'))
-const formDescription = computed(() =>
-  isRegister.value
-    ? 'Понадобятся имя, email и пароль.'
-    : 'Используйте данные локального аккаунта.'
-)
-const submitLabel = computed(() =>
-  isRegister.value ? 'Создать аккаунт' : 'Войти'
-)
-const footerText = computed(() =>
-  isRegister.value ? 'Уже есть аккаунт?' : 'Нет аккаунта?'
-)
-const switchLabel = computed(() => (isRegister.value ? 'Войти' : 'Регистрация'))
-const switchLink = computed(() => (isRegister.value ? '/auth' : '/register'))
+const error = ref('')
+const form = reactive({ name: '', email: '', password: '', acceptedTerms: false })
+
+function startDemo() {
+  sessionStorage.clear()
+  accessStore.startDemo()
+  window.location.assign('/')
+}
+
+function goBack() {
+  if (window.history.length > 1) {
+    router.back()
+    return
+  }
+  router.push('/onboarding')
+}
+
+function activateAfterPayment() {
+  accessStore.activateSubscription()
+  addNotification({ type: 'success', message: 'Полный доступ открыт' })
+}
 
 async function submit() {
   error.value = ''
-  form.name = form.name.trim()
   form.email = form.email.trim()
+  form.name = form.name.trim()
 
   if (!form.email || !form.password || (isRegister.value && !form.name)) {
     error.value = 'Заполните обязательные поля'
     return
   }
-
   if (form.password.length < 8) {
     error.value = 'Пароль должен быть не короче 8 символов'
     return
   }
-
-  if (isRegister.value && form.password !== form.confirmPassword) {
-    error.value = 'Пароли не совпадают'
-    return
-  }
-
-  if (isRegister.value && !form.acceptedTerms) {
-    error.value = 'Подтвердите согласие с условиями и политикой конфиденциальности'
+  if (isRegister.value && !accessStore.hasSubscription) {
+    error.value = 'Для регистрации нужна подписка'
     return
   }
 
@@ -240,478 +212,349 @@ async function submit() {
     return
   }
 
-  addNotification({
-    type: 'success',
-    message: isRegister.value ? 'Аккаунт создан' : 'Вход выполнен',
-  })
-
+  accessStore.activateSubscription()
+  addNotification({ type: 'success', message: isRegister.value ? 'Профиль создан' : 'Вход выполнен' })
   router.push('/')
 }
-
-function startOAuth(provider: 'google' | 'yandex') {
-  window.location.assign(getBackendUrl(`/api/auth/${provider}`))
-}
-
-onMounted(async () => {
-  if (isRegister.value) return
-
-  try {
-    providerAvailability.value = await $fetch(getBackendUrl('/api/auth/providers'), {
-      ...getBackendFetchOptions(),
-    })
-  } catch {
-    providerAvailability.value = { google: false, yandex: false }
-  }
-})
 </script>
 
 <style scoped lang="scss">
 .auth-page {
-  min-block-size: 100vh;
-  min-block-size: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  font-family: 'Inter', sans-serif;
-  overflow: visible;
-  position: relative;
-  padding: clamp(18px, 4vw, 40px) 16px;
-}
-
-.bg-ambient {
-  position: absolute;
-  inset: -10%;
-  background: color-mix(in srgb, var(--accent) 5%, transparent);
-  z-index: 0;
-  filter: blur(40px);
-  animation: app-glow-breathe 16s ease-in-out infinite alternate;
-}
-
-.auth-grid {
+  height: 100dvh;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(28px, 5vw, 56px);
-  max-width: 1040px;
-  width: 100%;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 0;
-    max-width: 440px;
-  }
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 0.78fr);
+  align-items: stretch;
+  gap: clamp(18px, 3vw, 38px);
+  overflow: hidden;
+  padding: clamp(14px, 2vw, 24px);
+  font-family: 'Inter', sans-serif;
 }
 
 .auth-intro {
   display: flex;
-  align-items: center;
-  padding-right: 24px;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(18px, 4vw, 54px);
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
+  background: color-mix(in srgb, var(--surface) 44%, transparent);
+  backdrop-filter: blur(22px) saturate(130%);
+  -webkit-backdrop-filter: blur(22px) saturate(130%);
+}
 
-  @media (max-width: 768px) {
-    display: none;
-  }
-
-  .intro-content {
-    max-width: 480px;
-  }
-
-  .eyebrow {
-    font-family: 'Manrope', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: var(--dim);
-    margin-bottom: 20px;
-  }
+.intro-copy {
+  display: grid;
+  align-content: center;
+  flex: 1;
+  max-width: 680px;
 
   h1 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    font-weight: 600;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    max-width: 11ch;
+    margin: 12px 0 18px;
     color: var(--text);
-    margin-bottom: 20px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2.8rem, 7vw, 6.8rem);
+    font-weight: 600;
+    line-height: 0.94;
+    letter-spacing: -0.055em;
   }
 
   p {
-    font-size: 1rem;
-    line-height: 1.6;
+    max-width: 48ch;
+    margin: 0;
     color: var(--dim);
-    margin-bottom: 32px;
+    font-size: clamp(0.86rem, 1.2vw, 1rem);
+    line-height: 1.65;
   }
 }
 
-.feature-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.feature-card {
-  @include glass;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-sm);
-  color: var(--text);
-  font-family: 'Manrope', sans-serif;
-  font-size: 0.9rem;
-
-  svg {
-    opacity: 0.7;
-    flex-shrink: 0;
-  }
+.intro-mark {
+  color: var(--dim);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
 }
 
 .auth-card {
-  @include glass;
-  padding: 32px;
+  align-self: center;
+  width: min(100%, 470px);
+  max-height: calc(100dvh - 48px);
+  padding: clamp(20px, 3vw, 30px);
   border: var(--ui-border);
+  overflow: auto;
+  background: color-mix(in srgb, var(--surface) 76%, transparent);
+}
 
-  @media (max-width: 480px) {
-    padding: 24px;
+.auth-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.back-button {
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: none;
+  border-radius: var(--border-radius-pill);
+  background: transparent;
+  color: var(--dim);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+@media (max-width: 860px) {
+  .auth-page {
+    grid-template-columns: 1fr;
+    align-content: center;
+    overflow-y: auto;
   }
 
-  .card-header {
-    margin-bottom: 18px;
-
-    h2 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.5rem;
-      color: var(--text);
-      margin: 12px 0 0;
-    }
-
-    p {
-      margin-top: 8px;
-      color: var(--dim);
-      font-size: 0.82rem;
-      line-height: 1.45;
-    }
+  .auth-intro {
+    min-height: 180px;
+    padding: 20px;
   }
 
-  .badge {
-    display: inline-flex;
-    padding: 4px 12px;
-    border: var(--ui-border);
-    border-radius: var(--border-radius-pill);
-    background: color-mix(in srgb, var(--accent) 6%, transparent);
+  .intro-copy h1 {
+    max-width: 16ch;
+    margin: 8px 0 10px;
+    font-size: clamp(2rem, 10vw, 3.4rem);
+  }
+
+  .intro-copy p,
+  .intro-mark {
+    display: none;
+  }
+
+  .auth-card {
+    justify-self: center;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+.card-header {
+  margin-bottom: 22px;
+
+  h1 {
+    margin: 8px 0 10px;
     color: var(--text);
-    font-family: 'Manrope', sans-serif;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.65rem, 7vw, 2.2rem);
+    line-height: 1.1;
+  }
+
+  p {
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.84rem;
+    line-height: 1.55;
   }
 }
 
-.auth-form {
-  display: grid;
-  gap: 14px;
-}
-
-.error-text {
-  color: var(--error);
-  font-size: 0.85rem;
-  margin: -2px 0;
-}
-
-.auth-form :deep(.app-button) {
-  width: 100%;
-  margin-top: 4px;
+.eyebrow {
+  color: var(--dim);
   font-family: 'Manrope', sans-serif;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
-.spinner {
-  width: 16px;
-  height: 16px;
+.paywall-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  place-items: center;
   border: var(--ui-border);
-  border-top-color: var(--bg);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
 }
 
-.card-footer {
+.plan-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+
+  h1 {
+    margin: 5px 0 0;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.45rem, 6vw, 1.9rem);
+    line-height: 1.12;
+  }
+}
+
+.auth-topbar,
+.plan-head {
+  padding-inline: 2px;
+}
+
+.plan-summary {
+  padding: 14px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-md);
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
+
+  p {
+    margin: 0 0 12px;
+    color: var(--dim);
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+}
+
+.benefits {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--dim);
+    font-size: 0.8rem;
+  }
+}
+
+.plan-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+
+  :deep(.app-button) {
+    width: auto;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 420px) {
+    grid-template-columns: 1fr;
+
+    :deep(.app-button) {
+      width: 100%;
+    }
+  }
+}
+
+.payment-link {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 16px;
-  font-size: 0.85rem;
+  min-height: 44px;
+  margin: 0;
+  border-radius: var(--border-radius-sm);
+  background: var(--accent);
+  color: var(--bg);
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-card :deep(.app-button) {
+  width: 100%;
+}
+
+.activation-note {
+  margin: 12px 0 0;
   color: var(--dim);
+  font-size: 0.67rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.auth-form {
+  display: grid;
+  gap: 13px;
+}
+
+.consent-control {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  color: var(--dim);
+  font-size: 0.72rem;
+  line-height: 1.45;
+
+  input {
+    margin-top: 2px;
+  }
+
+  a {
+    color: var(--text);
+  }
+}
+
+.error-text {
+  margin: 0;
+  color: var(--error);
+  font-size: 0.78rem;
+}
+
+.demo-block {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: var(--ui-border);
+
+  div {
+    display: grid;
+    gap: 3px;
+  }
+
+  strong {
+    color: var(--text);
+    font-size: 0.82rem;
+  }
+
+  span {
+    color: var(--dim);
+    font-size: 0.7rem;
+  }
+}
+
+.card-footer,
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  color: var(--dim);
+  font-size: 0.72rem;
 
   a {
     color: var(--text);
     font-weight: 600;
     text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
   }
 }
 
-.local-notice {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 18px;
-  padding: 10px 12px;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-sm);
-  background: color-mix(in srgb, var(--surface) 72%, transparent);
-  color: var(--dim);
-  font-size: 0.76rem;
-  line-height: 1.4;
-
-  svg {
-    flex: 0 0 auto;
-    color: var(--text);
-  }
-}
-
-.consent-control {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  align-items: center;
-  gap: 8px;
-  min-block-size: 44px;
-  color: var(--dim);
-  cursor: pointer;
-  font-size: 0.78rem;
-  line-height: 1.45;
-
-  .consent-check {
-    position: relative;
-    display: grid;
-    place-items: center;
-    inline-size: 44px;
-    block-size: 44px;
-    cursor: pointer;
-
-    input {
-      position: absolute;
-      inline-size: 1px;
-      block-size: 1px;
-      opacity: 0;
-    }
-
-    span {
-      position: relative;
-      inline-size: 22px;
-      block-size: 22px;
-      border: var(--ui-border);
-      border-radius: var(--border-radius-sm);
-      background: color-mix(in srgb, var(--surface) 72%, transparent);
-      transition:
-        background var(--transition-standard),
-        border-color var(--transition-standard);
-
-      &::after {
-        position: absolute;
-        inset-block-start: 4px;
-        inset-inline-start: 7px;
-        inline-size: 5px;
-        block-size: 9px;
-        border: solid var(--bg);
-        border-width: 0 2px 2px 0;
-        content: '';
-        opacity: 0;
-        rotate: 45deg;
-        transition: opacity var(--transition-standard);
-      }
-    }
-
-    input:checked + span {
-      border-color: var(--accent);
-      background: var(--accent);
-
-      &::after {
-        opacity: 1;
-      }
-    }
-
-    input:focus-visible + span {
-      outline: 2px solid color-mix(in srgb, var(--accent) 32%, transparent);
-      outline-offset: 3px;
-    }
-  }
-
-  a {
-    color: var(--text);
-    font-weight: 600;
-  }
-
-  label {
-    cursor: pointer;
-  }
+.card-footer {
+  margin-top: 22px;
 }
 
 .legal-links {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 14px;
-  color: var(--dim);
-  font-size: 0.7rem;
-}
-
-.auth-page.is-register {
-  padding-block: clamp(12px, 2vw, 24px);
-
-  .auth-grid {
-    gap: clamp(22px, 4vw, 44px);
-  }
-
-  .auth-card {
-    padding: 24px 28px;
-
-    .card-header {
-      margin-bottom: 12px;
-
-      h2 {
-        margin-top: 8px;
-      }
-
-      p {
-        margin-top: 5px;
-        line-height: 1.35;
-      }
-    }
-  }
-
-  .local-notice {
-    gap: 8px;
-    margin-bottom: 12px;
-    padding: 7px 10px;
-    font-size: 0.72rem;
-    line-height: 1.3;
-
-    svg {
-      width: 16px;
-      height: 16px;
-    }
-  }
-
-  .auth-form {
-    gap: 9px;
-  }
-
-  .auth-form :deep(.app-form-field) {
-    gap: 5px;
-  }
-
-  .consent-control {
-    gap: 6px;
-    font-size: 0.72rem;
-    line-height: 1.3;
-  }
-
-  .card-footer {
-    margin-top: 10px;
-    font-size: 0.78rem;
-  }
-
-  .legal-links {
-    margin-top: 8px;
-  }
-
-  @media (max-width: 480px) {
-    padding-block: 8px;
-
-    .auth-card {
-      padding: 18px;
-    }
-
-    .local-notice {
-      margin-bottom: 10px;
-    }
-  }
-}
-
-.oauth-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-block: 18px 14px;
-  color: var(--dim);
-  font-size: 0.78rem;
-
-  &::before,
-  &::after {
-    flex: 1;
-    height: 1px;
-    background: color-mix(in srgb, var(--text) 12%, transparent);
-    content: '';
-  }
-}
-
-.oauth-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.oauth-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  min-width: 0;
-  min-height: 44px;
-  padding-inline: 12px;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-sm);
-  background: transparent;
-  color: var(--text);
-  cursor: pointer;
-  font: inherit;
-  font-weight: 600;
-  transition:
-    background var(--transition-standard),
-    color var(--transition-standard),
-    opacity var(--transition-standard);
-
-  &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.42;
-  }
-}
-
-.oauth-button.is-unavailable {
-  opacity: 0.62;
-}
-
-.oauth-mark {
-  display: grid;
-  flex: 0 0 22px;
-  width: 22px;
-  height: 22px;
-  place-items: center;
-  border: var(--ui-border);
-  border-radius: 50%;
-  font-size: 0.75rem;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  margin-top: 12px;
+  font-size: 0.66rem;
 }
 </style>

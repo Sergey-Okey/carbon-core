@@ -340,5 +340,33 @@ onUnmounted(() => {
   .date-actions button {
     min-height: 44px;
   }
+
+  .date-popover {
+    inset-block-start: auto !important;
+    inset-block-end: max(10px, env(safe-area-inset-bottom, 0px));
+    inset-inline: max(10px, env(safe-area-inset-left, 0px)) max(10px, env(safe-area-inset-right, 0px));
+    inline-size: auto !important;
+    max-height: calc(100dvh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    padding: 14px;
+    border-radius: var(--border-radius-lg);
+  }
+
+  .days-grid {
+    gap: 5px;
+  }
+
+  .day-btn {
+    min-width: 0;
+    min-height: 38px;
+    aspect-ratio: auto;
+  }
+
+  .date-actions {
+    gap: 8px;
+
+    button {
+      flex: 1;
+    }
+  }
 }
 </style>

@@ -6,7 +6,7 @@
       type="button"
       class="color-option"
       :class="{ active: option.value === modelValue }"
-      :style="{ '--picker-color': option.value }"
+      :style="{ '--picker-color': option.color || option.value }"
       role="radio"
       :aria-label="option.label"
       :aria-checked="option.value === modelValue"
@@ -25,6 +25,7 @@ import { Check } from 'lucide-vue-next'
 export type ColorPickerOption = {
   label: string
   value: string
+  color?: string
 }
 
 withDefaults(

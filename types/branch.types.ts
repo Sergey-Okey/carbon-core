@@ -24,6 +24,7 @@ export interface Branch {
   markerColor?: string
   backgroundColor?: string
   taskIds: string[]
+  directTaskIds?: string[]
   milestones: Milestone[]
   order: number
   totalXP?: number

@@ -105,16 +105,16 @@ textarea {
   @include glass;
   position: fixed;
   z-index: 7000;
-  max-width: min(260px, calc(100vw - 24px));
+  max-width: min(320px, calc(100vw - 24px));
   padding: 7px 10px;
   border: var(--ui-border);
-  border-radius: var(--border-radius-pill);
+  border-radius: var(--border-radius-md);
   color: var(--text);
   font-size: 0.72rem;
   font-weight: 600;
-  line-height: 1.18;
+  line-height: 1.4;
   overflow-wrap: anywhere;
-  text-align: center;
+  text-align: left;
   opacity: 0;
   pointer-events: none;
   transform: translateY(4px) scale(0.98);
@@ -198,6 +198,62 @@ body {
   overflow-x: hidden;
   background: transparent;
   color: var(--text);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html.custom-cursor-enabled,
+  html.custom-cursor-enabled body,
+  html.custom-cursor-enabled body *,
+  html.custom-cursor-enabled body *::before,
+  html.custom-cursor-enabled body *::after {
+    cursor: none !important;
+  }
+}
+
+input[type='checkbox'] {
+  appearance: none;
+  display: inline-grid;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  place-content: center;
+  margin: 0;
+  border: var(--ui-border);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  cursor: pointer;
+  transition:
+    background var(--transition-standard),
+    border-color var(--transition-standard),
+    box-shadow var(--transition-standard);
+
+  &::before {
+    width: 8px;
+    height: 4px;
+    border: solid var(--bg);
+    border-width: 0 0 2px 2px;
+    content: '';
+    opacity: 0;
+    transform: translateY(-1px) rotate(-45deg) scale(0.6);
+    transition:
+      opacity var(--transition-standard),
+      transform var(--transition-standard);
+  }
+
+  &:checked {
+    border-color: var(--accent);
+    background: var(--accent);
+  }
+
+  &:checked::before {
+    opacity: 1;
+    transform: translateY(-1px) rotate(-45deg) scale(1);
+  }
+
+  &:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    outline-offset: 2px;
+  }
 }
 
 #__nuxt {

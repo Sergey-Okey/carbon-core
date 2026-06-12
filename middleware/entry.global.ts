@@ -20,12 +20,17 @@ export default defineNuxtRouteMiddleware((to) => {
     null
   )
   const users = safeParse<unknown[]>(localStorage.getItem('carbon-users'), [])
+  const accessState = safeParse<{ mode?: 'guest' | 'demo' | 'subscribed' } | null>(
+    localStorage.getItem('carbon-access'),
+    null
+  )
 
   const isAuthenticated = Boolean(
     authState?.isAuthenticated && authState.currentUser
   )
   const hasSeenOnboarding = Boolean(onboardingState?.hasSeenOnboarding)
   const hasUsers = users.length > 0
+  const isDemo = accessState?.mode === 'demo'
   const isPublicRoute = ['/auth', '/register', '/onboarding', '/privacy', '/terms', '/support'].includes(to.path)
   const isNative = Capacitor.isNativePlatform()
 
@@ -45,7 +50,7 @@ export default defineNuxtRouteMiddleware((to) => {
     return navigateTo('/')
   }
 
-  if (!isAuthenticated && !isPublicRoute) {
+  if (!isAuthenticated && !isDemo && !isPublicRoute) {
     return navigateTo(isNative || hasSeenOnboarding || hasUsers ? '/auth' : '/onboarding')
   }
 })

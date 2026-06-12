@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import type { Reward } from '~/types/reward.types'
 import { v4 as uuidv4 } from 'uuid'
 import { useUserStore } from './user.store'
+import { accessAwareStorage } from '~/utils/accessStorage'
 
 export const useRewardsStore = defineStore(
   'rewards',
@@ -72,7 +73,7 @@ export const useRewardsStore = defineStore(
   },
   {
     persist: import.meta.client
-      ? { key: 'carbon-rewards', storage: localStorage }
+      ? { key: 'carbon-rewards', storage: accessAwareStorage }
       : undefined,
   }
 )

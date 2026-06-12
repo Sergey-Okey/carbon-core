@@ -3,7 +3,6 @@
     ref="boardWrapper"
     class="branch-flow-wrapper"
     :class="{ 'is-auto-layouting': isAutoLayoutAnimating }"
-    tabindex="-1"
   >
     <BranchMobileView
       v-if="isMobile"
@@ -27,12 +26,14 @@
       :snap-to-grid="true"
       :snap-grid="[20, 20]"
       :connection-mode="ConnectionMode.Loose"
-      :pan-on-drag="true"
+      :pan-on-drag="[0, 1, 2]"
+      :selection-on-drag="false"
+      :multi-selection-key-code="['Control', 'Meta', 'Shift']"
       :zoom-on-scroll="true"
       :fit-view-on-init="true"
       :nodes-draggable="true"
       :edges-updatable="true"
-      :nodes-focusable="true"
+      :nodes-focusable="false"
       @node-drag-stop="onNodeDragStop"
       @edges-change="onEdgesChange"
       @connect="onConnect"
@@ -48,12 +49,13 @@
         :can-redo="canRedo"
         :can-add-branch="canAddBranch"
         :can-add-milestone="canAddMilestone"
-        :has-selection="!!selectedNodeId || !!selectedEdgeId"
+        :has-selection="selectedNodeIds.length > 0 || !!selectedEdgeId"
         :selection-type="selectedControlType"
         @fit-view="fitView"
         @zoom-in="zoomIn"
         @zoom-out="zoomOut"
         @align-layout="alignLayoutSmart"
+        @export-png="exportBoardPng"
         @add-branch="openAddBranchModal"
         @add-milestone="addMilestoneToSelectedBranch"
         @delete-selected="deleteSelected"
@@ -64,14 +66,14 @@
       <template #node-branch-node="nodeProps">
         <BranchNode
           :data="nodeProps.data"
-          :selected="selectedNodeId === nodeProps.id"
+          :selected="nodeProps.selected || selectedNodeId === nodeProps.id"
           @edit="openBranchEditor(nodeProps.data.branchId)"
         />
       </template>
       <template #node-milestone-node="nodeProps">
         <MilestoneNode
           :data="nodeProps.data"
-          :selected="selectedNodeId === nodeProps.id"
+          :selected="nodeProps.selected || selectedNodeId === nodeProps.id"
           @edit="
             nodeProps.data.milestone &&
             openMilestoneEditor(nodeProps.data.milestone)
@@ -118,6 +120,7 @@ import { Background, BackgroundVariant } from '@vue-flow/background'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useSettingsStore } from '~/stores/settings.store'
 import { useGuidedTourStore } from '~/stores/guidedTour.store'
+import { useTasksStore } from '~/stores/tasks.store'
 import { useAutoLayout } from '~/composables/useAutoLayout'
 import { useConfirm } from '~/composables/useConfirm'
 import { useNotification } from '~/composables/useNotification'
@@ -135,7 +138,8 @@ import '@vue-flow/core/dist/theme-default.css'
 const branchesStore = useBranchesStore()
 const settingsStore = useSettingsStore()
 const guidedTour = useGuidedTourStore()
-const { fitView, zoomIn: vfZoomIn, zoomOut: vfZoomOut } = useVueFlow()
+const tasksStore = useTasksStore()
+const { fitView, zoomIn: vfZoomIn, zoomOut: vfZoomOut, getSelectedNodes } = useVueFlow()
 const { applyLayout } = useAutoLayout()
 const { confirm } = useConfirm()
 const { addNotification } = useNotification()
@@ -188,6 +192,11 @@ const emptyMilestone: Milestone = {
 
 const canAddBranch = computed(() => !selectedNodeId.value && !selectedEdgeId.value)
 const canAddMilestone = computed(() => selectedNodeId.value !== null)
+const selectedNodeIds = computed(() => {
+  const selected = getSelectedNodes.value.map((node) => node.id)
+  if (selectedNodeId.value && !selected.includes(selectedNodeId.value)) selected.push(selectedNodeId.value)
+  return selected
+})
 const selectedControlType = computed<'branch' | 'milestone' | 'edge' | 'none'>(() => {
   if (selectedEdgeId.value) return 'edge'
   if (!selectedNodeId.value) return 'none'
@@ -386,9 +395,26 @@ function onEdgesChange(changes: any[]) {
   saveToHistory()
 }
 
-function deleteSelected() {
+async function deleteSelected() {
   if (selectedEdgeId.value) {
     deleteSelectedEdge()
+    return
+  }
+
+  if (selectedNodeIds.value.length > 1) {
+    const ok = await confirm(`Удалить выбранные элементы (${selectedNodeIds.value.length})?`)
+    if (!ok) return
+
+    const ids = new Set(selectedNodeIds.value)
+    branchesStore.branches
+      .filter((branch) => ids.has(branch.id))
+      .forEach((branch) => branchesStore.deleteBranch(branch.id))
+    branchesStore.branches
+      .flatMap((branch) => branch.milestones)
+      .filter((milestone) => ids.has(milestone.id))
+      .forEach((milestone) => branchesStore.deleteMilestone(milestone.id))
+    selectedNodeId.value = null
+    saveToHistory()
     return
   }
 
@@ -488,7 +514,6 @@ function alignLayout() {
 
   syncNodesAndEdges()
   saveToHistory()
-  refocusBoard()
   addNotification({ type: 'success', message: 'Доска выровнена' })
 }
 
@@ -529,7 +554,6 @@ function alignLayoutSmart() {
 
   syncNodesAndEdges()
   saveToHistory()
-  refocusBoard()
   nextTick(() => {
     window.setTimeout(() => {
       isAutoLayoutAnimating.value = false
@@ -608,7 +632,6 @@ function handleCreateMilestone(data: Partial<Milestone>) {
   creatingMilestone.value = false
   guidedTour.handleAction('milestone-created')
   saveToHistory()
-  refocusBoard()
 }
 
 function handleSaveMilestone(updates: Partial<Milestone>) {
@@ -616,7 +639,6 @@ function handleSaveMilestone(updates: Partial<Milestone>) {
   branchesStore.updateMilestone(editingMilestone.value.id, updates)
   editingMilestone.value = null
   saveToHistory()
-  refocusBoard()
 }
 
 async function handleDeleteMilestone() {
@@ -631,7 +653,6 @@ async function handleDeleteMilestone() {
   branchesStore.deleteMilestone(milestone.id)
   editingMilestone.value = null
   saveToHistory()
-  refocusBoard()
 }
 
 function openBranchEditor(branchId: string) {
@@ -687,7 +708,6 @@ async function handleDeleteBranch() {
   branchModal.value.visible = false
   selectedNodeId.value = null
   saveToHistory()
-  refocusBoard()
 }
 
 async function handleDeleteBranchFromMobile(branchId: string) {
@@ -745,12 +765,6 @@ function onNodeDragStop({ node }: { node: Node }) {
     branchesStore.updateMilestone(node.id, { position: node.position })
   }
   saveToHistory()
-  refocusBoard()
-}
-
-function refocusBoard() {
-  if (!settingsStore.boardFocusAfterAction) return
-  nextTick(() => boardWrapper.value?.focus({ preventScroll: true }))
 }
 
 function zoomIn() {
@@ -759,6 +773,131 @@ function zoomIn() {
 
 function zoomOut() {
   vfZoomOut()
+}
+
+async function exportBoardPng() {
+  try {
+    const exportNodes = nodes.value
+    if (!exportNodes.length) throw new Error('Board is empty')
+
+    const margin = 100
+    const nodeSize = (node: Node) =>
+      node.type === 'branch-node' ? { width: 240, height: 138 } : { width: 220, height: 120 }
+    const minX = Math.min(...exportNodes.map((node) => node.position.x))
+    const minY = Math.min(...exportNodes.map((node) => node.position.y))
+    const maxX = Math.max(...exportNodes.map((node) => node.position.x + nodeSize(node).width))
+    const maxY = Math.max(...exportNodes.map((node) => node.position.y + nodeSize(node).height))
+    const width = Math.ceil(maxX - minX + margin * 2)
+    const height = Math.ceil(maxY - minY + margin * 2)
+    const scale = Math.min(window.devicePixelRatio || 1, 2, 12000 / width, 12000 / height)
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(width * scale)
+    canvas.height = Math.round(height * scale)
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('Canvas is unavailable')
+    context.scale(scale, scale)
+    const css = getComputedStyle(document.documentElement)
+    const background = css.getPropertyValue('--bg').trim() || '#121212'
+    const surface = css.getPropertyValue('--surface').trim() || '#1e1e1e'
+    const text = css.getPropertyValue('--text').trim() || '#d6d6d6'
+    const dim = css.getPropertyValue('--dim').trim() || '#888888'
+    const border = css.getPropertyValue('--ui-border-color').trim() || 'rgba(255,255,255,.1)'
+    context.fillStyle = background
+    context.fillRect(0, 0, width, height)
+
+    const pointById = new Map(
+      exportNodes.map((node) => {
+        const size = nodeSize(node)
+        return [
+          node.id,
+          {
+            x: node.position.x - minX + margin,
+            y: node.position.y - minY + margin,
+            width: size.width,
+            height: size.height,
+          },
+        ]
+      })
+    )
+
+    context.lineWidth = 1.5
+    branchesStore.edges.forEach((edge) => {
+      const source = pointById.get(edge.source)
+      const target = pointById.get(edge.target)
+      if (!source || !target) return
+      const sourceBranch = getBranchByNodeId(edge.source)
+      context.strokeStyle = sourceBranch?.markerColor || dim
+      context.beginPath()
+      context.moveTo(source.x + source.width, source.y + source.height / 2)
+      const middle = (source.x + source.width + target.x) / 2
+      context.bezierCurveTo(
+        middle,
+        source.y + source.height / 2,
+        middle,
+        target.y + target.height / 2,
+        target.x,
+        target.y + target.height / 2
+      )
+      context.stroke()
+    })
+
+    exportNodes.forEach((node) => {
+      const box = pointById.get(node.id)!
+      const branch = getBranchByNodeId(node.id)
+      const milestone = branch?.milestones.find((item) => item.id === node.id)
+      const title = milestone?.name || branch?.displayName || 'Элемент'
+      const color = milestone?.markerColor || branch?.markerColor || text
+      const total = milestone
+        ? milestone.taskIds.length
+        : branch
+          ? branchesStore.getBranchTotalTasks(branch.id)
+          : 0
+      const completed = milestone
+        ? milestone.taskIds.filter((id) => tasksStore.tasks.find((task) => task.id === id)?.done).length
+        : branch
+          ? branchesStore.getBranchCompletedTasks(branch.id)
+          : 0
+
+      context.fillStyle = surface
+      context.strokeStyle = border
+      context.lineWidth = 1
+      context.beginPath()
+      context.roundRect(box.x, box.y, box.width, box.height, 18)
+      context.fill()
+      context.stroke()
+      context.fillStyle = color
+      context.beginPath()
+      context.arc(box.x + 20, box.y + 20, 5, 0, Math.PI * 2)
+      context.fill()
+      context.fillStyle = text
+      context.font = '600 15px Inter, sans-serif'
+      context.fillText(title.slice(0, 28), box.x + 16, box.y + 55, box.width - 32)
+      context.fillStyle = dim
+      context.font = '12px Inter, sans-serif'
+      context.fillText(`${completed} / ${total} задач`, box.x + 16, box.y + box.height - 18)
+      if (total > 0) {
+        context.fillStyle = border
+        context.fillRect(box.x + 16, box.y + box.height - 42, box.width - 32, 3)
+        context.fillStyle = color
+        context.fillRect(box.x + 16, box.y + box.height - 42, (box.width - 32) * (completed / total), 3)
+      }
+    })
+
+    const blob = await new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob((value) => (value ? resolve(value) : reject(new Error('PNG creation failed'))), 'image/png')
+    )
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.download = `carbon-board-${new Date().toISOString().slice(0, 10)}.png`
+    link.href = url
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+    addNotification({ type: 'success', message: 'Доска экспортирована в PNG' })
+  } catch {
+    addNotification({ type: 'error', message: 'Не удалось экспортировать доску' })
+  }
 }
 
 const checkMobile = () => {
@@ -775,7 +914,6 @@ onMounted(() => {
     if (!isMobile.value) {
       setTimeout(() => {
         fitView()
-        if (settingsStore.boardAutoFocus) boardWrapper.value?.focus({ preventScroll: true })
       }, 100)
     }
     saveToHistory()
@@ -792,18 +930,23 @@ watch(
   () => syncNodesAndEdges(),
   { immediate: true, deep: true }
 )
+
+watch(
+  () => tasksStore.tasks,
+  () => branchesStore.refreshAllBranches(),
+  { deep: true }
+)
 </script>
 
 <style scoped lang="scss">
 .branch-flow-wrapper {
-  @include glass;
   width: 100%;
   height: 100%;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
+  border: none;
+  border-radius: 0;
   position: relative;
   overflow: hidden;
-  min-height: 520px;
+  min-height: 100%;
 
   @include mobile {
     width: 100%;
@@ -828,6 +971,17 @@ watch(
 
 :deep(.vue-flow__node) {
   z-index: 1;
+  cursor: grab;
+}
+
+:deep(.vue-flow__node.dragging),
+:deep(.vue-flow__pane.dragging),
+:deep(.vue-flow__pane.selection) {
+  cursor: grabbing;
+}
+
+:deep(.vue-flow__pane) {
+  cursor: grab;
 }
 
 :deep(.vue-flow__node:has(.branch-node.expanded)),

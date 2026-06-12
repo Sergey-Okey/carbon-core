@@ -4,6 +4,7 @@ import {
   calculateLevel,
   calculateTasksForNextLevel,
 } from '~/utils/levelCalculator'
+import { accessAwareStorage } from '~/utils/accessStorage'
 
 export const useUserStore = defineStore(
   'user',
@@ -145,7 +146,7 @@ export const useUserStore = defineStore(
   },
   {
     persist: import.meta.client
-      ? { key: 'carbon-user', storage: localStorage }
+      ? { key: 'carbon-user', storage: accessAwareStorage }
       : undefined,
   }
 )
