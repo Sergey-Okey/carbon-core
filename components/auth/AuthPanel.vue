@@ -217,13 +217,16 @@ async function submit() {
 
 <style scoped lang="scss">
 .auth-page {
-  height: 100dvh;
+  --auth-gutter: clamp(14px, 2vw, 24px);
+  --auth-gap: clamp(16px, 2.5vw, 32px);
+  min-height: 100dvh;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(380px, 0.78fr);
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 470px);
   align-items: stretch;
-  gap: clamp(18px, 3vw, 38px);
+  gap: var(--auth-gap);
   overflow: hidden;
-  padding: clamp(14px, 2vw, 24px);
+  padding: var(--auth-gutter);
+  box-sizing: border-box;
   font-family: 'Inter', sans-serif;
 }
 
@@ -282,22 +285,19 @@ async function submit() {
 
 .auth-card {
   align-self: center;
-  width: min(100%, 470px);
-  max-height: calc(100dvh - 48px);
-  padding: clamp(20px, 3vw, 30px);
+  justify-self: stretch;
+  width: 100%;
+  max-height: calc(100dvh - (var(--auth-gutter) * 2));
+  padding: clamp(20px, 2.5vw, 28px);
   border: var(--ui-border);
   overflow: auto;
   background: color-mix(in srgb, var(--surface) 76%, transparent);
+  box-sizing: border-box;
 }
 
 .back-button {
   display: inline-flex;
   align-items: center;
-  color: var(--text);
-  text-decoration: none;
-}
-
-.back-button {
   gap: 6px;
   min-height: 36px;
   padding: 0 10px;
@@ -314,13 +314,14 @@ async function submit() {
 @media (max-width: 860px) {
   .auth-page {
     grid-template-columns: 1fr;
-    align-content: center;
+    align-content: start;
+    gap: var(--auth-gutter);
     overflow-y: auto;
   }
 
   .auth-intro {
     min-height: 180px;
-    padding: 20px;
+    padding: clamp(18px, 5vw, 24px);
   }
 
   .intro-copy h1 {
@@ -335,7 +336,7 @@ async function submit() {
   }
 
   .auth-card {
-    justify-self: center;
+    align-self: start;
     max-height: none;
     overflow: visible;
   }
@@ -408,7 +409,7 @@ async function submit() {
   background: color-mix(in srgb, var(--surface) 62%, transparent);
 
   p {
-    margin: 0 0 12px;
+    margin: 0;
     color: var(--dim);
     font-size: 0.78rem;
     line-height: 1.45;
@@ -418,7 +419,7 @@ async function submit() {
 .benefits {
   display: grid;
   gap: 10px;
-  margin: 18px 0;
+  margin: 16px 0;
   padding: 0;
   list-style: none;
 
@@ -433,11 +434,11 @@ async function submit() {
 
 .plan-actions {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 
   :deep(.app-button) {
-    width: auto;
+    width: 100%;
     white-space: nowrap;
   }
 
@@ -457,7 +458,7 @@ async function submit() {
   gap: 8px;
   min-height: 44px;
   margin: 0;
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius-md);
   background: var(--accent);
   color: var(--bg);
   font-family: 'Manrope', sans-serif;
@@ -538,11 +539,24 @@ async function submit() {
 }
 
 .card-footer {
-  margin-top: 22px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: var(--ui-border);
 }
 
 .legal-links {
-  margin-top: 12px;
+  margin-top: 10px;
   font-size: 0.66rem;
+}
+
+@media (max-width: 420px) {
+  .auth-page {
+    --auth-gutter: 10px;
+  }
+
+  .auth-intro,
+  .auth-card {
+    border-radius: var(--border-radius-md);
+  }
 }
 </style>
