@@ -109,20 +109,18 @@
               <div class="time-range">
                 <label>
                   <span>Светлая</span>
-                  <input
-                    class="time-input"
-                    type="time"
-                    :value="settingsStore.lightThemeFrom"
-                    @input="setLightThemeFrom"
+                  <AppTimePicker
+                    :model-value="settingsStore.lightThemeFrom"
+                    label="Время включения светлой темы"
+                    @update:model-value="setLightThemeFrom"
                   />
                 </label>
                 <label>
                   <span>Темная</span>
-                  <input
-                    class="time-input"
-                    type="time"
-                    :value="settingsStore.darkThemeFrom"
-                    @input="setDarkThemeFrom"
+                  <AppTimePicker
+                    :model-value="settingsStore.darkThemeFrom"
+                    label="Время включения темной темы"
+                    @update:model-value="setDarkThemeFrom"
                   />
                 </label>
               </div>
@@ -369,6 +367,7 @@ import AppButton from '~/components/ui/AppButton.vue'
 import AppColorPicker from '~/components/ui/AppColorPicker.vue'
 import AppCustomColorPicker from '~/components/ui/AppCustomColorPicker.vue'
 import AppSwitch from '~/components/ui/AppSwitch.vue'
+import AppTimePicker from '~/components/ui/AppTimePicker.vue'
 import { useConfirm } from '~/composables/useConfirm'
 import TagManager from '~/components/settings/TagManager.vue'
 import { useNotification } from '~/composables/useNotification'
@@ -456,17 +455,17 @@ function toggleScheduleTheme(checked: boolean) {
   settingsStore.setTheme(settingsStore.theme)
 }
 
-function setLightThemeFrom(event: Event) {
+function setLightThemeFrom(value: string) {
   settingsStore.setThemeSchedule(
-    (event.target as HTMLInputElement).value,
+    value,
     settingsStore.darkThemeFrom
   )
 }
 
-function setDarkThemeFrom(event: Event) {
+function setDarkThemeFrom(value: string) {
   settingsStore.setThemeSchedule(
     settingsStore.lightThemeFrom,
-    (event.target as HTMLInputElement).value
+    value
   )
 }
 
@@ -886,41 +885,6 @@ async function resetAllData() {
   color: var(--dim);
   font-size: 0.75rem;
   font-weight: 600;
-
-  input {
-    min-height: 36px;
-    width: 100%;
-    padding: 0 10px;
-    border: var(--ui-border);
-    border-radius: var(--border-radius-sm);
-    background: var(--glass-surface);
-    color: var(--text);
-    color-scheme: dark;
-    font: inherit;
-    font-variant-numeric: tabular-nums;
-
-    &:focus-visible {
-      border-color: color-mix(in srgb, var(--accent) 38%, transparent);
-      outline: 2px solid color-mix(in srgb, var(--accent) 12%, transparent);
-      outline-offset: 2px;
-    }
-
-    &::-webkit-calendar-picker-indicator {
-      padding: 4px;
-      border-radius: var(--border-radius-sm);
-      background-color: color-mix(in srgb, var(--accent) 9%, transparent);
-      cursor: pointer;
-      filter: invert(1);
-    }
-
-    :global(.light-theme) & {
-      color-scheme: light;
-
-      &::-webkit-calendar-picker-indicator {
-        filter: none;
-      }
-    }
-  }
 }
 
 @media (pointer: coarse), (max-width: 767px) {
@@ -934,12 +898,8 @@ async function resetAllData() {
     width: 100%;
   }
 
-  .time-range input {
-    min-height: 44px;
-    min-width: 0;
+  .time-range :deep(.app-time-picker) {
     width: 100%;
-    box-sizing: border-box;
-    font-size: 16px;
   }
 
   @media (max-width: 380px) {

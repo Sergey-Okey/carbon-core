@@ -92,6 +92,15 @@ test('strict typecheck inherits Nuxt module resolution', async () => {
   assert.equal(tsconfig.compilerOptions.moduleResolution, undefined)
 })
 
+test('theme schedule uses the custom time picker', async () => {
+  const settings = await read('components/settings/SettingsPanel.vue')
+  const timePicker = await read('components/ui/AppTimePicker.vue')
+
+  assert.match(settings, /<AppTimePicker/)
+  assert.doesNotMatch(settings, /type="time"/)
+  assert.match(timePicker, /class="time-popover"/)
+})
+
 test('native app keeps launch animation and skips onboarding route', async () => {
   const app = await read('app.vue')
   const launch = await read('components/base/AppLaunchScreen.vue')
