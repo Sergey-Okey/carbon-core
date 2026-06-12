@@ -1,147 +1,148 @@
 <template>
   <div class="auth-page">
-    <div class="auth-shell">
-      <aside class="auth-intro">
-      <button type="button" class="back-button" aria-label="Вернуться назад" @click="goBack">
-        <ArrowLeft :size="17" />
-        <span>Вернуться</span>
-      </button>
-      <div class="intro-copy">
-        <span class="eyebrow">{{ isRegister ? 'Начало работы' : 'Ваше пространство' }}</span>
-        <h1>{{ introTitle }}</h1>
-        <p>{{ introDescription }}</p>
-      </div>
-      <span class="intro-mark">CORE OF LIFE</span>
-      </aside>
-      <GlassCard class="auth-card">
-      <template v-if="isRegister && !accessStore.hasSubscription">
-        <div class="plan-head">
-          <div class="paywall-icon"><LockKeyhole :size="22" /></div>
-          <div>
-            <span class="eyebrow">Полный доступ</span>
-            <h1>Подписка</h1>
-          </div>
-        </div>
-
-        <div class="plan-summary">
-          <p>
-            Откройте полный доступ ко всем возможностям приложения.
-          </p>
-        </div>
-
-        <ul class="benefits">
-          <li><Check :size="16" /> Регистрация и личный профиль</li>
-          <li><Check :size="16" /> Все инструменты и разделы COF</li>
-          <li><Check :size="16" /> Поддержка развития COF</li>
-        </ul>
-
-        <div class="plan-actions">
-          <a
-            class="payment-link"
-            :href="SUBSCRIPTION_PAYMENT_URL"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Оплатить {{ SUBSCRIPTION_PRICE }} ₽
-            <ArrowUpRight :size="17" />
-          </a>
-          <AppButton type="button" variant="secondary" @click="startDemo">
-            Попробовать демо
+    <div class="auth-workspace">
+      <main class="auth-grid">
+        <aside class="auth-panel auth-panel--intro">
+          <AppButton type="button" variant="ghost" size="sm" class="back-action" @click="goBack">
+            <ArrowLeft :size="16" />
+            Назад
           </AppButton>
-        </div>
-      </template>
 
-      <template v-else>
-        <div class="card-header">
-          <span class="eyebrow">{{ isRegister ? 'Регистрация' : 'Вход' }}</span>
-          <h1>{{ isRegister ? 'Создайте профиль' : 'С возвращением' }}</h1>
-          <p>
-            {{
-              isRegister
-                ? 'Создайте профиль и начните пользоваться COF.'
-                : 'Войдите в свой профиль COF.'
-            }}
-          </p>
-        </div>
-
-        <form class="auth-form" @submit.prevent="submit">
-          <AppFormField v-if="isRegister" label="Имя">
-            <AppInput v-model="form.name" placeholder="Ваше имя" autocomplete="name" />
-          </AppFormField>
-          <AppFormField label="Email">
-            <AppInput
-              v-model="form.email"
-              type="email"
-              placeholder="email@example.com"
-              autocomplete="email"
-            />
-          </AppFormField>
-          <AppFormField label="Пароль">
-            <AppInput
-              v-model="form.password"
-              type="password"
-              placeholder="Не менее 8 символов"
-              :autocomplete="isRegister ? 'new-password' : 'current-password'"
-            />
-          </AppFormField>
-
-          <label v-if="isRegister" class="consent-control">
-            <input v-model="form.acceptedTerms" type="checkbox" />
-            <span>
-              Принимаю <NuxtLink to="/terms">условия</NuxtLink> и
-              <NuxtLink to="/privacy">политику конфиденциальности</NuxtLink>
-            </span>
-          </label>
-
-          <p v-if="error" class="error-text">{{ error }}</p>
-          <AppButton
-            type="submit"
-            variant="primary"
-            :disabled="authStore.isLoading || (isRegister && !form.acceptedTerms)"
-          >
-            {{ authStore.isLoading ? 'Подождите…' : isRegister ? 'Создать профиль' : 'Войти' }}
-          </AppButton>
-        </form>
-
-        <div v-if="!isRegister" class="demo-block">
-          <div class="demo-block__icon" aria-hidden="true">
-            <Play :size="17" />
+          <div class="intro-main">
+            <span class="eyebrow">Core of Life</span>
+            <h1>{{ isRegister ? 'Соберите свою систему в одном месте.' : 'Продолжайте в своём ритме.' }}</h1>
+            <p>
+              {{
+                isRegister
+                  ? 'Попробуйте готовое пространство или оформите доступ, чтобы создать личный профиль.'
+                  : 'Войдите, чтобы вернуться к задачам, привычкам, фокусу и доске.'
+              }}
+            </p>
           </div>
-          <div class="demo-block__content">
-            <span class="demo-block__label">Демо-режим</span>
-            <strong>Сначала попробуйте COF</strong>
-            <p>Изучите задачи, привычки и доску без регистрации.</p>
-          </div>
-          <AppButton type="button" variant="secondary" @click="startDemo">
-            <Play :size="15" />
-            Открыть демо
-          </AppButton>
-        </div>
-      </template>
 
-      <div class="card-footer">
-        <span>{{ isRegister ? 'Уже есть профиль?' : 'Нужен полный доступ?' }}</span>
-        <NuxtLink :to="isRegister ? '/auth' : '/register'">
-          {{ isRegister ? 'Войти' : 'Оформить подписку' }}
-        </NuxtLink>
-      </div>
-      <div class="legal-links">
-        <NuxtLink to="/privacy">Конфиденциальность</NuxtLink>
-        <NuxtLink to="/terms">Условия</NuxtLink>
-        <NuxtLink to="/support">Поддержка</NuxtLink>
-      </div>
-      </GlassCard>
+          <div class="intro-actions">
+            <AppButton type="button" variant="secondary" @click="startDemo">
+              <Play :size="15" />
+              Попробовать демо
+            </AppButton>
+            <NuxtLink class="route-link" :to="isRegister ? '/auth' : '/register'">
+              {{ isRegister ? 'Уже есть профиль? Войти' : 'Нет профиля? Получить доступ' }}
+              <ArrowUpRight :size="15" />
+            </NuxtLink>
+          </div>
+
+          <nav class="legal-links" aria-label="Юридическая информация">
+            <NuxtLink to="/privacy">Конфиденциальность</NuxtLink>
+            <NuxtLink to="/terms">Условия</NuxtLink>
+            <NuxtLink to="/support">Поддержка</NuxtLink>
+          </nav>
+        </aside>
+
+        <section class="auth-panel auth-panel--main">
+          <template v-if="isRegister && !accessStore.hasSubscription">
+            <div class="panel-heading">
+              <div class="panel-heading__icon"><LockKeyhole :size="20" /></div>
+              <div>
+                <span class="eyebrow">Полный доступ</span>
+                <h2>Оформите подписку</h2>
+                <p>После оплаты вы сможете создать профиль и пользоваться всеми разделами COF.</p>
+              </div>
+            </div>
+
+            <div class="access-list">
+              <div v-for="item in accessBenefits" :key="item.title" class="access-row">
+                <Check :size="16" />
+                <div>
+                  <strong>{{ item.title }}</strong>
+                  <span>{{ item.description }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="primary-actions">
+              <a
+                class="payment-link"
+                :href="SUBSCRIPTION_PAYMENT_URL"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Оплатить доступ · {{ SUBSCRIPTION_PRICE }} ₽
+                <ArrowUpRight :size="16" />
+              </a>
+            </div>
+          </template>
+
+          <template v-else>
+            <div class="panel-heading">
+              <div class="panel-heading__icon">
+                <component :is="isRegister ? UserPlus : LogIn" :size="20" />
+              </div>
+              <div>
+                <span class="eyebrow">{{ isRegister ? 'Регистрация' : 'Авторизация' }}</span>
+                <h2>{{ isRegister ? 'Создайте профиль' : 'С возвращением' }}</h2>
+                <p>
+                  {{
+                    isRegister
+                      ? 'Укажите данные, которые будете использовать для входа.'
+                      : 'Введите данные профиля, чтобы продолжить работу.'
+                  }}
+                </p>
+              </div>
+            </div>
+
+            <form class="auth-form" @submit.prevent="submit">
+              <AppFormField v-if="isRegister" label="Имя">
+                <AppInput v-model="form.name" placeholder="Как к вам обращаться" autocomplete="name" />
+              </AppFormField>
+              <AppFormField label="Email">
+                <AppInput
+                  v-model="form.email"
+                  type="email"
+                  placeholder="email@example.com"
+                  autocomplete="email"
+                />
+              </AppFormField>
+              <AppFormField label="Пароль" :hint="isRegister ? 'Минимум 8 символов' : undefined">
+                <AppInput
+                  v-model="form.password"
+                  type="password"
+                  placeholder="Введите пароль"
+                  :autocomplete="isRegister ? 'new-password' : 'current-password'"
+                />
+              </AppFormField>
+
+              <label v-if="isRegister" class="consent-control">
+                <input v-model="form.acceptedTerms" type="checkbox" />
+                <span class="consent-control__mark"><Check :size="12" /></span>
+                <span>
+                  Принимаю <NuxtLink to="/terms">условия использования</NuxtLink> и
+                  <NuxtLink to="/privacy">политику конфиденциальности</NuxtLink>
+                </span>
+              </label>
+
+              <p v-if="error" class="error-text">{{ error }}</p>
+              <AppButton
+                type="submit"
+                variant="primary"
+                :disabled="authStore.isLoading || (isRegister && !form.acceptedTerms)"
+              >
+                <component :is="isRegister ? UserPlus : LogIn" :size="16" />
+                {{ authStore.isLoading ? 'Подождите…' : isRegister ? 'Создать профиль' : 'Войти' }}
+              </AppButton>
+            </form>
+          </template>
+        </section>
+      </main>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import { ArrowLeft, ArrowUpRight, Check, LockKeyhole, Play } from 'lucide-vue-next'
+import { ArrowLeft, ArrowUpRight, Check, LockKeyhole, LogIn, Play, UserPlus } from 'lucide-vue-next'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppFormField from '~/components/ui/AppFormField.vue'
 import AppInput from '~/components/ui/AppInput.vue'
-import GlassCard from '~/components/base/GlassCard.vue'
 import {
   SUBSCRIPTION_PAYMENT_URL,
   SUBSCRIPTION_PRICE,
@@ -158,20 +159,11 @@ const router = useRouter()
 const isRegister = computed(() => props.mode === 'register')
 const keepShortWords = (text: string) =>
   text.replace(/(^|[\s(])([А-Яа-яЁё]{1,2})\s+/g, '$1$2\u00a0')
-const introTitle = computed(() =>
-  keepShortWords(
-    isRegister.value
-      ? 'Сначала познакомьтесь с COF.'
-      : 'Продолжайте с того места, где остановились.'
-  )
-)
-const introDescription = computed(() =>
-  keepShortWords(
-    isRegister.value
-      ? 'Откройте демо, чтобы изучить задачи, привычки и доску без регистрации. Для постоянного доступа оформите подписку и создайте профиль.'
-      : 'Войдите в профиль, чтобы вернуться к своим задачам, привычкам и связанным этапам развития.'
-  )
-)
+const accessBenefits = [
+  { title: 'Личный профиль', description: keepShortWords('Вход и доступ к вашему пространству COF.') },
+  { title: 'Все инструменты', description: keepShortWords('Задачи, привычки, доска, фокус и аналитика.') },
+  { title: 'Дальнейшие обновления', description: keepShortWords('Новые возможности будут доступны в профиле.') },
+]
 const error = ref('')
 const form = reactive({ name: '', email: '', password: '', acceptedTerms: false })
 
@@ -659,6 +651,529 @@ async function submit() {
   .demo-block :deep(.app-button) {
     grid-column: 1 / -1;
     width: 100%;
+  }
+}
+
+.auth-page {
+  min-height: 100dvh;
+  overflow-y: auto;
+  padding: clamp(10px, 2vw, 24px);
+}
+
+.auth-workspace {
+  display: grid;
+  width: min(100%, 1180px);
+  min-height: calc(100dvh - clamp(20px, 4vw, 48px));
+  margin-inline: auto;
+  align-content: center;
+  gap: 14px;
+}
+
+.auth-head,
+.auth-panel,
+.auth-footer {
+  @include glass;
+  border: var(--ui-border);
+}
+
+.auth-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 18px;
+  border-radius: var(--border-radius-lg);
+}
+
+.auth-head__title {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 14px;
+
+  :deep(.app-button) {
+    flex: 0 0 auto;
+    padding-inline: 10px;
+  }
+
+  h1 {
+    margin: 4px 0 0;
+    overflow: hidden;
+    color: var(--text);
+    font-size: 1.28rem;
+    font-weight: 700;
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.auth-head__mode {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--border-radius-pill);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.auth-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.75fr);
+  gap: 14px;
+  min-width: 0;
+}
+
+.auth-panel {
+  min-width: 0;
+  border-radius: var(--border-radius-lg);
+}
+
+.auth-panel--main {
+  display: flex;
+  min-height: 520px;
+  padding: clamp(24px, 4vw, 46px);
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-panel--main > * {
+  width: min(100%, 520px);
+  margin-inline: auto;
+}
+
+.panel-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+  margin-bottom: 26px;
+
+  h2 {
+    margin: 7px 0 9px;
+    color: var(--text);
+    font-size: clamp(1.65rem, 3vw, 2.35rem);
+    font-weight: 700;
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+  }
+
+  p {
+    max-width: 44ch;
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+}
+
+.panel-heading__icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: var(--border-radius-pill);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--text);
+}
+
+.auth-form {
+  gap: 14px;
+
+  :deep(.app-button) {
+    width: 100%;
+    margin-top: 4px;
+  }
+}
+
+.consent-control {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  input:checked + .consent-control__mark {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  input:focus-visible + .consent-control__mark {
+    outline: 2px solid color-mix(in srgb, var(--accent) 18%, transparent);
+    outline-offset: 2px;
+  }
+}
+
+.consent-control__mark {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border: var(--ui-border);
+  border-radius: 6px;
+  color: transparent;
+  transition:
+    background var(--transition-standard),
+    border-color var(--transition-standard),
+    color var(--transition-standard);
+}
+
+.access-list {
+  display: grid;
+  margin-bottom: 24px;
+  overflow: hidden;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
+}
+
+.access-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 11px;
+  padding: 15px 16px;
+  border-bottom: var(--ui-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  svg {
+    margin-top: 2px;
+    color: var(--text);
+  }
+
+  div {
+    display: grid;
+    gap: 3px;
+  }
+
+  strong {
+    color: var(--text);
+    font-size: 0.82rem;
+  }
+
+  span {
+    color: var(--dim);
+    font-size: 0.72rem;
+    line-height: 1.4;
+  }
+}
+
+.primary-actions,
+.primary-actions .payment-link {
+  width: 100%;
+}
+
+.payment-link {
+  min-height: var(--control-height-md);
+  border-radius: var(--border-radius-pill);
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.auth-side {
+  display: grid;
+  gap: 14px;
+  align-content: stretch;
+}
+
+.auth-panel--welcome,
+.auth-panel--switch {
+  display: flex;
+  padding: 20px;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-panel--welcome {
+  min-height: 270px;
+  justify-content: space-between;
+
+  :deep(.app-button) {
+    width: 100%;
+  }
+}
+
+.auth-panel--switch {
+  min-height: 236px;
+
+  > strong {
+    color: var(--text);
+    font-size: 1rem;
+    line-height: 1.25;
+  }
+
+  > p {
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+}
+
+.side-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--dim);
+
+  span {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  svg {
+    color: var(--text);
+  }
+}
+
+.auth-panel--welcome > div:nth-child(2) {
+  display: grid;
+  gap: 8px;
+
+  strong {
+    color: var(--text);
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+  }
+
+  p {
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+}
+
+.route-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  margin-top: auto;
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 18px;
+  border-radius: var(--border-radius-lg);
+  color: var(--dim);
+  font-size: 0.68rem;
+
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  a {
+    color: var(--text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+}
+
+@media (max-width: 820px) {
+  .auth-workspace {
+    align-content: start;
+  }
+
+  .auth-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-panel--main {
+    min-height: 0;
+  }
+
+  .auth-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .auth-panel--welcome,
+  .auth-panel--switch {
+    min-height: 230px;
+  }
+}
+
+@media (max-width: 560px) {
+  .auth-head {
+    align-items: flex-start;
+  }
+
+  .auth-head__title {
+    align-items: flex-start;
+    gap: 8px;
+    flex-direction: column;
+  }
+
+  .auth-head__mode {
+    min-height: 34px;
+    padding-inline: 10px;
+
+    span {
+      display: none;
+    }
+  }
+
+  .auth-side {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-panel--main,
+  .auth-panel--welcome,
+  .auth-panel--switch {
+    padding: 18px;
+  }
+
+  .panel-heading {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+.auth-workspace {
+  width: min(100%, 1080px);
+  align-content: center;
+}
+
+.auth-grid {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: stretch;
+}
+
+.auth-panel--intro {
+  display: flex;
+  min-height: 580px;
+  padding: clamp(24px, 4vw, 44px);
+  flex-direction: column;
+}
+
+.back-action {
+  align-self: flex-start;
+  margin-left: -10px;
+}
+
+.intro-main {
+  display: grid;
+  max-width: 430px;
+  margin-block: auto;
+
+  h1 {
+    margin: 12px 0 18px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2.3rem, 4.8vw, 4rem);
+    font-weight: 600;
+    line-height: 0.98;
+    letter-spacing: -0.05em;
+    text-wrap: pretty;
+  }
+
+  p {
+    max-width: 42ch;
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.84rem;
+    line-height: 1.65;
+  }
+}
+
+.intro-actions {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 22px;
+
+  :deep(.app-button) {
+    width: 100%;
+  }
+}
+
+.intro-actions .route-link {
+  margin-top: 0;
+}
+
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  color: var(--dim);
+  font-size: 0.66rem;
+
+  a {
+    color: var(--dim);
+    font-weight: 600;
+    text-decoration: none;
+  }
+}
+
+.auth-panel--main {
+  min-height: 580px;
+  padding: clamp(24px, 5vw, 54px);
+}
+
+@media (max-width: 820px) {
+  .auth-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-panel--intro,
+  .auth-panel--main {
+    min-height: auto;
+  }
+
+  .auth-panel--intro {
+    gap: 28px;
+  }
+
+  .intro-main {
+    margin-block: 24px;
+  }
+}
+
+@media (max-width: 560px) {
+  .auth-page {
+    padding: 10px;
+  }
+
+  .auth-panel--intro,
+  .auth-panel--main {
+    padding: 20px;
+  }
+
+  .intro-main h1 {
+    font-size: clamp(2rem, 12vw, 3rem);
   }
 }
 </style>
