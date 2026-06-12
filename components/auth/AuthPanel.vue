@@ -221,7 +221,7 @@ async function submit() {
   --auth-gap: clamp(16px, 2.5vw, 32px);
   min-height: 100dvh;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(380px, 470px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
   gap: var(--auth-gap);
   overflow: hidden;
@@ -234,7 +234,7 @@ async function submit() {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: clamp(18px, 4vw, 54px);
+  padding: clamp(22px, 3vw, 42px);
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
   background: color-mix(in srgb, var(--surface) 44%, transparent);
@@ -246,14 +246,14 @@ async function submit() {
   display: grid;
   align-content: center;
   flex: 1;
-  max-width: 680px;
+  max-width: 560px;
 
   h1 {
-    max-width: 11ch;
+    max-width: 14ch;
     margin: 12px 0 18px;
     color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(2.8rem, 7vw, 6.8rem);
+    font-size: clamp(2.5rem, 5vw, 5.4rem);
     font-weight: 600;
     line-height: 0.94;
     letter-spacing: -0.055em;
@@ -288,11 +288,16 @@ async function submit() {
   justify-self: stretch;
   width: 100%;
   max-height: calc(100dvh - (var(--auth-gutter) * 2));
-  padding: clamp(20px, 2.5vw, 28px);
+  padding: clamp(22px, 3vw, 42px);
   border: var(--ui-border);
   overflow: auto;
   background: color-mix(in srgb, var(--surface) 76%, transparent);
   box-sizing: border-box;
+}
+
+.auth-card > :deep(*) {
+  max-width: 520px;
+  margin-inline: auto;
 }
 
 .back-button {
@@ -327,7 +332,7 @@ async function submit() {
   .intro-copy h1 {
     max-width: 16ch;
     margin: 8px 0 10px;
-    font-size: clamp(2rem, 10vw, 3.4rem);
+    font-size: clamp(2rem, 9vw, 3.2rem);
   }
 
   .intro-copy p,
