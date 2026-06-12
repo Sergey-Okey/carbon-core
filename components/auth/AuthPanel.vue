@@ -7,14 +7,8 @@
       </button>
       <div class="intro-copy">
         <span class="eyebrow">{{ isRegister ? 'Начало работы' : 'Ваше пространство' }}</span>
-        <h1>{{ isRegister ? 'Сначала познакомьтесь с COF.' : 'Продолжайте с того места, где остановились.' }}</h1>
-        <p>
-          {{
-            isRegister
-              ? 'Откройте демо, чтобы изучить задачи, привычки и доску без регистрации. Для постоянного доступа оформите подписку и создайте профиль.'
-              : 'Войдите в профиль, чтобы вернуться к своим задачам, привычкам и связанным этапам развития.'
-          }}
-        </p>
+        <h1>{{ introTitle }}</h1>
+        <p>{{ introDescription }}</p>
       </div>
       <span class="intro-mark">CORE OF LIFE</span>
     </aside>
@@ -155,6 +149,22 @@ const authStore = useAuthStore()
 const { addNotification } = useNotification()
 const router = useRouter()
 const isRegister = computed(() => props.mode === 'register')
+const keepShortWords = (text: string) =>
+  text.replace(/(^|[\s(])([А-Яа-яЁё]{1,2})\s+/g, '$1$2\u00a0')
+const introTitle = computed(() =>
+  keepShortWords(
+    isRegister.value
+      ? 'Сначала познакомьтесь с COF.'
+      : 'Продолжайте с того места, где остановились.'
+  )
+)
+const introDescription = computed(() =>
+  keepShortWords(
+    isRegister.value
+      ? 'Откройте демо, чтобы изучить задачи, привычки и доску без регистрации. Для постоянного доступа оформите подписку и создайте профиль.'
+      : 'Войдите в профиль, чтобы вернуться к своим задачам, привычкам и связанным этапам развития.'
+  )
+)
 const error = ref('')
 const form = reactive({ name: '', email: '', password: '', acceptedTerms: false })
 
@@ -244,6 +254,10 @@ async function submit() {
     font-weight: 600;
     line-height: 0.94;
     letter-spacing: -0.055em;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+    text-wrap: balance;
   }
 
   p {
@@ -252,6 +266,10 @@ async function submit() {
     color: var(--dim);
     font-size: clamp(0.86rem, 1.2vw, 1rem);
     line-height: 1.65;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+    text-wrap: pretty;
   }
 }
 
