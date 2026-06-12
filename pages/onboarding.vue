@@ -27,120 +27,122 @@
       <div class="gradient-overlay"></div>
     </div>
 
-    <!-- Хедер -->
-    <div class="fixed-header">
-      <div
-        v-motion
-        :initial="{ opacity: 0, y: -10 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 400 } }"
-      >
-        <div class="logo">COF</div>
-      </div>
-      <div
-        v-motion
-        :initial="{ opacity: 0, y: -10 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 100 } }"
-      >
-        <div class="beta-badge">beta</div>
-      </div>
-      <div
-        v-motion
-        :initial="{ opacity: 0, y: -10 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 150 } }"
-      >
-        <button class="skip-btn" @click="finishOnboarding">
-          Пропустить
-          <ChevronRight :size="16" />
-        </button>
-      </div>
-    </div>
-
     <!-- Скролл-контейнер -->
     <div class="scroll-container" ref="scrollContainer" @scroll="handleScroll">
-      <!-- Шаг 1 – Вступление -->
-      <section id="step-1" class="section hero-section">
-        <div class="section-content">
+      <div class="first-slide">
+        <!-- Хедер -->
+        <div class="fixed-header">
           <div
             v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 100 },
-            }"
+            :initial="{ opacity: 0, y: -10 }"
+            :enter="{ opacity: 1, y: 0, transition: { duration: 400 } }"
           >
-            <h1 class="hero-title">
-              <span class="line">Сфокусируйтесь</span>
-              <span class="line">на важном</span>
-            </h1>
+            <div class="logo">COF</div>
           </div>
           <div
             v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 200 },
-            }"
+            :initial="{ opacity: 0, y: -10 }"
+            :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 100 } }"
           >
-            <p class="hero-subtitle">
-              COF — минималистичная система для тех, кто хочет управлять
-              задачами, привычками и видеть прогресс без лишнего шума.
-            </p>
+            <div class="beta-badge">beta</div>
           </div>
           <div
             v-motion
-            :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{
-              opacity: 1,
-              y: 0,
-              transition: { duration: 600, delay: 300 },
-            }"
+            :initial="{ opacity: 0, y: -10 }"
+            :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 150 } }"
           >
-            <div class="hero-cta">
-              <button
-                class="cta-button cta-button--details"
-                type="button"
-                aria-label="Подробнее"
-                @click="scrollToNextStep"
-              >
-                Подробнее
-                <ChevronRight :size="20" class="btn-icon" />
-              </button>
-              <button
-                class="apk-button"
-                :class="{ disabled: !apkDownloadUrl }"
-                type="button"
-                :disabled="!apkDownloadUrl"
-                @click="downloadApk"
-              >
-                <Download :size="18" />
-                <span>{{ apkDownloadUrl ? 'Скачать APK' : 'APK скоро' }}</span>
-              </button>
-              <span class="hint-text"
-                >или листайте дальше, чтобы узнать принципы</span
-              >
+            <button class="skip-btn" @click="finishOnboarding">
+              Пропустить
+              <ChevronRight :size="16" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Шаг 1 – Вступление -->
+        <section id="step-1" class="section hero-section">
+          <div class="section-content">
+            <div
+              v-motion
+              :initial="{ opacity: 0, y: 30 }"
+              :visible-once="{
+                opacity: 1,
+                y: 0,
+                transition: { duration: 600, delay: 100 },
+              }"
+            >
+              <h1 class="hero-title">
+                <span class="line">Сфокусируйтесь</span>
+                <span class="line">на важном</span>
+              </h1>
+            </div>
+            <div
+              v-motion
+              :initial="{ opacity: 0, y: 30 }"
+              :visible-once="{
+                opacity: 1,
+                y: 0,
+                transition: { duration: 600, delay: 200 },
+              }"
+            >
+              <p class="hero-subtitle">
+                COF — минималистичная система для тех, кто хочет управлять
+                задачами, привычками и видеть прогресс без лишнего шума.
+              </p>
+            </div>
+            <div
+              v-motion
+              :initial="{ opacity: 0, y: 30 }"
+              :visible-once="{
+                opacity: 1,
+                y: 0,
+                transition: { duration: 600, delay: 300 },
+              }"
+            >
+              <div class="hero-cta">
+                <button
+                  class="cta-button cta-button--details"
+                  type="button"
+                  aria-label="Подробнее"
+                  @click="scrollToNextStep"
+                >
+                  Подробнее
+                  <ChevronRight :size="20" class="btn-icon" />
+                </button>
+                <button
+                  class="apk-button"
+                  :class="{ disabled: !apkDownloadUrl }"
+                  type="button"
+                  :disabled="!apkDownloadUrl"
+                  @click="downloadApk"
+                >
+                  <Download :size="18" />
+                  <span>{{ apkDownloadUrl ? 'Скачать APK' : 'APK скоро' }}</span>
+                </button>
+                <span class="hint-text"
+                  >или листайте дальше, чтобы узнать принципы</span
+                >
+              </div>
             </div>
           </div>
-        </div>
-        <div
-          class="hero-visual"
-          ref="heroVisualRef"
-          @pointermove="handlePointerMove"
-          @pointerleave="handlePointerLeave"
-        >
-          <div class="hashtag-cloud">
-            <span
-              v-for="(tag, i) in allTags"
-              :key="tag.id"
-              :ref="(el) => setTagRef(el, i)"
-              class="hashtag"
-            >
-              {{ tag.label }}
-            </span>
+          <div
+            class="hero-visual"
+            ref="heroVisualRef"
+            @pointermove="handlePointerMove"
+            @pointerleave="handlePointerLeave"
+          >
+            <div class="hashtag-cloud">
+              <span
+                v-for="(tag, i) in allTags"
+                :key="tag.id"
+                :ref="(el) => setTagRef(el, i)"
+                class="hashtag"
+              >
+                {{ tag.label }}
+              </span>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <!-- Шаг 2 – Философия правила трёх -->
       <section id="step-2" class="section rule-section">
@@ -740,7 +742,6 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .onboarding {
-  --header-height: 88px;
   position: fixed;
   inset: 0;
   background: var(--bg);
@@ -1015,8 +1016,14 @@ onUnmounted(() => {
   z-index: 10;
 }
 
+.first-slide {
+  min-height: 100dvh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
 .fixed-header {
-  position: relative;
+  position: static;
   z-index: 100;
   display: flex;
   align-items: center;
@@ -1024,7 +1031,7 @@ onUnmounted(() => {
   gap: 14px;
   padding: 20px 40px;
   background: color-mix(in srgb, var(--bg) 68%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 8%, transparent);
+  border: none;
   backdrop-filter: blur(18px) saturate(130%);
   -webkit-backdrop-filter: blur(18px) saturate(130%);
 }
@@ -1086,7 +1093,7 @@ onUnmounted(() => {
 }
 
 .section {
-  min-height: calc(100dvh - var(--header-height));
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1098,7 +1105,7 @@ onUnmounted(() => {
 
   @media (max-width: 768px) {
     padding: 40px 20px 32px;
-    min-height: calc(100dvh - var(--header-height));
+    min-height: 100dvh;
   }
 }
 .section-content {
@@ -1134,11 +1141,14 @@ onUnmounted(() => {
 }
 
 .hero-section {
+  min-height: calc(100dvh - 88px);
+  scroll-snap-align: none;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 40px;
   align-items: center;
   @media (max-width: 768px) {
+    min-height: calc(100dvh - 68px);
     grid-template-columns: 1fr;
     justify-content: center;
     align-items: center;
@@ -1661,10 +1671,6 @@ onUnmounted(() => {
 
 // Адаптивность (только необходимые правки)
 @media (max-width: 1024px) {
-  .onboarding {
-    --header-height: 76px;
-  }
-
   .fixed-header {
     padding: 16px 20px;
   }
@@ -1688,10 +1694,6 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
-  .onboarding {
-    --header-height: 68px;
-  }
-
   .section {
     padding-inline: 20px;
   }
@@ -1744,7 +1746,6 @@ onUnmounted(() => {
   .hero-section {
     grid-template-columns: 1fr;
     gap: 20px;
-    min-height: calc(100dvh - var(--header-height));
     justify-content: center;
     align-items: center;
   }
