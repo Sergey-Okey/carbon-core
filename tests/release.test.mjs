@@ -53,6 +53,8 @@ test('registration requires explicit legal consent', async () => {
   assert.match(authPanel, /register\(form\.email, form\.password, form\.name, 'local'/)
   assert.doesNotMatch(authPanel, /class="auth-mode"/)
   assert.doesNotMatch(authPanel, /class="auth-topbar"/)
+  assert.match(authPanel, /Попробовать демо/)
+  assert.doesNotMatch(authPanel, /Уже оплатил/)
 })
 
 test('onboarding does not use CSS gradients', async () => {

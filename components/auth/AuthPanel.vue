@@ -6,13 +6,13 @@
         <span>Вернуться</span>
       </button>
       <div class="intro-copy">
-        <span class="eyebrow">{{ isRegister ? 'Новая глава' : 'Продолжить путь' }}</span>
-        <h1>{{ isRegister ? 'Соберите свою систему жизни.' : 'Вернитесь к важному.' }}</h1>
+        <span class="eyebrow">{{ isRegister ? 'Начало работы' : 'Ваше пространство' }}</span>
+        <h1>{{ isRegister ? 'Сначала познакомьтесь с COF.' : 'Продолжайте с того места, где остановились.' }}</h1>
         <p>
           {{
             isRegister
-              ? 'Задачи, привычки и этапы складываются в ясную карту движения.'
-              : 'Ваше пространство для задач, привычек, веток развития и спокойного фокуса.'
+              ? 'Откройте демо, чтобы изучить задачи, привычки и доску без регистрации. Для постоянного доступа оформите подписку и создайте профиль.'
+              : 'Войдите в профиль, чтобы вернуться к своим задачам, привычкам и связанным этапам развития.'
           }}
         </p>
       </div>
@@ -50,14 +50,10 @@
             Оплатить {{ SUBSCRIPTION_PRICE }} ₽
             <ArrowUpRight :size="17" />
           </a>
-          <AppButton type="button" variant="secondary" @click="activateAfterPayment">
-            Уже оплатил
+          <AppButton type="button" variant="secondary" @click="startDemo">
+            Попробовать демо
           </AppButton>
         </div>
-        <p class="activation-note">
-          Сейчас активация подтверждается вручную. Позже здесь появится автоматическая
-          проверка CloudTips.
-        </p>
       </template>
 
       <template v-else>
@@ -174,11 +170,6 @@ function goBack() {
     return
   }
   router.push('/onboarding')
-}
-
-function activateAfterPayment() {
-  accessStore.activateSubscription()
-  addNotification({ type: 'success', message: 'Полный доступ открыт' })
 }
 
 async function submit() {
@@ -459,14 +450,6 @@ async function submit() {
 
 .auth-card :deep(.app-button) {
   width: 100%;
-}
-
-.activation-note {
-  margin: 12px 0 0;
-  color: var(--dim);
-  font-size: 0.67rem;
-  line-height: 1.45;
-  text-align: center;
 }
 
 .auth-form {
