@@ -335,12 +335,8 @@
               <div class="setting-info">
                 <span class="label">Сброс данных</span>
                 <span class="desc">
-                  Удаляет профиль, задачи, прогресс и настройки.
-                  {{
-                    settingsStore.confirmDangerActions
-                      ? ' Перед сбросом будет подтверждение.'
-                      : ' Подтверждение отключено.'
-                  }}
+                  Удаляет профиль, задачи, прогресс и настройки. Перед сбросом потребуется
+                  подтверждение.
                 </span>
               </div>
               <AppButton class="action-btn" type="button" variant="danger" @click="resetAllData">
@@ -376,6 +372,7 @@ import AppButton from '~/components/ui/AppButton.vue'
 import AppColorPicker from '~/components/ui/AppColorPicker.vue'
 import AppCustomColorPicker from '~/components/ui/AppCustomColorPicker.vue'
 import AppSwitch from '~/components/ui/AppSwitch.vue'
+import { useConfirm } from '~/composables/useConfirm'
 import { useNotification } from '~/composables/useNotification'
 import { ACCENT_COLORS, useSettingsStore } from '~/stores/settings.store'
 import {
@@ -388,6 +385,7 @@ import {
 type SettingsTab = 'appearance' | 'focus' | 'board' | 'data'
 
 const settingsStore = useSettingsStore()
+const { confirm } = useConfirm()
 const { addNotification } = useNotification()
 const activeTab = ref<SettingsTab>('appearance')
 
@@ -585,15 +583,15 @@ function restoreAutoBackup() {
   }
 }
 
-function resetAllData() {
-  if (
-    !settingsStore.confirmDangerActions ||
-    confirm('Удалить все данные? Это действие необратимо.')
-  ) {
-    localStorage.clear()
-    addNotification({ type: 'success', message: 'Данные сброшены. Перезагрузка...' })
-    setTimeout(() => window.location.reload(), 1000)
-  }
+async function resetAllData() {
+  const confirmed = await confirm(
+    'Удалить профиль, задачи, прогресс и настройки? Это действие нельзя отменить.'
+  )
+  if (!confirmed) return
+
+  localStorage.clear()
+  addNotification({ type: 'success', message: 'Данные сброшены. Перезагрузка...' })
+  setTimeout(() => window.location.reload(), 1000)
 }
 </script>
 

@@ -5,69 +5,24 @@
       <div class="progress-fill" :style="{ width: progress + '%' }" />
     </div>
 
-    <!-- Фоновый слой (сетка, свет, геометрия, партиклы) -->
+    <!-- Центральная сфера с маркерами доски -->
     <div class="background-layer">
-      <div class="background-grid"></div>
-      <div class="light-layer">
-        <div
-          v-for="light in ambientLights"
-          :key="light.id"
-          class="ambient-light"
-          :style="{
-            left: light.left,
-            top: light.top,
-            width: light.size,
-            height: light.size,
-            '--light-duration': light.duration,
-            '--light-delay': light.delay,
-          }"
-        />
-      </div>
-      <div class="geometry-layer">
-        <div
-          v-for="(geo, i) in geometricShapes"
-          :key="geo.id"
-          v-motion
-          :initial="{ opacity: 0, scale: 0.82, rotate: -8 }"
-          :enter="{
-            opacity: 1,
-            scale: 1,
-            rotate: 0,
-            transition: { duration: 900, delay: 120 + i * 90 },
-          }"
-          :class="['geo-shape', geo.type]"
-          :style="{
-            left: geo.left,
-            top: geo.top,
-            width: geo.size,
-            height: geo.size,
-            '--geo-duration': geo.duration,
-            '--geo-delay': geo.delay,
-          }"
-        />
-      </div>
-      <div class="particle-layer">
-        <div
-          v-for="(particle, i) in particles"
-          :key="particle.id"
-          v-motion
-          class="particle"
-          :initial="{ opacity: 0, scale: 0.6, y: 10 }"
-          :enter="{
-            opacity: 1,
-            scale: 1,
-            y: 0,
-            transition: { duration: 650, delay: 120 + i * 70 },
-          }"
-          :style="{
-            left: particle.left,
-            top: particle.top,
-            width: particle.size,
-            height: particle.size,
-            '--particle-duration': particle.duration,
-            '--particle-delay': particle.delay,
-          }"
-        />
+      <div class="board-sphere">
+        <div class="sphere-core"></div>
+        <div class="marker-orbit marker-orbit--outer">
+          <span class="board-marker branch-marker marker-one"></span>
+          <span class="board-marker milestone-marker marker-two"></span>
+          <span class="board-marker milestone-marker marker-three"></span>
+        </div>
+        <div class="marker-orbit marker-orbit--middle">
+          <span class="board-marker milestone-marker marker-one"></span>
+          <span class="board-marker branch-marker marker-two"></span>
+          <span class="board-marker milestone-marker marker-three"></span>
+        </div>
+        <div class="marker-orbit marker-orbit--inner">
+          <span class="board-marker branch-marker marker-one"></span>
+          <span class="board-marker milestone-marker marker-two"></span>
+        </div>
       </div>
       <div class="gradient-overlay"></div>
     </div>
@@ -470,17 +425,50 @@
               <ChevronRight :size="16" class="chevron" />
             </button>
             <div v-if="showDonation" class="donation-content">
-              <div class="wallet-info">
-                <span class="network-badge">TRC-20 (USDT)</span>
-                <code class="wallet-code"
-                  >TXjoHFudFFQT6hXSqb55xz5W2KQUAAbnF8</code
-                >
+              <div class="donation-options">
+                <div class="wallet-info">
+                  <span class="network-badge">TRC-20 (USDT)</span>
+                  <code class="wallet-code"
+                    >TXjoHFudFFQT6hXSqb55xz5W2KQUAAbnF8</code
+                  >
+                  <p class="donation-hint">Нажмите на адрес, чтобы скопировать</p>
+                </div>
+                <div class="cloudtips-card">
+                  <div class="cloudtips-head">
+                    <span class="network-badge">CloudTips</span>
+                    <span>Быстрый перевод</span>
+                  </div>
+                  <p>Поддержать разработку банковской картой или через СБП.</p>
+                  <a
+                    class="cloudtips-link"
+                    href="https://pay.cloudtips.ru/p/f36fd8ac"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Перейти к переводу
+                    <ArrowRight :size="16" />
+                  </a>
+                </div>
               </div>
-              <p class="donation-hint">Нажмите на адрес, чтобы скопировать</p>
             </div>
           </div>
           <div class="contacts">
-            <a href="mailto:sergeyborisov_1@vk.ru"><Mail :size="20" /></a>
+            <a href="https://t.me/borisov_1" target="_blank" rel="noopener noreferrer">
+              <Send :size="16" />
+              <span>Telegram</span>
+            </a>
+            <a
+              href="https://www.instagram.com/borisov.volkov/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Instagram :size="16" />
+              <span>Instagram</span>
+            </a>
+            <a href="mailto:sergeyborisov_1@vk.ru">
+              <Mail :size="16" />
+              <span>Email</span>
+            </a>
           </div>
         </div>
       </section>
@@ -545,12 +533,12 @@
             <p class="final-hint">
               В любой момент вернитесь к гайду через иконку вопроса в хедере.
             </p>
-            <div class="final-links">
-              <NuxtLink to="/privacy">Конфиденциальность</NuxtLink>
-              <NuxtLink to="/terms">Условия</NuxtLink>
-              <NuxtLink to="/support">Поддержка</NuxtLink>
-            </div>
           </div>
+        </div>
+        <div class="final-links">
+          <NuxtLink to="/privacy">Конфиденциальность</NuxtLink>
+          <NuxtLink to="/terms">Условия</NuxtLink>
+          <NuxtLink to="/support">Поддержка</NuxtLink>
         </div>
       </section>
     </div>
@@ -573,7 +561,9 @@ import {
   Download,
   Upload,
   Heart,
+  Instagram,
   Mail,
+  Send,
 } from 'lucide-vue-next'
 import { useOnboardingStore } from '~/stores/onboarding.store'
 import { useAuthStore } from '~/stores/auth.store'
@@ -624,141 +614,6 @@ const scrollContainer = ref<HTMLElement | null>(null)
 const progress = ref(0)
 const showDonation = ref(false)
 const apkDownloadUrl = '/downloads/core-of-life.apk'
-
-const particles = [
-  {
-    id: 'p1',
-    left: '12%',
-    top: '18%',
-    size: '8px',
-    duration: '14s',
-    delay: '0s',
-  },
-  {
-    id: 'p2',
-    left: '24%',
-    top: '62%',
-    size: '6px',
-    duration: '17s',
-    delay: '1.5s',
-  },
-  {
-    id: 'p3',
-    left: '48%',
-    top: '28%',
-    size: '10px',
-    duration: '18s',
-    delay: '0.8s',
-  },
-  {
-    id: 'p4',
-    left: '64%',
-    top: '72%',
-    size: '7px',
-    duration: '15s',
-    delay: '2.1s',
-  },
-  {
-    id: 'p5',
-    left: '82%',
-    top: '22%',
-    size: '9px',
-    duration: '19s',
-    delay: '1.1s',
-  },
-  {
-    id: 'p6',
-    left: '76%',
-    top: '52%',
-    size: '6px',
-    duration: '16s',
-    delay: '2.8s',
-  },
-]
-
-const ambientLights = [
-  {
-    id: 'l1',
-    left: '-8%',
-    top: '8%',
-    size: '42vmax',
-    duration: '24s',
-    delay: '0s',
-  },
-  {
-    id: 'l2',
-    left: '58%',
-    top: '-12%',
-    size: '48vmax',
-    duration: '28s',
-    delay: '1.6s',
-  },
-  {
-    id: 'l3',
-    left: '24%',
-    top: '64%',
-    size: '40vmax',
-    duration: '26s',
-    delay: '0.8s',
-  },
-]
-
-const geometricShapes = [
-  {
-    id: 'g1',
-    type: 'hex',
-    left: '8%',
-    top: '20%',
-    size: '64px',
-    duration: '20s',
-    delay: '0s',
-  },
-  {
-    id: 'g2',
-    type: 'diamond',
-    left: '78%',
-    top: '18%',
-    size: '58px',
-    duration: '23s',
-    delay: '1.1s',
-  },
-  {
-    id: 'g3',
-    type: 'square',
-    left: '32%',
-    top: '70%',
-    size: '48px',
-    duration: '18s',
-    delay: '0.7s',
-  },
-  {
-    id: 'g4',
-    type: 'triangle',
-    left: '64%',
-    top: '62%',
-    size: '56px',
-    duration: '24s',
-    delay: '1.5s',
-  },
-  {
-    id: 'g5',
-    type: 'circle',
-    left: '46%',
-    top: '14%',
-    size: '44px',
-    duration: '22s',
-    delay: '0.4s',
-  },
-  {
-    id: 'g6',
-    type: 'hex',
-    left: '14%',
-    top: '78%',
-    size: '52px',
-    duration: '26s',
-    delay: '1.9s',
-  },
-]
 
 const allTags = [
   { id: 't1', label: '#фокус' },
@@ -921,116 +776,229 @@ onUnmounted(() => {
   z-index: 0;
 }
 
-.background-grid {
+.board-sphere {
   position: absolute;
-  inset: -30% -20%;
-  background: color-mix(in srgb, var(--surface) 28%, transparent);
-  opacity: 0.3;
-  transform: rotate(-4deg);
-  animation: gridShift 30s linear infinite;
-  z-index: 1;
+  top: 50%;
+  left: 50%;
+  width: min(58vw, 660px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
 }
 
-.light-layer {
+.sphere-core {
   position: absolute;
-  inset: 0;
-  z-index: 2;
+  inset: 35%;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 30%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 42%),
+    color-mix(in srgb, var(--surface) 42%, transparent);
+  box-shadow:
+    inset -18px -22px 34px color-mix(in srgb, var(--bg) 42%, transparent),
+    0 0 48px color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
-.ambient-light {
+.marker-orbit {
   position: absolute;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  mix-blend-mode: screen;
-  opacity: 0.4;
-  filter: blur(34px);
-  animation: app-glow-breathe var(--light-duration) ease-in-out var(--light-delay)
-    infinite alternate;
-}
-
-.geometry-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-}
-
-.geo-shape {
-  position: absolute;
-  border: var(--ui-border);
-  background: color-mix(in srgb, #ffffff 8%, transparent);
-  opacity: 0.72;
-  animation: geoFloat var(--geo-duration) ease-in-out var(--geo-delay) infinite;
-  will-change: transform, opacity;
-}
-
-.geo-shape.circle {
-  border-radius: 999px;
-}
-
-.geo-shape.square {
-  border-radius: 10px;
-}
-
-.geo-shape.diamond {
-  border-radius: 10px;
-  transform: rotate(45deg);
-}
-
-.geo-shape.triangle {
-  clip-path: polygon(50% 4%, 96% 92%, 4% 92%);
-  border-radius: 0;
-}
-
-.geo-shape.hex {
-  clip-path: polygon(25% 8%, 75% 8%, 96% 50%, 75% 92%, 25% 92%, 4% 50%);
-  border-radius: 0;
-}
-
-.particle-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-}
-
-.particle {
-  position: absolute;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 72%, transparent);
-  opacity: 0.58;
-  animation: particleFloat var(--particle-duration) ease-in-out
-    var(--particle-delay) infinite;
+  border: 1px solid color-mix(in srgb, var(--accent) 9%, transparent);
+  border-radius: 50%;
   will-change: transform;
 }
 
-@keyframes particleFloat {
-  0% {
-    transform: translate3d(0, 0, 0) scale(0.95);
-  }
-  50% {
-    transform: translate3d(0, -16px, 0) scale(1);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) scale(0.95);
-  }
+.marker-orbit--outer {
+  inset: 2%;
+  animation: orbit-spin-outer 38s linear infinite;
 }
-@keyframes gridShift {
-  0% {
-    transform: rotate(-4deg) translate3d(0, 0, 0);
+
+.marker-orbit--middle {
+  inset: 18%;
+  animation: orbit-spin-middle 29s linear infinite;
+}
+
+.marker-orbit--inner {
+  inset: 29%;
+  animation: orbit-spin-inner 22s linear infinite;
+}
+
+.board-marker {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: none;
+  background: var(--accent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 46%, transparent);
+  transition:
+    top 1.8s ease-in-out,
+    left 1.8s ease-in-out,
+    background 1.8s ease-in-out;
+}
+
+.branch-marker {
+  border-radius: 2px;
+}
+
+.milestone-marker {
+  border-radius: 50%;
+}
+
+.marker-one {
+  top: -5px;
+  left: 50%;
+  animation:
+    marker-float 3.8s ease-in-out infinite alternate,
+    marker-shuffle-a 17s ease-in-out infinite;
+}
+
+.marker-two {
+  top: 50%;
+  left: calc(100% - 5px);
+  animation:
+    marker-float 4.4s -1.2s ease-in-out infinite alternate,
+    marker-shuffle-b 23s -7s ease-in-out infinite;
+}
+
+.marker-three {
+  top: 82%;
+  left: 14%;
+  animation:
+    marker-float 5.1s -2.4s ease-in-out infinite alternate,
+    marker-shuffle-c 19s -12s ease-in-out infinite;
+}
+
+.marker-orbit--middle .marker-one {
+  animation-duration: 4.6s, 21s;
+  animation-delay: -2s, -13s;
+}
+
+.marker-orbit--middle .marker-two {
+  animation-duration: 3.9s, 18s;
+  animation-delay: -1s, -4s;
+}
+
+.marker-orbit--middle .marker-three {
+  animation-duration: 5.4s, 25s;
+  animation-delay: -3s, -17s;
+}
+
+.marker-orbit--inner .marker-one {
+  animation-duration: 4.1s, 14s;
+  animation-delay: -2.6s, -8s;
+}
+
+.marker-orbit--inner .marker-two {
+  animation-duration: 5.2s, 20s;
+  animation-delay: -1.8s, -15s;
+}
+
+@keyframes orbit-spin-outer {
+  from {
+    transform: rotate(0deg);
   }
-  100% {
-    transform: rotate(-4deg) translate3d(40px, 28px, 0);
+  to {
+    transform: rotate(360deg);
   }
 }
 
-@keyframes geoFloat {
-  0% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
+@keyframes orbit-spin-middle {
+  from {
+    transform: rotate(0deg);
   }
-  50% {
-    transform: translate3d(0, -14px, 0) rotate(5deg);
+  to {
+    transform: rotate(-360deg);
   }
+}
+
+@keyframes orbit-spin-inner {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes marker-float {
+  from {
+    translate: 0 -2px;
+    scale: 0.92;
+    opacity: 0.62;
+  }
+  to {
+    translate: 0 3px;
+    scale: 1.12;
+    opacity: 1;
+  }
+}
+
+@keyframes marker-shuffle-a {
+  0%,
   100% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
+    top: -5px;
+    left: 50%;
+    background: #d6d6d6;
+  }
+  28% {
+    top: 22%;
+    left: 92%;
+    background: #8da4ff;
+  }
+  57% {
+    top: 88%;
+    left: 68%;
+    background: #a8e6cf;
+  }
+  81% {
+    top: 62%;
+    left: 4%;
+    background: #ffd3a5;
+  }
+}
+
+@keyframes marker-shuffle-b {
+  0%,
+  100% {
+    top: 50%;
+    left: calc(100% - 5px);
+    background: #d6d6d6;
+  }
+  24% {
+    top: 86%;
+    left: 20%;
+    background: #f2a6c2;
+  }
+  52% {
+    top: 8%;
+    left: 18%;
+    background: #9bd7ff;
+  }
+  76% {
+    top: 68%;
+    left: 86%;
+    background: #d2b4ff;
+  }
+}
+
+@keyframes marker-shuffle-c {
+  0%,
+  100% {
+    top: 82%;
+    left: 14%;
+    background: #d6d6d6;
+  }
+  31% {
+    top: 4%;
+    left: 62%;
+    background: #ffe28a;
+  }
+  63% {
+    top: 46%;
+    left: 94%;
+    background: #91e5c3;
+  }
+  84% {
+    top: 72%;
+    left: 42%;
+    background: #aeb8ff;
   }
 }
 
@@ -1039,8 +1007,9 @@ onUnmounted(() => {
   inset: 0;
   pointer-events: none;
   z-index: 6;
-  background: color-mix(in srgb, var(--bg) 58%, transparent);
-  backdrop-filter: var(--glass-strong-filter);
+  background:
+    radial-gradient(circle at center, transparent 14%, color-mix(in srgb, var(--bg) 44%, transparent) 70%),
+    color-mix(in srgb, var(--bg) 34%, transparent);
 }
 
 .fixed-header,
@@ -1050,18 +1019,17 @@ onUnmounted(() => {
 }
 
 .fixed-header {
-  position: sticky;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
   padding: 20px 40px;
-  background: color-mix(in srgb, var(--bg) 92%, transparent);
-  backdrop-filter: var(--glass-strong-filter);
+  background: color-mix(in srgb, var(--bg) 68%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 8%, transparent);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
 }
 .logo {
   font-family: 'Space Grotesk', sans-serif;
@@ -1111,7 +1079,6 @@ onUnmounted(() => {
   overflow-y: auto;
   overflow-x: hidden;
   scroll-behavior: smooth;
-  padding-top: var(--header-height);
   will-change: transform;
   scroll-snap-type: y mandatory;
   -webkit-overflow-scrolling: touch;
@@ -1502,17 +1469,24 @@ onUnmounted(() => {
 .donation-content {
   margin-top: 14px;
   width: 100%;
-  max-width: 480px;
+  max-width: 900px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
+.donation-options {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 10px;
+  width: 100%;
+}
+
 .wallet-info {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
   padding: 14px 18px;
   background: var(--glass-surface);
   border: var(--ui-border);
@@ -1546,24 +1520,95 @@ onUnmounted(() => {
   font-size: 0.8rem;
   color: var(--dim);
   margin: 0;
-  padding-left: 4px;
+}
+
+.cloudtips-card {
+  min-width: 0;
+  padding: 14px 16px;
+  overflow: hidden;
+  background: var(--glass-surface);
+  border: var(--ui-border);
+  border-radius: var(--border-radius-sm);
+
+  p {
+    margin: 0 0 14px;
+    color: var(--dim);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+}
+
+.cloudtips-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  color: var(--dim);
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.72rem;
+}
+
+.cloudtips-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 9px 14px;
+  border-radius: var(--border-radius-sm);
+  background: var(--accent);
+  color: var(--bg);
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
 }
 
 .contacts {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-top: 20px;
+
   a {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 36px;
+    padding: 8px 12px;
+    border: var(--ui-border);
+    border-radius: var(--border-radius-sm);
+    background: var(--glass-surface);
     color: var(--dim);
-    transition: color 0.2s;
+    font-family: 'Manrope', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+      color 0.2s,
+      border-color 0.2s,
+      background 0.2s;
+
     &:hover {
       color: var(--accent);
+      border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+      background: color-mix(in srgb, var(--accent) 6%, var(--surface));
     }
   }
 }
 
 .start-section {
   text-align: center;
+  padding-bottom: 96px;
 
   .section-content {
     display: grid;
@@ -1584,26 +1629,34 @@ onUnmounted(() => {
   .final-actions {
     display: flex;
     justify-content: center;
-    gap: 12px;
+    gap: 8px;
     flex-wrap: wrap;
   }
   .cta-button.large {
     padding: 22px 50px;
     font-size: 1.2rem;
-    margin: 0 0 30px;
+    margin: 0;
   }
   .final-apk {
-    margin: 0 0 30px;
+    margin: 0;
   }
   .final-hint {
+    max-width: 460px;
+    margin: 20px auto 0;
     color: var(--dim);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    text-align: center;
   }
   .final-links {
+    position: absolute;
+    right: 20px;
+    bottom: 24px;
+    left: 20px;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 14px;
-    margin-top: 16px;
     color: var(--dim);
     font-size: 0.75rem;
   }
@@ -1635,14 +1688,6 @@ onUnmounted(() => {
     gap: 28px;
   }
 
-  .ambient-light {
-    opacity: 0.3;
-    filter: blur(28px);
-  }
-
-  .geo-shape {
-    opacity: 0.56;
-  }
 }
 
 @media (max-width: 768px) {
@@ -1673,22 +1718,13 @@ onUnmounted(() => {
     border-radius: 14px;
   }
 
-  .background-grid {
-    background-size: 42px 42px;
-    opacity: 0.16;
+  .board-sphere {
+    width: 92vw;
   }
 
-  .particle {
-    opacity: 0.32;
-  }
-
-  .ambient-light {
-    opacity: 0.22;
-    filter: blur(22px);
-  }
-
-  .geo-shape {
-    opacity: 0.44;
+  .board-marker {
+    width: 8px;
+    height: 8px;
   }
 
   .section-label {
@@ -1805,14 +1841,29 @@ onUnmounted(() => {
     justify-content: center;
   }
 
+  .donation-options {
+    grid-template-columns: 1fr;
+  }
+
+  .cloudtips-link {
+    width: 100%;
+  }
+
   .contacts {
-    gap: 14px;
+    width: 100%;
+    gap: 6px;
+
+    a {
+      flex: 1 1 auto;
+      justify-content: center;
+    }
   }
 
   .start-section {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding-bottom: 88px;
     text-align: center;
 
     .section-content {
@@ -1834,12 +1885,13 @@ onUnmounted(() => {
       width: 100%;
       flex-direction: column;
       align-items: stretch;
+      gap: 6px;
     }
     .cta-button.large {
       width: 100%;
       padding: 16px 20px;
       font-size: 1rem;
-      margin-bottom: 12px;
+      margin: 0;
     }
     .final-apk {
       width: 100%;
@@ -1847,7 +1899,16 @@ onUnmounted(() => {
     }
     .final-hint {
       width: min(100%, 34rem);
+      margin-top: 16px;
+      font-size: 0.75rem;
+      line-height: 1.45;
       text-align: center;
+    }
+
+    .final-links {
+      right: 12px;
+      bottom: 18px;
+      left: 12px;
     }
   }
 }
