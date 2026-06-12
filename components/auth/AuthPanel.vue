@@ -104,11 +104,16 @@
         </form>
 
         <div v-if="!isRegister" class="demo-block">
-          <div>
-            <strong>Сначала посмотреть?</strong>
-            <span>Данные демо удалятся после закрытия вкладки.</span>
+          <div class="demo-block__icon" aria-hidden="true">
+            <Play :size="17" />
+          </div>
+          <div class="demo-block__content">
+            <span class="demo-block__label">Демо-режим</span>
+            <strong>Сначала попробуйте COF</strong>
+            <p>Изучите задачи, привычки и доску без регистрации.</p>
           </div>
           <AppButton type="button" variant="secondary" @click="startDemo">
+            <Play :size="15" />
             Открыть демо
           </AppButton>
         </div>
@@ -132,7 +137,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import { ArrowLeft, ArrowUpRight, Check, LockKeyhole } from 'lucide-vue-next'
+import { ArrowLeft, ArrowUpRight, Check, LockKeyhole, Play } from 'lucide-vue-next'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppFormField from '~/components/ui/AppFormField.vue'
 import AppInput from '~/components/ui/AppInput.vue'
@@ -503,33 +508,59 @@ async function submit() {
 }
 
 .demo-block {
+  @include glass;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   margin-top: 22px;
-  padding-top: 20px;
-  border-top: var(--ui-border);
-
-  div {
-    display: grid;
-    gap: 3px;
-  }
-
-  strong {
-    color: var(--text);
-    font-size: 0.82rem;
-  }
-
-  span {
-    color: var(--dim);
-    font-size: 0.7rem;
-    line-height: 1.45;
-  }
+  padding: 16px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
 
   :deep(.app-button) {
     width: auto;
   }
+}
+
+.demo-block__icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: var(--border-radius-pill);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--text);
+}
+
+.demo-block__content {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+
+  strong {
+    overflow: hidden;
+    color: var(--text);
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  p {
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.7rem;
+    line-height: 1.45;
+  }
+}
+
+.demo-block__label {
+  color: var(--dim);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .card-footer,
@@ -617,12 +648,16 @@ async function submit() {
 }
 
 @media (max-width: 480px) {
-  .plan-actions,
-  .demo-block {
+  .plan-actions {
     grid-template-columns: 1fr;
   }
 
+  .demo-block {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
   .demo-block :deep(.app-button) {
+    grid-column: 1 / -1;
     width: 100%;
   }
 }
