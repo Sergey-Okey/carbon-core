@@ -568,36 +568,14 @@ async function submit() {
       display: none;
     }
 
-    &::before {
-      content: '←  Свайп  →';
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      z-index: 2;
-      display: inline-flex;
-      align-items: center;
-      min-height: 30px;
-      padding-inline: 12px;
-      border: var(--ui-border);
-      border-radius: var(--border-radius-pill);
-      background: color-mix(in srgb, var(--surface) 86%, transparent);
-      backdrop-filter: var(--glass-filter);
-      -webkit-backdrop-filter: var(--glass-filter);
-      color: var(--dim);
-      font-size: 0.62rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      transform: translateX(-50%);
-      pointer-events: none;
-    }
   }
 
   .auth-panel {
+    position: relative;
     min-width: 0;
     min-height: 0;
     max-height: 100%;
-    flex: 0 0 calc(100vw - 48px);
+    flex: 0 0 calc(100vw - 54px);
     height: auto;
     overflow-y: auto;
     scroll-snap-align: center;
@@ -617,6 +595,8 @@ async function submit() {
   .auth-intro {
     order: 2;
     gap: 20px;
+    transform: scale(0.97);
+    transform-origin: left center;
   }
 
   .intro-content {
@@ -669,9 +649,13 @@ async function submit() {
   }
 
   .auth-panel {
-    flex-basis: calc(100vw - 32px);
+    flex-basis: calc(100vw - 38px);
     min-height: 0;
     padding: 18px;
+  }
+
+  .auth-intro {
+    transform: scale(0.975);
   }
 
   .intro-content h1 {
