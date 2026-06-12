@@ -601,11 +601,28 @@ async function submit() {
 
   .intro-actions {
     gap: 10px;
+
+    .route-link {
+      align-self: center;
+      justify-content: center;
+      text-align: center;
+    }
   }
 
   .form-header,
   .subscription-header {
     margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .auth-form-panel > * {
+    margin-inline: auto;
+  }
+
+  .subscription-header,
+  .benefits-list,
+  .payment-link {
+    width: 100%;
   }
 
   .auth-form {
@@ -618,6 +635,7 @@ async function submit() {
 
   .benefit-item {
     padding: 12px 14px;
+    text-align: left;
   }
 }
 
@@ -641,9 +659,25 @@ async function submit() {
     font-size: clamp(1.8rem, 8vw, 2.4rem);
   }
 
-  .intro-content p {
-    font-size: 0.84rem;
-    line-height: 1.5;
+  .intro-content {
+    justify-items: center;
+    max-width: none;
+    text-align: center;
+
+    p {
+      max-width: 36ch;
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+  }
+
+  .back-action {
+    align-self: center;
+    margin-left: 0;
+  }
+
+  .legal-links {
+    justify-content: center;
   }
 
   .form-header h2,
