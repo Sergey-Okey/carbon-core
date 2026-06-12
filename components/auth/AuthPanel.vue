@@ -551,6 +551,7 @@ async function submit() {
   }
 
   .auth-grid {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -565,6 +566,30 @@ async function submit() {
 
     &::-webkit-scrollbar {
       display: none;
+    }
+
+    &::before {
+      content: '←  Свайп  →';
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding-inline: 12px;
+      border: var(--ui-border);
+      border-radius: var(--border-radius-pill);
+      background: color-mix(in srgb, var(--surface) 86%, transparent);
+      backdrop-filter: var(--glass-filter);
+      -webkit-backdrop-filter: var(--glass-filter);
+      color: var(--dim);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transform: translateX(-50%);
+      pointer-events: none;
     }
   }
 
