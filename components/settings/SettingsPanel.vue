@@ -369,11 +369,8 @@ import AppButton from '~/components/ui/AppButton.vue'
 import AppColorPicker from '~/components/ui/AppColorPicker.vue'
 import AppCustomColorPicker from '~/components/ui/AppCustomColorPicker.vue'
 import AppSwitch from '~/components/ui/AppSwitch.vue'
-<<<<<<< HEAD
 import { useConfirm } from '~/composables/useConfirm'
-=======
 import TagManager from '~/components/settings/TagManager.vue'
->>>>>>> 3739833f7657019de01e4774716b721a12d13b96
 import { useNotification } from '~/composables/useNotification'
 import { useAccessStore } from '~/stores/access.store'
 import { ACCESS_STORAGE_KEY } from '~/utils/accessStorage'

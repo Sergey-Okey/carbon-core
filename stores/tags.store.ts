@@ -1,12 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
-<<<<<<< HEAD
 import { accessAwareStorage } from '~/utils/accessStorage'
-=======
 import type { Tag, TagScope } from '~/types/tag.types'
 import type { Task, TaskTag } from '~/types/task.types'
->>>>>>> 3739833f7657019de01e4774716b721a12d13b96
 
 type InternalTag = Tag & { isSystem?: boolean }
 

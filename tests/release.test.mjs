@@ -1,8 +1,36 @@
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
+import { readdir, readFile } from 'node:fs/promises'
 import test from 'node:test'
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8')
+const root = new URL('../', import.meta.url)
+
+async function findMergeConflictMarkers(directory = root) {
+  const ignored = new Set(['.git', '.nuxt', '.output', 'node_modules'])
+  const markers = ['<'.repeat(7), '='.repeat(7), '>'.repeat(7)]
+  const matches = []
+
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    if (ignored.has(entry.name)) continue
+    const url = new URL(entry.name, directory)
+    if (entry.isDirectory()) {
+      matches.push(...await findMergeConflictMarkers(new URL(`${url.href}/`)))
+      continue
+    }
+    if (!entry.isFile()) continue
+
+    const content = await readFile(url, 'utf8').catch(() => '')
+    if (content.split(/\r?\n/).some((line) => markers.some((marker) => line.startsWith(marker)))) {
+      matches.push(url.pathname)
+    }
+  }
+
+  return matches
+}
+
+test('repository has no unresolved merge conflicts', async () => {
+  assert.deepEqual(await findMergeConflictMarkers(), [])
+})
 
 test('public trust pages remain accessible without authentication', async () => {
   const middleware = await read('middleware/entry.global.ts')
