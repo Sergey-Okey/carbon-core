@@ -698,7 +698,7 @@ function animateTags(time: number) {
 
 function finishOnboarding() {
   onboardingStore.markAsSeen()
-  router.push(authStore.isAuthenticated ? '/' : '/auth')
+  router.push(authStore.isAuthenticated ? '/' : '/register')
 }
 
 function scrollToNextStep() {

@@ -19,10 +19,6 @@
       <span class="intro-mark">CORE OF LIFE</span>
     </aside>
     <GlassCard class="auth-card">
-      <header class="auth-topbar">
-        <span class="eyebrow">{{ isRegister ? 'Регистрация' : 'Вход' }}</span>
-      </header>
-
       <template v-if="isRegister && !accessStore.hasSubscription">
         <div class="plan-head">
           <div class="paywall-icon"><LockKeyhole :size="22" /></div>
@@ -285,14 +281,6 @@ async function submit() {
   background: color-mix(in srgb, var(--surface) 76%, transparent);
 }
 
-.auth-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  margin-bottom: 22px;
-}
-
 .back-button {
   display: inline-flex;
   align-items: center;
@@ -400,7 +388,6 @@ async function submit() {
   }
 }
 
-.auth-topbar,
 .plan-head {
   padding-inline: 2px;
 }

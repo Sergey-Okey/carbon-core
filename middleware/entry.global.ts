@@ -51,7 +51,8 @@ export default defineNuxtRouteMiddleware((to) => {
   }
 
   if (!isAuthenticated && !isDemo && !isPublicRoute) {
-    return navigateTo(isNative || hasSeenOnboarding || hasUsers ? '/auth' : '/onboarding')
+    if (hasUsers) return navigateTo('/auth')
+    return navigateTo(isNative || hasSeenOnboarding ? '/register' : '/onboarding')
   }
 })
 import { Capacitor } from '@capacitor/core'

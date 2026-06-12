@@ -52,6 +52,7 @@ test('registration requires explicit legal consent', async () => {
   assert.match(privacy, /Удаление данных/)
   assert.match(authPanel, /register\(form\.email, form\.password, form\.name, 'local'/)
   assert.doesNotMatch(authPanel, /class="auth-mode"/)
+  assert.doesNotMatch(authPanel, /class="auth-topbar"/)
 })
 
 test('onboarding does not use CSS gradients', async () => {
@@ -114,4 +115,13 @@ test('native app keeps launch animation and skips onboarding route', async () =>
   assert.match(launch, /Capacitor\.isNativePlatform\(\)/)
   assert.match(launch, /launch-pulse/)
   assert.match(middleware, /isNative && to\.path === '\/onboarding'/)
+})
+
+test('new users start with registration instead of login', async () => {
+  const onboarding = await read('pages/onboarding.vue')
+  const middleware = await read('middleware/entry.global.ts')
+
+  assert.match(onboarding, /authStore\.isAuthenticated \? '\/' : '\/register'/)
+  assert.match(middleware, /if \(hasUsers\) return navigateTo\('\/auth'\)/)
+  assert.match(middleware, /hasSeenOnboarding \? '\/register' : '\/onboarding'/)
 })
