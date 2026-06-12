@@ -14,7 +14,7 @@
           class="nav-option"
           :class="{ active: activeTab === tab.key }"
           :aria-label="tab.label"
-          :title="tab.label"
+          :data-tooltip="tab.label"
           @click="activeTab = tab.key"
         >
           <component :is="tab.icon" :size="18" />
@@ -256,6 +256,23 @@
           </div>
         </section>
 
+        <section v-if="activeTab === 'tags'" class="settings-group">
+          <div class="group-header">
+            <div>
+              <Tags :size="22" />
+              <h3>Теги</h3>
+            </div>
+          </div>
+
+          <div class="group-body">
+            <div class="data-note">
+              <Tags :size="16" />
+              <span>Общие теги доступны задачам и привычкам. Изменение тега применяется везде.</span>
+            </div>
+            <TagManager />
+          </div>
+        </section>
+
         <section v-if="activeTab === 'data'" class="settings-group">
           <div class="group-header">
             <div>
@@ -340,11 +357,11 @@ import {
   FileJson,
   Gauge,
   LayoutGrid,
-  Monitor,
   Moon,
   Palette,
   RotateCcw,
   Sun,
+  Tags,
   Trash2,
   Upload,
 } from 'lucide-vue-next'
@@ -352,7 +369,11 @@ import AppButton from '~/components/ui/AppButton.vue'
 import AppColorPicker from '~/components/ui/AppColorPicker.vue'
 import AppCustomColorPicker from '~/components/ui/AppCustomColorPicker.vue'
 import AppSwitch from '~/components/ui/AppSwitch.vue'
+<<<<<<< HEAD
 import { useConfirm } from '~/composables/useConfirm'
+=======
+import TagManager from '~/components/settings/TagManager.vue'
+>>>>>>> 3739833f7657019de01e4774716b721a12d13b96
 import { useNotification } from '~/composables/useNotification'
 import { useAccessStore } from '~/stores/access.store'
 import { ACCESS_STORAGE_KEY } from '~/utils/accessStorage'
@@ -364,7 +385,7 @@ import {
   saveAutoBackup,
 } from '~/utils/backup'
 
-type SettingsTab = 'appearance' | 'focus' | 'board' | 'data'
+type SettingsTab = 'appearance' | 'focus' | 'board' | 'tags' | 'data'
 
 const settingsStore = useSettingsStore()
 const accessStore = useAccessStore()
@@ -376,6 +397,7 @@ const tabs = [
   { key: 'appearance' as const, label: 'Оформление', icon: Palette },
   { key: 'focus' as const, label: 'Режим', icon: Gauge },
   { key: 'board' as const, label: 'Доска', icon: LayoutGrid },
+  { key: 'tags' as const, label: 'Теги', icon: Tags },
   { key: 'data' as const, label: 'Данные', icon: Database },
 ]
 

@@ -45,3 +45,32 @@ test('PWA manifest has standalone display and launch icons', async () => {
   assert.equal(manifest.display, 'standalone')
   assert.ok(manifest.icons.length >= 2)
 })
+
+test('tags remain shared between tasks and habits', async () => {
+  const tagsStore = await read('stores/tags.store.ts')
+  const taskForm = await read('components/task/TaskForm.vue')
+
+  assert.match(tagsStore, /function normalizeTags\(tasks: Task\[\] = \[\]\)/)
+  assert.match(tagsStore, /scope: undefined/)
+  assert.match(tagsStore, /function mergeTags/)
+  assert.match(tagsStore, /function updateTag/)
+  assert.match(tagsStore, /task\.tagIds = task\.tagIds/)
+  assert.doesNotMatch(taskForm, /getTagsByScope\(currentScope/)
+})
+
+test('strict typecheck inherits Nuxt module resolution', async () => {
+  const tsconfig = JSON.parse((await read('tsconfig.json')).replace(/^\uFEFF/, ''))
+  assert.equal(tsconfig.extends, './.nuxt/tsconfig.json')
+  assert.equal(tsconfig.compilerOptions.moduleResolution, undefined)
+})
+
+test('native app keeps launch animation and skips onboarding route', async () => {
+  const app = await read('app.vue')
+  const launch = await read('components/base/AppLaunchScreen.vue')
+  const middleware = await read('middleware/entry.global.ts')
+
+  assert.match(app, /<AppLaunchScreen \/>/)
+  assert.match(launch, /Capacitor\.isNativePlatform\(\)/)
+  assert.match(launch, /launch-pulse/)
+  assert.match(middleware, /isNative && to\.path === '\/onboarding'/)
+})
