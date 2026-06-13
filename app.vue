@@ -41,6 +41,10 @@ const accessStore = useAccessStore()
 const syncStatus = useSyncStatus()
 const enableVercelAnalytics = useRuntimeConfig().public.enableVercelAnalytics
 const syncEndpoint = getBackendUrl('/api/sync')
+const backendFetch = $fetch as unknown as <T = unknown>(
+  url: string,
+  options?: Record<string, unknown>
+) => Promise<T>
 const syncUnsubscribers: Array<() => void> = []
 let dailyResetTimer: number | null = null
 
@@ -83,10 +87,10 @@ onMounted(async () => {
     syncStatus.setState('local')
   } else try {
     syncStatus.setState('syncing')
-    const data = (await $fetch(syncEndpoint, {
+    const data = await backendFetch<SyncResponse>(syncEndpoint, {
       query: { userId: userId.value },
       ...getBackendFetchOptions(),
-    })) as SyncResponse
+    })
     if (data.user) userStore.$patch(data.user)
     if (data.tasks) tasksStore.$patch(data.tasks)
     if (data.branches?.branches) {
@@ -139,7 +143,7 @@ const syncToCloud = useDebounceFn(async () => {
   }
   try {
     syncStatus.setState('syncing')
-    await $fetch(syncEndpoint, {
+    await backendFetch(syncEndpoint, {
       method: 'POST',
       ...getBackendFetchOptions(),
       body: {
