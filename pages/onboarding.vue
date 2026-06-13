@@ -1043,7 +1043,9 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 20px 40px;
+  padding-block: calc(env(safe-area-inset-top, 0px) + 18px) 12px;
+  padding-inline: max(20px, env(safe-area-inset-left, 0px))
+    max(20px, env(safe-area-inset-right, 0px));
   background: color-mix(in srgb, var(--bg) 68%, transparent);
   border: none;
   backdrop-filter: blur(18px) saturate(130%);
@@ -1686,7 +1688,9 @@ onUnmounted(() => {
 // Адаптивность (только необходимые правки)
 @media (max-width: 1024px) {
   .fixed-header {
-    padding: 16px 20px;
+    padding-block: calc(env(safe-area-inset-top, 0px) + 14px) 10px;
+    padding-inline: max(20px, env(safe-area-inset-left, 0px))
+      max(20px, env(safe-area-inset-right, 0px));
   }
 
   .logo {
@@ -1713,7 +1717,9 @@ onUnmounted(() => {
   }
 
   .fixed-header {
-    padding: 12px 14px;
+    padding-block: calc(env(safe-area-inset-top, 0px) + 12px) 8px;
+    padding-inline: max(14px, env(safe-area-inset-left, 0px))
+      max(14px, env(safe-area-inset-right, 0px));
   }
 
   .logo {
