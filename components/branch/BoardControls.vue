@@ -18,6 +18,17 @@
       <button @click="$emit('export-png')" aria-label="Экспортировать доску в PNG" data-tooltip="Экспортировать доску в PNG">
         <ImageDown :size="18" />
       </button>
+      <label class="handle-control" aria-label="Длина связей">
+        <Route :size="16" />
+        <input
+          :value="handleOffset"
+          type="range"
+          :min="12"
+          :max="72"
+          :step="2"
+          @input="$emit('update:handle-offset', Number(($event.target as HTMLInputElement).value))"
+        />
+      </label>
       <div class="divider"></div>
 
       <button
@@ -77,6 +88,7 @@ import {
   Redo,
   LayoutGrid,
   ImageDown,
+  Route,
 } from 'lucide-vue-next'
 
 const props = defineProps<{
@@ -86,6 +98,7 @@ const props = defineProps<{
   canAddMilestone?: boolean
   hasSelection?: boolean
   selectionType?: 'branch' | 'milestone' | 'edge' | 'none'
+  handleOffset?: number
 }>()
 
 defineEmits([
@@ -94,12 +107,15 @@ defineEmits([
   'zoom-out',
   'align-layout',
   'export-png',
+  'update:handle-offset',
   'add-branch',
   'add-milestone',
   'delete-selected',
   'undo',
   'redo',
 ])
+
+const handleOffset = computed(() => props.handleOffset ?? 24)
 
 const milestoneTooltip = computed(() =>
   props.canAddMilestone ? 'Добавить этап' : 'Выберите ветку или этап'
@@ -183,6 +199,21 @@ const deleteTooltip = computed(() =>
     height: 20px;
     background: var(--ui-border-color);
     margin: 0 2px;
+  }
+
+  .handle-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 124px;
+    padding-inline: 10px 8px;
+    color: var(--dim);
+
+    input {
+      width: 76px;
+      accent-color: var(--accent);
+      cursor: ew-resize;
+    }
   }
 }
 </style>

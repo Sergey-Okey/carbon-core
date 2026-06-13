@@ -51,11 +51,13 @@
         :can-add-milestone="canAddMilestone"
         :has-selection="selectedNodeIds.length > 0 || !!selectedEdgeId"
         :selection-type="selectedControlType"
+        :handle-offset="handleOffset"
         @fit-view="fitView"
         @zoom-in="zoomIn"
         @zoom-out="zoomOut"
         @align-layout="alignLayoutSmart"
         @export-png="exportBoardPng"
+        @update:handle-offset="handleOffset = $event"
         @add-branch="openAddBranchModal"
         @add-milestone="addMilestoneToSelectedBranch"
         @delete-selected="deleteSelected"
@@ -121,6 +123,7 @@ import { useBranchesStore } from '~/stores/branches.store'
 import { useSettingsStore } from '~/stores/settings.store'
 import { useGuidedTourStore } from '~/stores/guidedTour.store'
 import { useTasksStore } from '~/stores/tasks.store'
+import { useUIStore } from '~/stores/ui.store'
 import { useAutoLayout } from '~/composables/useAutoLayout'
 import { useConfirm } from '~/composables/useConfirm'
 import { useNotification } from '~/composables/useNotification'
@@ -139,16 +142,18 @@ const branchesStore = useBranchesStore()
 const settingsStore = useSettingsStore()
 const guidedTour = useGuidedTourStore()
 const tasksStore = useTasksStore()
+const uiStore = useUIStore()
 const { fitView, zoomIn: vfZoomIn, zoomOut: vfZoomOut, getSelectedNodes } = useVueFlow()
 const { applyLayout } = useAutoLayout()
 const { confirm } = useConfirm()
 const { addNotification } = useNotification()
-const defaultEdgeOptions = {
+const handleOffset = ref(24)
+const defaultEdgeOptions = computed(() => ({
   type: 'smoothstep',
-  pathOptions: { borderRadius: 50, offset: 24 },
+  pathOptions: { borderRadius: 50, offset: handleOffset.value },
   animated: false,
   style: { stroke: 'var(--dim)', strokeWidth: 1.15 },
-}
+}))
 
 const history = ref<{ branches: Branch[]; edges: Edge[] }[]>([])
 const historyIndex = ref(-1)
@@ -261,6 +266,7 @@ function redo() {
 
 function syncNodesAndEdges() {
   isSyncingFlow.value = true
+  const baseEdgeOptions = defaultEdgeOptions.value
   const newNodes: Node<BranchNodeData>[] = []
   branchesStore.branches.forEach((branch) => {
     newNodes.push({
@@ -299,16 +305,15 @@ function syncNodesAndEdges() {
     .map(
       (edge) =>
         ({
-          ...defaultEdgeOptions,
+          ...baseEdgeOptions,
           ...edge,
           pathOptions: {
-            ...defaultEdgeOptions.pathOptions,
-            ...((edge as Edge & { pathOptions?: typeof defaultEdgeOptions.pathOptions })
-              .pathOptions || {}),
+            ...baseEdgeOptions.pathOptions,
+            ...((edge as Edge & { pathOptions?: typeof baseEdgeOptions.pathOptions }).pathOptions || {}),
           },
           style: {
             ...(edge.style || {}),
-            ...defaultEdgeOptions.style,
+            ...baseEdgeOptions.style,
             stroke: getEdgeColor(edge),
           },
         }) as Edge
@@ -536,7 +541,7 @@ function alignLayoutSmart() {
   const layoutedNodes = applyLayout(nodes.value, layoutEdges, 'LR', {
     rankSep: density.rankSep,
     nodeSep: density.nodeSep,
-    marginX: 80,
+    marginX: Math.max(80, uiStore.panelWidth + 36),
     marginY: 80,
     snapGrid: 20,
   })
@@ -930,6 +935,10 @@ watch(
   () => syncNodesAndEdges(),
   { immediate: true, deep: true }
 )
+
+watch(handleOffset, () => {
+  syncNodesAndEdges()
+})
 
 watch(
   () => tasksStore.tasks,

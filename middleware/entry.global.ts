@@ -1,3 +1,6 @@
+import { Capacitor } from '@capacitor/core'
+import { readAccessMode } from '~/utils/accessStorage'
+
 function safeParse<T>(raw: string | null, fallback: T): T {
   if (!raw) return fallback
 
@@ -12,6 +15,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (!import.meta.client) return
 
   const authStore = useAuthStore()
+  const accessMode = readAccessMode()
   await authStore.init()
 
   const onboardingState = safeParse<{ hasSeenOnboarding: boolean } | null>(
@@ -19,15 +23,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
     null
   )
   const users = safeParse<unknown[]>(localStorage.getItem('carbon-users'), [])
-  const accessState = safeParse<{ mode?: 'guest' | 'demo' | 'subscribed' } | null>(
-    localStorage.getItem('carbon-access'),
-    null
-  )
-
   const isAuthenticated = Boolean(authStore.isAuthenticated && authStore.currentUser)
   const hasSeenOnboarding = Boolean(onboardingState?.hasSeenOnboarding)
   const hasUsers = users.length > 0
-  const isDemo = accessState?.mode === 'demo'
+  const isDemo = accessMode === 'demo'
   const isPublicRoute = ['/auth', '/register', '/onboarding', '/privacy', '/terms', '/support'].includes(to.path)
   const isNative = Capacitor.isNativePlatform()
 
@@ -54,4 +53,3 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo(isNative || hasSeenOnboarding ? '/register' : '/onboarding')
   }
 })
-import { Capacitor } from '@capacitor/core'

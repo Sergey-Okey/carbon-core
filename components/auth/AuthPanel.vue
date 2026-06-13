@@ -171,6 +171,7 @@ import {
 } from '~/stores/access.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { useNotification } from '~/composables/useNotification'
+import { resetDemoData } from '~/utils/accessStorage'
 
 const props = defineProps<{ mode: 'login' | 'register' }>()
 const accessStore = useAccessStore()
@@ -192,9 +193,9 @@ const error = ref('')
 const form = reactive({ name: '', email: '', password: '', acceptedTerms: false })
 
 function startDemo() {
-  sessionStorage.clear()
+  resetDemoData()
   accessStore.startDemo()
-  window.location.assign('/')
+  router.push('/')
 }
 
 function goBack() {
