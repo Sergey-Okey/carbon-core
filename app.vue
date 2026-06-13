@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <AppLaunchScreen />
   <NuxtLayout>
     <NuxtPage />
@@ -28,6 +28,7 @@ import { useUserStore } from '~/stores/user.store'
 import { saveAutoBackup } from '~/utils/backup'
 import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
 import { useSyncStatus } from '~/composables/useSyncStatus'
+import { browserLog } from '~/utils/browserLog'
 
 const tasksStore = useTasksStore()
 const settingsStore = useSettingsStore()
@@ -77,6 +78,10 @@ const userId = useState<string>('user-id', () => {
 onMounted(async () => {
   await settingsStore.ready
   authStore.init()
+  browserLog.info('app', 'Application started', {
+    route: window.location.pathname,
+    accessMode: accessStore.mode,
+  })
 
   syncStatus.setRetry(() => void syncToCloud())
   window.addEventListener('online', handleOnline)
@@ -85,8 +90,10 @@ onMounted(async () => {
 
   if (accessStore.isDemo) {
     syncStatus.setState('local')
+    browserLog.info('sync', 'Sync disabled in demo mode')
   } else try {
     syncStatus.setState('syncing')
+    browserLog.info('sync', 'Requesting initial sync')
     const data = await backendFetch<SyncResponse>(syncEndpoint, {
       query: { userId: userId.value },
       ...getBackendFetchOptions(),
@@ -108,11 +115,12 @@ onMounted(async () => {
       settingsStore.applyRuntimeSettings()
     }
     syncStatus.setState(authStore.authMode === 'local' ? 'local' : 'synced')
+    browserLog.info('sync', 'Initial sync completed', {
+      mode: authStore.authMode,
+    })
   } catch {
     syncStatus.setState(navigator.onLine ? 'error' : 'offline')
-    console.warn(
-      'Облачная синхронизация недоступна, используются локальные данные'
-    )
+    browserLog.warn('sync', 'Cloud sync unavailable, using local data')
   }
 
   tasksStore.resetDailyTasks()
@@ -131,18 +139,22 @@ onMounted(async () => {
 const syncToCloud = useDebounceFn(async () => {
   if (accessStore.isDemo) {
     syncStatus.setState('local')
+    browserLog.info('sync', 'Skip sync: demo mode')
     return
   }
   if (authStore.authMode === 'local') {
     syncStatus.setState('local')
+    browserLog.info('sync', 'Skip sync: local profile')
     return
   }
   if (!navigator.onLine) {
     syncStatus.setState('offline')
+    browserLog.warn('sync', 'Skip sync: offline')
     return
   }
   try {
     syncStatus.setState('syncing')
+    browserLog.info('sync', 'Sending cloud sync payload')
     await backendFetch(syncEndpoint, {
       method: 'POST',
       ...getBackendFetchOptions(),
@@ -158,8 +170,12 @@ const syncToCloud = useDebounceFn(async () => {
       },
     })
     syncStatus.setState('synced')
+    browserLog.info('sync', 'Cloud sync completed')
   } catch {
     syncStatus.setState(navigator.onLine ? 'error' : 'offline')
+    browserLog.error('sync', 'Cloud sync failed', {
+      online: navigator.onLine,
+    })
   }
 }, 2000)
 
@@ -172,11 +188,13 @@ onUnmounted(() => {
 })
 
 function handleOnline() {
+  browserLog.info('network', 'Connection restored')
   void syncToCloud()
 }
 
 function handleOffline() {
   syncStatus.setState('offline')
+  browserLog.warn('network', 'Connection lost')
 }
 
 function scheduleNextReset() {
@@ -197,3 +215,4 @@ function autoBackupOnUnload() {
   settingsStore.recordBackup()
 }
 </script>
+

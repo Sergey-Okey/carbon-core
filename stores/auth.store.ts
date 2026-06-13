@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useUserStore } from '~/stores/user.store'
 import { useAccessStore } from '~/stores/access.store'
 import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
+import { browserLog } from '~/utils/browserLog'
 
 export interface User {
   id: string
@@ -130,6 +131,7 @@ export const useAuthStore = defineStore(
       if (!import.meta.client || initialized.value) return
 
       usersCount.value = getUsers().length
+      browserLog.info('auth', 'Инициализация авторизации', { localUsers: usersCount.value })
 
       if (currentUser.value && isAuthenticated.value) {
         syncUserProfile(currentUser.value)
@@ -156,9 +158,13 @@ export const useAuthStore = defineStore(
           isAuthenticated.value = true
           syncUserProfile(currentUser.value)
           persistSession()
+          browserLog.info('auth', 'Восстановлена облачная сессия', {
+            provider: session.user.provider,
+          })
         }
       } catch {
         // Local profiles remain available when the OAuth backend is offline.
+        browserLog.warn('auth', 'Облачная сессия недоступна, используется локальный режим')
       }
 
       initialized.value = true
@@ -194,6 +200,7 @@ export const useAuthStore = defineStore(
           )
           applyServerUser(response.user)
           authMode.value = 'cloud'
+          browserLog.info('auth', 'Регистрация выполнена', { mode: 'cloud', provider: 'local' })
           return { success: true }
         } catch (error) {
           const status = getHttpStatus(error)
@@ -236,9 +243,13 @@ export const useAuthStore = defineStore(
         authMode.value = 'local'
         syncUserProfile(newUser)
         persistSession()
+        browserLog.info('auth', 'Регистрация выполнена', { mode: 'local' })
 
         return { success: true }
       } catch (error) {
+        browserLog.error('auth', 'Ошибка локальной регистрации', {
+          message: error instanceof Error ? error.message : String(error),
+        })
         return { success: false, error: getStorageErrorMessage(error) }
       } finally {
         isLoading.value = false
@@ -264,6 +275,7 @@ export const useAuthStore = defineStore(
           )
           applyServerUser(response.user)
           authMode.value = 'cloud'
+          browserLog.info('auth', 'Вход выполнен', { mode: 'cloud', provider: response.user.provider })
           return { success: true }
         } catch (error) {
           const status = getHttpStatus(error)
@@ -294,9 +306,13 @@ export const useAuthStore = defineStore(
         authMode.value = 'local'
         syncUserProfile(user)
         persistSession()
+        browserLog.info('auth', 'Вход выполнен', { mode: 'local' })
 
         return { success: true }
       } catch (error) {
+        browserLog.error('auth', 'Ошибка локального входа', {
+          message: error instanceof Error ? error.message : String(error),
+        })
         return { success: false, error: getStorageErrorMessage(error) }
       } finally {
         isLoading.value = false
@@ -312,6 +328,7 @@ export const useAuthStore = defineStore(
       isAuthenticated.value = false
       syncUserProfile(null)
       persistSession()
+      browserLog.info('auth', 'Пользователь вышел из аккаунта')
     }
 
     async function updateProfile(
@@ -353,6 +370,7 @@ export const useAuthStore = defineStore(
             }
           )
           applyServerUser({ ...response.user, bio: updates.bio ?? previousUser.bio })
+          browserLog.info('auth', 'Профиль обновлен', { mode: 'cloud' })
           return { success: true }
         }
 
@@ -366,11 +384,15 @@ export const useAuthStore = defineStore(
 
         syncUserProfile(nextUser)
         persistSession()
+        browserLog.info('auth', 'Профиль обновлен', { mode: 'local' })
         return { success: true }
       } catch (error) {
         currentUser.value = previousUser
         syncUserProfile(previousUser)
         persistSession()
+        browserLog.error('auth', 'Ошибка обновления профиля', {
+          message: error instanceof Error ? error.message : String(error),
+        })
         return { success: false, error: getStorageErrorMessage(error) }
       }
     }
