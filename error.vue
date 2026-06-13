@@ -152,7 +152,7 @@ function handlePrimaryAction() {
 
 .error-content {
   display: grid;
-  grid-template-columns: minmax(180px, 0.72fr) minmax(280px, 1fr);
+  grid-template-columns: minmax(0, 0.72fr) minmax(280px, 1fr);
   align-items: center;
   gap: clamp(32px, 8vw, 120px);
   width: min(100%, 980px);
@@ -160,12 +160,16 @@ function handlePrimaryAction() {
 }
 
 .error-code {
+  min-width: 0;
+  width: 100%;
   color: color-mix(in srgb, var(--text) 13%, transparent);
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(7rem, 20vw, 15rem);
+  font-size: clamp(7rem, 16vw, 13rem);
   font-weight: 700;
-  letter-spacing: -0.09em;
+  letter-spacing: -0.07em;
   line-height: 0.76;
+  text-align: center;
+  white-space: nowrap;
   user-select: none;
 }
 
@@ -226,7 +230,8 @@ function handlePrimaryAction() {
   }
 
   .error-code {
-    font-size: clamp(6rem, 34vw, 9rem);
+    font-size: clamp(5.5rem, 27vw, 8rem);
+    text-align: left;
   }
 
   .error-copy h1 {

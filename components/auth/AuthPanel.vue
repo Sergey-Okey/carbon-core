@@ -84,7 +84,7 @@
               </p>
             </div>
 
-            <label v-if="isRegister" class="consent-control oauth-consent">
+            <label class="consent-control oauth-consent">
               <input v-model="form.acceptedTerms" type="checkbox" />
               <span class="checkmark"><Check :size="12" /></span>
               <span>
@@ -97,7 +97,7 @@
               <button
                 class="oauth-button"
                 type="button"
-                :disabled="isRegister && !form.acceptedTerms"
+                :disabled="!form.acceptedTerms"
                 @click="startOAuth('google')"
               >
                 <svg class="oauth-icon google-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -111,7 +111,7 @@
               <button
                 class="oauth-button"
                 type="button"
-                :disabled="isRegister && !form.acceptedTerms"
+                :disabled="!form.acceptedTerms"
                 @click="startOAuth('yandex')"
               >
                 <span class="oauth-icon yandex-icon" aria-hidden="true">Я</span>
@@ -203,7 +203,7 @@ function goBack() {
 }
 
 function startOAuth(provider: 'google' | 'yandex') {
-  const consent = isRegister.value && form.acceptedTerms
+  const consent = form.acceptedTerms
     ? '?acceptedTerms=true&termsVersion=2026-06-07'
     : ''
   window.location.assign(`/api/auth/${provider}${consent}`)
