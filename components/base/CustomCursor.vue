@@ -33,7 +33,6 @@ let x = 0
 let y = 0
 let pressed = false
 let pressedState: CursorState | null = null
-let frame = 0
 
 function elementAtPointer() {
   return document.elementFromPoint(x, y)
@@ -54,7 +53,6 @@ function stateFor(element: Element | null): CursorState {
 }
 
 function render() {
-  frame = 0
   const cursor = cursorRef.value
   const visual = visualRef.value
   if (!cursor || !visual) return
@@ -62,16 +60,12 @@ function render() {
   visual.dataset.state = stateFor(elementAtPointer())
 }
 
-function requestRender() {
-  if (!frame) frame = window.requestAnimationFrame(render)
-}
-
 function onPointerMove(event: PointerEvent) {
   if (event.pointerType !== 'mouse') return
   x = event.clientX
   y = event.clientY
   cursorRef.value?.classList.add('visible')
-  requestRender()
+  render()
 }
 
 function onPointerDown(event: PointerEvent) {
@@ -81,7 +75,7 @@ function onPointerDown(event: PointerEvent) {
   pressedState = stateFor(elementAtPointer())
   pressed = true
   visualRef.value?.classList.add('pressed')
-  requestRender()
+  render()
 }
 
 function releasePointer(event?: PointerEvent) {
@@ -93,7 +87,7 @@ function releasePointer(event?: PointerEvent) {
   pressed = false
   pressedState = null
   visualRef.value?.classList.remove('pressed')
-  requestRender()
+  render()
 }
 
 function releaseDrag() {
@@ -119,7 +113,7 @@ onMounted(() => {
   document.addEventListener('pointerdown', onPointerDown, { capture: true, passive: true })
   document.addEventListener('pointerup', releasePointer, { capture: true, passive: true })
   document.addEventListener('pointercancel', releasePointer, { capture: true, passive: true })
-  document.addEventListener('scroll', requestRender, { capture: true, passive: true })
+  document.addEventListener('scroll', render, { capture: true, passive: true })
   document.addEventListener('contextmenu', releaseWithoutMoving, { capture: true })
   document.documentElement.addEventListener('mouseleave', hideCursor)
   window.addEventListener('blur', releaseWithoutMoving)
@@ -131,13 +125,12 @@ onUnmounted(() => {
   document.removeEventListener('pointerdown', onPointerDown, { capture: true })
   document.removeEventListener('pointerup', releasePointer, { capture: true })
   document.removeEventListener('pointercancel', releasePointer, { capture: true })
-  document.removeEventListener('scroll', requestRender, { capture: true })
+  document.removeEventListener('scroll', render, { capture: true })
   document.removeEventListener('contextmenu', releaseWithoutMoving, { capture: true })
   document.documentElement.removeEventListener('mouseleave', hideCursor)
   window.removeEventListener('blur', releaseWithoutMoving)
   window.removeEventListener('dragend', releaseDrag)
   document.documentElement.classList.remove('custom-cursor-enabled')
-  if (frame) window.cancelAnimationFrame(frame)
 })
 </script>
 

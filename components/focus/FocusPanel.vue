@@ -31,7 +31,9 @@
           </svg>
 
           <div class="timer-center">
-            <Target :size="24" />
+            <div class="timer-center__icon">
+              <Target :size="24" />
+            </div>
             <strong>{{ formattedTime }}</strong>
             <span>{{ isRunning ? 'идет сессия' : 'готов к старту' }}</span>
           </div>
@@ -161,6 +163,20 @@ const sessionLabel = computed(() => {
   return 'сессий'
 })
 
+function emitTimerUpdate() {
+  if (!import.meta.client) return
+  window.dispatchEvent(
+    new CustomEvent('cof:focus-timer-update', {
+      detail: {
+        preset: activePresetKey.value,
+        label: activePreset.value.label,
+        remainingSeconds: remainingSeconds.value,
+        isRunning: isRunning.value,
+      },
+    })
+  )
+}
+
 function setPreset(key: PresetKey) {
   activePresetKey.value = key
   stopTimer()
@@ -238,6 +254,7 @@ function persistState() {
       endsAt: isRunning.value ? Date.now() + remainingSeconds.value * 1000 : null,
     })
   )
+  emitTimerUpdate()
 }
 
 function restoreState() {
@@ -271,6 +288,7 @@ function restoreState() {
 onMounted(() => {
   loadSessions()
   restoreState()
+  emitTimerUpdate()
 })
 onBeforeUnmount(() => {
   persistState()
@@ -434,24 +452,31 @@ onBeforeUnmount(() => {
 
 .timer-center {
   position: absolute;
-  inset: 50% auto auto 50%;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  grid-template-rows: auto auto auto;
-  gap: 6px;
+  inset: 0;
   width: min(74%, 300px);
-  min-width: 0;
-  padding: 0;
-  box-sizing: border-box;
+  margin: auto;
   color: var(--text);
   opacity: 0;
-  transform: translate(-50%, calc(-50% - 8px)) scale(0.97);
+  transform: scale(0.97);
   animation: focus-value-in 460ms cubic-bezier(0.16, 1, 0.3, 1) 520ms both;
   pointer-events: none;
 
+  .timer-center__icon,
   strong {
-    display: block;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .timer-center__icon {
+    top: calc(50% - 70px);
+    display: grid;
+    place-items: center;
+    color: var(--accent);
+  }
+
+  strong {
+    top: 50%;
     width: auto;
     min-width: 5.25ch;
     max-width: 100%;
@@ -463,9 +488,14 @@ onBeforeUnmount(() => {
     line-height: 0.82;
     text-align: center;
     white-space: nowrap;
+    transform: translate(-50%, -50%);
   }
 
   span {
+    position: absolute;
+    top: calc(50% + 44px);
+    left: 50%;
+    transform: translateX(-50%);
     max-width: 100%;
     overflow: hidden;
     color: var(--dim);
@@ -479,21 +509,20 @@ onBeforeUnmount(() => {
 
   @include mobile {
     width: min(76%, 260px);
-    gap: 5px;
+
+    .timer-center__icon {
+      top: calc(50% - 58px);
+    }
 
     strong {
       font-size: clamp(2.9rem, 15vw, 4.7rem);
     }
 
     span {
+      top: calc(50% + 36px);
       font-size: 0.78rem;
     }
   }
-}
-
-.timer-center svg {
-  color: var(--accent);
-  margin-bottom: 0;
 }
 
 .timer-actions {
@@ -637,7 +666,7 @@ onBeforeUnmount(() => {
 @keyframes focus-value-in {
   to {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
   }
 }
 
@@ -646,7 +675,7 @@ onBeforeUnmount(() => {
   .timer-center {
     animation: none;
     opacity: 1;
-    transform: translate(-50%, -50%);
+    transform: none;
     stroke-dashoffset: 0;
   }
 }

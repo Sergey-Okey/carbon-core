@@ -236,6 +236,8 @@ onUnmounted(() => {
 .date-popover {
   @include glass;
   position: fixed;
+  display: grid;
+  gap: 12px;
   z-index: 5200;
   inline-size: min(284px, calc(100dvw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
   max-height: min(332px, calc(100dvh - 24px));
@@ -273,9 +275,22 @@ onUnmounted(() => {
   }
 }
 
+.date-head {
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 32px;
+    min-width: 32px;
+    padding-inline: 0;
+  }
+}
+
 .date-head strong {
+  flex: 1;
   color: var(--text);
   font-size: 0.9rem;
+  text-align: center;
   text-transform: capitalize;
 }
 
@@ -331,7 +346,7 @@ onUnmounted(() => {
 }
 
 .date-actions {
-  margin-top: 12px;
+  margin-top: 0;
 }
 
 @media (pointer: coarse), (max-width: 767px) {

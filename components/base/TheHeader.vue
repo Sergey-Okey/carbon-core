@@ -14,8 +14,21 @@
 
     <div class="actions">
       <button
+        v-if="showFocusWidget"
+        class="focus-widget"
+        type="button"
+        aria-label="Вернуться к таймеру фокуса"
+        data-tooltip="Таймер фокуса"
+        data-tooltip-position="bottom"
+        @click="openFocus"
+      >
+        <Timer :size="16" />
+        <span class="focus-widget__time">{{ focusWidgetTime }}</span>
+        <span class="focus-widget__label">{{ focusWidget.label }}</span>
+      </button>
+      <button
         v-if="accessStore.isDemo"
-        class="demo-access"
+        :class="['demo-access', { 'is-highlighted': shouldHighlightGuideEntry }]"
         type="button"
         aria-label="Открыть подписку"
         data-tooltip="Демо: данные не сохраняются"
@@ -25,7 +38,7 @@
         Демо
       </button>
       <button
-        class="action-btn"
+        :class="['action-btn', { 'is-guided-prompt': shouldHighlightGuideEntry }]"
         type="button"
         aria-label="Открыть обучение"
         data-tooltip="Обучение"
@@ -88,7 +101,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { HelpCircle, LogOut, UserCircle } from 'lucide-vue-next'
+import { HelpCircle, LogOut, Timer, UserCircle } from 'lucide-vue-next'
 import AppButton from '~/components/ui/AppButton.vue'
 import NotificationCenter from '~/components/base/NotificationCenter.vue'
 import { useNotification } from '~/composables/useNotification'
@@ -108,6 +121,12 @@ const { addNotification } = useNotification()
 const isProfileModalOpen = ref(false)
 const headerRoot = ref<HTMLElement | null>(null)
 const profilePanel = ref<HTMLElement | null>(null)
+const focusWidget = ref({
+  isRunning: false,
+  remainingSeconds: 0,
+  label: 'Фокус',
+})
+let focusWidgetIntervalId: number | null = null
 
 const sectionTitles: Record<NavSection, string> = {
   board: 'Доска',
@@ -118,6 +137,15 @@ const sectionTitles: Record<NavSection, string> = {
 }
 
 const currentSectionTitle = computed(() => sectionTitles[uiStore.activeNav])
+const shouldHighlightGuideEntry = computed(
+  () => accessStore.isDemo && !guidedTour.hasStarted && !guidedTour.isCompleted
+)
+const showFocusWidget = computed(() => focusWidget.value.isRunning && uiStore.activeNav !== 'shop')
+const focusWidgetTime = computed(() => {
+  const minutes = Math.floor(focusWidget.value.remainingSeconds / 60)
+  const seconds = focusWidget.value.remainingSeconds % 60
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+})
 const userName = computed(() => userStore.displayName || 'COF User')
 const userEmail = computed(
   () => userStore.profile.email || authStore.currentUser?.email || 'Локальный профиль'
@@ -126,6 +154,15 @@ const userEmail = computed(
 function openProfile() {
   isProfileModalOpen.value = false
   navigateTo('/profile')
+}
+
+async function openFocus() {
+  isProfileModalOpen.value = false
+  window.dispatchEvent(new CustomEvent('cof:close-notifications'))
+  if (route.path !== '/') {
+    await navigateTo('/')
+  }
+  uiStore.setActiveNav('shop')
 }
 
 async function openOnboarding() {
@@ -162,14 +199,87 @@ function closeProfilePanel() {
   isProfileModalOpen.value = false
 }
 
+function stopFocusWidgetTicker() {
+  if (focusWidgetIntervalId) {
+    window.clearInterval(focusWidgetIntervalId)
+    focusWidgetIntervalId = null
+  }
+}
+
+function startFocusWidgetTicker(endsAt?: number | null) {
+  stopFocusWidgetTicker()
+  if (!endsAt) return
+
+  const sync = () => {
+    const nextRemaining = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000))
+    focusWidget.value.remainingSeconds = nextRemaining
+    if (nextRemaining <= 0) {
+      focusWidget.value.isRunning = false
+      stopFocusWidgetTicker()
+    }
+  }
+
+  sync()
+  focusWidgetIntervalId = window.setInterval(sync, 1000)
+}
+
+function syncFocusWidgetFromStorage() {
+  try {
+    const raw = localStorage.getItem('cof-focus-state')
+    if (!raw) {
+      focusWidget.value = { isRunning: false, remainingSeconds: 0, label: 'Фокус' }
+      stopFocusWidgetTicker()
+      return
+    }
+
+    const state = JSON.parse(raw) as {
+      remainingSeconds?: number
+      isRunning?: boolean
+      endsAt?: number | null
+      preset?: 'focus' | 'short' | 'long'
+    }
+
+    const labels = {
+      focus: 'Фокус',
+      short: 'Пауза',
+      long: 'Отдых',
+    } as const
+
+    focusWidget.value = {
+      isRunning: state.isRunning === true,
+      remainingSeconds: Number.isFinite(state.remainingSeconds)
+        ? Math.max(0, Number(state.remainingSeconds))
+        : 0,
+      label: labels[state.preset ?? 'focus'] ?? 'Фокус',
+    }
+
+    if (focusWidget.value.isRunning) {
+      startFocusWidgetTicker(state.endsAt)
+    } else {
+      stopFocusWidgetTicker()
+    }
+  } catch {
+    focusWidget.value = { isRunning: false, remainingSeconds: 0, label: 'Фокус' }
+    stopFocusWidgetTicker()
+  }
+}
+
+function handleFocusTimerUpdate() {
+  syncFocusWidgetFromStorage()
+}
+
 onMounted(() => {
   document.addEventListener('click', handleDocumentClick)
   window.addEventListener('cof:close-profile-panel', closeProfilePanel)
+  window.addEventListener('cof:focus-timer-update', handleFocusTimerUpdate)
+  syncFocusWidgetFromStorage()
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleDocumentClick)
   window.removeEventListener('cof:close-profile-panel', closeProfilePanel)
+  window.removeEventListener('cof:focus-timer-update', handleFocusTimerUpdate)
+  stopFocusWidgetTicker()
 })
 </script>
 
@@ -286,17 +396,102 @@ onBeforeUnmount(() => {
   }
 }
 
+.focus-widget {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding-inline: 10px 12px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-pill);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard),
+    transform var(--transition-standard),
+    box-shadow var(--transition-standard);
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: color-mix(in srgb, var(--accent) 18%, transparent);
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
+    }
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  svg {
+    flex: 0 0 auto;
+  }
+
+  @include mobile {
+    min-height: 32px;
+    padding-inline: 8px 10px;
+  }
+}
+
+.focus-widget__time {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.focus-widget__label {
+  color: var(--dim);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  @include mobile {
+    display: none;
+  }
+}
+
 .demo-access {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-height: 36px;
   padding-inline: 10px;
   border: var(--ui-border);
   border-radius: var(--border-radius-pill);
-  color: var(--dim);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--text);
   font-size: 0.72rem;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent);
   cursor: pointer;
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard),
+    box-shadow var(--transition-standard),
+    transform var(--transition-standard);
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: color-mix(in srgb, var(--accent) 20%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &.is-highlighted {
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent),
+      0 0 0 5px color-mix(in srgb, var(--accent) 10%, transparent);
+    animation: demo-accent-pulse 1.9s ease-in-out infinite;
+  }
 
   @include mobile {
     min-height: 32px;
@@ -341,6 +536,15 @@ onBeforeUnmount(() => {
     height: 44px;
     border-radius: var(--border-radius-md);
   }
+}
+
+.action-btn.is-guided-prompt {
+  color: var(--text);
+  animation: help-icon-pulse 1.4s ease-in-out infinite;
+}
+
+.action-btn.is-guided-prompt svg {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 26%, transparent));
 }
 
 .actions :deep(.notification-trigger) {
@@ -470,6 +674,32 @@ onBeforeUnmount(() => {
 .profile-panel-leave-to {
   opacity: 0;
   transform: translateY(-6px);
+}
+
+@keyframes help-icon-pulse {
+  0%,
+  100% {
+    background: transparent;
+    transform: scale(1);
+  }
+  40% {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    transform: scale(1.06);
+  }
+}
+
+@keyframes demo-accent-pulse {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+  45% {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--accent) 36%, transparent),
+      0 0 0 6px color-mix(in srgb, var(--accent) 12%, transparent);
+  }
 }
 
 @media (max-width: 640px) {

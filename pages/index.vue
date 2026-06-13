@@ -54,7 +54,9 @@
         </Teleport>
       </div>
 
-      <FocusPanel v-if="uiStore.activeNav === 'shop'" />
+      <div v-show="uiStore.activeNav === 'shop'">
+        <FocusPanel />
+      </div>
       <AnalyticsPanel v-if="uiStore.activeNav === 'analytics'" />
       <SettingsPanel v-if="uiStore.activeNav === 'settings'" />
     </section>
