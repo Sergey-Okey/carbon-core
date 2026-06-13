@@ -131,9 +131,10 @@ export const useAuthStore = defineStore(
       }
 
       try {
-        const session = (await $fetch(getBackendUrl('/api/auth/session'), {
-          ...getBackendFetchOptions(),
-        })) as {
+        const fetchSession = $fetch as unknown as (
+          url: string,
+          options: ReturnType<typeof getBackendFetchOptions>
+        ) => Promise<{
           user?: {
             id: string
             email: string
@@ -142,7 +143,11 @@ export const useAuthStore = defineStore(
             provider: 'local' | 'google' | 'yandex'
             createdAt?: string
           } | null
-        }
+        }>
+        const session = await fetchSession(
+          getBackendUrl('/api/auth/session'),
+          getBackendFetchOptions()
+        )
         if (session.user) {
           currentUser.value = {
             ...session.user,
