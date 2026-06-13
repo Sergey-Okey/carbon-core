@@ -84,6 +84,24 @@
               </p>
             </div>
 
+            <div class="oauth-actions" aria-label="Войти через сервис">
+              <button class="oauth-button" type="button" @click="startOAuth('google')">
+                <svg class="oauth-icon google-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="#4285f4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z" />
+                  <path fill="#34a853" d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.62A10 10 0 0 0 12 22Z" />
+                  <path fill="#fbbc05" d="M6.39 13.93A6.02 6.02 0 0 1 6.07 12c0-.67.11-1.32.32-1.93V7.45H3.04A10 10 0 0 0 2 12c0 1.61.39 3.14 1.04 4.55l3.35-2.62Z" />
+                  <path fill="#ea4335" d="M12 5.94c1.47 0 2.79.51 3.83 1.5l2.87-2.87A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.96 5.45l3.35 2.62C7.18 7.7 9.39 5.94 12 5.94Z" />
+                </svg>
+                Google
+              </button>
+              <button class="oauth-button" type="button" @click="startOAuth('yandex')">
+                <span class="oauth-icon yandex-icon" aria-hidden="true">Я</span>
+                Яндекс
+              </button>
+            </div>
+
+            <div class="auth-divider"><span>или</span></div>
+
             <form class="auth-form" @submit.prevent="submit">
               <AppFormField v-if="isRegister" label="Имя">
                 <AppInput v-model="form.name" placeholder="Как к вам обращаться" autocomplete="name" />
@@ -172,6 +190,10 @@ function startDemo() {
 function goBack() {
   if (window.history.length > 1) router.back()
   else router.push('/onboarding')
+}
+
+function startOAuth(provider: 'google' | 'yandex') {
+  window.location.assign(`/api/auth/${provider}`)
 }
 
 async function submit() {
@@ -407,6 +429,77 @@ async function submit() {
   }
 }
 
+.oauth-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.oauth-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 0;
+  min-height: var(--control-height-md);
+  padding: 0 16px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-pill);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background var(--transition-standard),
+    border-color var(--transition-standard);
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
+    border-color: var(--ui-border-color);
+  }
+
+  &:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--accent) 16%, transparent);
+    outline-offset: 2px;
+  }
+}
+
+.oauth-icon {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+}
+
+.yandex-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fc3f1d;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  color: var(--dim);
+  font-size: 0.72rem;
+
+  &::before,
+  &::after {
+    content: '';
+    height: 1px;
+    flex: 1;
+    background: var(--ui-border-color);
+  }
+}
+
 .consent-control {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -629,6 +722,10 @@ async function submit() {
     gap: 13px;
   }
 
+  .auth-divider {
+    margin: 15px 0;
+  }
+
   .benefits-list {
     margin-bottom: 18px;
   }
@@ -671,6 +768,14 @@ async function submit() {
   .form-header h2,
   .subscription-header h2 {
     font-size: 1.5rem;
+  }
+
+  .oauth-actions {
+    gap: 8px;
+  }
+
+  .oauth-button {
+    padding-inline: 12px;
   }
 
   .legal-links {
