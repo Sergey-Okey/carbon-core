@@ -1,4 +1,4 @@
-import { neon } from '@neondatabase/serverless'
+import { getDatabase } from './database'
 
 const storeKeys = [
   'user',
@@ -38,11 +38,6 @@ export function parseSyncPayload(value: unknown): SyncPayload {
   })
 
   return payload
-}
-
-function getDatabase() {
-  const databaseUrl = useRuntimeConfig().databaseUrl.trim()
-  return databaseUrl && !databaseUrl.includes('user:password@host/database') ? neon(databaseUrl) : null
 }
 
 async function ensureSyncTable(sql: NonNullable<ReturnType<typeof getDatabase>>) {

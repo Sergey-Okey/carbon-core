@@ -1,14 +1,9 @@
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
-import { neon } from '@neondatabase/serverless'
 import type { OAuthProfile } from './oauth'
+import { getDatabase } from './database'
 
 export type AccountProfile = OAuthProfile & {
   createdAt: string
-}
-
-function getDatabase() {
-  const databaseUrl = useRuntimeConfig().databaseUrl.trim()
-  return databaseUrl && !databaseUrl.includes('user:password@host/database') ? neon(databaseUrl) : null
 }
 
 export function isAuthDatabaseConfigured() {
