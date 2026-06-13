@@ -438,14 +438,15 @@ onBeforeUnmount(() => {
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 9px;
+  grid-template-rows: auto auto auto;
+  gap: 6px;
   width: min(74%, 300px);
   min-width: 0;
   padding: 0;
   box-sizing: border-box;
   color: var(--text);
   opacity: 0;
-  transform: translate(-50%, -50%) scale(0.97);
+  transform: translate(-50%, calc(-50% - 8px)) scale(0.97);
   animation: focus-value-in 460ms cubic-bezier(0.16, 1, 0.3, 1) 520ms both;
   pointer-events: none;
 
@@ -459,7 +460,7 @@ onBeforeUnmount(() => {
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.055em;
-    line-height: 0.88;
+    line-height: 0.82;
     text-align: center;
     white-space: nowrap;
   }
@@ -470,6 +471,7 @@ onBeforeUnmount(() => {
     color: var(--dim);
     font-size: 0.86rem;
     font-weight: 700;
+    line-height: 1;
     text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -477,7 +479,7 @@ onBeforeUnmount(() => {
 
   @include mobile {
     width: min(76%, 260px);
-    gap: 7px;
+    gap: 5px;
 
     strong {
       font-size: clamp(2.9rem, 15vw, 4.7rem);
@@ -491,7 +493,7 @@ onBeforeUnmount(() => {
 
 .timer-center svg {
   color: var(--accent);
-  margin-bottom: 2px;
+  margin-bottom: 0;
 }
 
 .timer-actions {
@@ -587,7 +589,9 @@ onBeforeUnmount(() => {
 
   strong {
     color: var(--accent);
+    font-family: 'Space Grotesk', sans-serif;
     font-size: clamp(2.4rem, 7vw, 4.1rem);
+    font-variant-numeric: tabular-nums;
     line-height: 0.92;
   }
 

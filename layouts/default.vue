@@ -97,6 +97,18 @@ const uiStore = useUIStore()
   }
 
   @include mobile {
+    .layout-content {
+      position: relative;
+      inset: auto;
+      overflow: hidden;
+    }
+
+    .main {
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
     :deep(.nav-island) {
       inset-block-start: auto;
       inset-inline-start: 50%;

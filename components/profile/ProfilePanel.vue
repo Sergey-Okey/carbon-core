@@ -678,6 +678,7 @@ onMounted(loadFocusSessions)
 
   strong {
     color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
     font-size: clamp(2.4rem, 7vw, 4.2rem);
     font-variant-numeric: tabular-nums;
     line-height: 1;

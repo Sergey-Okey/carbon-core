@@ -496,10 +496,12 @@ onMounted(() => {
 
 .stat-item__progress {
   min-width: max-content;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.76rem;
   font-weight: 500;
   color: var(--dim);
   margin-left: 4px;
+  font-variant-numeric: tabular-nums;
   opacity: 0;
   animation: stats-value-in 300ms cubic-bezier(0.16, 1, 0.3, 1) 520ms both;
 }
@@ -549,7 +551,9 @@ onMounted(() => {
 
 .task-counter__value {
   min-width: 0;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .mini-chart {

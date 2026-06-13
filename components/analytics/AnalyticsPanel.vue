@@ -510,7 +510,9 @@ function getLocalDateKey(date: Date) {
 
   strong {
     color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.2rem;
+    font-variant-numeric: tabular-nums;
   }
 
   @include mobile {
@@ -656,9 +658,11 @@ function getLocalDateKey(date: Date) {
 
   strong {
     color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 0.9rem;
     font-weight: 700;
     text-align: right;
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -715,8 +719,10 @@ function getLocalDateKey(date: Date) {
 
   strong {
     color: var(--accent);
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.65rem;
     line-height: 1;
+    font-variant-numeric: tabular-nums;
   }
 
   span {
@@ -818,8 +824,10 @@ function getLocalDateKey(date: Date) {
 .big-number {
   margin: 0;
   color: var(--text);
+  font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(2.4rem, 8vw, 4.2rem);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   line-height: 0.95;
 }
 

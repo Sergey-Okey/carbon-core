@@ -245,7 +245,6 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
 <style scoped lang="scss">
 .branch-node {
-  @include glass;
   width: 240px;
   min-height: 138px;
   padding: 12px;
@@ -254,7 +253,16 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   transition:
     border-color var(--transition-standard),
     background-color var(--transition-standard);
+  background: var(--surface);
   border: var(--ui-border);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+
+  .node-main {
+    display: flex;
+    flex-direction: column;
+  }
 
   &.selected {
     border-color: var(--text);
@@ -262,19 +270,6 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
   &.completed {
     border-color: var(--success);
-  }
-
-  .node-main {
-    display: flex;
-    flex-direction: column;
-  }
-
-  &.expanded {
-    .node-main {
-      margin: -12px;
-      padding: 12px;
-      border-radius: inherit;
-    }
   }
 
   .node-header {
@@ -411,7 +406,6 @@ top: 45px;           /* фиксированный отступ от верхн�
   }
 
   .node-details {
-    @include glass;
     position: absolute;
     left: 0;
     top: calc(100% + 8px);
@@ -421,9 +415,12 @@ top: 45px;           /* фиксированный отступ от верхн�
     max-height: 220px;
     padding: 12px;
     overflow-y: auto;
+    background: var(--surface);
     border: var(--ui-border);
     border-radius: var(--border-radius-md);
     box-shadow: 0 16px 42px color-mix(in srgb, var(--bg) 36%, transparent);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     font-size: 0.85rem;
     word-wrap: break-word;
 
