@@ -32,6 +32,7 @@ fi
 cd "$SOURCE_DIR"
 npm ci
 npm test
+node node_modules/nuxt/bin/nuxt.mjs prepare
 npm run typecheck
 npm run build
 
