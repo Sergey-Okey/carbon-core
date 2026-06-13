@@ -31,8 +31,8 @@ curl --fail --silent http://127.0.0.1:3000/api/health || echo "unavailable"
 
 echo
 echo "TLS certificate"
-if [[ -f /etc/nginx/ssl/coreoflife/fullchain.pem ]]; then
-  openssl x509 -in /etc/nginx/ssl/coreoflife/fullchain.pem -noout -subject -dates
+if sudo test -f /etc/nginx/ssl/coreoflife/fullchain.pem; then
+  sudo openssl x509 -in /etc/nginx/ssl/coreoflife/fullchain.pem -noout -subject -dates
 else
   echo "not installed"
 fi
