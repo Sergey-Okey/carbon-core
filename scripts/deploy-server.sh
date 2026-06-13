@@ -15,7 +15,7 @@ log_event() {
   local level="$1"
   local event="$2"
   shift 2
-  logger -t coreoflife-deploy "level=$level event=$event $*"
+  logger -t cof-deploy-event "level=$level event=$event $*"
   printf '%s level=%s event=%s %s\n' "$(date -u +%FT%TZ)" "$level" "$event" "$*"
 }
 

@@ -3,7 +3,7 @@ set -euo pipefail
 
 echo "Deployment events"
 echo "================="
-journalctl -t coreoflife-deploy -n 40 --no-pager -o short-iso
+journalctl -t cof-deploy-event -n 40 --no-pager -o short-iso
 
 echo
 echo "Application events"

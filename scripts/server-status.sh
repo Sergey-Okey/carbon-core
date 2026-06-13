@@ -31,4 +31,4 @@ curl --fail --silent http://127.0.0.1:3000/api/health || echo "unavailable"
 
 echo
 echo "Recent deployment events"
-journalctl -t coreoflife-deploy -n 10 --no-pager -o cat 2>/dev/null || true
+journalctl -t cof-deploy-event -n 10 --no-pager -o cat 2>/dev/null || true
