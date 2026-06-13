@@ -273,11 +273,16 @@ function getIconComponent(iconName: string) {
 
 <style scoped lang="scss">
 .branch-mobile-view {
-  padding: 12px;
+  padding:
+    calc(72px + env(safe-area-inset-top, 0px))
+    max(12px, env(safe-area-inset-right, 0px))
+    calc(96px + env(safe-area-inset-bottom, 0px))
+    max(12px, env(safe-area-inset-left, 0px));
   max-width: 100%;
   overflow-y: auto;
   background: transparent;
   min-height: 100%;
+  box-sizing: border-box;
 }
 
 .mobile-controls {

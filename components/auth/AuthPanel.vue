@@ -372,8 +372,10 @@ async function submit() {
 .legal-links {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 8px 16px;
   margin-top: 2px;
+  text-align: center;
 
   a {
     color: var(--dim);
