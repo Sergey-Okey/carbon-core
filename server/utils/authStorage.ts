@@ -71,15 +71,24 @@ export async function loginAccount(email: string, password: string) {
   return mapAccount(row)
 }
 
-export async function upsertOAuthAccount(profile: OAuthProfile) {
+export async function upsertOAuthAccount(profile: OAuthProfile, termsVersion = '') {
   const sql = getDatabase()
   if (!sql) return { ...profile, createdAt: new Date().toISOString() } satisfies AccountProfile
   await ensureUsersTable(sql)
 
   const providerId = profile.id.slice(profile.provider.length + 1)
+  const existing = await sql`SELECT id FROM cof_users WHERE id = ${profile.id} LIMIT 1`
+  if (!existing.length && termsVersion !== '2026-06-07') {
+    throw createError({ statusCode: 403, statusMessage: 'Terms consent is required' })
+  }
   const rows = await sql`
-    INSERT INTO cof_users (id, email, name, avatar, provider, provider_id)
-    VALUES (${profile.id}, ${profile.email.toLowerCase()}, ${profile.name}, ${profile.avatar}, ${profile.provider}, ${providerId})
+    INSERT INTO cof_users (
+      id, email, name, avatar, provider, provider_id, terms_accepted_at, terms_version
+    )
+    VALUES (
+      ${profile.id}, ${profile.email.toLowerCase()}, ${profile.name}, ${profile.avatar},
+      ${profile.provider}, ${providerId}, NOW(), ${termsVersion}
+    )
     ON CONFLICT (id)
     DO UPDATE SET
       email = EXCLUDED.email,

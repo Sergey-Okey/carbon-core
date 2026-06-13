@@ -84,8 +84,22 @@
               </p>
             </div>
 
+            <label v-if="isRegister" class="consent-control oauth-consent">
+              <input v-model="form.acceptedTerms" type="checkbox" />
+              <span class="checkmark"><Check :size="12" /></span>
+              <span>
+                Принимаю <NuxtLink to="/terms">условия использования</NuxtLink> и
+                <NuxtLink to="/privacy">политику конфиденциальности</NuxtLink>
+              </span>
+            </label>
+
             <div class="oauth-actions" aria-label="Войти через сервис">
-              <button class="oauth-button" type="button" @click="startOAuth('google')">
+              <button
+                class="oauth-button"
+                type="button"
+                :disabled="isRegister && !form.acceptedTerms"
+                @click="startOAuth('google')"
+              >
                 <svg class="oauth-icon google-icon" viewBox="0 0 24 24" aria-hidden="true">
                   <path fill="#4285f4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z" />
                   <path fill="#34a853" d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.62A10 10 0 0 0 12 22Z" />
@@ -94,7 +108,12 @@
                 </svg>
                 Google
               </button>
-              <button class="oauth-button" type="button" @click="startOAuth('yandex')">
+              <button
+                class="oauth-button"
+                type="button"
+                :disabled="isRegister && !form.acceptedTerms"
+                @click="startOAuth('yandex')"
+              >
                 <span class="oauth-icon yandex-icon" aria-hidden="true">Я</span>
                 Яндекс
               </button>
@@ -122,15 +141,6 @@
                   :autocomplete="isRegister ? 'new-password' : 'current-password'"
                 />
               </AppFormField>
-
-              <label v-if="isRegister" class="consent-control">
-                <input v-model="form.acceptedTerms" type="checkbox" />
-                <span class="checkmark"><Check :size="12" /></span>
-                <span>
-                  Принимаю <NuxtLink to="/terms">условия использования</NuxtLink> и
-                  <NuxtLink to="/privacy">политику конфиденциальности</NuxtLink>
-                </span>
-              </label>
 
               <p v-if="error" class="error-text">{{ error }}</p>
               <AppButton
@@ -193,7 +203,10 @@ function goBack() {
 }
 
 function startOAuth(provider: 'google' | 'yandex') {
-  window.location.assign(`/api/auth/${provider}`)
+  const consent = isRegister.value && form.acceptedTerms
+    ? '?acceptedTerms=true&termsVersion=2026-06-07'
+    : ''
+  window.location.assign(`/api/auth/${provider}${consent}`)
 }
 
 async function submit() {
@@ -464,6 +477,11 @@ async function submit() {
     outline: 2px solid color-mix(in srgb, var(--accent) 16%, transparent);
     outline-offset: 2px;
   }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
 }
 
 .oauth-icon {
@@ -549,6 +567,10 @@ async function submit() {
       text-decoration: underline;
     }
   }
+}
+
+.oauth-consent {
+  margin-bottom: 16px;
 }
 
 .error-text {

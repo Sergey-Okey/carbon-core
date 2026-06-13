@@ -1,4 +1,4 @@
-import { getRouterParam, sendRedirect } from 'h3'
+import { getQuery, getRouterParam, sendRedirect } from 'h3'
 import { createAuthorizationUrl, isOAuthProvider } from '../../utils/oauth'
 
 export default defineEventHandler((event) => {
@@ -6,5 +6,10 @@ export default defineEventHandler((event) => {
   if (!isOAuthProvider(provider)) {
     throw createError({ statusCode: 404, statusMessage: 'Unknown OAuth provider' })
   }
-  return sendRedirect(event, createAuthorizationUrl(event, provider))
+  const query = getQuery(event)
+  const termsVersion =
+    query.acceptedTerms === 'true' && query.termsVersion === '2026-06-07'
+      ? query.termsVersion
+      : ''
+  return sendRedirect(event, createAuthorizationUrl(event, provider, termsVersion))
 })

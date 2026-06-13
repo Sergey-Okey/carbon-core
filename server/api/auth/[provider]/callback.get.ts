@@ -14,7 +14,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Invalid OAuth callback' })
   }
 
-  validateOAuthState(event, provider, query.state)
-  setOAuthSession(event, await upsertOAuthAccount(await exchangeOAuthCode(event, provider, query.code)))
+  const termsVersion = validateOAuthState(event, provider, query.state)
+  setOAuthSession(
+    event,
+    await upsertOAuthAccount(await exchangeOAuthCode(event, provider, query.code), termsVersion)
+  )
   return sendRedirect(event, '/?oauth=success')
 })

@@ -43,14 +43,14 @@ function getCallbackUrl(event: H3Event, provider: OAuthProvider) {
   return `${origin}/api/auth/${provider}/callback`
 }
 
-export function createAuthorizationUrl(event: H3Event, provider: OAuthProvider) {
+export function createAuthorizationUrl(event: H3Event, provider: OAuthProvider, termsVersion = '') {
   const credentials = getProviderCredentials(provider)
   if (!credentials.clientId || !credentials.clientSecret || !getOAuthProviders()[provider]) {
     throw createError({ statusCode: 503, statusMessage: 'OAuth provider is not configured' })
   }
 
   const state = randomBytes(32).toString('hex')
-  setCookie(event, stateCookie, `${provider}:${state}`, cookieOptions(event, 600))
+  setCookie(event, stateCookie, `${provider}:${state}:${termsVersion}`, cookieOptions(event, 600))
   const callbackUrl = getCallbackUrl(event, provider)
 
   if (provider === 'google') {
@@ -75,9 +75,11 @@ export function createAuthorizationUrl(event: H3Event, provider: OAuthProvider) 
 export function validateOAuthState(event: H3Event, provider: OAuthProvider, state: string) {
   const expected = getCookie(event, stateCookie)
   deleteCookie(event, stateCookie, cookieOptions(event, 0))
-  if (!expected || expected !== `${provider}:${state}`) {
+  const [expectedProvider, expectedState, termsVersion = ''] = expected?.split(':') ?? []
+  if (expectedProvider !== provider || expectedState !== state) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid OAuth state' })
   }
+  return termsVersion === '2026-06-07' ? termsVersion : ''
 }
 
 export async function exchangeOAuthCode(

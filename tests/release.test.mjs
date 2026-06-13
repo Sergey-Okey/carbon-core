@@ -45,9 +45,13 @@ test('public trust pages remain accessible without authentication', async () => 
 test('registration requires explicit legal consent', async () => {
   const authPanel = await read('components/auth/AuthPanel.vue')
   const registerApi = await read('server/api/auth/register.post.ts')
+  const oauthRoute = await read('server/api/auth/[provider].get.ts')
+  const authStorage = await read('server/utils/authStorage.ts')
   const privacy = await read('pages/privacy.vue')
   assert.match(authPanel, /form\.acceptedTerms/)
   assert.match(registerApi, /acceptedTerms === true/)
+  assert.match(oauthRoute, /acceptedTerms === 'true'/)
+  assert.match(authStorage, /Terms consent is required/)
   assert.match(privacy, /Отзыв согласия/)
   assert.match(privacy, /Удаление данных/)
   assert.match(authPanel, /register\(form\.email, form\.password, form\.name, 'local'/)
