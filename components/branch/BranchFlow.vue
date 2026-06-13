@@ -30,7 +30,7 @@
       :selection-on-drag="false"
       :multi-selection-key-code="['Control', 'Meta', 'Shift']"
       :zoom-on-scroll="true"
-      :fit-view-on-init="true"
+      :fit-view-on-init="false"
       :nodes-draggable="true"
       :edges-updatable="true"
       :nodes-focusable="false"
@@ -51,13 +51,13 @@
         :can-add-milestone="canAddMilestone"
         :has-selection="selectedNodeIds.length > 0 || !!selectedEdgeId"
         :selection-type="selectedControlType"
-        :handle-offset="handleOffset"
-        @fit-view="fitView"
+        :spacing="connectionSpacing"
+        @fit-view="fitBoardView"
         @zoom-in="zoomIn"
         @zoom-out="zoomOut"
         @align-layout="alignLayoutSmart"
         @export-png="exportBoardPng"
-        @update:handle-offset="handleOffset = $event"
+        @update:spacing="updateConnectionSpacing"
         @add-branch="openAddBranchModal"
         @add-milestone="addMilestoneToSelectedBranch"
         @delete-selected="deleteSelected"
@@ -147,13 +147,14 @@ const { fitView, zoomIn: vfZoomIn, zoomOut: vfZoomOut, getSelectedNodes } = useV
 const { applyLayout } = useAutoLayout()
 const { confirm } = useConfirm()
 const { addNotification } = useNotification()
-const handleOffset = ref(24)
+const connectionSpacing = ref(170)
 const defaultEdgeOptions = computed(() => ({
   type: 'smoothstep',
-  pathOptions: { borderRadius: 50, offset: handleOffset.value },
+  pathOptions: { borderRadius: 50, offset: 24 },
   animated: false,
   style: { stroke: 'var(--dim)', strokeWidth: 1.15 },
 }))
+let spacingApplyTimer: number | null = null
 
 const history = ref<{ branches: Branch[]; edges: Edge[] }[]>([])
 const historyIndex = ref(-1)
@@ -486,15 +487,15 @@ function alignLayout() {
   if (branchesStore.branches.length === 0) return
 
   const density = {
-    compact: { branchGapX: 760, branchGapY: 220, milestoneGapX: 220 },
-    normal: { branchGapX: 980, branchGapY: 260, milestoneGapX: 260 },
-    wide: { branchGapX: 1180, branchGapY: 320, milestoneGapX: 320 },
+    compact: { branchGapY: 220 },
+    normal: { branchGapY: 260 },
+    wide: { branchGapY: 320 },
   }[settingsStore.boardLayoutDensity]
   const cols = settingsStore.boardColumns
-  const branchGapX = density.branchGapX
+  const milestoneGapX = connectionSpacing.value
+  const branchGapX = Math.max(connectionSpacing.value * 4, 620)
   const branchGapY = density.branchGapY
-  const milestoneStartX = 300
-  const milestoneGapX = density.milestoneGapX
+  const milestoneStartX = Math.max(connectionSpacing.value + 80, 220)
   const startX = 100
   const startY = 100
 
@@ -526,9 +527,9 @@ function alignLayoutSmart() {
   if (branchesStore.branches.length === 0) return
 
   const density = {
-    compact: { rankSep: 130, nodeSep: 54 },
-    normal: { rankSep: 170, nodeSep: 78 },
-    wide: { rankSep: 220, nodeSep: 110 },
+    compact: { nodeSep: 54 },
+    normal: { nodeSep: 78 },
+    wide: { nodeSep: 110 },
   }[settingsStore.boardLayoutDensity]
 
   isAutoLayoutAnimating.value = true
@@ -539,7 +540,7 @@ function alignLayoutSmart() {
     (edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target)
   )
   const layoutedNodes = applyLayout(nodes.value, layoutEdges, 'LR', {
-    rankSep: density.rankSep,
+    rankSep: connectionSpacing.value,
     nodeSep: density.nodeSep,
     marginX: Math.max(80, uiStore.panelWidth + 36),
     marginY: 80,
@@ -565,6 +566,14 @@ function alignLayoutSmart() {
     }, 460)
   })
   addNotification({ type: 'success', message: 'Доска выровнена по связям' })
+}
+
+function updateConnectionSpacing(value: number) {
+  connectionSpacing.value = value
+  if (spacingApplyTimer !== null) window.clearTimeout(spacingApplyTimer)
+  spacingApplyTimer = window.setTimeout(() => {
+    if (!isMobile.value && branchesStore.branches.length > 0) alignLayoutSmart()
+  }, 90)
 }
 
 function handleKeyDown(event: KeyboardEvent) {
@@ -780,6 +789,22 @@ function zoomOut() {
   vfZoomOut()
 }
 
+function fitBoardView() {
+  if (isMobile.value) return
+
+  void fitView({
+    padding: {
+      top: 64,
+      right: 72,
+      bottom: 84,
+      left: Math.max(uiStore.panelWidth + 44, 116),
+    },
+    minZoom: 0.2,
+    maxZoom: 1.25,
+    duration: 240,
+  })
+}
+
 async function exportBoardPng() {
   try {
     const exportNodes = nodes.value
@@ -918,7 +943,7 @@ onMounted(() => {
     syncNodesAndEdges()
     if (!isMobile.value) {
       setTimeout(() => {
-        fitView()
+        fitBoardView()
       }, 100)
     }
     saveToHistory()
@@ -928,6 +953,7 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
   window.removeEventListener('keydown', handleKeyDown)
+  if (spacingApplyTimer !== null) window.clearTimeout(spacingApplyTimer)
 })
 
 watch(
@@ -935,10 +961,6 @@ watch(
   () => syncNodesAndEdges(),
   { immediate: true, deep: true }
 )
-
-watch(handleOffset, () => {
-  syncNodesAndEdges()
-})
 
 watch(
   () => tasksStore.tasks,

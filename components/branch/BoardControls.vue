@@ -18,16 +18,16 @@
       <button @click="$emit('export-png')" aria-label="Экспортировать доску в PNG" data-tooltip="Экспортировать доску в PNG">
         <ImageDown :size="18" />
       </button>
-      <label class="handle-control" aria-label="Длина связей">
+      <label class="handle-control" aria-label="Дистанция между узлами">
         <Route :size="16" />
         <span class="handle-track">
         <input
-          :value="handleOffset"
+          :value="spacing"
           type="range"
-          :min="12"
-          :max="72"
-          :step="2"
-          @input="$emit('update:handle-offset', Number(($event.target as HTMLInputElement).value))"
+          :min="120"
+          :max="320"
+          :step="10"
+          @input="$emit('update:spacing', Number(($event.target as HTMLInputElement).value))"
         />
         </span>
       </label>
@@ -100,7 +100,7 @@ const props = defineProps<{
   canAddMilestone?: boolean
   hasSelection?: boolean
   selectionType?: 'branch' | 'milestone' | 'edge' | 'none'
-  handleOffset?: number
+  spacing?: number
 }>()
 
 defineEmits([
@@ -109,7 +109,7 @@ defineEmits([
   'zoom-out',
   'align-layout',
   'export-png',
-  'update:handle-offset',
+  'update:spacing',
   'add-branch',
   'add-milestone',
   'delete-selected',
@@ -117,7 +117,7 @@ defineEmits([
   'redo',
 ])
 
-const handleOffset = computed(() => props.handleOffset ?? 24)
+const spacing = computed(() => props.spacing ?? 170)
 
 const milestoneTooltip = computed(() =>
   props.canAddMilestone ? 'Добавить этап' : 'Выберите ветку или этап'
