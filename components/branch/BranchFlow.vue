@@ -308,8 +308,8 @@ function syncNodesAndEdges() {
           ...baseEdgeOptions,
           ...edge,
           pathOptions: {
-            ...baseEdgeOptions.pathOptions,
             ...((edge as Edge & { pathOptions?: typeof baseEdgeOptions.pathOptions }).pathOptions || {}),
+            ...baseEdgeOptions.pathOptions,
           },
           style: {
             ...(edge.style || {}),

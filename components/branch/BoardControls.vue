@@ -20,6 +20,7 @@
       </button>
       <label class="handle-control" aria-label="Длина связей">
         <Route :size="16" />
+        <span class="handle-track">
         <input
           :value="handleOffset"
           type="range"
@@ -28,6 +29,7 @@
           :step="2"
           @input="$emit('update:handle-offset', Number(($event.target as HTMLInputElement).value))"
         />
+        </span>
       </label>
       <div class="divider"></div>
 
@@ -204,15 +206,102 @@ const deleteTooltip = computed(() =>
   .handle-control {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    min-width: 124px;
-    padding-inline: 10px 8px;
+    gap: 8px;
+    min-width: 112px;
+    padding-inline: 8px 6px;
     color: var(--dim);
 
+    .handle-track {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      width: 72px;
+      height: 14px;
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 50% 0 auto;
+        height: 2px;
+        transform: translateY(-50%);
+        border-radius: 999px;
+        background:
+          linear-gradient(
+            90deg,
+            color-mix(in srgb, var(--accent) 72%, white 6%) 0%,
+            color-mix(in srgb, var(--accent) 42%, transparent) 55%,
+            color-mix(in srgb, var(--text) 14%, transparent) 100%
+          );
+        opacity: 0.95;
+        pointer-events: none;
+      }
+    }
+
     input {
-      width: 76px;
-      accent-color: var(--accent);
+      position: relative;
+      z-index: 1;
+      width: 72px;
+      height: 14px;
+      margin: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
       cursor: ew-resize;
+
+      &::-webkit-slider-runnable-track {
+        height: 2px;
+        background: transparent;
+      }
+
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 10px;
+        height: 10px;
+        margin-top: -4px;
+        border: none;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--bg) 80%, transparent);
+        transition:
+          transform var(--transition-standard),
+          box-shadow var(--transition-standard),
+          opacity var(--transition-standard);
+      }
+
+      &::-moz-range-track {
+        height: 2px;
+        background: transparent;
+        border: none;
+      }
+
+      &::-moz-range-thumb {
+        width: 10px;
+        height: 10px;
+        border: none;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--bg) 80%, transparent);
+        transition:
+          transform var(--transition-standard),
+          box-shadow var(--transition-standard),
+          opacity var(--transition-standard);
+      }
+
+      &:hover::-webkit-slider-thumb,
+      &:focus-visible::-webkit-slider-thumb {
+        transform: scale(1.08);
+        box-shadow:
+          0 0 0 1px color-mix(in srgb, var(--bg) 78%, transparent),
+          0 0 0 5px color-mix(in srgb, var(--accent) 12%, transparent);
+      }
+
+      &:hover::-moz-range-thumb,
+      &:focus-visible::-moz-range-thumb {
+        transform: scale(1.08);
+        box-shadow:
+          0 0 0 1px color-mix(in srgb, var(--bg) 78%, transparent),
+          0 0 0 5px color-mix(in srgb, var(--accent) 12%, transparent);
+      }
     }
   }
 }
