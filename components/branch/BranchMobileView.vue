@@ -134,6 +134,17 @@
         </Transition>
       </div>
     </div>
+
+    <aside class="desktop-invitation">
+      <div class="desktop-invitation-icon" aria-hidden="true">
+        <MonitorUp :size="22" />
+      </div>
+      <div>
+        <span>Полная версия доски</span>
+        <strong>Увидьте всю систему целиком</strong>
+        <p>Откройте COF на компьютере, чтобы свободно перемещать ветки, соединять этапы и видеть связи на одном пространстве.</p>
+      </div>
+    </aside>
   </div>
 </template>
 
@@ -160,6 +171,7 @@ import {
   Camera,
   Code,
   HelpCircle,
+  MonitorUp,
 } from 'lucide-vue-next'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useTasksStore } from '~/stores/tasks.store'
@@ -323,6 +335,57 @@ function getIconComponent(iconName: string) {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.desktop-invitation {
+  @include glass;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  margin-top: 24px;
+  padding: 18px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
+  background: var(--glass-surface);
+
+  div:last-child {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  span {
+    color: var(--dim);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.08rem;
+    line-height: 1.15;
+  }
+
+  p {
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+}
+
+.desktop-invitation-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-pill);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent);
 }
 
 .branch-item {

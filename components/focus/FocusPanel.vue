@@ -434,12 +434,11 @@ onBeforeUnmount(() => {
 
 .timer-center {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  inset: 50% auto auto 50%;
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 8px;
+  gap: 9px;
   width: min(74%, 300px);
   min-width: 0;
   padding: 0;
@@ -452,12 +451,15 @@ onBeforeUnmount(() => {
 
   strong {
     display: block;
-    width: 5.2ch;
+    width: auto;
+    min-width: 5.25ch;
     max-width: 100%;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: clamp(3.1rem, 10vw, 5.8rem);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    line-height: 1;
+    letter-spacing: -0.055em;
+    line-height: 0.88;
     text-align: center;
     white-space: nowrap;
   }
@@ -489,6 +491,7 @@ onBeforeUnmount(() => {
 
 .timer-center svg {
   color: var(--accent);
+  margin-bottom: 2px;
 }
 
 .timer-actions {
