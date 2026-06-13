@@ -17,6 +17,10 @@ export interface User {
   provider?: 'local' | 'google' | 'yandex'
 }
 export type AuthMode = 'cloud' | 'local'
+type BackendFetch = <T = unknown>(
+  url: string,
+  options?: Record<string, unknown>
+) => Promise<T>
 
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2)
@@ -60,6 +64,7 @@ export const useAuthStore = defineStore(
     const initialized = ref(false)
     const usersCount = ref(0)
     const authMode = ref<AuthMode>('cloud')
+    const fetchBackend = $fetch as unknown as BackendFetch
 
     const userInitials = computed(() => {
       if (!currentUser.value) return ''
@@ -131,10 +136,7 @@ export const useAuthStore = defineStore(
       }
 
       try {
-        const fetchSession = $fetch as unknown as (
-          url: string,
-          options: ReturnType<typeof getBackendFetchOptions>
-        ) => Promise<{
+        const session = await fetchBackend<{
           user?: {
             id: string
             email: string
@@ -143,11 +145,7 @@ export const useAuthStore = defineStore(
             provider: 'local' | 'google' | 'yandex'
             createdAt?: string
           } | null
-        }>
-        const session = await fetchSession(
-          getBackendUrl('/api/auth/session'),
-          getBackendFetchOptions()
-        )
+        }>(getBackendUrl('/api/auth/session'), getBackendFetchOptions())
         if (session.user) {
           currentUser.value = {
             ...session.user,
@@ -186,11 +184,14 @@ export const useAuthStore = defineStore(
         }
 
         if (mode === 'cloud') try {
-          const response = (await $fetch(getBackendUrl('/api/auth/register'), {
+          const response = await fetchBackend<{ user: Omit<User, 'password' | 'bio'> }>(
+            getBackendUrl('/api/auth/register'),
+            {
               method: 'POST',
               body: { email, password, name, acceptedTerms, termsVersion: '2026-06-07' },
               ...getBackendFetchOptions(),
-            })) as { user: Omit<User, 'password' | 'bio'> }
+            }
+          )
           applyServerUser(response.user)
           authMode.value = 'cloud'
           return { success: true }
@@ -253,11 +254,14 @@ export const useAuthStore = defineStore(
 
       try {
         if (mode === 'cloud') try {
-          const response = (await $fetch(getBackendUrl('/api/auth/login'), {
+          const response = await fetchBackend<{ user: Omit<User, 'password' | 'bio'> }>(
+            getBackendUrl('/api/auth/login'),
+            {
               method: 'POST',
               body: { email, password },
               ...getBackendFetchOptions(),
-            })) as { user: Omit<User, 'password' | 'bio'> }
+            }
+          )
           applyServerUser(response.user)
           authMode.value = 'cloud'
           return { success: true }
@@ -300,7 +304,7 @@ export const useAuthStore = defineStore(
     }
 
     function logout(): void {
-      void $fetch(getBackendUrl('/api/auth/logout'), {
+      void fetchBackend(getBackendUrl('/api/auth/logout'), {
         method: 'POST',
         ...getBackendFetchOptions(),
       }).catch(() => undefined)
@@ -340,11 +344,14 @@ export const useAuthStore = defineStore(
 
       try {
         if (authMode.value === 'cloud') {
-          const response = (await $fetch(getBackendUrl('/api/auth/account'), {
+          const response = await fetchBackend<{ user: Omit<User, 'password' | 'bio'> }>(
+            getBackendUrl('/api/auth/account'),
+            {
             method: 'PATCH',
             body: updates,
             ...getBackendFetchOptions(),
-          })) as { user: Omit<User, 'password' | 'bio'> }
+            }
+          )
           applyServerUser({ ...response.user, bio: updates.bio ?? previousUser.bio })
           return { success: true }
         }
@@ -373,7 +380,7 @@ export const useAuthStore = defineStore(
 
       if (authMode.value === 'cloud') {
         try {
-          await $fetch(getBackendUrl('/api/auth/account'), {
+          await fetchBackend(getBackendUrl('/api/auth/account'), {
             method: 'DELETE',
             ...getBackendFetchOptions(),
           })
