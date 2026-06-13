@@ -30,5 +30,13 @@ echo "Backend"
 curl --fail --silent http://127.0.0.1:3000/api/health || echo "unavailable"
 
 echo
+echo "TLS certificate"
+if [[ -f /etc/nginx/ssl/coreoflife/fullchain.pem ]]; then
+  openssl x509 -in /etc/nginx/ssl/coreoflife/fullchain.pem -noout -subject -dates
+else
+  echo "not installed"
+fi
+
+echo
 echo "Recent deployment events"
 journalctl -t cof-deploy-event -n 10 --no-pager -o cat 2>/dev/null || true
