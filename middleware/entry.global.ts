@@ -8,13 +8,12 @@ function safeParse<T>(raw: string | null, fallback: T): T {
   }
 }
 
-export default defineNuxtRouteMiddleware((to) => {
+export default defineNuxtRouteMiddleware(async (to) => {
   if (!import.meta.client) return
 
-  const authState = safeParse<{
-    currentUser: unknown
-    isAuthenticated: boolean
-  } | null>(localStorage.getItem('carbon-auth'), null)
+  const authStore = useAuthStore()
+  await authStore.init()
+
   const onboardingState = safeParse<{ hasSeenOnboarding: boolean } | null>(
     localStorage.getItem('carbon-onboarding'),
     null
@@ -25,14 +24,18 @@ export default defineNuxtRouteMiddleware((to) => {
     null
   )
 
-  const isAuthenticated = Boolean(
-    authState?.isAuthenticated && authState.currentUser
-  )
+  const isAuthenticated = Boolean(authStore.isAuthenticated && authStore.currentUser)
   const hasSeenOnboarding = Boolean(onboardingState?.hasSeenOnboarding)
   const hasUsers = users.length > 0
   const isDemo = accessState?.mode === 'demo'
   const isPublicRoute = ['/auth', '/register', '/onboarding', '/privacy', '/terms', '/support'].includes(to.path)
   const isNative = Capacitor.isNativePlatform()
+
+  if ((to.path === '/auth' || to.path === '/register') && isAuthenticated) {
+    return navigateTo('/')
+  }
+
+  if (isAuthenticated) return
 
   if (isNative && to.path === '/onboarding') {
     return navigateTo(hasUsers ? '/auth' : '/register')
@@ -44,10 +47,6 @@ export default defineNuxtRouteMiddleware((to) => {
 
   if (!isNative && to.path === '/auth' && !hasSeenOnboarding && !hasUsers) {
     return navigateTo('/onboarding')
-  }
-
-  if ((to.path === '/auth' || to.path === '/register') && isAuthenticated) {
-    return navigateTo('/')
   }
 
   if (!isAuthenticated && !isDemo && !isPublicRoute) {
