@@ -21,8 +21,9 @@
           <AppSelect v-model="form.type" :options="taskTypeOptions" />
         </AppFormField>
 
-        <AppFormField label="Дата">
-          <AppDatePicker v-model="form.targetDate" />
+        <AppFormField :label="scheduleLabel">
+          <AppTimePicker v-if="isTodayTask" v-model="form.targetTime" />
+          <AppDatePicker v-else v-model="form.targetDate" />
         </AppFormField>
       </div>
 
@@ -160,6 +161,7 @@ import AppInput from '~/components/ui/AppInput.vue'
 import AppModal from '~/components/ui/AppModal.vue'
 import AppSelect from '~/components/ui/AppSelect.vue'
 import AppSwitch from '~/components/ui/AppSwitch.vue'
+import AppTimePicker from '~/components/ui/AppTimePicker.vue'
 import type { AppSelectOption } from '~/types/ui.types'
 import type { BranchId } from '~/types/branch.types'
 import type { Task, TaskFormData, TaskTag, TaskType } from '~/types/task.types'
@@ -201,6 +203,7 @@ const form = reactive({
   description: '',
   type: props.defaultType || 'HABIT',
   targetDate: '',
+  targetTime: '09:00',
   tagIds: [] as string[],
   tags: [] as TaskTag[],
 })
@@ -209,6 +212,8 @@ const allTags = computed<Tag[]>(() => tagsStore.tags)
 const availableTags = computed<Tag[]>(() =>
   allTags.value.filter((tag) => !form.tagIds.includes(tag.id))
 )
+const isTodayTask = computed(() => form.type === 'TASK_DAY')
+const scheduleLabel = computed(() => (isTodayTask.value ? 'Время' : 'Дата'))
 
 const modalTitle = computed(() => {
   if (editing.value) return 'Редактирование задачи'
@@ -233,6 +238,7 @@ watch(
       form.description = newTask.description || ''
       form.type = newTask.type
       form.targetDate = newTask.targetDate || ''
+      form.targetTime = newTask.targetTime || '09:00'
       form.tagIds = [...newTask.tagIds]
       form.tags = getTaskTags(newTask)
       createBranch.value = false
@@ -241,6 +247,7 @@ watch(
       form.description = ''
       form.type = props.defaultType || 'HABIT'
       form.targetDate = ''
+      form.targetTime = '09:00'
       form.tagIds = []
       form.tags = []
       createBranch.value = false
@@ -259,6 +266,21 @@ watch(
   { immediate: true }
 )
 
+watch(
+  () => form.type,
+  (newType) => {
+    if (newType === 'TASK_DAY') {
+      form.targetDate = getTodayDateString()
+      if (!form.targetTime) form.targetTime = '09:00'
+      return
+    }
+
+    form.targetTime = ''
+    if (!form.targetDate) form.targetDate = getTodayDateString()
+  },
+  { immediate: true }
+)
+
 function handleSubmit() {
   if (!form.title.trim()) return
 
@@ -266,6 +288,8 @@ function handleSubmit() {
     ...form,
     title: form.title.trim(),
     description: form.description.trim(),
+    targetDate: form.type === 'TASK_DAY' ? getTodayDateString() : form.targetDate,
+    targetTime: form.type === 'TASK_DAY' ? form.targetTime : '',
     tagIds: [...form.tagIds],
     tags: form.tags.map((tag, index) => ({ ...tag, order: index })),
     createBranch: !editing.value && createBranch.value,
@@ -350,6 +374,14 @@ function getTaskTags(task: Task): TaskTag[] {
     color: tag.color,
     order: index,
   }))
+}
+
+function getTodayDateString() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 </script>
 

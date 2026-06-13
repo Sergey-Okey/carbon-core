@@ -17,10 +17,10 @@
         v-if="showFocusWidget"
         class="focus-widget"
         type="button"
-        aria-label="Вернуться к таймеру фокуса"
+        aria-label="Открыть мини-таймер фокуса"
         data-tooltip="Таймер фокуса"
         data-tooltip-position="bottom"
-        @click="openFocus"
+        @click="toggleFocusWidgetPanel"
       >
         <Timer :size="16" />
         <span class="focus-widget__time">{{ focusWidgetTime }}</span>
@@ -28,7 +28,7 @@
       </button>
       <button
         v-if="accessStore.isDemo"
-        :class="['demo-access', { 'is-highlighted': shouldHighlightGuideEntry }]"
+        class="demo-access"
         type="button"
         aria-label="Открыть подписку"
         data-tooltip="Демо: данные не сохраняются"
@@ -63,6 +63,38 @@
       </button>
     </div>
     <Teleport to="body">
+      <Transition name="profile-panel">
+        <section
+          v-if="isFocusWidgetPanelOpen && showFocusWidget"
+          ref="focusWidgetPanel"
+          class="focus-widget-panel"
+          @click.stop
+        >
+          <div class="focus-widget-panel__head">
+            <span>{{ focusWidget.label }}</span>
+            <strong>{{ focusWidgetTime }}</strong>
+          </div>
+          <div class="focus-widget-panel__ring" :class="{ 'is-running': focusWidget.isRunning }">
+            <div class="focus-widget-panel__core">
+              <Timer :size="20" />
+              <strong>{{ focusWidgetTime }}</strong>
+              <span>{{ focusWidget.isRunning ? 'Сессия идёт' : 'Пауза' }}</span>
+            </div>
+          </div>
+          <div class="focus-widget-panel__actions">
+            <AppButton type="button" variant="primary" @click="toggleFocusTimer">
+              <Timer :size="16" />
+              {{ focusWidget.isRunning ? 'Пауза' : 'Старт' }}
+            </AppButton>
+            <AppButton type="button" variant="secondary" @click="resetFocusTimer">
+              Сброс
+            </AppButton>
+          </div>
+          <button class="focus-widget-panel__link" type="button" @click="openFocus">
+            Открыть страницу фокуса
+          </button>
+        </section>
+      </Transition>
       <Transition name="profile-panel">
         <section
           v-if="isProfileModalOpen"
@@ -110,6 +142,15 @@ import { useUserStore } from '~/stores/user.store'
 import { useUIStore, type NavSection } from '~/stores/ui.store'
 import { useGuidedTourStore } from '~/stores/guidedTour.store'
 import { useAccessStore } from '~/stores/access.store'
+import {
+  emitFocusTimerAction,
+  emitFocusTimerUpdate,
+  getFocusPresetSeconds,
+  readFocusTimerState,
+  writeFocusTimerState,
+  type FocusPresetKey,
+  type FocusTimerSnapshot,
+} from '~/utils/focusTimer'
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
@@ -119,9 +160,12 @@ const accessStore = useAccessStore()
 const route = useRoute()
 const { addNotification } = useNotification()
 const isProfileModalOpen = ref(false)
+const isFocusWidgetPanelOpen = ref(false)
 const headerRoot = ref<HTMLElement | null>(null)
 const profilePanel = ref<HTMLElement | null>(null)
+const focusWidgetPanel = ref<HTMLElement | null>(null)
 const focusWidget = ref({
+  preset: 'focus' as FocusPresetKey,
   isRunning: false,
   remainingSeconds: 0,
   label: 'Фокус',
@@ -140,7 +184,19 @@ const currentSectionTitle = computed(() => sectionTitles[uiStore.activeNav])
 const shouldHighlightGuideEntry = computed(
   () => accessStore.isDemo && !guidedTour.hasStarted && !guidedTour.isCompleted
 )
-const showFocusWidget = computed(() => focusWidget.value.isRunning && uiStore.activeNav !== 'shop')
+const focusPresetSeconds = computed(
+  () =>
+    ({
+      focus: 25 * 60,
+      short: 5 * 60,
+      long: 15 * 60,
+    })[focusWidget.value.preset] || 25 * 60
+)
+const showFocusWidget = computed(
+  () =>
+    uiStore.activeNav !== 'shop' &&
+    (focusWidget.value.isRunning || focusWidget.value.remainingSeconds < focusPresetSeconds.value)
+)
 const focusWidgetTime = computed(() => {
   const minutes = Math.floor(focusWidget.value.remainingSeconds / 60)
   const seconds = focusWidget.value.remainingSeconds % 60
@@ -158,6 +214,7 @@ function openProfile() {
 
 async function openFocus() {
   isProfileModalOpen.value = false
+  isFocusWidgetPanelOpen.value = false
   window.dispatchEvent(new CustomEvent('cof:close-notifications'))
   if (route.path !== '/') {
     await navigateTo('/')
@@ -176,7 +233,16 @@ async function openOnboarding() {
 
 function toggleProfilePanel() {
   isProfileModalOpen.value = !isProfileModalOpen.value
+  if (isProfileModalOpen.value) isFocusWidgetPanelOpen.value = false
   if (isProfileModalOpen.value) {
+    window.dispatchEvent(new CustomEvent('cof:close-notifications'))
+  }
+}
+
+function toggleFocusWidgetPanel() {
+  isProfileModalOpen.value = false
+  isFocusWidgetPanelOpen.value = !isFocusWidgetPanelOpen.value
+  if (isFocusWidgetPanelOpen.value) {
     window.dispatchEvent(new CustomEvent('cof:close-notifications'))
   }
 }
@@ -190,13 +256,22 @@ function logout() {
 
 function handleDocumentClick(event: MouseEvent) {
   const target = event.target as Node
-  if (!headerRoot.value?.contains(target) && !profilePanel.value?.contains(target)) {
+  if (
+    !headerRoot.value?.contains(target) &&
+    !profilePanel.value?.contains(target) &&
+    !focusWidgetPanel.value?.contains(target)
+  ) {
     isProfileModalOpen.value = false
+    isFocusWidgetPanelOpen.value = false
   }
 }
 
 function closeProfilePanel() {
   isProfileModalOpen.value = false
+}
+
+function closeFocusWidgetPanel() {
+  isFocusWidgetPanelOpen.value = false
 }
 
 function stopFocusWidgetTicker() {
@@ -225,32 +300,23 @@ function startFocusWidgetTicker(endsAt?: number | null) {
 
 function syncFocusWidgetFromStorage() {
   try {
-    const raw = localStorage.getItem('cof-focus-state')
-    if (!raw) {
-      focusWidget.value = { isRunning: false, remainingSeconds: 0, label: 'Фокус' }
+    const state = readFocusTimerState()
+    if (!state) {
+      focusWidget.value = { preset: 'focus', isRunning: false, remainingSeconds: 0, label: 'Фокус' }
       stopFocusWidgetTicker()
       return
     }
 
-    const state = JSON.parse(raw) as {
-      remainingSeconds?: number
-      isRunning?: boolean
-      endsAt?: number | null
-      preset?: 'focus' | 'short' | 'long'
-    }
-
-    const labels = {
-      focus: 'Фокус',
-      short: 'Пауза',
-      long: 'Отдых',
-    } as const
-
     focusWidget.value = {
-      isRunning: state.isRunning === true,
-      remainingSeconds: Number.isFinite(state.remainingSeconds)
-        ? Math.max(0, Number(state.remainingSeconds))
-        : 0,
-      label: labels[state.preset ?? 'focus'] ?? 'Фокус',
+      preset: state.preset,
+      isRunning: state.isRunning,
+      remainingSeconds: state.remainingSeconds,
+      label:
+        ({
+          focus: 'Фокус',
+          short: 'Пауза',
+          long: 'Отдых',
+        } satisfies Record<FocusPresetKey, string>)[state.preset] ?? 'Фокус',
     }
 
     if (focusWidget.value.isRunning) {
@@ -259,18 +325,55 @@ function syncFocusWidgetFromStorage() {
       stopFocusWidgetTicker()
     }
   } catch {
-    focusWidget.value = { isRunning: false, remainingSeconds: 0, label: 'Фокус' }
+    focusWidget.value = { preset: 'focus', isRunning: false, remainingSeconds: 0, label: 'Фокус' }
     stopFocusWidgetTicker()
   }
 }
 
-function handleFocusTimerUpdate() {
+function handleFocusTimerUpdate(event?: Event) {
+  const detail = (event as CustomEvent<FocusTimerSnapshot | null> | undefined)?.detail
+  if (detail) {
+    focusWidget.value = {
+      preset: detail.preset,
+      isRunning: detail.isRunning,
+      remainingSeconds: detail.remainingSeconds,
+      label: detail.label,
+    }
+
+    if (detail.isRunning) startFocusWidgetTicker(detail.endsAt)
+    else stopFocusWidgetTicker()
+    return
+  }
+
   syncFocusWidgetFromStorage()
+}
+
+function toggleFocusTimer() {
+  writeFocusTimerState({
+    preset: focusWidget.value.preset,
+    remainingSeconds: focusWidget.value.remainingSeconds,
+    isRunning: !focusWidget.value.isRunning,
+    endsAt: focusWidget.value.isRunning ? null : Date.now() + focusWidget.value.remainingSeconds * 1000,
+  })
+  emitFocusTimerUpdate()
+  emitFocusTimerAction('toggle')
+}
+
+function resetFocusTimer() {
+  writeFocusTimerState({
+    preset: focusWidget.value.preset,
+    remainingSeconds: getFocusPresetSeconds(focusWidget.value.preset),
+    isRunning: false,
+    endsAt: null,
+  })
+  emitFocusTimerUpdate()
+  emitFocusTimerAction('reset')
 }
 
 onMounted(() => {
   document.addEventListener('click', handleDocumentClick)
   window.addEventListener('cof:close-profile-panel', closeProfilePanel)
+  window.addEventListener('cof:close-focus-widget-panel', closeFocusWidgetPanel)
   window.addEventListener('cof:focus-timer-update', handleFocusTimerUpdate)
   syncFocusWidgetFromStorage()
 })
@@ -278,6 +381,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleDocumentClick)
   window.removeEventListener('cof:close-profile-panel', closeProfilePanel)
+  window.removeEventListener('cof:close-focus-widget-panel', closeFocusWidgetPanel)
   window.removeEventListener('cof:focus-timer-update', handleFocusTimerUpdate)
   stopFocusWidgetTicker()
 })
@@ -453,20 +557,124 @@ onBeforeUnmount(() => {
   }
 }
 
+.focus-widget-panel {
+  @include glass;
+  position: fixed;
+  inset-block-start: calc(72px + env(safe-area-inset-top, 0px));
+  inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
+  z-index: 4300;
+  display: grid;
+  gap: 14px;
+  width: min(320px, calc(100dvw - 24px));
+  padding: 14px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-lg);
+  background: transparent;
+  color: var(--text);
+}
+
+.focus-widget-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  span {
+    color: var(--dim);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  strong {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+}
+
+.focus-widget-panel__ring {
+  display: grid;
+  place-items: center;
+  min-height: 188px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at center, color-mix(in srgb, var(--accent) 8%, transparent) 0%, transparent 62%),
+    color-mix(in srgb, var(--surface) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 10%, transparent);
+
+  &.is-running {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+}
+
+.focus-widget-panel__core {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+
+  svg {
+    color: var(--accent);
+  }
+
+  strong {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2.4rem, 7vw, 3.6rem);
+    font-weight: 700;
+    line-height: 0.9;
+    letter-spacing: -0.05em;
+  }
+
+  span {
+    color: var(--dim);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+}
+
+.focus-widget-panel__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+
+  :deep(.app-button) {
+    width: 100%;
+  }
+}
+
+.focus-widget-panel__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--dim);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--transition-standard);
+
+  &:hover {
+    color: var(--text);
+  }
+}
+
 .demo-access {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 36px;
   padding-inline: 10px;
-  border: var(--ui-border);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
   border-radius: var(--border-radius-pill);
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
-  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.01em;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent);
   cursor: pointer;
   transition:
     background var(--transition-standard),
@@ -476,21 +684,13 @@ onBeforeUnmount(() => {
 
   @media (hover: hover) and (pointer: fine) {
     &:hover {
-      background: color-mix(in srgb, var(--accent) 20%, transparent);
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+      background: color-mix(in srgb, var(--accent) 24%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
     }
   }
 
   &:active {
     transform: translateY(1px);
-  }
-
-  &.is-highlighted {
-    background: color-mix(in srgb, var(--accent) 20%, transparent);
-    box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent),
-      0 0 0 5px color-mix(in srgb, var(--accent) 10%, transparent);
-    animation: demo-accent-pulse 1.9s ease-in-out infinite;
   }
 
   @include mobile {
@@ -688,21 +888,14 @@ onBeforeUnmount(() => {
   }
 }
 
-@keyframes demo-accent-pulse {
-  0%,
-  100% {
-    box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent),
-      0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
-  }
-  45% {
-    box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--accent) 36%, transparent),
-      0 0 0 6px color-mix(in srgb, var(--accent) 12%, transparent);
-  }
-}
-
 @media (max-width: 640px) {
+  .focus-widget-panel {
+    inset-block-start: calc(70px + env(safe-area-inset-top, 0px));
+    inset-inline-start: max(12px, env(safe-area-inset-left, 0px));
+    inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
+    width: auto;
+  }
+
   .profile-panel {
     inset-block-start: calc(70px + env(safe-area-inset-top, 0px));
     inset-inline-start: max(12px, env(safe-area-inset-left, 0px));

@@ -2,7 +2,7 @@
   <section class="focus-page" aria-label="Фокус" data-tour="focus-page">
     <header class="focus-head">
       <div>
-        <span class="eyebrow">Deep work</span>
+        <span class="eyebrow">Фокус</span>
         <h3>Фокус</h3>
       </div>
       <div class="focus-mode">
@@ -105,8 +105,12 @@ import { useNotification } from '~/composables/useNotification'
 import { useGuidedTourStore } from '~/stores/guidedTour.store'
 import { useFeedback } from '~/composables/useFeedback'
 import { accessAwareStorage } from '~/utils/accessStorage'
-
-type PresetKey = 'focus' | 'short' | 'long'
+import {
+  FOCUS_STATE_KEY,
+  emitFocusTimerUpdate,
+  getFocusPresetSeconds,
+  type FocusPresetKey,
+} from '~/utils/focusTimer'
 
 const { addNotification } = useNotification()
 const guidedTour = useGuidedTourStore()
@@ -118,12 +122,11 @@ const presets = [
   { key: 'long' as const, label: 'Отдых', minutes: 15, icon: Timer },
 ]
 
-const activePresetKey = ref<PresetKey>('focus')
+const activePresetKey = ref<FocusPresetKey>('focus')
 const remainingSeconds = ref(presets[0].minutes * 60)
 const isRunning = ref(false)
 const completedSessions = ref(0)
 let intervalId: number | null = null
-const FOCUS_STATE_KEY = 'cof-focus-state'
 
 const activePreset = computed(() =>
   presets.find((preset) => preset.key === activePresetKey.value) ?? presets[0]
@@ -163,24 +166,19 @@ const sessionLabel = computed(() => {
   return 'сессий'
 })
 
-function emitTimerUpdate() {
-  if (!import.meta.client) return
-  window.dispatchEvent(
-    new CustomEvent('cof:focus-timer-update', {
-      detail: {
-        preset: activePresetKey.value,
-        label: activePreset.value.label,
-        remainingSeconds: remainingSeconds.value,
-        isRunning: isRunning.value,
-      },
-    })
-  )
+function emitTimerState() {
+  emitFocusTimerUpdate({
+    preset: activePresetKey.value,
+    remainingSeconds: remainingSeconds.value,
+    isRunning: isRunning.value,
+    endsAt: isRunning.value ? Date.now() + remainingSeconds.value * 1000 : null,
+  })
 }
 
-function setPreset(key: PresetKey) {
+function setPreset(key: FocusPresetKey) {
   activePresetKey.value = key
   stopTimer()
-  remainingSeconds.value = activePreset.value.minutes * 60
+  remainingSeconds.value = getFocusPresetSeconds(activePresetKey.value)
   persistState()
 }
 
@@ -254,7 +252,7 @@ function persistState() {
       endsAt: isRunning.value ? Date.now() + remainingSeconds.value * 1000 : null,
     })
   )
-  emitTimerUpdate()
+  emitTimerState()
 }
 
 function restoreState() {
@@ -262,13 +260,13 @@ function restoreState() {
     const raw = accessAwareStorage.getItem(FOCUS_STATE_KEY)
     if (!raw) return
     const state = JSON.parse(raw) as {
-      preset?: PresetKey
+      preset?: FocusPresetKey
       remainingSeconds?: number
       isRunning?: boolean
       endsAt?: number | null
     }
     if (presets.some((preset) => preset.key === state.preset)) {
-      activePresetKey.value = state.preset as PresetKey
+      activePresetKey.value = state.preset as FocusPresetKey
     }
     if (Number.isFinite(state.remainingSeconds)) {
       remainingSeconds.value = Math.max(0, Number(state.remainingSeconds))
@@ -285,13 +283,29 @@ function restoreState() {
   }
 }
 
+function handleFocusTimerAction(event: Event) {
+  const detail = (event as CustomEvent<{ action?: 'toggle' | 'reset' }>).detail
+  if (!detail?.action) return
+
+  if (detail.action === 'toggle') {
+    toggleTimer()
+    return
+  }
+
+  if (detail.action === 'reset') {
+    resetTimer()
+  }
+}
+
 onMounted(() => {
   loadSessions()
   restoreState()
-  emitTimerUpdate()
+  window.addEventListener('cof:focus-timer-action', handleFocusTimerAction)
+  emitTimerState()
 })
 onBeforeUnmount(() => {
   persistState()
+  window.removeEventListener('cof:focus-timer-action', handleFocusTimerAction)
   stopTimer()
 })
 </script>

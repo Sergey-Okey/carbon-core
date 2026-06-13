@@ -6,9 +6,14 @@
       :aria-expanded="!isCollapsed"
       @click="isCollapsed = !isCollapsed"
     >
-      <span>Поиск и фильтры</span>
-      <ChevronDown v-if="isCollapsed" :size="18" />
-      <ChevronUp v-else :size="18" />
+      <span class="toolbar-toggle__copy">
+        <strong>Поиск и фильтры</strong>
+        <span class="toolbar-toggle__summary">{{ collapsedSummary }}</span>
+      </span>
+      <span class="toolbar-toggle__icon">
+        <ChevronDown v-if="isCollapsed" :size="18" />
+        <ChevronUp v-else :size="18" />
+      </span>
     </button>
 
     <div class="search-field">
@@ -79,6 +84,26 @@ const viewOptions = [
   { label: 'Все', value: 'all' },
   { label: 'Завершённые', value: 'completed' },
 ]
+
+const activeTagLabel = computed(() => {
+  const option = props.tagOptions.find((item) => item.value === props.selectedTagId)
+  return option?.label ?? 'Все теги'
+})
+
+const activeViewLabel = computed(() => {
+  const option = viewOptions.find((item) => item.value === props.view)
+  return option?.label ?? 'Активные'
+})
+
+const collapsedSummary = computed(() => {
+  const parts = [activeViewLabel.value, activeTagLabel.value]
+
+  if (props.search.trim()) {
+    parts.unshift('Поиск: ' + props.search.trim())
+  }
+
+  return parts.join(' | ')
+})
 
 const searchModel = computed({
   get: () => props.search,
@@ -151,12 +176,12 @@ label,
 @media (max-width: 768px) {
   .tasks-toolbar {
     position: relative;
-    gap: 12px;
-    padding: 12px;
+    gap: 10px;
+    padding: 10px;
 
     &.collapsed {
       gap: 0;
-      padding: 3px;
+      padding: 4px;
 
       .search-field,
       .filter-field,
@@ -171,19 +196,59 @@ label,
     align-items: center;
     justify-content: space-between;
     min-height: 44px;
-    padding-inline: 12px;
+    gap: 12px;
+    padding: 9px 11px;
     border: none;
     border-radius: var(--border-radius-md);
-    background: transparent;
+    background: color-mix(in srgb, var(--glass-surface) 92%, transparent);
     color: var(--text);
     font: inherit;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
+    transition:
+      background var(--transition-standard),
+      color var(--transition-standard);
 
     svg {
       color: var(--dim);
     }
+  }
+
+  .toolbar-toggle__copy {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    text-align: left;
+
+    strong {
+      font-size: 0.84rem;
+      line-height: 1.15;
+    }
+  }
+
+  .toolbar-toggle__summary {
+    max-width: 100%;
+    color: var(--dim);
+    font-size: 0.7rem;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .toolbar-toggle__icon {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: var(--border-radius-pill);
+    background: color-mix(in srgb, var(--bg) 30%, transparent);
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -210,7 +275,7 @@ label,
     padding: 12px;
 
     &.collapsed {
-      padding: 3px;
+      padding: 4px;
     }
   }
 }

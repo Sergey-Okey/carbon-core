@@ -129,9 +129,23 @@ function toggleOpen() {
 function updatePopoverPosition() {
   if (!rootEl.value || !isOpen.value) return
 
+  const viewportPadding = 12
+  const isMobilePopover = window.matchMedia('(pointer: coarse), (max-width: 767px)').matches
+
+  if (isMobilePopover) {
+    popoverStyle.value = {
+      top: 'auto',
+      left: `${viewportPadding}px`,
+      right: `${viewportPadding}px`,
+      bottom: `${Math.max(10, viewportPadding)}px`,
+      width: 'auto',
+      maxHeight: `${window.innerHeight - viewportPadding * 2}px`,
+    }
+    return
+  }
+
   const rect = rootEl.value.getBoundingClientRect()
   const gap = 8
-  const viewportPadding = 12
   const width = Math.min(284, window.innerWidth - viewportPadding * 2)
   const expectedHeight = popoverEl.value?.offsetHeight || 312
   const availableBelow = window.innerHeight - rect.bottom - viewportPadding
@@ -360,10 +374,20 @@ onUnmounted(() => {
     inset-block-start: auto !important;
     inset-block-end: max(10px, env(safe-area-inset-bottom, 0px));
     inset-inline: max(10px, env(safe-area-inset-left, 0px)) max(10px, env(safe-area-inset-right, 0px));
-    inline-size: auto !important;
+    left: max(10px, env(safe-area-inset-left, 0px)) !important;
+    right: max(10px, env(safe-area-inset-right, 0px)) !important;
+    width: auto !important;
     max-height: calc(100dvh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
     padding: 14px;
     border-radius: var(--border-radius-lg);
+  }
+
+  .date-head {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+
+    strong {
+      font-size: 0.96rem;
+    }
   }
 
   .days-grid {
@@ -372,12 +396,13 @@ onUnmounted(() => {
 
   .day-btn {
     min-width: 0;
-    min-height: 38px;
+    min-height: 40px;
     aspect-ratio: auto;
   }
 
   .date-actions {
     gap: 8px;
+    margin-top: 4px;
 
     button {
       flex: 1;

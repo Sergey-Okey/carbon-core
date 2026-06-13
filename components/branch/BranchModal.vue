@@ -279,6 +279,7 @@ function handleQuickTask(data: TaskFormData) {
     description: data.description,
     type: data.type || 'TASK_DAY',
     targetDate: data.targetDate,
+    targetTime: data.targetTime,
     tagIds: data.tagIds || [],
     tags: data.tags || [],
   })
@@ -293,7 +294,7 @@ function handleQuickTask(data: TaskFormData) {
 .board-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .visual-row {
@@ -342,6 +343,7 @@ function handleQuickTask(data: TaskFormData) {
   background: var(--glass-surface);
   backdrop-filter: var(--glass-filter);
   -webkit-backdrop-filter: var(--glass-filter);
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--bg) 18%, transparent);
 }
 
 .task-row {
@@ -390,8 +392,9 @@ function handleQuickTask(data: TaskFormData) {
   border-radius: var(--border-radius-pill);
   cursor: pointer;
   transition:
-    background var(--transition-standard),
-    color var(--transition-standard);
+    background 0.16s ease,
+    color 0.16s ease,
+    border-color 0.16s ease;
 
   svg {
     transition: transform var(--transition-standard);
@@ -432,6 +435,10 @@ function handleQuickTask(data: TaskFormData) {
   border: var(--ui-border);
   border-radius: var(--border-radius-pill);
   cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    border-color 0.16s ease;
 
   svg {
     transition: transform var(--transition-standard);
@@ -465,12 +472,15 @@ function handleQuickTask(data: TaskFormData) {
   border-radius: var(--border-radius-pill);
   cursor: pointer;
   transition:
-    color var(--transition-standard),
-    background var(--transition-standard);
+    color 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease;
 
   &:hover {
     color: var(--text);
     background: color-mix(in srgb, var(--accent) 8%, transparent);
+    transform: translateY(-1px);
   }
 
   &.active {
@@ -498,6 +508,16 @@ function handleQuickTask(data: TaskFormData) {
   color: var(--text);
   white-space: nowrap;
   cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    transform: translateY(-1px);
+  }
 }
 
 .footer-actions {
@@ -510,8 +530,8 @@ function handleQuickTask(data: TaskFormData) {
 .expand-enter-active,
 .expand-leave-active {
   transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
+    opacity 0.16s ease,
+    transform 0.16s ease;
   transform-origin: top center;
 }
 
@@ -525,8 +545,8 @@ function handleQuickTask(data: TaskFormData) {
 .reveal-item-leave-active,
 .reveal-item-move {
   transition:
-    opacity 0.2s ease,
-    transform 0.24s ease;
+    opacity 0.16s ease,
+    transform 0.18s ease;
 }
 
 .reveal-item-enter-from,
@@ -540,6 +560,10 @@ function handleQuickTask(data: TaskFormData) {
 }
 
 @media (max-width: 640px) {
+  .board-form {
+    gap: 12px;
+  }
+
   .visual-row {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1px auto;
@@ -558,11 +582,40 @@ function handleQuickTask(data: TaskFormData) {
     }
   }
 
+  .icons-grid {
+    gap: 8px;
+  }
+
+  .icons-toggle,
+  .create-task-btn {
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .tasks-list {
+    max-height: min(280px, 42dvh);
+  }
+
+  .task-row {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .task-title {
+    white-space: normal;
+    line-height: 1.35;
+  }
 
   .footer-actions {
     width: 100%;
     flex-direction: column;
     margin-left: 0;
+
+    :deep(.app-button) {
+      width: 100%;
+    }
   }
 
   .toggle-btn,

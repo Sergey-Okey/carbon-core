@@ -143,7 +143,7 @@ const settingsStore = useSettingsStore()
 const guidedTour = useGuidedTourStore()
 const tasksStore = useTasksStore()
 const uiStore = useUIStore()
-const { fitView, zoomIn: vfZoomIn, zoomOut: vfZoomOut, getSelectedNodes } = useVueFlow()
+const { fitView, setViewport, getViewport, zoomIn: vfZoomIn, zoomOut: vfZoomOut, getSelectedNodes } = useVueFlow()
 const { applyLayout } = useAutoLayout()
 const { confirm } = useConfirm()
 const { addNotification } = useNotification()
@@ -789,20 +789,26 @@ function zoomOut() {
   vfZoomOut()
 }
 
-function fitBoardView() {
+async function fitBoardView() {
   if (isMobile.value) return
 
-  void fitView({
-    padding: {
-      top: 64,
-      right: 72,
-      bottom: 84,
-      left: Math.max(uiStore.panelWidth + 44, 116),
-    },
+  await fitView({
+    padding: 28,
     minZoom: 0.2,
     maxZoom: 1.25,
-    duration: 240,
+    duration: 220,
   })
+
+  const viewport = getViewport()
+  const navbarOffset = Math.max(uiStore.panelWidth * 0.22, 18)
+
+  await setViewport(
+    {
+      ...viewport,
+      x: viewport.x + navbarOffset,
+    },
+    { duration: 160 }
+  )
 }
 
 async function exportBoardPng() {

@@ -27,6 +27,7 @@ export interface Task {
   done: boolean
   completedAt?: number
   targetDate?: string
+  targetTime?: string
   lastCompletedAt?: number
   purchaseRewardId?: string
   xpReward?: number

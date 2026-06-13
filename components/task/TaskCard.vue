@@ -32,9 +32,9 @@
         >
           {{ branch.displayName }}
         </span>
-        <div v-if="task.type !== 'HABIT' && task.targetDate" class="due-date">
+        <div v-if="task.type !== 'HABIT' && (task.targetTime || task.targetDate)" class="due-date">
           <Calendar :size="14" />
-          {{ formattedDate }}
+          {{ scheduleValue }}
         </div>
 
         <div class="tags-wrapper" v-if="taskTags.length">
@@ -212,7 +212,8 @@ const typeTitle = computed(() => {
   return map[props.task.type] || props.task.type
 })
 
-const formattedDate = computed(() => {
+const scheduleValue = computed(() => {
+  if (props.task.type === 'TASK_DAY' && props.task.targetTime) return props.task.targetTime
   if (!props.task.targetDate) return ''
   const d = new Date(props.task.targetDate)
   return d.toLocaleDateString('ru', { day: 'numeric', month: 'short' })
@@ -281,7 +282,7 @@ async function handleDelete() {
   min-height: 148px;
   height: 100%;
   padding: 1rem;
-  background: transparent;
+  background: var(--surface);
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
   transition:
@@ -298,7 +299,7 @@ async function handleDelete() {
 
   &.overdue {
     border-color: color-mix(in srgb, var(--error) 28%, var(--ui-border-color));
-    background: transparent;
+    background: color-mix(in srgb, var(--error) 5%, var(--surface));
   }
 
   .task-header {
@@ -537,14 +538,15 @@ async function handleDelete() {
     color: var(--dim);
     cursor: pointer;
     transition:
-      background var(--transition-standard),
-      color var(--transition-standard),
-      opacity var(--transition-standard),
-      opacity var(--transition-standard);
+      background 0.16s ease,
+      color 0.16s ease,
+      opacity 0.16s ease,
+      transform 0.16s ease;
 
     &:hover:not(:disabled) {
       background: var(--glass-surface);
       color: var(--text);
+      transform: translateY(-1px);
     }
 
     &:active:not(:disabled) {

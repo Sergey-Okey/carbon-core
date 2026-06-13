@@ -205,7 +205,7 @@ function handleBackdrop() {
 
 @media (max-width: 640px) {
   .app-modal-overlay {
-    align-items: center;
+    align-items: flex-end;
     padding: max(10px, env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px));
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -213,7 +213,9 @@ function handleBackdrop() {
 
   .app-modal {
     inline-size: 100%;
-    max-block-size: calc(100dvh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    max-block-size: min(78dvh, 720px);
+    border-radius: calc(var(--border-radius-lg) + 4px) calc(var(--border-radius-lg) + 4px) var(--border-radius-lg) var(--border-radius-lg);
+    transform-origin: bottom center;
 
     &.allow-overflow {
       overflow: hidden;
@@ -239,6 +241,11 @@ function handleBackdrop() {
       overflow-y: auto;
       overflow-x: visible;
     }
+  }
+
+  .modal-panel-enter-from,
+  .modal-panel-leave-to {
+    transform: translateY(22px);
   }
 }
 </style>

@@ -1,24 +1,44 @@
 <template>
   <div class="stats-bar" :class="{ 'is-collapsed': isCollapsed }">
     <button
+      v-if="!isCollapsed"
+      type="button"
+      class="stats-hit-area"
+      aria-label="Свернуть статистику"
+      :aria-expanded="true"
+      @click="toggleCollapsed"
+    />
+    <button
+      v-if="!isCollapsed"
       type="button"
       class="stats-collapse-button"
-      :aria-label="isCollapsed ? 'Развернуть статистику' : 'Свернуть статистику'"
-      :aria-expanded="!isCollapsed"
+      aria-label="Свернуть статистику"
+      :aria-expanded="true"
       @click="toggleCollapsed"
     >
-      <ChevronDown v-if="isCollapsed" :size="16" />
-      <ChevronUp v-else :size="16" />
+      <ChevronUp :size="16" />
     </button>
-    <div v-if="isCollapsed" class="stats-collapsed-row">
-      <span>
-        <Zap :size="15" />
-        Ур. {{ userStore.level }}
+    <button
+      v-if="isCollapsed"
+      type="button"
+      class="stats-collapsed-toggle"
+      aria-label="Развернуть статистику"
+      :aria-expanded="false"
+      @click="toggleCollapsed"
+    >
+      <div class="stats-collapsed-row">
+        <span>
+          <Zap :size="15" />
+          Ур. {{ userStore.level }}
+        </span>
+        <span>{{ userStore.league }}</span>
+        <span>{{ completed.day }}/3 сегодня</span>
+        <span>{{ leagueProgressPercent }}% лига</span>
+      </div>
+      <span class="stats-collapsed-chevron">
+        <ChevronDown :size="16" />
       </span>
-      <span>{{ userStore.league }}</span>
-      <span>{{ completed.day }}/3 сегодня</span>
-      <span>{{ leagueProgressPercent }}% лига</span>
-    </div>
+    </button>
     <!-- Уровень и точки прогресса -->
     <div v-if="!isCollapsed" class="stat-item">
       <div class="stat-item__header">
@@ -321,9 +341,19 @@ onMounted(() => {
   &.is-collapsed {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    min-height: 44px;
-    padding: 10px 42px 10px 14px;
+    min-height: 52px;
+    padding: 8px;
   }
+}
+
+.stats-hit-area {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 38px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  z-index: 1;
 }
 
 .stats-collapse-button {
@@ -366,6 +396,31 @@ onMounted(() => {
   }
 }
 
+.stats-collapsed-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 8px 10px 8px 12px;
+  border: none;
+  border-radius: calc(var(--border-radius-lg) - 6px);
+  background: color-mix(in srgb, var(--glass-surface) 90%, transparent);
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard),
+    border-color var(--transition-standard);
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    background: color-mix(in srgb, var(--accent) 8%, var(--glass-surface));
+  }
+}
+
 .stats-collapsed-row {
   display: flex;
   align-items: center;
@@ -376,6 +431,7 @@ onMounted(() => {
   font-size: 0.82rem;
   font-weight: 600;
   white-space: nowrap;
+  flex: 1;
 
   span {
     display: inline-flex;
@@ -404,6 +460,16 @@ onMounted(() => {
   }
 }
 
+.stats-collapsed-chevron {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: var(--border-radius-md);
+  color: var(--dim);
+}
+
 .stat-item {
   display: flex;
   flex-direction: column;
@@ -413,7 +479,7 @@ onMounted(() => {
   min-width: 0;
   height: 100%;
   padding-inline: 2px;
-  animation: stats-item-in 360ms ease-out both;
+  animation: stats-item-in 240ms ease-out both;
 
   @for $i from 1 through 4 {
     &:nth-child(#{$i}) {
@@ -479,7 +545,7 @@ onMounted(() => {
   background: color-mix(in srgb, var(--ui-border-color) 82%, transparent);
   opacity: 0;
   transform: scale(0.35);
-  animation: stats-dot-in 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: stats-dot-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
   transition: background var(--transition-standard);
   justify-self: center;
 
@@ -503,7 +569,7 @@ onMounted(() => {
   margin-left: 4px;
   font-variant-numeric: tabular-nums;
   opacity: 0;
-  animation: stats-value-in 300ms cubic-bezier(0.16, 1, 0.3, 1) 520ms both;
+  animation: stats-value-in 220ms cubic-bezier(0.16, 1, 0.3, 1) 260ms both;
 }
 
 .task-counters {
@@ -562,7 +628,7 @@ onMounted(() => {
   gap: 4px;
   width: 100%;
   min-height: 52px;
-  animation: chart-fade-in 420ms ease-out both;
+  animation: chart-fade-in 260ms ease-out both;
 
   @include mobile {
     min-height: 56px;

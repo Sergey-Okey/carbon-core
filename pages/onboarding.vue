@@ -35,21 +35,21 @@
           <div
             v-motion
             :initial="{ opacity: 0, y: -10 }"
-            :enter="{ opacity: 1, y: 0, transition: { duration: 400 } }"
+            :enter="{ opacity: 1, y: 0, transition: { duration: 240 } }"
           >
             <div class="logo">COF</div>
           </div>
           <div
             v-motion
             :initial="{ opacity: 0, y: -10 }"
-            :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 100 } }"
+            :enter="{ opacity: 1, y: 0, transition: { duration: 240, delay: 60 } }"
           >
             <div class="beta-badge">beta</div>
           </div>
           <div
             v-motion
             :initial="{ opacity: 0, y: -10 }"
-            :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 150 } }"
+            :enter="{ opacity: 1, y: 0, transition: { duration: 240, delay: 90 } }"
           >
             <button class="skip-btn" @click="finishOnboarding">
               Пропустить
@@ -67,7 +67,7 @@
               :visible-once="{
                 opacity: 1,
                 y: 0,
-                transition: { duration: 600, delay: 100 },
+                transition: { duration: 360, delay: 60 },
               }"
             >
               <h1 class="hero-title">
@@ -81,7 +81,7 @@
               :visible-once="{
                 opacity: 1,
                 y: 0,
-                transition: { duration: 600, delay: 200 },
+                transition: { duration: 360, delay: 120 },
               }"
             >
               <p class="hero-subtitle">
@@ -95,7 +95,7 @@
               :visible-once="{
                 opacity: 1,
                 y: 0,
-                transition: { duration: 600, delay: 300 },
+                transition: { duration: 360, delay: 180 },
               }"
             >
               <div class="hero-cta">
@@ -150,7 +150,7 @@
           <div
             v-motion
             :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
+            :visible-once="{ opacity: 1, y: 0, transition: { duration: 360 } }"
           >
             <div class="section-label">Философия</div>
           </div>
@@ -160,7 +160,7 @@
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 600, delay: 100 },
+              transition: { duration: 360, delay: 60 },
             }"
           >
             <h2 class="section-title">Три — число осознанности</h2>
@@ -171,7 +171,7 @@
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 600, delay: 200 },
+              transition: { duration: 360, delay: 120 },
             }"
           >
             <p class="section-text">
@@ -189,7 +189,7 @@
               :visible-once="{
                 opacity: 1,
                 y: 0,
-                transition: { duration: 500, delay: 300 + i * 100 },
+                transition: { duration: 300, delay: 180 + i * 60 },
               }"
               class="rule-item"
             >
@@ -206,7 +206,7 @@
           <div
             v-motion
             :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
+            :visible-once="{ opacity: 1, y: 0, transition: { duration: 360 } }"
           >
             <div class="section-label">Прогресс</div>
           </div>
@@ -216,7 +216,7 @@
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 600, delay: 100 },
+              transition: { duration: 360, delay: 60 },
             }"
           >
             <h2 class="section-title">Видеть путь</h2>
@@ -227,7 +227,7 @@
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 600, delay: 200 },
+              transition: { duration: 360, delay: 120 },
             }"
           >
             <p class="section-text">
@@ -259,7 +259,7 @@
           <div
             v-motion
             :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
+            :visible-once="{ opacity: 1, y: 0, transition: { duration: 360 } }"
           >
             <div class="section-label">Инструменты</div>
           </div>
@@ -269,7 +269,7 @@
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 600, delay: 100 },
+              transition: { duration: 360, delay: 60 },
             }"
           >
             <h2 class="section-title">Всё, что нужно</h2>
@@ -281,7 +281,7 @@
               :visible-once="{
                 opacity: 1,
                 y: 0,
-                transition: { duration: 500, delay: 200 },
+                transition: { duration: 300, delay: 120 },
               }"
               class="tool-card"
             >
@@ -295,7 +295,7 @@
               :visible-once="{
                 opacity: 1,
                 y: 0,
-                transition: { duration: 500, delay: 300 },
+                transition: { duration: 300, delay: 180 },
               }"
               class="tool-card"
             >
@@ -309,7 +309,7 @@
               :visible-once="{
                 opacity: 1,
                 y: 0,
-                transition: { duration: 500, delay: 400 },
+                transition: { duration: 300, delay: 240 },
               }"
               class="tool-card"
             >
@@ -327,7 +327,7 @@
           <div
             v-motion
             :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
+            :visible-once="{ opacity: 1, y: 0, transition: { duration: 360 } }"
           >
             <div class="section-label">Данные</div>
           </div>
@@ -337,7 +337,7 @@
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 600, delay: 100 },
+              transition: { duration: 360, delay: 60 },
             }"
           >
             <h2 class="section-title">Только ваши</h2>
@@ -348,7 +348,7 @@
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 600, delay: 200 },
+              transition: { duration: 360, delay: 120 },
             }"
           >
             <p class="section-text">
@@ -370,7 +370,7 @@
           <div
             v-motion
             :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
+            :visible-once="{ opacity: 1, y: 0, transition: { duration: 360 } }"
           >
             <div class="section-label">О проекте</div>
           </div>
@@ -380,7 +380,7 @@
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 600, delay: 100 },
+              transition: { duration: 360, delay: 60 },
             }"
           >
             <h2 class="section-title">Независимая разработка</h2>
@@ -391,7 +391,7 @@
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 600, delay: 200 },
+              transition: { duration: 360, delay: 120 },
             }"
           >
             <p class="section-text about-text">
@@ -407,7 +407,7 @@
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 600, delay: 300 },
+              transition: { duration: 360, delay: 180 },
             }"
           >
             <p class="section-text about-text">
@@ -481,7 +481,7 @@
           <div
             v-motion
             :initial="{ opacity: 0, y: 30 }"
-            :visible-once="{ opacity: 1, y: 0, transition: { duration: 600 } }"
+            :visible-once="{ opacity: 1, y: 0, transition: { duration: 360 } }"
           >
             <h2 class="final-title">Начните сегодня</h2>
           </div>
@@ -491,7 +491,7 @@
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 600, delay: 100 },
+              transition: { duration: 360, delay: 60 },
             }"
           >
             <p class="final-text">
@@ -505,7 +505,7 @@
             :visible-once="{
               opacity: 1,
               scale: 1,
-              transition: { duration: 500, delay: 200 },
+              transition: { duration: 300, delay: 120 },
             }"
           >
             <button class="cta-button large" @click="finishOnboarding">
@@ -529,7 +529,7 @@
             :visible-once="{
               opacity: 1,
               y: 0,
-              transition: { duration: 500, delay: 300 },
+              transition: { duration: 300, delay: 180 },
             }"
           >
             <p class="final-hint">
@@ -816,20 +816,20 @@ onUnmounted(() => {
 .marker-orbit--outer {
   inset: 8% -8% 20%;
   border-style: dashed;
-  animation: orbit-spin-outer 42s linear infinite;
+  animation: orbit-spin-outer 34s linear infinite;
 }
 
 .marker-orbit--middle {
   inset: 17% 4% 12%;
   border-color: color-mix(in srgb, var(--accent) 18%, transparent);
-  animation: orbit-spin-middle 31s linear infinite;
+  animation: orbit-spin-middle 26s linear infinite;
 }
 
 .marker-orbit--inner {
   inset: 27% 17% 25%;
   border-style: dotted;
   border-color: color-mix(in srgb, var(--accent) 22%, transparent);
-  animation: orbit-spin-inner 24s linear infinite;
+  animation: orbit-spin-inner 20s linear infinite;
 }
 
 .board-marker {
@@ -842,9 +842,9 @@ onUnmounted(() => {
     0 0 0 4px color-mix(in srgb, var(--accent) 7%, transparent),
     0 0 18px color-mix(in srgb, var(--accent) 52%, transparent);
   transition:
-    top 1.8s ease-in-out,
-    left 1.8s ease-in-out,
-    background 1.8s ease-in-out;
+    top 0.85s ease-out,
+    left 0.85s ease-out,
+    background 0.85s ease-out;
 }
 
 .branch-marker {
@@ -859,7 +859,7 @@ onUnmounted(() => {
   top: -5px;
   left: 50%;
   animation:
-    marker-float 3.8s ease-in-out infinite alternate,
+    marker-float 2.8s ease-in-out infinite alternate,
     marker-shuffle-a 17s ease-in-out infinite;
 }
 
@@ -867,7 +867,7 @@ onUnmounted(() => {
   top: 50%;
   left: calc(100% - 5px);
   animation:
-    marker-float 4.4s -1.2s ease-in-out infinite alternate,
+    marker-float 3.1s -1.2s ease-in-out infinite alternate,
     marker-shuffle-b 23s -7s ease-in-out infinite;
 }
 
@@ -875,7 +875,7 @@ onUnmounted(() => {
   top: 82%;
   left: 14%;
   animation:
-    marker-float 5.1s -2.4s ease-in-out infinite alternate,
+    marker-float 3.4s -2.4s ease-in-out infinite alternate,
     marker-shuffle-c 19s -12s ease-in-out infinite;
 }
 
@@ -1219,10 +1219,10 @@ onUnmounted(() => {
 
 .cta-button--details {
   font-size: 1.1rem;
-  animation: details-cta-in 760ms cubic-bezier(0.16, 1, 0.3, 1) 420ms both;
+  animation: details-cta-in 420ms cubic-bezier(0.16, 1, 0.3, 1) 420ms both;
 
   .btn-icon {
-    animation: details-icon-drift 1450ms ease-in-out infinite;
+    animation: details-icon-drift 900ms ease-in-out infinite;
   }
 
   &:hover .btn-icon {
@@ -1320,9 +1320,9 @@ onUnmounted(() => {
   font-size: 1rem;
   color: var(--accent);
   transition:
-    border-color 0.22s ease,
-    color 0.22s ease,
-    background 0.22s ease;
+    border-color 0.16s ease,
+    color 0.16s ease,
+    background 0.16s ease;
   will-change: transform;
 
   &:hover {

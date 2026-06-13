@@ -418,6 +418,7 @@ function getIconComponent(iconName: string) {
   align-items: center;
   gap: 8px;
   flex: 1;
+  min-width: 0;
 
   .node-marker {
     margin-right: 2px;
@@ -431,24 +432,37 @@ function getIconComponent(iconName: string) {
 
 .branch-text {
   flex: 1;
+  min-width: 0;
 
   h4 {
     font-weight: 600;
     font-size: 1rem;
     margin: 0 0 4px;
     color: var(--text);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .branch-stats {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     flex-wrap: wrap;
   }
 
   .task-count {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    max-width: 100%;
+    padding: 3px 8px;
+    border-radius: var(--border-radius-pill);
+    background: color-mix(in srgb, var(--glass-surface) 92%, transparent);
     font-size: 0.75rem;
     color: var(--dim);
+    line-height: 1.2;
   }
 
   .progress-dashes {
@@ -602,9 +616,19 @@ function getIconComponent(iconName: string) {
 }
 
 .task-counter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 5px 10px;
+  border-radius: var(--border-radius-pill);
+  background: color-mix(in srgb, var(--glass-surface) 92%, transparent);
   font-size: 0.75rem;
   color: var(--dim);
   margin-bottom: 8px;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .milestone-tasks {
@@ -692,7 +716,7 @@ function getIconComponent(iconName: string) {
   }
 }
 
-/* Маркеры (декоративные) */
+/* Decorative markers */
 .node-marker {
   width: 10px;
   height: 10px;
@@ -710,22 +734,76 @@ function getIconComponent(iconName: string) {
   border-radius: var(--border-radius-pill);
 }
 
-/* Анимации раскрытия */
+/* Expand animation */
 .expand-enter-active,
 .expand-leave-active {
   transition:
-    opacity var(--transition-standard),
-    transform var(--transition-standard);
+    max-height 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 180ms ease,
+    transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
+  transform-origin: top;
 }
 
 .expand-enter-from,
 .expand-leave-to {
   opacity: 0;
   max-height: 0;
+  transform: translateY(-8px);
 }
 
-/* Ротация иконки */
+.expand-enter-to,
+.expand-leave-from {
+  opacity: 1;
+  max-height: 1200px;
+  transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  .branch-header {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .branch-actions {
+    gap: 4px;
+    margin-top: -2px;
+  }
+
+  .branch-text {
+    .branch-stats {
+      gap: 6px;
+    }
+
+    .progress-dashes {
+      width: 100%;
+      overflow: hidden;
+    }
+  }
+
+  .milestone-item {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .milestone-header {
+    align-items: flex-start;
+  }
+
+  .milestone-badges,
+  .task-dashes,
+  .progress-dashes {
+    flex-wrap: wrap;
+  }
+
+  .task-counter {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* Icon rotation */
 svg {
   transition: transform var(--transition-standard);
 
