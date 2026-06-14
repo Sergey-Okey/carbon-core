@@ -285,12 +285,14 @@ function getIconComponent(iconName: string) {
 
 <style scoped lang="scss">
 .branch-mobile-view {
+  width: 100%;
   padding:
     calc(72px + env(safe-area-inset-top, 0px))
     max(12px, env(safe-area-inset-right, 0px))
     calc(96px + env(safe-area-inset-bottom, 0px))
     max(12px, env(safe-area-inset-left, 0px));
   max-width: 100%;
+  overflow-x: hidden;
   overflow-y: auto;
   background: transparent;
   min-height: 100%;
@@ -339,6 +341,8 @@ function getIconComponent(iconName: string) {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
+  min-width: 0;
 }
 
 .desktop-invitation {
@@ -394,6 +398,10 @@ function getIconComponent(iconName: string) {
 
 .branch-item {
   @include glass;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
   background: var(--glass-surface);
@@ -409,6 +417,8 @@ function getIconComponent(iconName: string) {
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
+  min-width: 0;
+  box-sizing: border-box;
   cursor: pointer;
   transition: background-color var(--transition-standard);
 
@@ -526,17 +536,24 @@ function getIconComponent(iconName: string) {
 }
 
 .milestones {
-  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  box-sizing: border-box;
 }
 
 .milestone-item {
   display: flex;
   align-items: flex-start;
   gap: 8px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   padding: 12px;
+  box-sizing: border-box;
   @include glass;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
@@ -575,6 +592,7 @@ function getIconComponent(iconName: string) {
 .milestone-content {
   flex: 1;
   min-width: 0;
+  max-width: 100%;
 }
 
 .milestone-header {
@@ -742,9 +760,8 @@ function getIconComponent(iconName: string) {
 .expand-enter-active,
 .expand-leave-active {
   transition:
-    max-height 240ms cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 180ms ease,
-    transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 160ms ease,
+    transform 180ms cubic-bezier(0.2, 0, 0, 1);
   overflow: hidden;
   transform-origin: top;
 }
@@ -752,14 +769,12 @@ function getIconComponent(iconName: string) {
 .expand-enter-from,
 .expand-leave-to {
   opacity: 0;
-  max-height: 0;
-  transform: translateY(-8px);
+  transform: translateY(-4px);
 }
 
 .expand-enter-to,
 .expand-leave-from {
   opacity: 1;
-  max-height: 1200px;
   transform: translateY(0);
 }
 
@@ -767,6 +782,7 @@ function getIconComponent(iconName: string) {
   .branch-header {
     align-items: center;
     gap: 10px;
+    padding: 12px;
   }
 
   .branch-actions {
@@ -806,8 +822,12 @@ function getIconComponent(iconName: string) {
 
   .milestone-item {
     display: grid;
-    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 8px;
+
+    .node-marker {
+      display: none;
+    }
   }
 
   .milestone-header {
@@ -823,6 +843,7 @@ function getIconComponent(iconName: string) {
   .task-counter {
     width: 100%;
     justify-content: flex-start;
+    box-sizing: border-box;
   }
 }
 

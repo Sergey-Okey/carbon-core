@@ -8,7 +8,7 @@
     >
       <span class="toolbar-toggle__copy">
         <strong>Поиск и фильтры</strong>
-        <span class="toolbar-toggle__summary">{{ collapsedSummary }}</span>
+        <span v-if="collapsedSummary" class="toolbar-toggle__summary">{{ collapsedSummary }}</span>
       </span>
       <span class="toolbar-toggle__icon">
         <ChevronDown v-if="isCollapsed" :size="18" />
@@ -29,7 +29,7 @@
       </div>
     </div>
 
-    <div class="filter-field" :class="{ 'all-tags-selected': selectedTagId === 'all' }">
+    <div class="filter-field">
       <label for="task-tag">Тег</label>
       <AppSelect
         id="task-tag"
@@ -102,7 +102,7 @@ const collapsedSummary = computed(() => {
     parts.unshift('Поиск: ' + props.search.trim())
   }
 
-  if (props.selectedTagId && activeTagLabel.value) {
+  if (props.selectedTagId !== 'all' && activeTagLabel.value) {
     parts.push(activeTagLabel.value)
   }
 
@@ -110,7 +110,7 @@ const collapsedSummary = computed(() => {
     parts.push(activeViewLabel.value)
   }
 
-  return parts.join(' | ') || 'Настройте список'
+  return parts.join(' | ')
 })
 
 const searchModel = computed({
@@ -189,7 +189,8 @@ label,
 
     &.collapsed {
       gap: 0;
-      padding: 4px;
+      min-height: 52px;
+      padding: 8px;
 
       .search-field,
       .filter-field,
@@ -203,11 +204,11 @@ label,
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 44px;
+    min-height: 36px;
     gap: 12px;
-    padding: 9px 11px;
+    padding: 8px 10px 8px 12px;
     border: none;
-    border-radius: var(--border-radius-md);
+    border-radius: calc(var(--border-radius-lg) - 6px);
     background: color-mix(in srgb, var(--glass-surface) 92%, transparent);
     color: var(--text);
     font: inherit;
@@ -238,6 +239,10 @@ label,
     }
   }
 
+  .tasks-toolbar.collapsed .toolbar-toggle__copy {
+    gap: 0;
+  }
+
   .toolbar-toggle__summary {
     max-width: 100%;
     color: var(--dim);
@@ -256,19 +261,6 @@ label,
     height: 28px;
     flex-shrink: 0;
     border-radius: var(--border-radius-pill);
-    background: color-mix(in srgb, var(--bg) 30%, transparent);
-  }
-
-  .search-field > label,
-  .filter-field > label,
-  .view-switch > .control-label {
-    display: none;
-  }
-
-  .filter-field.all-tags-selected {
-    :deep(.select-value) {
-      font-size: 0;
-    }
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -295,7 +287,7 @@ label,
     padding: 12px;
 
     &.collapsed {
-      padding: 4px;
+      padding: 8px;
     }
   }
 }
