@@ -56,15 +56,16 @@
 
         <!-- Список этапов ветки (раскрывается) -->
         <Transition name="expand">
-          <div v-if="expandedBranch === branch.id" class="milestones">
-            <div
-              v-for="(milestone, index) in branch.milestones"
-              :key="milestone.id"
-              class="milestone-item"
-              :class="milestone.status"
-              :style="{ '--node-marker-color': milestone.markerColor || milestone.backgroundColor || branch.markerColor || branch.backgroundColor || '#d6d6d6' }"
-              @click="selectNode(milestone.id)"
-            >
+          <div v-if="expandedBranch === branch.id" class="milestones-shell">
+            <div class="milestones">
+              <div
+                v-for="(milestone, index) in branch.milestones"
+                :key="milestone.id"
+                class="milestone-item"
+                :class="milestone.status"
+                :style="{ '--node-marker-color': milestone.markerColor || milestone.backgroundColor || branch.markerColor || branch.backgroundColor || '#d6d6d6' }"
+                @click="selectNode(milestone.id)"
+              >
               <!-- Декоративный маркер этапа (круг) -->
               <div class="node-marker milestone-marker"></div>
               <div class="milestone-number">{{ index + 1 }}</div>
@@ -124,12 +125,13 @@
               </div>
             </div>
 
-            <button
-              class="add-milestone-btn"
-              @click.stop="addMilestone(branch.id)"
-            >
-              <Plus :size="16" /> Добавить этап
-            </button>
+              <button
+                class="add-milestone-btn"
+                @click.stop="addMilestone(branch.id)"
+              >
+                <Plus :size="16" /> Добавить этап
+              </button>
+              </div>
           </div>
         </Transition>
       </div>
@@ -410,6 +412,14 @@ function getIconComponent(iconName: string) {
     background var(--transition-standard),
     border-color var(--transition-standard);
 
+  &.expanded {
+    border-color: color-mix(in srgb, var(--accent) 24%, var(--ui-border-color));
+  }
+
+  &.expanded .branch-header {
+    border-bottom-color: var(--ui-border-color);
+  }
+
 }
 
 .branch-header {
@@ -419,8 +429,11 @@ function getIconComponent(iconName: string) {
   padding: 14px 16px;
   min-width: 0;
   box-sizing: border-box;
+  border-bottom: 1px solid transparent;
   cursor: pointer;
-  transition: background-color var(--transition-standard);
+  transition:
+    background-color var(--transition-standard),
+    border-color var(--transition-standard);
 
   &:active {
     background: var(--glass-surface);
@@ -507,6 +520,7 @@ function getIconComponent(iconName: string) {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 0 0 auto;
 
   button {
     background: transparent;
@@ -535,12 +549,21 @@ function getIconComponent(iconName: string) {
   }
 }
 
+.milestones-shell {
+  display: grid;
+  grid-template-rows: 1fr;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .milestones {
   display: flex;
   flex-direction: column;
   gap: 12px;
   width: 100%;
   min-width: 0;
+  min-height: 0;
   padding: 12px;
   box-sizing: border-box;
 }
@@ -760,25 +783,33 @@ function getIconComponent(iconName: string) {
 .expand-enter-active,
 .expand-leave-active {
   transition:
-    opacity 160ms ease,
-    transform 180ms cubic-bezier(0.2, 0, 0, 1);
+    grid-template-rows 220ms cubic-bezier(0.2, 0, 0, 1),
+    opacity 160ms ease;
   overflow: hidden;
-  transform-origin: top;
 }
 
 .expand-enter-from,
 .expand-leave-to {
+  grid-template-rows: 0fr;
   opacity: 0;
-  transform: translateY(-4px);
 }
 
 .expand-enter-to,
 .expand-leave-from {
+  grid-template-rows: 1fr;
   opacity: 1;
-  transform: translateY(0);
 }
 
 @media (max-width: 480px) {
+  .branch-mobile-view {
+    padding-right: max(10px, env(safe-area-inset-right, 0px));
+    padding-left: max(10px, env(safe-area-inset-left, 0px));
+  }
+
+  .branches-list {
+    gap: 12px;
+  }
+
   .branch-header {
     align-items: center;
     gap: 10px;
@@ -824,9 +855,29 @@ function getIconComponent(iconName: string) {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 8px;
+    padding: 10px;
+    border-radius: var(--border-radius-md);
 
     .node-marker {
       display: none;
+    }
+  }
+
+  .milestones {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .milestone-actions {
+    gap: 4px;
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--control-icon-size);
+      height: var(--control-icon-size);
+      padding: 0;
     }
   }
 

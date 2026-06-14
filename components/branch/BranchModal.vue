@@ -63,7 +63,7 @@
 
       <AppFormField v-if="branch" label="Задачи ветки">
         <div class="tasks-section">
-          <button type="button" class="toggle-btn" @click="tasksExpanded = !tasksExpanded">
+          <button type="button" class="toggle-btn" :class="{ expanded: tasksExpanded }" @click="tasksExpanded = !tasksExpanded">
             <span>Выбрать задачи ({{ form.taskIds.length }})</span>
             <ChevronDown :size="16" :class="{ rotated: tasksExpanded }" />
           </button>
@@ -340,8 +340,13 @@ function handleQuickTask(data: TaskFormData) {
 .tasks-list {
   display: grid;
   gap: 6px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   max-height: 190px;
   padding: 8px;
+  box-sizing: border-box;
+  overflow-x: hidden;
   overflow-y: auto;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
@@ -356,7 +361,10 @@ function handleQuickTask(data: TaskFormData) {
   grid-template-columns: auto auto minmax(0, 1fr);
   align-items: center;
   gap: 10px;
+  width: 100%;
+  min-width: 0;
   padding: 10px 12px;
+  box-sizing: border-box;
   border-radius: var(--border-radius-md);
   color: var(--text);
   font-size: 0.82rem;
@@ -416,7 +424,7 @@ function handleQuickTask(data: TaskFormData) {
   color: var(--text);
   background: transparent;
   border: var(--ui-border);
-  border-radius: var(--border-radius-pill);
+  border-radius: var(--border-radius-md);
   cursor: pointer;
   transition:
     background 0.16s ease,
@@ -424,12 +432,18 @@ function handleQuickTask(data: TaskFormData) {
     border-color 0.16s ease;
 
   svg {
+    flex: 0 0 auto;
     transition: transform var(--transition-standard);
   }
 
   &:hover {
     background: color-mix(in srgb, var(--accent) 8%, transparent);
     color: var(--text);
+  }
+
+  &.expanded {
+    border-color: color-mix(in srgb, var(--accent) 24%, var(--ui-border-color));
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
   }
 
   .rotated {
@@ -565,15 +579,15 @@ function handleQuickTask(data: TaskFormData) {
 .expand-enter-active,
 .expand-leave-active {
   transition:
-    opacity 0.16s ease,
-    transform 0.16s ease;
-  transform-origin: top center;
+    opacity 160ms ease,
+    transform 180ms cubic-bezier(0.2, 0, 0, 1);
+  will-change: opacity, transform;
 }
 
 .expand-enter-from,
 .expand-leave-to {
   opacity: 0;
-  transform: translateY(-6px) scaleY(0.97);
+  transform: translateY(-5px);
 }
 
 .reveal-item-enter-active,
@@ -631,6 +645,8 @@ function handleQuickTask(data: TaskFormData) {
 
   .tasks-list {
     max-height: min(280px, 42dvh);
+    padding: 6px;
+    border-radius: var(--border-radius-md);
   }
 
   .task-row {
