@@ -1,6 +1,9 @@
 <template>
   <div class="auth-page">
     <div class="auth-workspace">
+      <span v-if="showSubscriptionShowcase" class="showcase-backdrop-title" aria-hidden="true">
+        CORE OF LIFE
+      </span>
       <div class="auth-grid" :class="{ 'is-subscription-showcase': showSubscriptionShowcase }">
         <div class="auth-panel auth-intro">
           <AppButton type="button" variant="ghost" size="sm" class="back-action" @click="goBack">
@@ -9,6 +12,11 @@
           </AppButton>
 
           <template v-if="showSubscriptionShowcase">
+            <div class="screen-status" aria-hidden="true">
+              <span>9:41</span>
+              <span>COF</span>
+            </div>
+
             <div class="showcase-copy">
               <span class="badge">Core of Life</span>
               <h1>
@@ -74,8 +82,13 @@
 
         <div class="auth-panel auth-form-panel">
           <template v-if="showSubscriptionShowcase">
+            <div class="screen-status access-status" aria-hidden="true">
+              <span>COF</span>
+              <span>Полный доступ</span>
+            </div>
+
             <div class="subscription-header">
-              <span class="badge">Полный доступ</span>
+              <span class="badge">Core of Life</span>
               <h2>Больше возможностей</h2>
               <p>Личный профиль и все инструменты Core of Life в одном доступе.</p>
             </div>
@@ -90,6 +103,8 @@
                   <Check :size="16" />
                 </div>
               </div>
+
+              <span class="benefits-more">и многое другое</span>
 
               <AppButton type="button" variant="primary" class="payment-action" @click="openPayment">
                 Оплатить доступ · {{ SUBSCRIPTION_PRICE }} ₽
@@ -1211,6 +1226,185 @@ async function submit() {
   }
 }
 
+/* Финальная витрина доступа: структура экранов из референса на токенах COF. */
+.auth-page:has(.is-subscription-showcase) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 8%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 34%),
+    radial-gradient(circle at 16% 62%, color-mix(in srgb, var(--surface) 88%, transparent), transparent 36%),
+    radial-gradient(circle at 84% 68%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 34%),
+    var(--bg);
+
+  &::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 12% 18% 8%;
+    border-radius: var(--border-radius-pill);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    filter: var(--glass-filter);
+    opacity: 0.72;
+    pointer-events: none;
+  }
+}
+
+.showcase-backdrop-title {
+  position: absolute;
+  z-index: 0;
+  top: -4px;
+  left: 50%;
+  width: 0;
+  max-width: min(88vw, 980px);
+  overflow: hidden;
+  transform: translateX(-50%);
+  color: color-mix(in srgb, var(--text) 12%, transparent);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(4rem, 10vw, 8.5rem);
+  font-weight: 600;
+  line-height: 0.9;
+  letter-spacing: -0.07em;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  animation: showcase-type 1.35s steps(12, end) 0.2s forwards;
+}
+
+@keyframes showcase-type {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: min(88vw, 980px);
+  }
+}
+
+.auth-grid.is-subscription-showcase {
+  z-index: 1;
+  max-width: 860px;
+  gap: var(--panel-gap);
+
+  &::before {
+    display: none;
+  }
+
+  .auth-panel {
+    height: clamp(630px, calc(100dvh - 64px), 750px);
+    padding: var(--panel-padding);
+  }
+
+  .auth-intro {
+    background:
+      radial-gradient(circle at 50% 10%, color-mix(in srgb, var(--accent) 32%, transparent), transparent 42%),
+      linear-gradient(180deg, color-mix(in srgb, var(--glass-surface) 88%, transparent), var(--glass-surface));
+  }
+
+  .auth-form-panel {
+    padding: var(--panel-padding);
+    background:
+      radial-gradient(circle at 50% 4%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 32%),
+      var(--glass-surface);
+  }
+
+  .screen-status {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--panel-gap);
+    min-height: var(--control-height-sm);
+    color: var(--text);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .access-status {
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+
+  .showcase-copy {
+    padding-top: 0;
+  }
+
+  .showcase-copy .badge,
+  .subscription-header .badge {
+    color: var(--text);
+  }
+
+  .showcase-copy h1 {
+    max-width: 340px;
+    font-size: clamp(2rem, 3.2vw, 2.55rem);
+  }
+
+  .showcase-copy p {
+    max-width: 310px;
+  }
+
+  .subscription-header {
+    margin-top: clamp(54px, 9vh, 92px);
+  }
+
+  .subscription-header h2 {
+    max-width: 300px;
+    font-size: clamp(1.75rem, 2.6vw, 2.1rem);
+  }
+
+  .subscription-shell {
+    min-height: 0;
+  }
+
+  .benefits-list {
+    margin-top: auto;
+    margin-bottom: 0;
+    background: color-mix(in srgb, var(--glass-surface) 88%, transparent);
+  }
+
+  .benefit-item {
+    min-height: 58px;
+  }
+
+  .benefits-more {
+    display: block;
+    color: var(--dim);
+    font-size: 0.68rem;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  .payment-action,
+  .demo-action,
+  .demo-action-secondary {
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 820px) {
+  .auth-page:has(.is-subscription-showcase) {
+    overflow: hidden;
+  }
+
+  .showcase-backdrop-title {
+    display: none;
+  }
+
+  .auth-grid.is-subscription-showcase {
+    gap: 10px;
+
+    .auth-panel {
+      padding: var(--panel-padding);
+    }
+
+    .subscription-header {
+      margin-top: 34px;
+    }
+  }
+}
+
 /* Стартовый экран доступа: две самостоятельные карточки, как два экрана продукта. */
 .auth-workspace {
   position: relative;
@@ -1636,6 +1830,85 @@ async function submit() {
     .benefit-item {
       padding: 12px 14px;
     }
+  }
+}
+
+/* Каскадный финал витрины: только раскладка, общие токены и UI-компоненты. */
+.auth-page:has(.is-subscription-showcase) {
+  background:
+    radial-gradient(circle at 50% 8%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 34%),
+    radial-gradient(circle at 16% 62%, color-mix(in srgb, var(--surface) 88%, transparent), transparent 36%),
+    radial-gradient(circle at 84% 68%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 34%),
+    var(--bg);
+}
+
+.auth-grid.is-subscription-showcase {
+  max-width: 860px;
+  gap: var(--panel-gap);
+
+  .auth-panel {
+    @include glass;
+    height: clamp(630px, calc(100dvh - 64px), 750px);
+    padding: var(--panel-padding);
+    border-radius: var(--border-radius-lg);
+  }
+
+  .auth-intro {
+    background:
+      radial-gradient(circle at 50% 10%, color-mix(in srgb, var(--accent) 32%, transparent), transparent 42%),
+      var(--glass-surface);
+  }
+
+  .auth-form-panel {
+    padding: var(--panel-padding);
+    background:
+      radial-gradient(circle at 50% 4%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 32%),
+      var(--glass-surface);
+  }
+
+  .showcase-copy {
+    padding-top: 0;
+  }
+
+  .subscription-header {
+    margin-top: clamp(54px, 9vh, 92px);
+  }
+
+  .benefits-list {
+    margin-top: auto;
+    margin-bottom: 0;
+    background: color-mix(in srgb, var(--glass-surface) 88%, transparent);
+  }
+}
+
+@media (max-width: 820px) {
+  .auth-grid.is-subscription-showcase {
+    gap: 10px;
+
+    .auth-panel {
+      height: calc(100dvh - 32px);
+      padding: var(--panel-padding);
+      border-radius: var(--border-radius-lg);
+    }
+
+    .showcase-copy {
+      padding-top: 0;
+    }
+
+    .auth-form-panel {
+      padding: var(--panel-padding);
+    }
+
+    .subscription-header {
+      margin-top: 34px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-grid.is-subscription-showcase .auth-panel {
+    height: calc(100dvh - 20px);
+    padding: var(--panel-padding);
   }
 }
 </style>

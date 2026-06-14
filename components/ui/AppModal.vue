@@ -213,12 +213,16 @@ function handleBackdrop() {
 
   .app-modal-overlay.form-sheet-overlay {
     align-items: flex-end;
+    padding: max(10px, env(safe-area-inset-top, 0px)) 0 0;
   }
 
   .app-modal.is-form-sheet {
     inline-size: 100%;
-    max-block-size: min(78dvh, 720px);
-    border-radius: calc(var(--border-radius-lg) + 4px) calc(var(--border-radius-lg) + 4px) var(--border-radius-lg) var(--border-radius-lg);
+    max-block-size: min(82dvh, 720px);
+    border-right: none;
+    border-bottom: none;
+    border-left: none;
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
     transform-origin: bottom center;
 
     &.allow-overflow {
@@ -249,7 +253,7 @@ function handleBackdrop() {
 
   .app-modal.is-form-sheet.modal-panel-enter-from,
   .app-modal.is-form-sheet.modal-panel-leave-to {
-    transform: translateY(22px);
+    transform: translateY(100%);
   }
 }
 </style>
