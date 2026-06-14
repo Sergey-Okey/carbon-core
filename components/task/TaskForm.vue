@@ -63,7 +63,7 @@
           </button>
         </div>
 
-          <div class="available-tags">
+        <div class="available-tags">
           <div class="available-tags__label">Выбрать из существующих</div>
           <div class="tags-cloud">
             <template v-if="allTags.length">
@@ -389,13 +389,13 @@ function getTodayDateString() {
 .modal-form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 14px;
 
   @media (max-width: 500px) {
     grid-template-columns: 1fr;
@@ -419,7 +419,19 @@ function getTodayDateString() {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+}
+
+.available-tags {
+  display: grid;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.available-tags__label {
+  color: var(--dim);
+  font-size: 0.78rem;
+  line-height: 1.35;
 }
 
 .tags-cloud {
@@ -511,11 +523,15 @@ function getTodayDateString() {
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
 }
 
 @media (max-width: 640px) {
+  .modal-form {
+    gap: 14px;
+  }
+
   .form-row {
     grid-template-columns: 1fr;
     gap: 0;
@@ -524,6 +540,10 @@ function getTodayDateString() {
   .modal-actions {
     flex-direction: column-reverse;
     gap: 8px;
+  }
+
+  .available-tags {
+    gap: 6px;
   }
 
   .tags-cloud {

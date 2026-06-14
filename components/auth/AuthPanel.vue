@@ -1,39 +1,129 @@
 <template>
   <div class="auth-page">
     <div class="auth-workspace">
-      <div class="auth-grid">
+      <div class="auth-grid" :class="{ 'is-subscription-showcase': showSubscriptionShowcase }">
         <div class="auth-panel auth-intro">
           <AppButton type="button" variant="ghost" size="sm" class="back-action" @click="goBack">
             <ArrowLeft :size="16" />
             Назад
           </AppButton>
 
-          <div class="intro-content">
-            <span class="badge">Core of Life</span>
-            <h1 v-if="isRegister">
-              Соберите свою систему задач
-              <span>в одном месте.</span>
-            </h1>
-            <h1 v-else>Продолжайте в своём ритме.</h1>
-            <p>
-              {{
-                isRegister
-                  ? 'Попробуйте готовое пространство или оформите доступ, чтобы создать личный профиль.'
-                  : 'Войдите, чтобы вернуться к задачам, привычкам, фокусу и доске.'
-              }}
-            </p>
-          </div>
+          <template v-if="showSubscriptionShowcase">
+            <div class="showcase-copy">
+              <span class="badge">Core of Life</span>
+              <span class="showcase-eyebrow">Личное пространство для задач, этапов, веток и фокуса</span>
+              <h1>
+                Соберите свою систему задач
+                <span>в одном месте.</span>
+              </h1>
+              <p>
+                Попробуйте демо-режим, чтобы почувствовать интерфейс COF, или откройте полный
+                доступ и сохраните своё пространство без ограничений.
+              </p>
 
-          <div class="intro-actions">
-            <AppButton type="button" variant="secondary" @click="startDemo">
-              <Play :size="15" />
-              Попробовать демо
-            </AppButton>
-            <NuxtLink class="route-link" :to="isRegister ? '/auth' : '/register'">
-              {{ isRegister ? 'Уже есть профиль? Войти' : 'Нет профиля? Получить доступ' }}
-              <ArrowUpRight :size="15" />
-            </NuxtLink>
-          </div>
+              <div class="showcase-points">
+                <span>Доска и связи</span>
+                <span>Фокус и ритм</span>
+                <span>Единый доступ</span>
+              </div>
+            </div>
+
+            <div class="showcase-stage" aria-hidden="true">
+              <span class="stage-title">CORE OF LIFE</span>
+
+              <div class="device-card demo-device">
+                <div class="device-screen">
+                  <div class="device-status">
+                    <span>9:41</span>
+                    <span>COF</span>
+                  </div>
+
+                  <div class="device-copy">
+                    <span class="device-brand">Демо-режим</span>
+                    <strong>Исследуйте пространство</strong>
+                    <p>Быстрый вход в готовый сценарий без регистрации и без сохранения данных.</p>
+                  </div>
+
+                  <div class="device-progress">
+                    <span class="active"></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+
+                  <div class="device-cta">
+                    <Play :size="14" />
+                    Попробовать демо
+                  </div>
+                </div>
+              </div>
+
+              <div class="device-card access-device">
+                <div class="device-screen">
+                  <div class="device-status">
+                    <span>Доступ COF</span>
+                    <span>{{ SUBSCRIPTION_PRICE }} ₽</span>
+                  </div>
+
+                  <div class="access-headline">
+                    <strong>Полный доступ</strong>
+                    <p>Один доступ ко всем основным возможностям приложения и личному профилю.</p>
+                  </div>
+
+                  <div class="mini-benefits">
+                    <div v-for="item in accessBenefits" :key="item.title" class="mini-benefit">
+                      <div>
+                        <strong>{{ item.title }}</strong>
+                        <span>{{ item.description }}</span>
+                      </div>
+                      <Check :size="16" />
+                    </div>
+                  </div>
+
+                  <span class="mini-note">Оплата открывается в отдельном окне</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="intro-actions">
+              <AppButton type="button" variant="secondary" @click="startDemo">
+                <Play :size="15" />
+                Попробовать демо
+              </AppButton>
+              <NuxtLink class="route-link" to="/auth">
+                Уже есть профиль? Войти
+                <ArrowUpRight :size="15" />
+              </NuxtLink>
+            </div>
+          </template>
+
+          <template v-else>
+            <div class="intro-content">
+              <span class="badge">Core of Life</span>
+              <h1 v-if="isRegister">
+                Соберите свою систему задач
+                <span>в одном месте.</span>
+              </h1>
+              <h1 v-else>Продолжайте в своём ритме.</h1>
+              <p>
+                {{
+                  isRegister
+                    ? 'Попробуйте готовое пространство или оформите доступ, чтобы создать личный профиль.'
+                    : 'Войдите, чтобы вернуться к задачам, привычкам, фокусу и доске.'
+                }}
+              </p>
+            </div>
+
+            <div class="intro-actions">
+              <AppButton type="button" variant="secondary" @click="startDemo">
+                <Play :size="15" />
+                Попробовать демо
+              </AppButton>
+              <NuxtLink class="route-link" :to="isRegister ? '/auth' : '/register'">
+                {{ isRegister ? 'Уже есть профиль? Войти' : 'Нет профиля? Получить доступ' }}
+                <ArrowUpRight :size="15" />
+              </NuxtLink>
+            </div>
+          </template>
 
           <div class="legal-links">
             <NuxtLink to="/privacy">Конфиденциальность</NuxtLink>
@@ -43,32 +133,54 @@
         </div>
 
         <div class="auth-panel auth-form-panel">
-          <template v-if="isRegister && !accessStore.hasSubscription">
+          <template v-if="showSubscriptionShowcase">
             <div class="subscription-header">
               <span class="badge">Полный доступ</span>
-              <h2>Оформите подписку</h2>
-              <p>После оплаты вы сможете создать профиль и пользоваться всеми разделами COF.</p>
+              <h2>Откройте доступ к COF</h2>
+              <p>
+                После оплаты станет доступен профиль, вход и все основные разделы приложения без
+                ограничений.
+              </p>
             </div>
 
-            <div class="benefits-list">
-              <div v-for="item in accessBenefits" :key="item.title" class="benefit-item">
-                <Check :size="16" />
+            <div class="subscription-shell">
+              <div class="subscription-price-line">
                 <div>
-                  <strong>{{ item.title }}</strong>
-                  <span>{{ item.description }}</span>
+                  <span class="price-kicker">Подписка</span>
+                  <strong>{{ SUBSCRIPTION_PRICE }} ₽</strong>
+                </div>
+                <span class="price-caption">Единый доступ к вашему пространству Core of Life</span>
+              </div>
+
+              <div class="benefits-list">
+                <div v-for="item in accessBenefits" :key="item.title" class="benefit-item">
+                  <Check :size="16" />
+                  <div>
+                    <strong>{{ item.title }}</strong>
+                    <span>{{ item.description }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <a
-              class="payment-link"
-              :href="SUBSCRIPTION_PAYMENT_URL"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Оплатить доступ · {{ SUBSCRIPTION_PRICE }} ₽
-              <ArrowUpRight :size="16" />
-            </a>
+              <a
+                class="payment-link"
+                :href="SUBSCRIPTION_PAYMENT_URL"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span>Оплатить доступ</span>
+                <strong>{{ SUBSCRIPTION_PRICE }} ₽</strong>
+              </a>
+
+              <button type="button" class="demo-link" @click="startDemo">
+                Сначала попробовать демо
+              </button>
+
+              <p class="subscription-note">
+                Демо открывается сразу. Полный доступ нужен для личного профиля и постоянной работы
+                в COF.
+              </p>
+            </div>
           </template>
 
           <template v-else>
@@ -179,6 +291,7 @@ const authStore = useAuthStore()
 const { addNotification } = useNotification()
 const router = useRouter()
 const isRegister = computed(() => props.mode === 'register')
+const showSubscriptionShowcase = computed(() => isRegister.value && !accessStore.hasSubscription)
 
 const keepShortWords = (text: string) =>
   text.replace(/(^|[\s(])([А-Яа-яЁё]{1,2})\s+/g, '$1$2\u00a0')
@@ -244,7 +357,11 @@ async function submit() {
   min-height: 100dvh;
   padding: 24px;
   box-sizing: border-box;
-  background: var(--bg);
+  background:
+    radial-gradient(circle at 18% 16%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 32%),
+    radial-gradient(circle at 82% 22%, color-mix(in srgb, white 10%, transparent), transparent 24%),
+    radial-gradient(circle at 50% 82%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 28%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg) 96%, transparent), var(--bg));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -252,7 +369,7 @@ async function submit() {
 
 .auth-workspace {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1220px;
   margin: 0 auto;
 }
 
@@ -272,30 +389,42 @@ async function submit() {
   }
 }
 
+.auth-grid.is-subscription-showcase {
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+}
+
 .auth-panel {
   @include glass;
   min-width: 0;
-  min-height: 600px;
+  min-height: 640px;
   padding: clamp(26px, 3.2vw, 40px);
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
   box-sizing: border-box;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 92%, transparent), color-mix(in srgb, var(--bg) 98%, transparent));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 8%, transparent),
+    0 26px 60px color-mix(in srgb, var(--bg) 26%, transparent);
 
   @media (max-width: 560px) {
     padding: 24px;
   }
 }
 
-/* Левая панель (введение) */
 .auth-intro {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 28px;
+  overflow: hidden;
 }
 
 .back-action {
   align-self: flex-start;
   margin-left: -8px;
+  position: relative;
+  z-index: 2;
 }
 
 .intro-content {
@@ -322,9 +451,6 @@ async function submit() {
     font-weight: 600;
     line-height: 1;
     letter-spacing: -0.045em;
-    overflow-wrap: normal;
-    word-break: normal;
-    hyphens: none;
     text-wrap: pretty;
 
     span {
@@ -338,10 +464,278 @@ async function submit() {
     color: var(--dim);
     font-size: 0.9rem;
     line-height: 1.6;
-    overflow-wrap: normal;
-    word-break: normal;
-    hyphens: none;
   }
+}
+
+.showcase-copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 16px;
+  max-width: 540px;
+
+  .badge {
+    display: inline-block;
+    color: var(--dim);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin: 0;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2.3rem, 4.2vw, 3.95rem);
+    font-weight: 600;
+    line-height: 0.96;
+    letter-spacing: -0.05em;
+    text-wrap: balance;
+
+    span {
+      display: block;
+      color: var(--dim);
+    }
+  }
+
+  p {
+    margin: 0;
+    max-width: 500px;
+    color: var(--dim);
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+}
+
+.showcase-eyebrow {
+  color: var(--dim);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.showcase-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 12px;
+    border: var(--ui-border);
+    border-radius: var(--border-radius-pill);
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
+    color: var(--text);
+    font-size: 0.76rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+}
+
+.showcase-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: end;
+  min-height: 400px;
+  margin-top: auto;
+  padding: 12px 6px 6px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 13% 10% 7%;
+    border-radius: 999px;
+    background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 24%, transparent) 0%, transparent 72%);
+    filter: blur(46px);
+    opacity: 0.9;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 4% 8% auto;
+    height: 56%;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--text) 6%, transparent), transparent 82%);
+    mask-image: linear-gradient(180deg, black, transparent);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.stage-title {
+  position: absolute;
+  inset: -10px 0 auto;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(3rem, 8vw, 6.8rem);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.07em;
+  color: color-mix(in srgb, var(--text) 8%, transparent);
+  pointer-events: none;
+  user-select: none;
+}
+
+.device-card {
+  position: relative;
+  z-index: 1;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--ui-border-color) 90%, transparent);
+  border-radius: 34px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, transparent), color-mix(in srgb, var(--bg) 96%, transparent));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 10%, transparent), 0 24px 60px color-mix(in srgb, var(--bg) 36%, transparent);
+}
+
+.demo-device {
+  transform: translateY(26px) scale(0.965);
+  transform-origin: center bottom;
+}
+
+.device-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 100%;
+  min-height: 292px;
+  padding: 18px 16px 16px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 20% 12%, color-mix(in srgb, var(--accent) 46%, transparent), transparent 40%),
+    radial-gradient(circle at 82% 16%, color-mix(in srgb, white 16%, transparent), transparent 32%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 88%, transparent), color-mix(in srgb, var(--bg) 98%, transparent));
+}
+
+.device-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: color-mix(in srgb, var(--text) 74%, transparent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.device-copy {
+  margin-top: auto;
+  display: grid;
+  gap: 10px;
+
+  strong {
+    color: var(--text);
+    font-size: 1.92rem;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+  }
+
+  p {
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+}
+
+.device-brand {
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.device-progress {
+  display: inline-flex;
+  gap: 6px;
+
+  span {
+    width: 22px;
+    height: 4px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text) 16%, transparent);
+  }
+
+  .active {
+    background: var(--accent);
+  }
+}
+
+.device-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  border-radius: var(--border-radius-pill);
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 72%, white));
+  color: var(--bg);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.access-headline {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 4px;
+
+  strong {
+    color: var(--text);
+    font-size: 1.82rem;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+  }
+
+  p {
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+}
+
+.mini-benefits {
+  display: grid;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.mini-benefit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 12px 13px;
+  border: var(--ui-border);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+
+  strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--text);
+    font-size: 0.84rem;
+    font-weight: 600;
+  }
+
+  span {
+    color: var(--dim);
+    font-size: 0.74rem;
+    line-height: 1.45;
+  }
+
+  svg {
+    margin-top: 2px;
+    color: var(--accent);
+  }
+}
+
+.mini-note {
+  margin-top: 2px;
+  color: var(--dim);
+  font-size: 0.72rem;
+  text-align: center;
 }
 
 .intro-actions {
@@ -390,7 +784,6 @@ async function submit() {
   }
 }
 
-/* Правая панель (форма/подписка) */
 .auth-form-panel {
   display: flex;
   flex-direction: column;
@@ -434,6 +827,47 @@ async function submit() {
   }
 }
 
+.subscription-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.subscription-price-line {
+  display: grid;
+  gap: 10px;
+  padding: 20px 20px 18px;
+  border: var(--ui-border);
+  border-radius: calc(var(--border-radius-lg) + 4px);
+  background:
+    radial-gradient(circle at 85% 14%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 32%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 92%, transparent), color-mix(in srgb, var(--bg) 98%, transparent));
+
+  strong {
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2rem, 4vw, 2.6rem);
+    font-weight: 600;
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+  }
+}
+
+.price-kicker {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--dim);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.price-caption {
+  color: var(--dim);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -467,9 +901,7 @@ async function submit() {
   font-size: 0.88rem;
   font-weight: 500;
   cursor: pointer;
-  transition:
-    background var(--transition-standard),
-    border-color var(--transition-standard);
+  transition: background var(--transition-standard), border-color var(--transition-standard);
 
   &:hover {
     background: color-mix(in srgb, var(--accent) 7%, transparent);
@@ -583,15 +1015,14 @@ async function submit() {
   text-align: left;
 }
 
-/* Блок подписки */
 .benefits-list {
   display: flex;
   flex-direction: column;
   gap: 0;
-  margin-bottom: 24px;
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
 }
 
 .benefit-item {
@@ -633,28 +1064,66 @@ async function submit() {
 .payment-link {
   display: flex;
   align-items: center;
-  justify-content: center;
-  align-self: center;
-  gap: 10px;
-  width: min(100%, 480px);
-  max-width: 480px;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
   min-height: var(--control-height-md);
-  margin-inline: auto;
   padding: 12px 20px;
   box-sizing: border-box;
   background: var(--accent);
   border-radius: var(--border-radius-pill);
   color: var(--bg);
-  font-weight: 600;
   text-decoration: none;
-  transition: opacity var(--transition-standard);
+  transition: opacity var(--transition-standard), transform var(--transition-standard);
 
   &:hover {
     opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  span,
+  strong {
+    color: var(--bg);
+  }
+
+  span {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  strong {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
   }
 }
 
-/* Адаптивность */
+.demo-link {
+  min-height: 42px;
+  padding: 0 8px;
+  border: none;
+  background: transparent;
+  color: var(--dim);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color var(--transition-standard);
+
+  &:hover {
+    color: var(--text);
+  }
+}
+
+.subscription-note {
+  margin: -4px 0 0;
+  color: var(--dim);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
 @media (max-width: 820px) {
   .auth-page {
     align-items: stretch;
@@ -685,7 +1154,10 @@ async function submit() {
     &::-webkit-scrollbar {
       display: none;
     }
+  }
 
+  .auth-grid.is-subscription-showcase {
+    grid-template-columns: 1fr;
   }
 
   .auth-panel {
@@ -722,6 +1194,26 @@ async function submit() {
     padding-block: 12px;
   }
 
+  .showcase-stage {
+    min-height: 0;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .stage-title {
+    inset-block-start: 8px;
+    font-size: clamp(2.5rem, 14vw, 4.8rem);
+  }
+
+  .device-copy strong,
+  .access-headline strong {
+    font-size: 1.4rem;
+  }
+
+  .subscription-price-line {
+    padding: 18px 18px 16px;
+  }
+
   .intro-actions {
     gap: 10px;
 
@@ -738,7 +1230,7 @@ async function submit() {
   }
 
   .subscription-header,
-  .benefits-list,
+  .subscription-shell,
   .payment-link {
     width: 100%;
   }
@@ -752,7 +1244,7 @@ async function submit() {
   }
 
   .benefits-list {
-    margin-bottom: 18px;
+    margin-bottom: 0;
   }
 
   .benefit-item {
@@ -780,6 +1272,42 @@ async function submit() {
     transform: scale(0.975);
   }
 
+  .showcase-copy {
+    gap: 12px;
+  }
+
+  .showcase-copy h1 {
+    font-size: clamp(1.95rem, 8.5vw, 2.8rem);
+  }
+
+  .showcase-stage {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .demo-device {
+    transform: none;
+  }
+
+  .device-screen {
+    min-height: 0;
+  }
+
+  .device-copy strong,
+  .access-headline strong {
+    font-size: 1.28rem;
+  }
+
+  .showcase-points {
+    gap: 8px;
+
+    span {
+      min-height: 30px;
+      padding-inline: 10px;
+      font-size: 0.72rem;
+    }
+  }
+
   .intro-content h1 {
     margin-bottom: 14px;
     font-size: clamp(1.8rem, 8vw, 2.4rem);
@@ -805,6 +1333,14 @@ async function submit() {
 
   .legal-links {
     gap: 8px 12px;
+  }
+
+  .payment-link {
+    padding-inline: 16px;
+  }
+
+  .subscription-note {
+    font-size: 0.76rem;
   }
 }
 </style>

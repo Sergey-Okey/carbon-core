@@ -3,6 +3,7 @@
     <Transition name="modal-fade" appear>
       <div
         class="app-modal-overlay"
+        :class="{ 'form-sheet-overlay': asForm }"
         :style="{ '--modal-z-index': zIndex }"
         @click.self="handleBackdrop"
       >
@@ -10,7 +11,7 @@
           <component
             :is="asForm ? 'form' : 'div'"
             class="app-modal"
-            :class="[`size-${size}`, { 'allow-overflow': allowOverflow }]"
+            :class="[`size-${size}`, { 'allow-overflow': allowOverflow, 'is-form-sheet': asForm }]"
             @submit.prevent="emit('submit')"
             @keydown.stop
           >
@@ -205,13 +206,16 @@ function handleBackdrop() {
 
 @media (max-width: 640px) {
   .app-modal-overlay {
-    align-items: flex-end;
     padding: max(10px, env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px));
     overflow-y: auto;
     overscroll-behavior: contain;
   }
 
-  .app-modal {
+  .app-modal-overlay.form-sheet-overlay {
+    align-items: flex-end;
+  }
+
+  .app-modal.is-form-sheet {
     inline-size: 100%;
     max-block-size: min(78dvh, 720px);
     border-radius: calc(var(--border-radius-lg) + 4px) calc(var(--border-radius-lg) + 4px) var(--border-radius-lg) var(--border-radius-lg);
@@ -227,7 +231,7 @@ function handleBackdrop() {
     padding: 14px;
   }
 
-  .app-modal-footer {
+  .app-modal.is-form-sheet .app-modal-footer {
     align-items: stretch;
     flex-direction: column;
   }
@@ -243,8 +247,8 @@ function handleBackdrop() {
     }
   }
 
-  .modal-panel-enter-from,
-  .modal-panel-leave-to {
+  .app-modal.is-form-sheet.modal-panel-enter-from,
+  .app-modal.is-form-sheet.modal-panel-leave-to {
     transform: translateY(22px);
   }
 }

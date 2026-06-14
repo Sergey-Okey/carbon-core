@@ -2,7 +2,7 @@
   <section class="focus-page" aria-label="Фокус" data-tour="focus-page">
     <header class="focus-head">
       <div>
-        <span class="eyebrow">Фокус</span>
+        <span class="eyebrow">Таймер</span>
         <h3>Фокус</h3>
       </div>
       <div class="focus-mode">

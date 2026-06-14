@@ -82,9 +82,11 @@
                   <input type="checkbox" :checked="form.taskIds.includes(task.id)" />
                   <span class="checkmark"></span>
                 </span>
-                <span class="task-title">{{ task.title }}</span>
-                <span v-if="taskLinkedElsewhere(task.id)" class="linked-elsewhere">
-                  Уже привязана
+                <span class="task-main">
+                  <span class="task-title">{{ task.title }}</span>
+                  <span v-if="taskLinkedElsewhere(task.id)" class="linked-elsewhere">
+                    Уже привязана
+                  </span>
                 </span>
                 <span class="task-marker" :class="task.type" :title="taskTypeMeta(task.type).title">
                   {{ taskTypeMeta(task.type).label }}
@@ -513,7 +515,7 @@ function handleQuickTask(data: TaskFormData) {
 .task-row {
   @include glass;
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
@@ -547,16 +549,11 @@ function handleQuickTask(data: TaskFormData) {
   background: transparent;
 }
 
-.linked-elsewhere {
-  color: var(--dim);
-  font-size: 0.68rem;
-  white-space: nowrap;
-}
-
 .custom-checkbox {
   position: relative;
   width: 18px;
   height: 18px;
+  flex: 0 0 18px;
 
   input {
     position: absolute;
@@ -580,10 +577,23 @@ function handleQuickTask(data: TaskFormData) {
 }
 
 .task-title {
+  display: block;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.task-main {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.linked-elsewhere {
+  color: var(--dim);
+  font-size: 0.68rem;
+  line-height: 1.25;
 }
 
 .task-marker,
@@ -731,22 +741,13 @@ function handleQuickTask(data: TaskFormData) {
   }
 
   .task-row {
-    grid-template-columns: auto auto minmax(0, 1fr);
-    align-items: start;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    align-items: center;
   }
 
   .tasks-list {
     position: static;
     max-height: min(280px, 42dvh);
-  }
-
-  .task-marker {
-    grid-column: 3;
-  }
-
-  .linked-elsewhere,
-  .task-marker {
-    justify-self: start;
   }
 
   .task-title {

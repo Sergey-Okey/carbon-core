@@ -77,8 +77,13 @@
                 @click.prevent="toggleTask(task.id)"
               >
                 <component :is="taskIcon(task.type)" :size="16" class="task-icon" />
-                <input type="checkbox" :checked="form.taskIds.includes(task.id)" />
-                <span class="task-title">{{ task.title }}</span>
+                <span class="custom-checkbox">
+                  <input type="checkbox" :checked="form.taskIds.includes(task.id)" />
+                  <span class="checkmark"></span>
+                </span>
+                <span class="task-main">
+                  <span class="task-title">{{ task.title }}</span>
+                </span>
               </label>
               <button type="button" class="create-task-btn" @click="showQuickTask = true">
                 <Plus :size="16" /> Создать и привязать задачу
@@ -350,11 +355,11 @@ function handleQuickTask(data: TaskFormData) {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr);
   align-items: center;
-  gap: 9px;
-  padding: 9px 11px;
-  border-radius: var(--border-radius-sm);
-  color: var(--dim);
-  font-size: 0.8rem;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--border-radius-md);
+  color: var(--text);
+  font-size: 0.82rem;
   cursor: pointer;
 
   &.selected {
@@ -365,9 +370,31 @@ function handleQuickTask(data: TaskFormData) {
       color: var(--bg);
     }
   }
+}
+
+.custom-checkbox {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
 
   input {
-    accent-color: var(--accent);
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+  }
+}
+
+.checkmark {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--border-radius-sm);
+  background: var(--glass-surface);
+  transition: background var(--transition-standard);
+
+  input:checked + & {
+    background: var(--accent);
   }
 }
 
@@ -451,6 +478,11 @@ function handleQuickTask(data: TaskFormData) {
 
 .task-icon {
   color: var(--dim);
+}
+
+.task-main {
+  display: grid;
+  min-width: 0;
 }
 
 .task-title {
@@ -600,7 +632,7 @@ function handleQuickTask(data: TaskFormData) {
 
   .task-row {
     grid-template-columns: auto auto minmax(0, 1fr);
-    align-items: start;
+    align-items: center;
   }
 
   .task-title {

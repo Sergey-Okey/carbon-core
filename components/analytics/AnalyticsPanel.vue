@@ -2,7 +2,7 @@
   <section class="analytics-page" aria-label="Аналитика" data-tour="analytics-page">
     <header class="analytics-head">
       <div>
-        <span class="eyebrow">Аналитика</span>
+        <span class="eyebrow">Обзор</span>
         <h3>Аналитика</h3>
       </div>
       <div class="head-meta">

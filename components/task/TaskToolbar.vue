@@ -35,7 +35,7 @@
         id="task-tag"
         v-model="tagModel"
         :options="tagOptions"
-        placeholder="Все теги"
+        placeholder="Выберите тег"
       >
         <template #icon>
           <Tags :size="16" />
@@ -87,22 +87,30 @@ const viewOptions = [
 
 const activeTagLabel = computed(() => {
   const option = props.tagOptions.find((item) => item.value === props.selectedTagId)
-  return option?.label ?? 'Все теги'
+  return option?.label ?? ''
 })
 
 const activeViewLabel = computed(() => {
   const option = viewOptions.find((item) => item.value === props.view)
-  return option?.label ?? 'Активные'
+  return option?.label ?? ''
 })
 
 const collapsedSummary = computed(() => {
-  const parts = [activeViewLabel.value, activeTagLabel.value]
+  const parts: string[] = []
 
   if (props.search.trim()) {
     parts.unshift('Поиск: ' + props.search.trim())
   }
 
-  return parts.join(' | ')
+  if (props.selectedTagId && activeTagLabel.value) {
+    parts.push(activeTagLabel.value)
+  }
+
+  if (props.view !== 'active' && activeViewLabel.value) {
+    parts.push(activeViewLabel.value)
+  }
+
+  return parts.join(' | ') || 'Настройте список'
 })
 
 const searchModel = computed({

@@ -99,7 +99,7 @@ const minutesRef = ref<HTMLElement | null>(null)
 const isOpen = ref(false)
 const draftHour = ref('00')
 const draftMinute = ref('00')
-const popoverPlacement = ref<'top' | 'bottom'>('bottom')
+const popoverPlacement = ref<'top' | 'bottom' | 'sheet'>('bottom')
 const popoverStyle = ref<Record<string, string>>({})
 
 const hours = Array.from({ length: 24 }, (_, index) => String(index).padStart(2, '0'))
@@ -119,6 +119,19 @@ function scrollToSelected(container: HTMLElement | null) {
 function updatePopoverPosition() {
   const root = rootRef.value
   if (!root || !isOpen.value) return
+
+  if (window.matchMedia('(pointer: coarse), (max-width: 767px)').matches) {
+    popoverPlacement.value = 'sheet'
+    popoverStyle.value = {
+      left: '12px',
+      right: '12px',
+      bottom: '12px',
+      width: 'auto',
+      top: 'auto',
+      maxHeight: 'min(72dvh, 420px)',
+    }
+    return
+  }
 
   const rect = root.getBoundingClientRect()
   const gap = 8
@@ -259,6 +272,15 @@ onBeforeUnmount(() => {
   &.top {
     transform: translateY(-100%);
   }
+
+  &.sheet {
+    inset: auto 12px 12px;
+    width: auto;
+    max-height: min(72dvh, 420px);
+    padding: 12px;
+    border-radius: calc(var(--border-radius-lg) + 6px);
+    overflow: hidden;
+  }
 }
 
 .time-preview {
@@ -387,8 +409,54 @@ onBeforeUnmount(() => {
     min-height: 44px;
   }
 
+  .time-popover.sheet {
+    padding: 12px;
+    border-radius: calc(var(--border-radius-lg) + 8px) calc(var(--border-radius-lg) + 8px) var(--border-radius-lg) var(--border-radius-lg);
+    box-shadow: 0 22px 56px color-mix(in srgb, var(--bg) 30%, transparent);
+  }
+
+  .time-preview {
+    min-height: 50px;
+    margin-bottom: 10px;
+    font-size: 1.02rem;
+  }
+
+  .time-columns {
+    gap: 10px;
+  }
+
   .time-options {
-    height: 220px;
+    height: min(232px, 34dvh);
+  }
+
+  .done-button {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 520px) {
+  .time-popover.sheet {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 10px !important;
+  }
+
+  .time-columns {
+    grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .time-separator {
+    margin-top: 22px;
+    text-align: center;
+  }
+
+  .column-label {
+    margin-bottom: 8px;
+  }
+
+  .time-option {
+    font-size: 0.86rem;
   }
 }
 </style>
