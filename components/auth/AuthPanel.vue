@@ -9,20 +9,14 @@
           </AppButton>
 
           <template v-if="showSubscriptionShowcase">
-            <div class="showcase-status">
-              <span>COF</span>
-              <span>Демо-пространство</span>
-            </div>
-
             <div class="showcase-copy">
               <span class="badge">Core of Life</span>
               <h1>
-                Соберите свою систему задач
+                Ваша система задач
                 <span>в одном месте.</span>
               </h1>
               <p>
-                Задачи, привычки, доска и фокус в одном пространстве. Откройте демо без
-                регистрации.
+                Задачи, привычки, доска и фокус. Посмотрите, как всё работает, без регистрации.
               </p>
 
               <div class="device-progress" aria-hidden="true">
@@ -82,8 +76,8 @@
           <template v-if="showSubscriptionShowcase">
             <div class="subscription-header">
               <span class="badge">Полный доступ</span>
-              <h2>Вся система.<br />Один доступ.</h2>
-              <p>Личный профиль и все инструменты Core of Life.</p>
+              <h2>Больше возможностей</h2>
+              <p>Личный профиль и все инструменты Core of Life в одном доступе.</p>
             </div>
 
             <div class="subscription-shell">
@@ -97,19 +91,14 @@
                 </div>
               </div>
 
-              <a
-                class="payment-link"
-                :href="SUBSCRIPTION_PAYMENT_URL"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <AppButton type="button" variant="primary" class="payment-action" @click="openPayment">
                 Оплатить доступ · {{ SUBSCRIPTION_PRICE }} ₽
                 <ArrowUpRight :size="16" />
-              </a>
+              </AppButton>
 
-              <button type="button" class="demo-link" @click="startDemo">
+              <AppButton type="button" variant="ghost" size="sm" class="demo-action-secondary" @click="startDemo">
                 Попробовать демо
-              </button>
+              </AppButton>
 
               <p class="subscription-note">
                 Нажимая «Оплатить доступ», вы принимаете условия использования.
@@ -243,6 +232,10 @@ function startDemo() {
   resetDemoData()
   accessStore.startDemo()
   router.push('/')
+}
+
+function openPayment() {
+  window.open(SUBSCRIPTION_PAYMENT_URL, '_blank', 'noopener,noreferrer')
 }
 
 function goBack() {
@@ -995,61 +988,6 @@ async function submit() {
   }
 }
 
-.payment-link {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  min-height: var(--control-height-md);
-  padding: 12px 20px;
-  box-sizing: border-box;
-  background: var(--accent);
-  border-radius: var(--border-radius-pill);
-  color: var(--bg);
-  text-decoration: none;
-  transition: opacity var(--transition-standard), transform var(--transition-standard);
-
-  &:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-  }
-
-  span,
-  strong {
-    color: var(--bg);
-  }
-
-  span {
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
-
-  strong {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.05rem;
-    font-weight: 600;
-    letter-spacing: -0.03em;
-  }
-}
-
-.demo-link {
-  min-height: 42px;
-  padding: 0 8px;
-  border: none;
-  background: transparent;
-  color: var(--dim);
-  font: inherit;
-  font-size: 0.84rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: color var(--transition-standard);
-
-  &:hover {
-    color: var(--text);
-  }
-}
-
 .subscription-note {
   margin: -4px 0 0;
   color: var(--dim);
@@ -1164,8 +1102,7 @@ async function submit() {
   }
 
   .subscription-header,
-  .subscription-shell,
-  .payment-link {
+  .subscription-shell {
     width: 100%;
   }
 
@@ -1269,10 +1206,6 @@ async function submit() {
     gap: 8px 12px;
   }
 
-  .payment-link {
-    padding-inline: 16px;
-  }
-
   .subscription-note {
     font-size: 0.76rem;
   }
@@ -1336,22 +1269,10 @@ async function submit() {
   }
 
   .back-action,
-  .showcase-status,
   .showcase-copy,
   .legal-links {
     position: relative;
     z-index: 1;
-  }
-
-  .showcase-status {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    color: var(--dim);
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
   }
 
   .showcase-copy {
@@ -1447,15 +1368,6 @@ async function submit() {
     margin-top: 0;
   }
 
-  .payment-link {
-    width: 100%;
-    max-width: none;
-  }
-
-  .demo-link {
-    margin-top: 12px;
-  }
-
   .subscription-note {
     max-width: 320px;
     margin: 14px auto 0;
@@ -1463,6 +1375,199 @@ async function submit() {
     font-size: 0.68rem;
     line-height: 1.45;
     text-align: center;
+  }
+}
+
+/* Типографика витрины повторяет строгую сетку экранов из референса. */
+.auth-grid.is-subscription-showcase {
+  max-width: 900px;
+  gap: 24px;
+
+  &::before {
+    top: -54px;
+    color: color-mix(in srgb, var(--text) 6%, transparent);
+    font-size: clamp(4rem, 9vw, 7.5rem);
+  }
+
+  .auth-panel {
+    @include glass;
+    height: clamp(620px, calc(100dvh - 64px), 740px);
+    padding: calc(var(--panel-padding) + 10px);
+    border: var(--ui-border);
+    border-radius: var(--border-radius-lg);
+  }
+
+  .auth-intro {
+    background: var(--glass-surface);
+  }
+
+  .auth-intro::after {
+    display: none;
+  }
+
+  .back-action {
+    margin: 0;
+  }
+
+  .showcase-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-content: initial;
+    gap: var(--panel-gap);
+    padding-top: 80px;
+  }
+
+  .showcase-copy .badge,
+  .subscription-header .badge {
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .showcase-copy h1 {
+    max-width: 100%;
+    margin: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2.05rem, 3vw, 2.55rem);
+    font-weight: 500;
+    line-height: 1.06;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+
+  .showcase-copy h1 span {
+    color: var(--dim);
+  }
+
+  .showcase-copy p {
+    max-width: 330px;
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.78rem;
+    line-height: 1.55;
+  }
+
+  .device-progress {
+    margin: 4px 0 8px;
+  }
+
+  .device-progress span {
+    width: 18px;
+    height: 3px;
+    background: color-mix(in srgb, var(--text) 14%, transparent);
+  }
+
+  .device-progress .active {
+    background: var(--accent);
+  }
+
+  .demo-action,
+  .payment-action,
+  .demo-action-secondary {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 0;
+    box-sizing: border-box;
+  }
+
+  .route-link {
+    min-height: 28px;
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  .legal-links {
+    gap: 12px;
+    margin-top: 0;
+  }
+
+  .legal-links a {
+    font-size: 0.62rem;
+  }
+
+  .auth-form-panel {
+    @include glass;
+    justify-content: flex-start;
+    padding: 46px calc(var(--panel-padding) + 10px) calc(var(--panel-padding) + 10px);
+  }
+
+  .subscription-header {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    text-align: center;
+  }
+
+  .subscription-header h2 {
+    max-width: 330px;
+    margin: 12px auto 0;
+    font-family: inherit;
+    font-size: clamp(1.7rem, 2.5vw, 2rem);
+    font-weight: 500;
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  .subscription-header p {
+    max-width: 290px;
+    margin: 0 auto;
+    color: var(--dim);
+    font-size: 0.76rem;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .subscription-shell {
+    gap: var(--panel-gap);
+  }
+
+  .benefits-list {
+    margin: auto 0 var(--panel-gap);
+    border: var(--ui-border);
+    border-radius: var(--border-radius-lg);
+    background: transparent;
+  }
+
+  .benefit-item {
+    gap: 16px;
+    min-height: 64px;
+    padding: 12px 14px;
+    border-bottom: var(--ui-border);
+  }
+
+  .benefit-item strong {
+    margin-bottom: 3px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.25;
+  }
+
+  .benefit-item span {
+    font-size: 0.68rem;
+    line-height: 1.4;
+  }
+
+  .benefit-item svg {
+    width: 15px;
+    height: 15px;
+    color: var(--text);
+  }
+
+  .subscription-note {
+    max-width: 280px;
+    margin-top: 2px;
+    font-size: 0.62rem;
+    line-height: 1.4;
   }
 }
 
@@ -1499,7 +1604,11 @@ async function submit() {
     }
 
     .showcase-copy h1 {
-      font-size: clamp(2.15rem, 10vw, 2.8rem);
+      font-size: clamp(1.95rem, 9vw, 2.4rem);
+    }
+
+    .auth-form-panel {
+      padding: 34px var(--panel-padding) var(--panel-padding);
     }
   }
 }
