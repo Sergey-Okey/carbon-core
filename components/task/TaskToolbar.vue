@@ -29,7 +29,7 @@
       </div>
     </div>
 
-    <div class="filter-field">
+    <div class="filter-field" :class="{ 'all-tags-selected': selectedTagId === 'all' }">
       <label for="task-tag">Тег</label>
       <AppSelect
         id="task-tag"
@@ -257,6 +257,18 @@ label,
     flex-shrink: 0;
     border-radius: var(--border-radius-pill);
     background: color-mix(in srgb, var(--bg) 30%, transparent);
+  }
+
+  .search-field > label,
+  .filter-field > label,
+  .view-switch > .control-label {
+    display: none;
+  }
+
+  .filter-field.all-tags-selected {
+    :deep(.select-value) {
+      font-size: 0;
+    }
   }
 
   @media (hover: hover) and (pointer: fine) {
