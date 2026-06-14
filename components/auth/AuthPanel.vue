@@ -1,5 +1,65 @@
 <template>
-  <div class="auth-page">
+  <div v-if="showSubscriptionShowcase" class="access-page">
+    <main class="access-page-main">
+      <section class="access-hero">
+        <div class="access-visual" aria-hidden="true">
+          <span class="visual-orbit orbit-one"></span>
+          <span class="visual-orbit orbit-two"></span>
+          <span class="visual-node node-one"></span>
+          <span class="visual-node node-two"></span>
+          <span class="visual-node node-three"></span>
+          <span class="visual-core">COF</span>
+        </div>
+
+        <span class="access-kicker">Core of Life</span>
+        <h1>
+          Всё важное
+          <span>связано.</span>
+        </h1>
+        <p>Задачи, цели и фокус в одной системе.</p>
+
+        <div class="access-actions">
+          <AppButton type="button" variant="primary" @click="openPayment">
+            Оплатить доступ · {{ SUBSCRIPTION_PRICE }} ₽
+            <ArrowUpRight :size="16" />
+          </AppButton>
+          <AppButton type="button" variant="secondary" @click="startDemo">
+            <Play :size="15" />
+            Попробовать демо
+          </AppButton>
+        </div>
+      </section>
+
+      <section class="access-overview" aria-label="Возможности Core of Life">
+        <div class="overview-heading">
+          <span class="access-kicker">Полный доступ</span>
+          <h2>Пространство растёт вместе с вами.</h2>
+        </div>
+
+        <div class="overview-metrics" aria-hidden="true">
+          <div class="metric-axis">
+            <span v-for="index in 12" :key="index"></span>
+          </div>
+          <div class="metric-labels">
+            <strong>Задачи</strong>
+            <strong>Доска</strong>
+            <strong>Фокус</strong>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="access-page-footer">
+      <span>© Core of Life</span>
+      <nav>
+        <NuxtLink to="/privacy">Конфиденциальность</NuxtLink>
+        <NuxtLink to="/terms">Условия</NuxtLink>
+        <NuxtLink to="/support">Поддержка</NuxtLink>
+      </nav>
+    </footer>
+  </div>
+
+  <div v-else class="auth-page">
     <div class="auth-workspace">
       <span v-if="showSubscriptionShowcase" class="showcase-backdrop-title" aria-hidden="true">
         CORE OF LIFE
@@ -295,6 +355,288 @@ async function submit() {
 </script>
 
 <style scoped lang="scss">
+.access-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  padding: 0 clamp(20px, 5vw, 72px);
+  overflow: hidden;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at 78% 18%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 30%),
+    radial-gradient(circle at 20% 74%, color-mix(in srgb, var(--surface) 82%, transparent), transparent 34%),
+    var(--bg);
+  color: var(--text);
+}
+
+.access-page::before {
+  content: 'CORE OF LIFE';
+  position: absolute;
+  z-index: -1;
+  top: 12%;
+  left: 50%;
+  width: max-content;
+  transform: translateX(-50%);
+  color: color-mix(in srgb, var(--text) 5%, transparent);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(5rem, 15vw, 14rem);
+  font-weight: 600;
+  line-height: 0.8;
+  letter-spacing: -0.08em;
+  pointer-events: none;
+}
+
+.access-page-footer {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-height: 72px;
+  gap: var(--panel-gap);
+}
+
+.access-page-main {
+  width: min(100%, 1280px);
+  margin-inline: auto;
+}
+
+.access-hero {
+  position: relative;
+  display: grid;
+  align-content: center;
+  min-height: 100dvh;
+  max-width: 920px;
+}
+
+.access-visual {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  right: clamp(-280px, -14vw, -100px);
+  width: clamp(420px, 54vw, 760px);
+  aspect-ratio: 1;
+  transform: translateY(-50%);
+}
+
+.visual-orbit,
+.visual-node,
+.visual-core {
+  position: absolute;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-pill);
+}
+
+.visual-orbit {
+  inset: 8%;
+  background: color-mix(in srgb, var(--glass-surface) 36%, transparent);
+  backdrop-filter: var(--glass-filter);
+}
+
+.visual-orbit.orbit-two {
+  inset: 25%;
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.visual-node {
+  width: 18px;
+  height: 18px;
+  background: var(--accent);
+}
+
+.node-one {
+  top: 12%;
+  left: 48%;
+}
+
+.node-two {
+  right: 8%;
+  bottom: 30%;
+}
+
+.node-three {
+  bottom: 8%;
+  left: 28%;
+}
+
+.visual-core {
+  inset: 39%;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  font-weight: 600;
+}
+
+.access-kicker {
+  display: block;
+  margin-bottom: var(--panel-gap);
+  color: var(--dim);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.access-hero h1 {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(3.4rem, 8vw, 8rem);
+  font-weight: 500;
+  line-height: 0.92;
+  letter-spacing: -0.065em;
+  text-wrap: balance;
+}
+
+.access-hero h1 span {
+  display: block;
+  color: var(--dim);
+}
+
+.access-hero p {
+  max-width: 500px;
+  margin: calc(var(--panel-gap) + 4px) 0 0;
+  color: var(--dim);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.access-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: calc(var(--panel-gap) + 8px);
+}
+
+.access-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(40px, 8vw, 120px);
+  min-height: 70dvh;
+  padding: clamp(72px, 12vw, 140px) 0;
+  border-top: var(--ui-border);
+}
+
+.overview-heading h2 {
+  max-width: 500px;
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2rem, 4vw, 4rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  text-wrap: balance;
+}
+
+.overview-metrics {
+  align-self: center;
+}
+
+.metric-axis {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  align-items: end;
+  gap: 8px;
+  height: 220px;
+}
+
+.metric-axis span {
+  height: calc(24px + var(--index, 1) * 10px);
+  border-radius: var(--border-radius-pill);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.metric-axis span:nth-child(3n + 1) {
+  height: 42%;
+}
+
+.metric-axis span:nth-child(3n + 2) {
+  height: 72%;
+}
+
+.metric-axis span:nth-child(3n) {
+  height: 100%;
+  background: var(--accent);
+}
+
+.metric-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--panel-gap);
+  margin-top: var(--panel-gap);
+  color: var(--dim);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.access-page-footer {
+  border-top: var(--ui-border);
+  color: var(--dim);
+  font-size: 0.68rem;
+}
+
+.access-page-footer nav {
+  grid-column: 3;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--panel-gap);
+}
+
+.access-page-footer a {
+  color: var(--dim);
+  text-decoration: none;
+}
+
+@media (max-width: 760px) {
+  .access-page {
+    padding-inline: var(--panel-padding);
+    overflow: visible;
+  }
+
+  .access-hero {
+    min-height: 100dvh;
+  }
+
+  .access-hero h1 {
+    font-size: clamp(2.9rem, 15vw, 5rem);
+  }
+
+  .access-actions {
+    display: grid;
+  }
+
+  .access-actions :deep(.app-button) {
+    width: 100%;
+  }
+
+  .access-visual {
+    top: 26%;
+    right: -52%;
+    width: 120vw;
+    opacity: 0.5;
+  }
+
+  .access-overview {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding-block: 72px;
+  }
+
+  .access-page-footer {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    padding-block: var(--panel-padding);
+  }
+
+  .access-page-footer nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}
+
 .auth-page {
   min-height: 100dvh;
   padding: 24px;
