@@ -463,8 +463,11 @@ function handleQuickTask(data: TaskFormData) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: var(--control-icon-size);
+  height: var(--control-icon-size);
+  min-width: var(--control-icon-size);
+  flex: 0 0 var(--control-icon-size);
+  aspect-ratio: 1;
   color: var(--dim);
   background: transparent;
   border: var(--ui-border);
@@ -735,9 +738,16 @@ function handleQuickTask(data: TaskFormData) {
     }
   }
 
-  .toggle-btn,
-  .icon-option {
+  .toggle-btn {
     min-height: 44px;
+  }
+
+  .icon-option {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    flex-basis: 44px;
   }
 
   .task-row {

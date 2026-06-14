@@ -298,16 +298,20 @@ function getIconComponent(iconName: string) {
 }
 
 .mobile-controls {
-  display: flex;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
   margin-bottom: 20px;
-  flex-wrap: wrap;
 
   button {
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 10px 16px;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 14px;
     background: var(--accent);
     border: none;
     border-radius: var(--border-radius-pill);
@@ -761,13 +765,32 @@ function getIconComponent(iconName: string) {
 
 @media (max-width: 480px) {
   .branch-header {
-    align-items: flex-start;
+    align-items: center;
     gap: 10px;
   }
 
   .branch-actions {
     gap: 4px;
-    margin-top: -2px;
+    margin-top: 0;
+    flex: 0 0 auto;
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--control-icon-size);
+      height: var(--control-icon-size);
+      padding: 0;
+      flex: 0 0 var(--control-icon-size);
+    }
+
+    > svg {
+      width: var(--control-icon-size);
+      height: var(--control-icon-size);
+      padding: 7px;
+      box-sizing: border-box;
+      flex: 0 0 var(--control-icon-size);
+    }
   }
 
   .branch-text {
