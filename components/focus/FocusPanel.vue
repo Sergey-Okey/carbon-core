@@ -212,6 +212,8 @@ function tick() {
   persistSessions()
   addNotification({
     type: 'success',
+    category: 'user',
+    important: true,
     message: `${activePreset.value.label} завершен`,
   })
   void trigger('focusComplete')

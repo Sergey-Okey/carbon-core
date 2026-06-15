@@ -31,21 +31,37 @@ export function useNotification() {
       category?: NotificationCategory
       silent?: boolean
       history?: boolean
+      important?: boolean
     }
   ) {
     if (!settingsStore.notificationsEnabled) return
+
+    const isImportant =
+      notification.important ?? ['warning', 'error'].includes(notification.type)
+
+    if (!isImportant) return
+
+    const category = notification.category ?? 'system'
+    const isRecentDuplicate = notificationHistory.value.some(
+      (item) =>
+        item.message === notification.message &&
+        item.category === category &&
+        item.createdAt &&
+        Date.now() - new Date(item.createdAt).getTime() < 5000
+    )
+
+    if (isRecentDuplicate) return
 
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 5)
     const newNotification: Notification = {
       ...notification,
       id,
-      category: notification.category ?? 'system',
+      category,
       createdAt: new Date().toISOString(),
       duration: notification.duration ?? settingsStore.toastDuration * 1000,
     }
 
-    const shouldSaveToHistory =
-      notification.history ?? ['warning', 'error'].includes(notification.type)
+    const shouldSaveToHistory = notification.history ?? isImportant
 
     if (shouldSaveToHistory) {
       notificationHistory.value.unshift(newNotification)

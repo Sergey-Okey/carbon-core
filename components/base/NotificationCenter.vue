@@ -33,7 +33,7 @@
             </AppButton>
           </header>
 
-          <div v-if="notificationHistory.length" class="notification-tabs">
+          <div class="notification-tabs">
             <button
               v-for="tab in tabs"
               :key="tab.id"
@@ -96,7 +96,7 @@ const {
 const isOpen = ref(false)
 const root = ref<HTMLElement | null>(null)
 const panel = ref<HTMLElement | null>(null)
-const activeTab = ref<'system' | 'user'>('system')
+const activeTab = ref<'all' | 'system' | 'user'>('all')
 
 const systemHistory = computed(() =>
   notificationHistory.value.filter((item) => item.category === 'system')
@@ -104,10 +104,18 @@ const systemHistory = computed(() =>
 const userHistory = computed(() =>
   notificationHistory.value.filter((item) => item.category === 'user')
 )
-const visibleHistory = computed(() =>
-  activeTab.value === 'system' ? systemHistory.value : userHistory.value
-)
+const visibleHistory = computed(() => {
+  if (activeTab.value === 'system') return systemHistory.value
+  if (activeTab.value === 'user') return userHistory.value
+  return notificationHistory.value
+})
 const tabs = computed(() => [
+  {
+    id: 'all' as const,
+    label: 'Все',
+    icon: Bell,
+    count: notificationHistory.value.length,
+  },
   {
     id: 'system' as const,
     label: 'Системные',
@@ -252,7 +260,7 @@ onBeforeUnmount(() => {
 
 .notification-tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   padding: 10px;
   border-bottom: var(--ui-border);
@@ -389,6 +397,7 @@ onBeforeUnmount(() => {
 .panel-leave-active {
   transition:
     opacity var(--transition-standard),
+    transform var(--transition-standard);
 }
 
 .panel-enter-from,
@@ -403,6 +412,21 @@ onBeforeUnmount(() => {
     inset-inline-start: max(12px, env(safe-area-inset-left, 0px));
     inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
     inline-size: auto;
+  }
+
+  .notification-tabs {
+    gap: 3px;
+    padding: 8px;
+  }
+
+  .tab-btn {
+    gap: 3px;
+    padding-inline: 5px;
+    font-size: 0.75rem;
+
+    svg {
+      display: none;
+    }
   }
 }
 </style>
