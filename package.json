@@ -38,7 +38,8 @@
     "pg": "^8.21.0",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
-    "uuid": "^11.1.1"
+    "uuid": "^11.1.1",
+    "vue-yandex-metrika": "^1.8.3"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.6.0",
