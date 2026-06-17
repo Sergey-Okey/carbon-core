@@ -67,6 +67,10 @@ export default defineNuxtConfig({
       title: 'Core of Life',
       titleTemplate: '%s · COF',
       meta: [
+        {
+          name: 'yandex-verification',
+          content: '14510841d1302b8d',
+        },
         { charset: 'utf-8' },
         {
           name: 'viewport',
@@ -74,7 +78,8 @@ export default defineNuxtConfig({
         },
         {
           name: 'description',
-          content: 'Core of Life помогает управлять задачами, привычками, целями и фокусом.',
+          content:
+            'Core of Life помогает управлять задачами, привычками, целями и фокусом.',
         },
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'Core of Life' },
