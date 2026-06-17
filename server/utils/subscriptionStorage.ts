@@ -113,7 +113,7 @@ export function verifyRobokassaSignature(params: Record<string, string>) {
     robokassaPassword2?: string
     robokassaHashAlgorithm?: string
   }
-  const password2 = String(config.robokassaPassword2 || '').trim()
+  const password2 = String(config.robokassaPassword2 || process.env.ROBOKASSA_PASSWORD_2 || '').trim()
   if (!password2) throw createError({ statusCode: 503, statusMessage: 'Robokassa password #2 is not configured' })
 
   const outSum = params.OutSum || params.outsum || ''
@@ -127,7 +127,9 @@ export function verifyRobokassaSignature(params: Record<string, string>) {
     .map(([key, value]) => `${key}=${value}`)
 
   const base = [outSum, invoiceId, password2, ...shpParams].join(':')
-  const algorithm = String(config.robokassaHashAlgorithm || 'md5').toLowerCase()
+  const algorithm = String(
+    config.robokassaHashAlgorithm || process.env.ROBOKASSA_HASH_ALGORITHM || 'md5'
+  ).toLowerCase()
   const expected = createHash(algorithm).update(base).digest('hex')
 
   const expectedBuffer = Buffer.from(expected.toLowerCase())
