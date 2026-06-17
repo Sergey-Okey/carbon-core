@@ -219,7 +219,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ArrowLeft, ArrowUpRight, Check, Play } from 'lucide-vue-next'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppFormField from '~/components/ui/AppFormField.vue'
@@ -271,6 +271,16 @@ const resetToken = computed(() => {
   return typeof value === 'string' ? value : ''
 })
 
+onMounted(() => {
+  const oauthError = typeof route.query.oauthError === 'string' ? route.query.oauthError : ''
+  if (!oauthError) return
+
+  const message = getOAuthErrorMessage(oauthError)
+  error.value = message
+  addNotification({ type: 'warning', message, duration: 6000 })
+  void router.replace('/auth')
+})
+
 function startDemo() {
   resetDemoData()
   accessStore.startDemo()
@@ -287,6 +297,19 @@ function startOAuth(provider: 'google' | 'yandex') {
     ? '?acceptedTerms=true&termsVersion=2026-06-07'
     : ''
   window.location.assign(`/api/auth/${provider}${consent}`)
+}
+
+function getOAuthErrorMessage(reason: string) {
+  const map: Record<string, string> = {
+    subscription:
+      'Аккаунт не найден или подписка не активна. Сначала оплатите доступ, затем завершите регистрацию.',
+    terms: 'Перед входом через Google или Яндекс нужно принять условия использования.',
+    provider: 'Не удалось получить данные аккаунта у провайдера. Попробуйте ещё раз.',
+    invalid: 'Некорректный ответ авторизации. Попробуйте войти ещё раз.',
+    failed: 'Вход через сервис не выполнен. Проверьте подписку или попробуйте другой способ.',
+  }
+
+  return map[reason] || map.failed
 }
 
 function openResetMode() {

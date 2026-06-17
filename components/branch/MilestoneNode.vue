@@ -13,7 +13,9 @@
   >
     <div class="node-main">
       <div class="node-header">
-        <component :is="iconComponent" :size="20" />
+        <span class="node-icon" aria-hidden="true">
+          <component :is="iconComponent" :size="18" />
+        </span>
         <div class="header-actions">
           <div class="node-marker"></div>
           <button
@@ -269,8 +271,29 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 10px;
     margin-bottom: 8px;
   }
+
+  .node-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    border-radius: var(--border-radius-pill);
+    color: var(--node-marker-color);
+    background: color-mix(in srgb, var(--node-marker-color) 12%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--node-marker-color) 28%, var(--ui-border-color));
+  }
+
+  .node-icon :deep(svg) {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.2;
+  }
+
   .header-actions {
     position: relative;
     width: 22px;
