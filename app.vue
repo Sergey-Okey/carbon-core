@@ -31,6 +31,13 @@ import { useSyncStatus } from '~/composables/useSyncStatus'
 import { browserLog } from '~/utils/browserLog'
 
 useHead({
+  meta: [
+    {
+      name: 'yandex-verification',
+      content: '14510841d1302b8d',
+    },
+  ],
+
   script: [
     {
       key: 'yandex-metrika',
@@ -58,6 +65,7 @@ useHead({
       `,
     },
   ],
+
   noscript: [
     {
       key: 'yandex-metrika-noscript',
@@ -164,8 +172,6 @@ onMounted(async () => {
   tagsStore.normalizeTags(tasksStore.tasks)
   scheduleNextReset()
   window.addEventListener('beforeunload', autoBackupOnUnload)
-
-  // Store subscriptions capture edits and nested mutations without broad deep watchers.
   ;[
     userStore,
     tasksStore,
