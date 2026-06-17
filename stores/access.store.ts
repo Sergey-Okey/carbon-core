@@ -9,7 +9,7 @@ import {
 import { browserLog } from '~/utils/browserLog'
 
 export const SUBSCRIPTION_PRICE = 250
-export const SUBSCRIPTION_PAYMENT_URL = 'https://pay.cloudtips.ru/p/f36fd8ac'
+export const SUBSCRIPTION_PAYMENT_URL = 'https://auth.robokassa.ru/RecurringSubscriptionPage/Subscription/Subscribe?SubscriptionId=f1624c7a-3c92-4c9f-a3a7-0b705f3d37a8'
 
 export const useAccessStore = defineStore('access', () => {
   const initialState = readAccessState()

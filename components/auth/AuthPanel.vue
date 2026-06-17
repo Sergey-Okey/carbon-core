@@ -69,6 +69,26 @@
               Оплатить доступ · {{ SUBSCRIPTION_PRICE }} ₽
               <ArrowUpRight :size="16" />
             </a>
+
+            <div class="subscription-check">
+              <AppFormField label="Email, указанный при оплате">
+                <AppInput
+                  v-model="subscriptionEmail"
+                  type="email"
+                  placeholder="email@example.com"
+                  autocomplete="email"
+                />
+              </AppFormField>
+              <AppButton
+                type="button"
+                variant="secondary"
+                :disabled="isCheckingSubscription"
+                @click="verifySubscription"
+              >
+                {{ isCheckingSubscription ? 'Проверяем…' : 'Проверить оплату' }}
+              </AppButton>
+              <p v-if="subscriptionError" class="error-text">{{ subscriptionError }}</p>
+            </div>
           </template>
 
           <template v-else>
@@ -172,6 +192,7 @@ import {
 import { useAuthStore } from '~/stores/auth.store'
 import { useNotification } from '~/composables/useNotification'
 import { resetDemoData } from '~/utils/accessStorage'
+import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
 
 const props = defineProps<{ mode: 'login' | 'register' }>()
 const accessStore = useAccessStore()
@@ -190,6 +211,9 @@ const accessBenefits = [
 ]
 
 const error = ref('')
+const subscriptionEmail = ref('')
+const subscriptionError = ref('')
+const isCheckingSubscription = ref(false)
 const form = reactive({ name: '', email: '', password: '', acceptedTerms: false })
 
 function startDemo() {
@@ -210,6 +234,42 @@ function startOAuth(provider: 'google' | 'yandex') {
   window.location.assign(`/api/auth/${provider}${consent}`)
 }
 
+async function verifySubscription(emailValue = subscriptionEmail.value || form.email) {
+  const email = emailValue.trim().toLowerCase()
+  subscriptionError.value = ''
+
+  if (!email.includes('@')) {
+    subscriptionError.value = 'Укажите email, который использовали при оплате'
+    return false
+  }
+
+  isCheckingSubscription.value = true
+  try {
+    const status = await $fetch(
+      getBackendUrl('/api/subscription/status'),
+      {
+        query: { email },
+        ...getBackendFetchOptions(),
+      }
+    ) as { active: boolean; expiresAt?: string }
+
+    if (!status.active) {
+      subscriptionError.value = 'Оплата для этого email пока не найдена'
+      return false
+    }
+
+    subscriptionEmail.value = email
+    if (!form.email) form.email = email
+    accessStore.activateSubscription()
+    return true
+  } catch {
+    subscriptionError.value = 'Не удалось проверить оплату. Попробуйте чуть позже'
+    return false
+  } finally {
+    isCheckingSubscription.value = false
+  }
+}
+
 async function submit() {
   error.value = ''
   form.email = form.email.trim()
@@ -222,8 +282,8 @@ async function submit() {
     error.value = 'Пароль должен быть не короче 8 символов'
     return
   }
-  if (isRegister.value && !accessStore.hasSubscription) {
-    error.value = 'Для регистрации нужна подписка'
+  if (!accessStore.hasSubscription && !(await verifySubscription(form.email))) {
+    error.value = 'Для входа и регистрации нужна активная подписка'
     return
   }
   const result = isRegister.value
@@ -651,6 +711,22 @@ async function submit() {
 
   &:hover {
     opacity: 0.9;
+  }
+}
+
+.subscription-check {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 480px);
+  max-width: 480px;
+  margin: 14px auto 0;
+
+  :deep(.app-button) {
+    width: 100%;
+  }
+
+  .error-text {
+    text-align: center;
   }
 }
 

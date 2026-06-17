@@ -1,6 +1,7 @@
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import type { OAuthProfile } from './oauth'
 import { getDatabase } from './database'
+import { hasActiveSubscription } from './subscriptionStorage'
 
 export type AccountProfile = OAuthProfile & {
   createdAt: string
@@ -72,6 +73,10 @@ export async function loginAccount(email: string, password: string) {
 }
 
 export async function upsertOAuthAccount(profile: OAuthProfile, termsVersion = '') {
+  if (!(await hasActiveSubscription(profile.email))) {
+    throw createError({ statusCode: 402, statusMessage: 'Active subscription is required' })
+  }
+
   const sql = getDatabase()
   if (!sql) return { ...profile, createdAt: new Date().toISOString() } satisfies AccountProfile
   await ensureUsersTable(sql)

@@ -2,6 +2,7 @@ import { readBody } from 'h3'
 import { isAuthDatabaseConfigured, registerAccount } from '../../utils/authStorage'
 import { setOAuthSession } from '../../utils/oauth'
 import { enforceRateLimit } from '../../utils/rateLimit'
+import { hasActiveSubscription } from '../../utils/subscriptionStorage'
 
 export default defineEventHandler(async (event) => {
   enforceRateLimit(event, 'register', 5, 15 * 60 * 1000)
@@ -19,6 +20,9 @@ export default defineEventHandler(async (event) => {
   }
   if (!acceptedTerms || !termsVersion) {
     throw createError({ statusCode: 400, statusMessage: 'Terms consent is required' })
+  }
+  if (!(await hasActiveSubscription(email))) {
+    throw createError({ statusCode: 402, statusMessage: 'Active subscription is required' })
   }
 
   let user

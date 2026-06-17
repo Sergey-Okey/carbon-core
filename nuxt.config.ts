@@ -21,6 +21,9 @@ export default defineNuxtConfig({
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     yandexClientId: process.env.YANDEX_CLIENT_ID || '',
     yandexClientSecret: process.env.YANDEX_CLIENT_SECRET || '',
+    robokassaPassword2: process.env.ROBOKASSA_PASSWORD_2 || '',
+    robokassaHashAlgorithm: process.env.ROBOKASSA_HASH_ALGORITHM || 'md5',
+    subscriptionDays: Number(process.env.SUBSCRIPTION_DAYS || 31),
     public: {
       enableVercelAnalytics: isVercel,
       webAppUrl: process.env.NUXT_PUBLIC_WEB_APP_URL || '',

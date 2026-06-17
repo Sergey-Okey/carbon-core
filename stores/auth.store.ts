@@ -121,6 +121,8 @@ export const useAuthStore = defineStore(
     }
 
     function applyServerUser(user: Omit<User, 'password' | 'bio'> & { bio?: string }) {
+      const accessStore = useAccessStore()
+      accessStore.activateSubscription()
       currentUser.value = { ...user, password: '', bio: user.bio || '' }
       isAuthenticated.value = true
       syncUserProfile(currentUser.value)
