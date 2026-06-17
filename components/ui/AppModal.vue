@@ -213,17 +213,16 @@ function handleBackdrop() {
 
   .app-modal-overlay.form-sheet-overlay {
     align-items: flex-end;
-    padding: max(10px, env(safe-area-inset-top, 0px)) 0 0;
+    padding: max(10px, env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px));
   }
 
   .app-modal.is-form-sheet {
-    inline-size: 100%;
+    inline-size: min(100%, 560px);
     max-block-size: min(82dvh, 720px);
-    border-right: none;
-    border-bottom: none;
-    border-left: none;
-    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+    border: var(--ui-border);
+    border-radius: var(--border-radius-xl);
     transform-origin: bottom center;
+    box-shadow: 0 22px 60px color-mix(in srgb, var(--bg) 34%, transparent);
 
     &.allow-overflow {
       overflow: hidden;

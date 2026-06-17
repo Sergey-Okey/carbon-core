@@ -83,6 +83,9 @@
                 </span>
                 <span class="task-main">
                   <span class="task-title">{{ task.title }}</span>
+                  <span v-if="task.done" class="task-state done">
+                    Выполнена
+                  </span>
                 </span>
               </label>
               <button type="button" class="create-task-btn" @click="showQuickTask = true">
@@ -496,6 +499,7 @@ function handleQuickTask(data: TaskFormData) {
 
 .task-main {
   display: grid;
+  gap: 3px;
   min-width: 0;
 }
 
@@ -504,6 +508,20 @@ function handleQuickTask(data: TaskFormData) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.task-state {
+  justify-self: flex-start;
+  padding: 2px 7px;
+  border-radius: var(--border-radius-pill);
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1.2;
+
+  &.done {
+    background: color-mix(in srgb, var(--success) 13%, transparent);
+    color: var(--success);
+  }
 }
 
 .icon-option {
@@ -644,19 +662,25 @@ function handleQuickTask(data: TaskFormData) {
   }
 
   .tasks-list {
-    max-height: min(280px, 42dvh);
-    padding: 6px;
+    max-height: min(300px, 46dvh);
+    padding: 7px;
     border-radius: var(--border-radius-md);
   }
 
   .task-row {
     grid-template-columns: auto auto minmax(0, 1fr);
     align-items: center;
+    gap: 8px;
+    padding: 9px 10px;
   }
 
   .task-title {
     white-space: normal;
     line-height: 1.35;
+  }
+
+  .task-state {
+    font-size: 0.64rem;
   }
 
   .footer-actions {

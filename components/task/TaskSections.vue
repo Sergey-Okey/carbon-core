@@ -60,8 +60,23 @@
     hide-add
     hide-rule-hint
     disable-toggle
+    restore-mode="completed"
     :tasks-override="completedTasks"
     empty-text="Завершённых задач пока нет."
+    @edit="emit('edit', $event)"
+  />
+  <TaskList
+    v-if="showCompletedSection"
+    task-type="TASK_DAY"
+    title="Удалённые"
+    default-type="TASK_DAY"
+    external-form
+    hide-add
+    hide-rule-hint
+    disable-toggle
+    restore-mode="deleted"
+    :tasks-override="deletedTasks"
+    empty-text="Удалённых задач пока нет."
     @edit="emit('edit', $event)"
   />
   </div>
@@ -80,6 +95,7 @@ defineProps<{
   monthTasks: Task[]
   yearTasks: Task[]
   completedTasks: Task[]
+  deletedTasks: Task[]
 }>()
 
 const emit = defineEmits<{

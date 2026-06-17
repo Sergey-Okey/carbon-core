@@ -13,6 +13,7 @@ export interface Notification {
   id: string
   type: NotificationType
   category: NotificationCategory
+  source?: 'platform' | 'app'
   message: string
   duration?: number
   action?: NotificationAction
@@ -32,14 +33,13 @@ export function useNotification() {
       silent?: boolean
       history?: boolean
       important?: boolean
+      source?: 'platform' | 'app'
     }
   ) {
     if (!settingsStore.notificationsEnabled) return
 
     const isImportant =
       notification.important ?? ['warning', 'error'].includes(notification.type)
-
-    if (!isImportant) return
 
     const category = notification.category ?? 'system'
     const isRecentDuplicate = notificationHistory.value.some(
@@ -61,7 +61,8 @@ export function useNotification() {
       duration: notification.duration ?? settingsStore.toastDuration * 1000,
     }
 
-    const shouldSaveToHistory = notification.history ?? isImportant
+    const shouldSaveToHistory =
+      notification.source === 'platform' && (notification.history ?? isImportant)
 
     if (shouldSaveToHistory) {
       notificationHistory.value.unshift(newNotification)

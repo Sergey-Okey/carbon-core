@@ -83,9 +83,10 @@
                     </div>
                   </div>
                 </div>
-                <p v-if="milestone.description" class="description">
-                  {{ milestone.description }}
-                </p>
+                <div v-if="milestone.description" class="description-block">
+                  <span>Описание</span>
+                  <p class="description">{{ milestone.description }}</p>
+                </div>
                 <div class="progress-dashes" v-if="milestone.taskIds.length">
                   <span
                     v-for="i in milestone.taskIds.length"
@@ -172,8 +173,20 @@ import {
   Music,
   Camera,
   Code,
+  CalendarDays,
+  Compass,
+  Flag,
+  FolderKanban,
+  GraduationCap,
   HelpCircle,
+  Home,
+  Lightbulb,
+  Map,
   MonitorUp,
+  Plane,
+  Rocket,
+  Trophy,
+  WalletCards,
 } from 'lucide-vue-next'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useTasksStore } from '~/stores/tasks.store'
@@ -279,6 +292,18 @@ function getIconComponent(iconName: string) {
     music: Music,
     camera: Camera,
     code: Code,
+    rocket: Rocket,
+    flag: Flag,
+    compass: Compass,
+    map: Map,
+    plane: Plane,
+    home: Home,
+    'graduation-cap': GraduationCap,
+    lightbulb: Lightbulb,
+    trophy: Trophy,
+    'wallet-cards': WalletCards,
+    'folder-kanban': FolderKanban,
+    'calendar-days': CalendarDays,
     'help-circle': HelpCircle,
   }
   return map[iconName] || HelpCircle
@@ -649,8 +674,23 @@ function getIconComponent(iconName: string) {
 .description {
   font-size: 0.8rem;
   color: var(--dim);
-  margin: 6px 0;
+  margin: 0;
   line-height: 1.35;
+}
+
+.description-block {
+  display: grid;
+  gap: 5px;
+  margin: 6px 0;
+
+  > span {
+    color: var(--muted);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    text-transform: uppercase;
+  }
 }
 
 .progress-dashes {

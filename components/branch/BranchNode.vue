@@ -43,6 +43,7 @@
 
     <Transition name="expand">
       <div v-if="isExpanded" class="node-details">
+        <span class="detail-label">Описание</span>
         <p v-if="branchDescription">
           {{ branchDescription }}
         </p>
@@ -50,7 +51,10 @@
         <div class="linked-tasks">
           <span class="label">Привязанные задачи:</span>
           <ul v-if="linkedTasks.length">
-            <li v-for="task in linkedTasks" :key="task.id">{{ task.title }}</li>
+            <li v-for="task in linkedTasks" :key="task.id" :class="{ done: task.done }">
+              {{ task.title }}
+              <span v-if="task.done">выполнена</span>
+            </li>
           </ul>
           <span v-else class="empty">Задачи не привязаны</span>
         </div>
@@ -109,7 +113,19 @@ import {
   Music,
   Camera,
   Code,
+  CalendarDays,
+  Compass,
+  Flag,
+  FolderKanban,
+  GraduationCap,
   HelpCircle,
+  Home,
+  Lightbulb,
+  Map,
+  Plane,
+  Rocket,
+  Trophy,
+  WalletCards,
 } from 'lucide-vue-next'
 import GlassCard from '~/components/base/GlassCard.vue'
 import { useTasksStore } from '~/stores/tasks.store'
@@ -185,6 +201,18 @@ const iconComponent = computed(() => {
     music: Music,
     camera: Camera,
     code: Code,
+    rocket: Rocket,
+    flag: Flag,
+    compass: Compass,
+    map: Map,
+    plane: Plane,
+    home: Home,
+    'graduation-cap': GraduationCap,
+    lightbulb: Lightbulb,
+    trophy: Trophy,
+    'wallet-cards': WalletCards,
+    'folder-kanban': FolderKanban,
+    'calendar-days': CalendarDays,
     'help-circle': HelpCircle,
   }
   return map[iconName] || HelpCircle
@@ -441,6 +469,15 @@ top: 45px;           /* фиксированный отступ от верхн�
       margin: 0 0 8px;
       color: var(--text);
     }
+    .detail-label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--dim);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
     .placeholder {
       color: var(--dim);
       font-style: italic;
@@ -461,10 +498,26 @@ top: 45px;           /* фиксированный отступ от верхн�
         color: var(--text);
         font-size: 0.8rem;
         margin-bottom: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
         &::before {
           content: '•';
           color: var(--text);
           margin-right: 6px;
+        }
+
+        &.done {
+          color: var(--dim);
+          text-decoration: line-through;
+        }
+
+        span {
+          flex: 0 0 auto;
+          color: var(--success);
+          font-size: 0.68rem;
+          text-decoration: none;
         }
       }
       .empty {

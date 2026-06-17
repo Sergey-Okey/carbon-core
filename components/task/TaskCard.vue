@@ -85,23 +85,34 @@
 
       <div class="actions">
         <button
-          class="complete-btn"
-          :class="{ done: isCompleted }"
-          @click="handleToggle"
-          :disabled="disableToggle || isCompleted"
-          :aria-label="completeButtonTitle"
-          :data-tooltip="completeButtonTitle"
-          :data-tour="completeTourTarget"
+          v-if="restoreMode"
+          class="restore-btn"
+          :aria-label="restoreButtonTitle"
+          :data-tooltip="restoreButtonTitle"
+          @click.stop="emit('restore', task.id)"
         >
-          <CheckCircle v-if="isCompleted" :size="18" />
-          <Circle v-else :size="18" />
+          <RotateCcw :size="16" />
         </button>
-        <button class="edit-btn" aria-label="Редактировать" data-tooltip="Редактировать" @click.stop="emit('edit', task)">
-          <Edit :size="16" />
-        </button>
-        <button class="delete-btn" aria-label="Удалить" data-tooltip="Удалить" @click.stop="handleDelete">
-          <Trash2 :size="16" />
-        </button>
+        <template v-else>
+          <button
+            class="complete-btn"
+            :class="{ done: isCompleted }"
+            @click="handleToggle"
+            :disabled="disableToggle || isCompleted"
+            :aria-label="completeButtonTitle"
+            :data-tooltip="completeButtonTitle"
+            :data-tour="completeTourTarget"
+          >
+            <CheckCircle v-if="isCompleted" :size="18" />
+            <Circle v-else :size="18" />
+          </button>
+          <button class="edit-btn" aria-label="Редактировать" data-tooltip="Редактировать" @click.stop="emit('edit', task)">
+            <Edit :size="16" />
+          </button>
+          <button class="delete-btn" aria-label="Удалить" data-tooltip="Удалить" @click.stop="handleDelete">
+            <Trash2 :size="16" />
+          </button>
+        </template>
       </div>
     </div>
   </GlassCard>
@@ -111,17 +122,18 @@
 import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import type { Task } from '~/types/task.types'
 import GlassCard from '~/components/base/GlassCard.vue'
-import { CheckCircle, Check, Circle, Trash2, Edit, Calendar, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { CheckCircle, Check, Circle, Trash2, Edit, Calendar, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-vue-next'
 import { useTagsStore } from '~/stores/tags.store'
 import { useBranchesStore } from '~/stores/branches.store'
 import { useNotification } from '~/composables/useNotification'
 import { useConfirm } from '~/composables/useConfirm'
 
-const props = defineProps<{ task: Task; disableToggle?: boolean }>()
+const props = defineProps<{ task: Task; disableToggle?: boolean; restoreMode?: 'completed' | 'deleted' }>()
 const emit = defineEmits<{
   (e: 'toggle', id: string): void
   (e: 'delete', id: string): void
   (e: 'edit', task: Task): void
+  (e: 'restore', id: string): void
 }>()
 
 const tagsStore = useTagsStore()
@@ -238,6 +250,9 @@ const completeButtonTitle = computed(() => {
   if (props.task.type === 'HABIT' && isHabitDoneToday.value) return 'Выполнить ещё раз'
   return 'Выполнить'
 })
+const restoreButtonTitle = computed(() =>
+  props.restoreMode === 'deleted' ? 'Восстановить задачу' : 'Вернуть в активные'
+)
 
 function handleToggle() {
   if (props.disableToggle || (props.task.type !== 'HABIT' && isCompleted.value)) return
@@ -567,6 +582,10 @@ async function handleDelete() {
   }
   .delete-btn:hover {
     color: var(--error);
+  }
+
+  .restore-btn:hover {
+    color: var(--success);
   }
 
   .complete-btn:disabled {

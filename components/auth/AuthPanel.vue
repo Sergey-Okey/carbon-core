@@ -141,7 +141,44 @@
 
             <div class="auth-divider"><span>или</span></div>
 
-            <form class="auth-form" @submit.prevent="submit">
+            <form v-if="resetToken" class="auth-form" @submit.prevent="confirmPasswordReset">
+              <AppFormField label="Новый пароль" hint="Минимум 8 символов">
+                <AppInput
+                  v-model="resetPassword"
+                  type="password"
+                  placeholder="Введите новый пароль"
+                  autocomplete="new-password"
+                />
+              </AppFormField>
+
+              <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
+              <p v-if="error" class="error-text">{{ error }}</p>
+              <AppButton type="submit" variant="primary" :disabled="isConfirmingReset">
+                {{ isConfirmingReset ? 'Сохраняем…' : 'Сохранить новый пароль' }}
+              </AppButton>
+            </form>
+
+            <form v-else-if="resetMode" class="auth-form" @submit.prevent="requestPasswordReset">
+              <AppFormField label="Email профиля">
+                <AppInput
+                  v-model="resetEmail"
+                  type="email"
+                  placeholder="email@example.com"
+                  autocomplete="email"
+                />
+              </AppFormField>
+
+              <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
+              <p v-if="error" class="error-text">{{ error }}</p>
+              <AppButton type="submit" variant="primary" :disabled="isRequestingReset">
+                {{ isRequestingReset ? 'Отправляем…' : 'Отправить письмо' }}
+              </AppButton>
+              <button type="button" class="forgot-link" @click="resetMode = false">
+                Вернуться ко входу
+              </button>
+            </form>
+
+            <form v-else class="auth-form" @submit.prevent="submit">
               <AppFormField v-if="isRegister" label="Имя">
                 <AppInput v-model="form.name" placeholder="Как к вам обращаться" autocomplete="name" />
               </AppFormField>
@@ -161,6 +198,9 @@
                   :autocomplete="isRegister ? 'new-password' : 'current-password'"
                 />
               </AppFormField>
+              <button v-if="!isRegister" type="button" class="forgot-link" @click="openResetMode">
+                Забыли пароль?
+              </button>
 
               <p v-if="error" class="error-text">{{ error }}</p>
               <AppButton
@@ -199,7 +239,12 @@ const accessStore = useAccessStore()
 const authStore = useAuthStore()
 const { addNotification } = useNotification()
 const router = useRouter()
+const route = useRoute()
 const isRegister = computed(() => props.mode === 'register')
+const backendFetch = $fetch as unknown as <T = unknown>(
+  url: string,
+  options?: Record<string, unknown>
+) => Promise<T>
 
 const keepShortWords = (text: string) =>
   text.replace(/(^|[\s(])([А-Яа-яЁё]{1,2})\s+/g, '$1$2\u00a0')
@@ -215,6 +260,16 @@ const subscriptionEmail = ref('')
 const subscriptionError = ref('')
 const isCheckingSubscription = ref(false)
 const form = reactive({ name: '', email: '', password: '', acceptedTerms: false })
+const resetMode = ref(false)
+const resetEmail = ref('')
+const resetPassword = ref('')
+const resetMessage = ref('')
+const isRequestingReset = ref(false)
+const isConfirmingReset = ref(false)
+const resetToken = computed(() => {
+  const value = route.query.resetToken
+  return typeof value === 'string' ? value : ''
+})
 
 function startDemo() {
   resetDemoData()
@@ -234,6 +289,63 @@ function startOAuth(provider: 'google' | 'yandex') {
   window.location.assign(`/api/auth/${provider}${consent}`)
 }
 
+function openResetMode() {
+  error.value = ''
+  resetMessage.value = ''
+  resetEmail.value = form.email
+  resetMode.value = true
+}
+
+async function requestPasswordReset() {
+  error.value = ''
+  resetMessage.value = ''
+  const email = resetEmail.value.trim().toLowerCase()
+  if (!email.includes('@')) {
+    error.value = 'Укажите email профиля'
+    return
+  }
+
+  isRequestingReset.value = true
+  try {
+    await backendFetch(getBackendUrl('/api/auth/password-reset/request'), {
+      method: 'POST',
+      body: { email },
+      ...getBackendFetchOptions(),
+    })
+    resetMessage.value = 'Если профиль найден, письмо для восстановления уже отправлено.'
+  } catch {
+    error.value = 'Не удалось отправить письмо. Попробуйте чуть позже'
+  } finally {
+    isRequestingReset.value = false
+  }
+}
+
+async function confirmPasswordReset() {
+  error.value = ''
+  resetMessage.value = ''
+  if (resetPassword.value.length < 8) {
+    error.value = 'Пароль должен быть не короче 8 символов'
+    return
+  }
+
+  isConfirmingReset.value = true
+  try {
+    await backendFetch(getBackendUrl('/api/auth/password-reset/confirm'), {
+      method: 'POST',
+      body: { token: resetToken.value, password: resetPassword.value },
+      ...getBackendFetchOptions(),
+    })
+    resetPassword.value = ''
+    resetMessage.value = 'Пароль обновлён. Теперь можно войти.'
+    addNotification({ type: 'success', message: 'Пароль обновлён' })
+    await router.replace('/auth')
+  } catch {
+    error.value = 'Ссылка устарела или уже использована'
+  } finally {
+    isConfirmingReset.value = false
+  }
+}
+
 async function verifySubscription(emailValue = subscriptionEmail.value || form.email) {
   const email = emailValue.trim().toLowerCase()
   subscriptionError.value = ''
@@ -245,13 +357,13 @@ async function verifySubscription(emailValue = subscriptionEmail.value || form.e
 
   isCheckingSubscription.value = true
   try {
-    const status = await $fetch(
+    const status = await backendFetch<{ active: boolean; expiresAt?: string }>(
       getBackendUrl('/api/subscription/status'),
       {
         query: { email },
         ...getBackendFetchOptions(),
       }
-    ) as { active: boolean; expiresAt?: string }
+    )
 
     if (!status.active) {
       subscriptionError.value = 'Оплата для этого email пока не найдена'
@@ -286,7 +398,8 @@ async function submit() {
     error.value = 'Для входа и регистрации нужна активная подписка'
     return
   }
-  const result = isRegister.value
+  const wasRegister = isRegister.value
+  const result = wasRegister
     ? await authStore.register(form.email, form.password, form.name, 'local', form.acceptedTerms)
     : await authStore.login(form.email, form.password, 'local')
   if (!result.success) {
@@ -294,8 +407,24 @@ async function submit() {
     return
   }
   accessStore.activateSubscription()
-  addNotification({ type: 'success', message: isRegister.value ? 'Профиль создан' : 'Вход выполнен' })
+  if (wasRegister) {
+    addWelcomeRegistrationLetter(form.name)
+  }
+  addNotification({ type: 'success', message: wasRegister ? 'Профиль создан' : 'Вход выполнен' })
   router.push('/')
+}
+
+function addWelcomeRegistrationLetter(name: string) {
+  const displayName = name.trim() || 'Добро пожаловать'
+
+  addNotification({
+    type: 'success',
+    category: 'user',
+    source: 'platform',
+    history: true,
+    silent: true,
+    message: `${displayName}, регистрация прошла успешно. Начните с трёх простых шагов: создайте первую ветку, добавьте 1-3 задачи на сегодня и запустите фокус на 25 минут. Пусть Core of Life помогает держать курс спокойно, без лишнего шума.`,
+  })
 }
 </script>
 
@@ -643,6 +772,31 @@ async function submit() {
   text-align: left;
 }
 
+.success-text {
+  margin: 0;
+  color: var(--success);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.forgot-link {
+  align-self: flex-start;
+  width: fit-content;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--dim);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: color var(--transition-standard);
+
+  &:hover {
+    color: var(--text);
+  }
+}
+
 /* Блок подписки */
 .benefits-list {
   display: flex;
@@ -782,12 +936,12 @@ async function submit() {
   }
 
   .auth-form-panel {
-    order: 1;
+    order: 2;
     justify-content: flex-start;
   }
 
   .auth-intro {
-    order: 2;
+    order: 1;
     gap: 20px;
     transform: scale(0.97);
     transform-origin: left center;

@@ -132,7 +132,7 @@ const tabs = computed(() => [
 
 const historyLabel = computed(() => {
   const count = notificationHistory.value.length
-  if (!count) return 'Нет важных событий'
+  if (!count) return 'Только платформенные события'
   if (count === 1) return '1 важное событие'
   if (count < 5) return `${count} важных события`
   return `${count} важных событий`
@@ -141,7 +141,7 @@ const historyLabel = computed(() => {
 const emptyText = computed(() =>
   notificationHistory.value.length
     ? 'В этом разделе пока пусто'
-    : 'История пока пустая'
+    : 'Здесь будут только важные уведомления платформы'
 )
 
 function formatTime(value?: string) {
@@ -234,7 +234,9 @@ onBeforeUnmount(() => {
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
-  background: transparent;
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-strong-filter);
+  -webkit-backdrop-filter: var(--glass-strong-filter);
   color: var(--text);
 }
 
@@ -368,13 +370,11 @@ onBeforeUnmount(() => {
   }
 
   strong {
-    overflow: hidden;
     color: var(--text);
     font-size: 0.88rem;
     font-weight: 600;
     line-height: 1.35;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
   }
 
   span {
@@ -408,25 +408,59 @@ onBeforeUnmount(() => {
 
 @media (max-width: 640px) {
   .notification-panel {
-    inset-block-start: calc(70px + env(safe-area-inset-top, 0px));
-    inset-inline-start: max(12px, env(safe-area-inset-left, 0px));
-    inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
+    inset-block-start: calc(66px + env(safe-area-inset-top, 0px));
+    inset-inline-start: max(10px, env(safe-area-inset-left, 0px));
+    inset-inline-end: max(10px, env(safe-area-inset-right, 0px));
+    max-height: calc(100dvh - 82px - env(safe-area-inset-bottom, 0px));
     inline-size: auto;
+    border-radius: var(--border-radius-xl);
+  }
+
+  .panel-header {
+    align-items: flex-start;
+    padding: 12px;
+
+    h3 {
+      font-size: 0.95rem;
+    }
+
+    span {
+      font-size: 0.76rem;
+    }
   }
 
   .notification-tabs {
-    gap: 3px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
     padding: 8px;
   }
 
   .tab-btn {
-    gap: 3px;
-    padding-inline: 5px;
+    min-width: 0;
+    gap: 5px;
+    padding-inline: 6px;
     font-size: 0.75rem;
 
     svg {
       display: none;
     }
+
+    span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .history-list {
+    max-height: calc(100dvh - 230px);
+  }
+
+  .history-item {
+    grid-template-columns: auto minmax(0, 1fr) 38px;
+    gap: 8px;
+    padding: 11px 10px;
   }
 }
 </style>

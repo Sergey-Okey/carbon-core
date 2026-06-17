@@ -39,6 +39,7 @@
           :month-tasks="visibleMonthTasks"
           :year-tasks="visibleYearTasks"
           :completed-tasks="visibleCompletedTasks"
+          :deleted-tasks="visibleDeletedTasks"
           @add="openTaskCreator"
           @edit="openTaskEditor"
         />
@@ -114,6 +115,7 @@ const {
   visibleMonthTasks,
   visibleYearTasks,
   visibleCompletedTasks,
+  visibleDeletedTasks,
 } = useTaskFilters()
 
 function openTaskCreator(type: TaskType) {

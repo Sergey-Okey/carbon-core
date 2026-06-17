@@ -87,6 +87,9 @@
                   <span v-if="taskLinkedElsewhere(task.id)" class="linked-elsewhere">
                     Уже привязана
                   </span>
+                  <span v-if="task.done" class="task-state done">
+                    Выполнена
+                  </span>
                 </span>
                 <span class="task-marker" :class="task.type" :title="taskTypeMeta(task.type).title">
                   {{ taskTypeMeta(task.type).label }}
@@ -613,6 +616,20 @@ function handleQuickTask(data: TaskFormData) {
   line-height: 1.25;
 }
 
+.task-state {
+  justify-self: flex-start;
+  padding: 2px 7px;
+  border-radius: var(--border-radius-pill);
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1.2;
+
+  &.done {
+    background: color-mix(in srgb, var(--success) 13%, transparent);
+    color: var(--success);
+  }
+}
+
 .task-marker,
 .empty-list {
   color: var(--dim);
@@ -767,19 +784,31 @@ function handleQuickTask(data: TaskFormData) {
   .task-row {
     grid-template-columns: auto auto minmax(0, 1fr) auto;
     align-items: center;
+    gap: 8px;
+    padding: 9px 10px;
   }
 
   .tasks-list {
     position: static;
-    max-height: min(280px, 42dvh);
+    max-height: min(300px, 46dvh);
     gap: 6px;
-    padding: 6px;
+    padding: 7px;
     border-radius: var(--border-radius-md);
   }
 
   .task-title {
     white-space: normal;
     line-height: 1.35;
+  }
+
+  .task-marker {
+    width: 22px;
+    height: 22px;
+    font-size: 0.7rem;
+  }
+
+  .task-state {
+    font-size: 0.64rem;
   }
 }
 </style>

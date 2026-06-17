@@ -24,6 +24,11 @@ export default defineNuxtConfig({
     robokassaPassword2: process.env.ROBOKASSA_PASSWORD_2 || '',
     robokassaHashAlgorithm: process.env.ROBOKASSA_HASH_ALGORITHM || 'md5',
     subscriptionDays: Number(process.env.SUBSCRIPTION_DAYS || 31),
+    smtpHost: process.env.SMTP_HOST || '',
+    smtpPort: Number(process.env.SMTP_PORT || 465),
+    smtpUser: process.env.SMTP_USER || '',
+    smtpPassword: process.env.SMTP_PASSWORD || '',
+    smtpFrom: process.env.SMTP_FROM || '',
     public: {
       enableVercelAnalytics: isVercel,
       webAppUrl: process.env.NUXT_PUBLIC_WEB_APP_URL || '',

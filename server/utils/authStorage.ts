@@ -1,4 +1,4 @@
-import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import type { OAuthProfile } from './oauth'
 import { getDatabase } from './database'
 import { hasActiveSubscription } from './subscriptionStorage'
@@ -36,6 +36,23 @@ async function ensureUsersTable(sql: NonNullable<ReturnType<typeof getDatabase>>
   `
 }
 
+async function ensurePasswordResetTable(sql: NonNullable<ReturnType<typeof getDatabase>>) {
+  await ensureUsersTable(sql)
+  await sql`
+    CREATE TABLE IF NOT EXISTS cof_password_reset_tokens (
+      token_hash TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES cof_users(id) ON DELETE CASCADE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      used_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
+  await sql`
+    CREATE INDEX IF NOT EXISTS cof_password_reset_user_idx
+    ON cof_password_reset_tokens(user_id, expires_at)
+  `
+}
+
 export async function registerAccount(email: string, password: string, name: string, termsVersion: string) {
   const sql = getDatabase()
   if (!sql) throw createError({ statusCode: 503, statusMessage: 'Account database is not configured' })
@@ -70,6 +87,68 @@ export async function loginAccount(email: string, password: string) {
     throw createError({ statusCode: 401, statusMessage: 'Invalid email or password' })
   }
   return mapAccount(row)
+}
+
+export async function createPasswordResetToken(email: string) {
+  const sql = getDatabase()
+  if (!sql) throw createError({ statusCode: 503, statusMessage: 'Account database is not configured' })
+  await ensurePasswordResetTable(sql)
+
+  const normalizedEmail = email.trim().toLowerCase()
+  const users = await sql`
+    SELECT id, email, name, provider
+    FROM cof_users
+    WHERE email = ${normalizedEmail}
+    LIMIT 1
+  `
+  const user = users[0] as Record<string, unknown> | undefined
+  if (!user || String(user.provider) !== 'local') return null
+
+  const token = randomBytes(32).toString('base64url')
+  const tokenHash = hashToken(token)
+  await sql`
+    UPDATE cof_password_reset_tokens
+    SET used_at = NOW()
+    WHERE user_id = ${String(user.id)} AND used_at IS NULL
+  `
+  await sql`
+    INSERT INTO cof_password_reset_tokens (token_hash, user_id, expires_at)
+    VALUES (${tokenHash}, ${String(user.id)}, NOW() + INTERVAL '30 minutes')
+  `
+  return {
+    token,
+    email: String(user.email),
+    name: String(user.name),
+  }
+}
+
+export async function resetAccountPassword(token: string, password: string) {
+  const sql = getDatabase()
+  if (!sql) throw createError({ statusCode: 503, statusMessage: 'Account database is not configured' })
+  await ensurePasswordResetTable(sql)
+
+  const tokenHash = hashToken(token)
+  const rows = await sql`
+    SELECT token_hash, user_id
+    FROM cof_password_reset_tokens
+    WHERE token_hash = ${tokenHash}
+      AND used_at IS NULL
+      AND expires_at > NOW()
+    LIMIT 1
+  `
+  const row = rows[0] as Record<string, unknown> | undefined
+  if (!row) throw createError({ statusCode: 400, statusMessage: 'Password reset link is invalid or expired' })
+
+  await sql`
+    UPDATE cof_users
+    SET password_hash = ${hashPassword(password)}, provider = 'local', updated_at = NOW()
+    WHERE id = ${String(row.user_id)}
+  `
+  await sql`
+    UPDATE cof_password_reset_tokens
+    SET used_at = NOW()
+    WHERE token_hash = ${tokenHash}
+  `
 }
 
 export async function upsertOAuthAccount(profile: OAuthProfile, termsVersion = '') {
@@ -153,6 +232,10 @@ function hashPassword(password: string) {
   const salt = randomBytes(16)
   const derived = scryptSync(password, salt, 64)
   return `scrypt:${salt.toString('hex')}:${derived.toString('hex')}`
+}
+
+function hashToken(token: string) {
+  return createHash('sha256').update(token).digest('hex')
 }
 
 function verifyPassword(password: string, stored: string) {

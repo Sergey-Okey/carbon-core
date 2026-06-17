@@ -524,9 +524,9 @@ import PublicInfoPage from '~/components/base/PublicInfoPage.vue'
 
 definePageMeta({ layout: false })
 useSeoMeta({
-  title: 'Условия использования и возврат',
+  title: 'Условия использования, оферта и возврат | Core of Life',
   description:
-    'Правила использования сервиса Core of Life, публичная оферта и условия возврата денежных средств.',
+    'Публичная оферта Core of Life, правила оплаты подписки, условия возврата, безопасность аккаунта и обработка данных пользователя.',
   robots: 'index, follow',
 })
 
@@ -534,7 +534,6 @@ const activeTab = ref<'terms' | 'offer' | 'refund'>('terms')
 </script>
 
 <style scoped lang="scss">
-/* Стили остаются теми же, что и ранее */
 .terms-tabs {
   display: flex;
   gap: 8px;
@@ -565,6 +564,34 @@ const activeTab = ref<'terms' | 'offer' | 'refund'>('terms')
   }
 }
 
+@media (max-width: 640px) {
+  .terms-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    margin-inline: -2px;
+    margin-bottom: 18px;
+    padding: 0 0 12px;
+    border-bottom: var(--ui-border);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: var(--glass-filter);
+    -webkit-backdrop-filter: var(--glass-filter);
+
+    .tab-btn {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 12px;
+      border: var(--ui-border);
+      border-radius: var(--border-radius-pill);
+      font-size: 0.82rem;
+      text-align: center;
+    }
+  }
+}
+
 .document-note {
   padding: 12px 16px;
   background: color-mix(in srgb, var(--surface) 70%, transparent);
@@ -583,6 +610,11 @@ ul {
     color: var(--accent);
     line-height: 1.5;
   }
+}
+
+p,
+li {
+  overflow-wrap: anywhere;
 }
 
 .document-actions {
@@ -618,6 +650,36 @@ ul {
         color: var(--accent);
         background: color-mix(in srgb, var(--surface) 60%, transparent);
       }
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .document-note {
+    margin-bottom: 18px;
+    padding: 12px 14px;
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  ul {
+    padding-left: 18px;
+
+    li {
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+  }
+
+  .document-actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 24px;
+
+    a {
+      justify-content: center;
+      min-height: 42px;
+      text-align: center;
     }
   }
 }

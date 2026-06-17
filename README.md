@@ -9,7 +9,7 @@ sessions, rewards, and progress analytics.
 - Pinia with persisted client state
 - Vue Flow for the goal board
 - SCSS design tokens and reusable glass surfaces
-- Optional Neon persistence through the Nitro sync API
+- Nuxt server API with PostgreSQL persistence for accounts, subscriptions, and sync
 
 ## Local Development
 
@@ -20,7 +20,7 @@ npm run dev:local
 ```
 
 The local application is available at `http://127.0.0.1:3005`.
-`DATABASE_URL` is optional. Without it, the application runs in local-only mode.
+Set `DATABASE_URL` when testing cloud accounts, subscriptions, and sync.
 
 ## Quality Checks
 
@@ -67,9 +67,9 @@ npm run android:bundle
 
 The signed bundle is written to `dist/core-of-life-release.aab`.
 
-For Vercel, connect the repository and add `DATABASE_URL` in project
-environment variables when cloud sync is required. The Vercel build uses the
-Nitro serverless preset automatically.
+For Vercel, connect the repository and add `DATABASE_URL` plus auth/payment
+secrets in project environment variables. The Vercel build uses Nuxt's
+serverless output automatically.
 
 ## Project Structure
 
@@ -81,7 +81,7 @@ Nitro serverless preset automatically.
 - `stores`: domain state and persistence boundaries
 - `composables`: reusable actions and algorithms
 - `pages`: route-level composition and route metadata
-- `server/api`: health and optional cloud-sync endpoints
+- `server/api`: health, auth, subscription, payment, and cloud-sync endpoints
 - `assets/styles`: global tokens, mixins, reset, and shared styles
 
 ## Engineering Rules
@@ -108,12 +108,12 @@ while keeping authenticated application routes client-only.
 ## Environment
 
 Runtime secrets belong in `.env` and must never be committed. Copy
-`.env.example` to `.env`. `DATABASE_URL` must be a PostgreSQL/Neon connection
-string with permission to create and update the `cof_sync_state` table.
+`.env.example` to `.env`. `DATABASE_URL` must be a PostgreSQL connection
+string with permission to create and update the `cof_users`,
+`cof_subscriptions`, and `cof_sync_state` tables.
 
-Authentication profiles currently live in the browser. Cloud sync is keyed by
-a signed server session when `DATABASE_URL` is configured. If the backend is
-not configured or reachable, the app falls back to a local-only profile.
+Demo mode is local and temporary. Paid accounts use the server session and
+PostgreSQL-backed storage for profile, subscription state, and sync.
 
 Email/password accounts are stored in PostgreSQL with `scrypt` password
 hashing. Sync endpoints require an authenticated session whenever the database

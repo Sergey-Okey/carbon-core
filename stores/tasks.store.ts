@@ -139,6 +139,20 @@ export const useTasksStore = defineStore(
       return restoredTask
     }
 
+    function reopenTask(id: string): Task | null {
+      const task = tasks.value.find((item) => item.id === id)
+      if (!task || !task.done) return null
+      if (!canAddTask(task.type)) return null
+
+      task.done = false
+      delete task.completedAt
+      task.updatedAt = Date.now()
+
+      const branchesStore = useBranchesStore()
+      branchesStore.refreshMilestonesByTaskId(id)
+      return task
+    }
+
     function clearDeletedTasks() {
       deletedTasks.value = []
     }
@@ -196,6 +210,7 @@ export const useTasksStore = defineStore(
       completeTask,
       deleteTask,
       restoreTask,
+      reopenTask,
       clearDeletedTasks,
       updateTask,
       resetDailyTasks,

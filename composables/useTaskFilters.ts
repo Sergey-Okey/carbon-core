@@ -49,6 +49,12 @@ export function useTaskFilters() {
       .filter((task) => matchesTaskFilters(task))
       .sort((a, b) => getCompletedTime(b) - getCompletedTime(a))
   )
+  const visibleDeletedTasks = computed(() =>
+    tasksStore.deletedTasks
+      .filter((task) => task.type !== 'HABIT')
+      .filter((task) => matchesTaskFilters(task))
+      .sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0))
+  )
 
   function getVisibleTasksByType(type: TaskType): Task[] {
     return tasksStore.getTasksByType(type).filter((task) => matchesTaskFilters(task))
@@ -97,5 +103,6 @@ export function useTaskFilters() {
     visibleMonthTasks,
     visibleYearTasks,
     visibleCompletedTasks,
+    visibleDeletedTasks,
   }
 }

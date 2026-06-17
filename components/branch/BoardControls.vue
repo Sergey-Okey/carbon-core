@@ -142,6 +142,9 @@ const deleteTooltip = computed(() =>
   padding: 6px;
   border-radius: var(--border-radius-pill);
   border: var(--ui-border);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-strong-filter);
+  -webkit-backdrop-filter: var(--glass-strong-filter);
   pointer-events: auto;
   transform: translateY(-16px);
   overflow: visible;

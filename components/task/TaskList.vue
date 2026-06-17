@@ -50,9 +50,11 @@
         :key="task.id"
         :task="task"
         :disable-toggle="disableToggle"
+        :restore-mode="restoreMode"
         @toggle="handleToggle"
         @delete="handleDelete"
         @edit="handleEdit"
+        @restore="handleRestore"
       />
       <p v-if="tasks.length === 0" key="empty-state" class="empty">
         {{ emptyText || emptyMessage }}
@@ -90,6 +92,7 @@ const props = defineProps<{
   emptyText?: string
   externalForm?: boolean
   disableToggle?: boolean
+  restoreMode?: 'completed' | 'deleted'
 }>()
 
 const emit = defineEmits<{
@@ -129,6 +132,14 @@ const emptyMessage = computed(() => {
 })
 
 const listHint = computed(() => {
+  if (props.restoreMode === 'deleted') {
+    return `${tasks.value.length} в корзине`
+  }
+
+  if (props.restoreMode === 'completed') {
+    return `${tasks.value.length} завершено`
+  }
+
   if (props.hideAdd && props.hideRuleHint) {
     return `${tasks.value.length} завершено`
   }
@@ -223,6 +234,20 @@ function handleToggle(taskId: string) {
 
 function handleDelete(taskId: string) {
   removeTask(taskId)
+}
+
+function handleRestore(taskId: string) {
+  const restored =
+    props.restoreMode === 'deleted'
+      ? tasksStore.restoreTask(taskId)
+      : tasksStore.reopenTask(taskId)
+
+  addNotification({
+    type: restored ? 'success' : 'warning',
+    message: restored
+      ? 'Задача восстановлена'
+      : 'Сначала освободите место: в горизонте уже 3 активные задачи.',
+  })
 }
 
 function closeForm() {
