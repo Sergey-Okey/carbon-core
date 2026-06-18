@@ -138,30 +138,19 @@ const deleteTooltip = computed(() =>
   @include glass;
   position: relative;
   isolation: isolate;
+  transform: translateY(-16px) translateZ(0);
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 6px;
   border-radius: var(--border-radius-pill);
-  border: var(--ui-border);
-  background: color-mix(in srgb, var(--surface) 68%, transparent);
+  background: var(--glass-surface);
+  background-clip: padding-box;
   backdrop-filter: var(--glass-strong-filter) !important;
   -webkit-backdrop-filter: var(--glass-strong-filter) !important;
   pointer-events: auto;
-  transform: translateY(-16px);
   overflow: visible;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
-    background: var(--glass-surface);
-    backdrop-filter: var(--glass-strong-filter);
-    -webkit-backdrop-filter: var(--glass-strong-filter);
-    pointer-events: none;
-  }
+  will-change: backdrop-filter, background-color;
 
   button {
     position: relative;

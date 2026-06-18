@@ -248,11 +248,12 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   transition:
     border-color var(--transition-standard),
     background-color var(--transition-standard);
-  background: var(--surface);
+  background: var(--glass-surface);
+  background-clip: padding-box;
   border: var(--ui-border);
-  box-shadow: var(--shadow-soft);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  backdrop-filter: var(--board-card-filter);
+  -webkit-backdrop-filter: var(--board-card-filter);
 
   .node-main {
     display: flex;
@@ -425,12 +426,13 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     max-height: 220px;
     padding: 12px;
     overflow-y: auto;
-    background: var(--surface);
+    background: var(--glass-surface);
+    background-clip: padding-box;
     border: var(--ui-border);
     border-radius: var(--border-radius-md);
-    box-shadow: 0 16px 42px color-mix(in srgb, var(--bg) 36%, transparent);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    box-shadow: none;
+    backdrop-filter: var(--board-details-filter);
+    -webkit-backdrop-filter: var(--board-details-filter);
     font-size: 0.85rem;
     word-wrap: break-word;
 

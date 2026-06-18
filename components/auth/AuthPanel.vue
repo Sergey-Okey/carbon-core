@@ -60,31 +60,30 @@
               </div>
             </div>
 
-            <button
-              class="payment-link"
-              type="button"
-              @click="startSubscriptionPayment"
-            >
-              Оплатить доступ · {{ SUBSCRIPTION_PRICE }} ₽
-              <ArrowUpRight :size="16" />
-            </button>
-
             <div class="subscription-check">
-              <AppFormField label="Email, указанный при оплате">
+              <AppFormField label="Email профиля">
                 <AppInput
-                  v-model="subscriptionEmail"
+                  v-model="form.email"
                   type="email"
                   placeholder="email@example.com"
                   autocomplete="email"
                 />
               </AppFormField>
+              <button
+                class="payment-link"
+                type="button"
+                @click="startSubscriptionPayment"
+              >
+                Оплатить доступ · {{ SUBSCRIPTION_PRICE }} ₽
+                <ArrowUpRight :size="16" />
+              </button>
               <AppButton
                 type="button"
                 variant="secondary"
                 :disabled="isCheckingSubscription"
                 @click="verifySubscription"
               >
-                {{ isCheckingSubscription ? 'Проверяем…' : 'Проверить оплату' }}
+                {{ isCheckingSubscription ? 'Проверяем…' : 'Проверить доступ' }}
               </AppButton>
               <p v-if="subscriptionError" class="error-text">{{ subscriptionError }}</p>
             </div>
@@ -375,11 +374,11 @@ function startOAuth(provider: 'google' | 'yandex') {
 }
 
 function startSubscriptionPayment() {
-  const email = normalizeEmail(subscriptionEmail.value || form.email)
+  const email = normalizeEmail(form.email || subscriptionEmail.value)
   subscriptionError.value = ''
 
   if (!email.includes('@')) {
-    subscriptionError.value = 'Сначала укажите email, на который оформляете оплату'
+    subscriptionError.value = 'Сначала укажите email будущего профиля'
     return
   }
 
@@ -460,14 +459,14 @@ async function confirmPasswordReset() {
 }
 
 async function verifySubscription(
-  emailValue = subscriptionEmail.value || form.email,
+  emailValue = form.email || subscriptionEmail.value,
   options: { silentMissing?: boolean } = {}
 ) {
   const email = normalizeEmail(emailValue)
   subscriptionError.value = ''
 
   if (!email.includes('@')) {
-    subscriptionError.value = 'Укажите email, который использовали при оплате'
+    subscriptionError.value = 'Укажите email профиля'
     return false
   }
 
@@ -853,7 +852,7 @@ function addWelcomeRegistrationLetter(name: string) {
     margin-top: 1px;
     border: var(--ui-border);
     border-radius: 4px;
-    background: var(--surface);
+    background: var(--glass-surface);
     color: transparent;
     transition: all var(--transition-standard);
   }
@@ -1016,7 +1015,7 @@ function addWelcomeRegistrationLetter(name: string) {
 
   .auth-workspace {
     max-width: none;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .auth-grid {
@@ -1025,12 +1024,12 @@ function addWelcomeRegistrationLetter(name: string) {
     align-items: center;
     gap: 12px;
     height: calc(100dvh - 32px);
-    padding-inline: 11px;
+    padding-inline: 22px;
     box-sizing: border-box;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-behavior: smooth;
-    scroll-padding-inline: 11px;
+    scroll-padding-inline: 22px;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
     overscroll-behavior-x: contain;
@@ -1047,7 +1046,7 @@ function addWelcomeRegistrationLetter(name: string) {
     min-width: 0;
     min-height: 0;
     max-height: 100%;
-    flex: 0 0 calc(100vw - 54px);
+    flex: 0 0 min(480px, calc(100vw - 78px));
     height: auto;
     overflow-y: auto;
     scroll-snap-align: center;
@@ -1120,12 +1119,12 @@ function addWelcomeRegistrationLetter(name: string) {
 
   .auth-grid {
     height: calc(100dvh - 20px);
-    padding-inline: 9px;
-    scroll-padding-inline: 9px;
+    padding-inline: 18px;
+    scroll-padding-inline: 18px;
   }
 
   .auth-panel {
-    flex-basis: calc(100vw - 38px);
+    flex-basis: calc(100vw - 88px);
     min-height: 0;
     padding: 18px;
   }

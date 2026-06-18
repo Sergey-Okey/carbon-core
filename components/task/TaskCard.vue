@@ -297,9 +297,12 @@ async function handleDelete() {
   min-height: 148px;
   height: 100%;
   padding: 1rem;
-  background: var(--surface);
+  background: var(--glass-surface);
+  background-clip: padding-box;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
+  backdrop-filter: var(--glass-filter);
+  -webkit-backdrop-filter: var(--glass-filter);
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard);
@@ -314,7 +317,7 @@ async function handleDelete() {
 
   &.overdue {
     border-color: color-mix(in srgb, var(--error) 28%, var(--ui-border-color));
-    background: color-mix(in srgb, var(--error) 5%, var(--surface));
+    background: color-mix(in srgb, var(--error) 5%, var(--glass-surface));
   }
 
   .task-header {

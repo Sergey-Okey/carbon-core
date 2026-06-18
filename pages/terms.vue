@@ -538,7 +538,7 @@ const activeTab = ref<'terms' | 'offer' | 'refund'>('terms')
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--ui-border);
   padding-bottom: 4px;
 
   .tab-btn {

@@ -482,7 +482,7 @@ async function deleteAccount() {
     border-radius: var(--border-radius-md);
     padding: 12px 14px;
     color: var(--text);
-    background: var(--surface);
+    background: var(--glass-surface);
     font: inherit;
     resize: vertical;
   }
@@ -523,7 +523,7 @@ async function deleteAccount() {
     padding: 12px 14px;
     border: var(--ui-border);
     border-radius: var(--border-radius-md);
-    background: var(--surface);
+    background: var(--glass-surface);
   }
 
   span {

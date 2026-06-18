@@ -677,6 +677,9 @@ async function resetAllData() {
   padding: 5px;
   border: var(--ui-border);
   border-radius: var(--border-radius-pill);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-strong-filter) !important;
+  -webkit-backdrop-filter: var(--glass-strong-filter) !important;
 
   @include mobile {
     justify-self: stretch;
@@ -688,6 +691,7 @@ async function resetAllData() {
 }
 
 .nav-option {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -702,16 +706,18 @@ async function resetAllData() {
   font: inherit;
   font-size: 0.92rem;
   font-weight: 600;
+  will-change: background-color, color;
   transition:
     background var(--transition-standard),
     color var(--transition-standard);
 
-  &:hover {
+  &:hover:not(.active) {
     background: color-mix(in srgb, var(--accent) 7%, transparent);
     color: var(--text);
   }
 
   &.active,
+  &.active:focus-visible,
   &.active:hover {
     background: var(--accent);
     color: var(--bg);
