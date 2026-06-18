@@ -137,6 +137,7 @@
                 Яндекс
               </button>
             </div>
+            <p v-if="oauthMessage" class="oauth-message error-text">{{ oauthMessage }}</p>
 
             <div class="auth-divider"><span>или</span></div>
 
@@ -295,6 +296,7 @@ const resetMessage = ref('')
 const isRequestingReset = ref(false)
 const isConfirmingReset = ref(false)
 const isStartingOAuth = ref(false)
+const oauthMessage = ref('')
 const resetToken = computed(() => {
   const value = route.query.resetToken
   return typeof value === 'string' ? value : ''
@@ -307,6 +309,7 @@ onMounted(() => {
 
   const message = getOAuthErrorMessage(oauthError)
   error.value = message
+  oauthMessage.value = message
   addNotification({ type: 'error', message, duration: 6000 })
   void router.replace({ path: isRegister.value ? '/register' : '/auth' })
 })
@@ -415,11 +418,14 @@ function goBack() {
 
 function startOAuth(provider: 'google' | 'yandex') {
   error.value = ''
+  oauthMessage.value = ''
   subscriptionError.value = ''
 
   if (isRegister.value && !form.acceptedTerms) {
-    error.value = 'Перед входом через Google или Яндекс примите условия использования'
-    addNotification({ type: 'error', message: error.value })
+    const message = 'Перед входом через Google или Яндекс примите условия использования'
+    error.value = message
+    oauthMessage.value = message
+    addNotification({ type: 'error', message })
     return
   }
 
@@ -427,7 +433,7 @@ function startOAuth(provider: 'google' | 'yandex') {
   const consent = isRegister.value && form.acceptedTerms
     ? '?acceptedTerms=true&termsVersion=2026-06-07'
     : ''
-  window.location.assign(`/api/auth/${provider}${consent}`)
+  window.location.assign(getBackendUrl(`/api/auth/${provider}${consent}`))
 }
 
 function startSubscriptionPayment() {
@@ -1076,6 +1082,12 @@ function addWelcomeRegistrationLetter(name: string) {
 
 .oauth-consent {
   margin-bottom: 16px;
+}
+
+.oauth-message {
+  margin-top: 10px;
+  text-align: center;
+  line-height: 1.35;
 }
 
 .error-text {
