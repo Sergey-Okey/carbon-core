@@ -41,8 +41,11 @@ async function ensureUsersTable(sql: NonNullable<ReturnType<typeof getDatabase>>
 async function ensureEmailVerificationTable(sql: NonNullable<ReturnType<typeof getDatabase>>) {
   await ensureUsersTable(sql)
   await sql`
-    CREATE TABLE IF NOT EXISTS cof_email_verification_codes (
-      user_id TEXT PRIMARY KEY REFERENCES cof_users(id) ON DELETE CASCADE,
+    CREATE TABLE IF NOT EXISTS cof_pending_registrations (
+      email TEXT PRIMARY KEY,
+      password_hash TEXT NOT NULL,
+      name TEXT NOT NULL,
+      terms_version TEXT NOT NULL,
       code_hash TEXT NOT NULL,
       attempts INTEGER NOT NULL DEFAULT 0,
       expires_at TIMESTAMPTZ NOT NULL,
@@ -50,8 +53,8 @@ async function ensureEmailVerificationTable(sql: NonNullable<ReturnType<typeof g
     )
   `
   await sql`
-    CREATE INDEX IF NOT EXISTS cof_email_verification_expires_idx
-    ON cof_email_verification_codes(expires_at)
+    CREATE INDEX IF NOT EXISTS cof_pending_registrations_expires_idx
+    ON cof_pending_registrations(expires_at)
   `
 }
 
@@ -72,22 +75,36 @@ async function ensurePasswordResetTable(sql: NonNullable<ReturnType<typeof getDa
   `
 }
 
-export async function registerAccount(email: string, password: string, name: string, termsVersion: string) {
+export async function createPendingRegistration(email: string, password: string, name: string, termsVersion: string) {
   const sql = getDatabase()
   if (!sql) throw createError({ statusCode: 503, statusMessage: 'Account database is not configured' })
-  await ensureUsersTable(sql)
+  await ensureEmailVerificationTable(sql)
 
   const normalizedEmail = email.trim().toLowerCase()
   const existing = await sql`SELECT id FROM cof_users WHERE email = ${normalizedEmail} LIMIT 1`
   if (existing.length) throw createError({ statusCode: 409, statusMessage: 'Email is already registered' })
 
-  const id = `local:${randomBytes(16).toString('hex')}`
-  const rows = await sql`
-    INSERT INTO cof_users (id, email, password_hash, name, provider, terms_accepted_at, terms_version)
-    VALUES (${id}, ${normalizedEmail}, ${hashPassword(password)}, ${name.trim()}, 'local', NOW(), ${termsVersion})
-    RETURNING id, email, name, avatar, provider, created_at
+  const code = String(randomInt(100000, 1000000))
+  const codeHash = hashToken(`${normalizedEmail}:${code}`)
+  await sql`
+    INSERT INTO cof_pending_registrations (
+      email, password_hash, name, terms_version, code_hash, attempts, expires_at
+    )
+    VALUES (
+      ${normalizedEmail}, ${hashPassword(password)}, ${name.trim()}, ${termsVersion},
+      ${codeHash}, 0, NOW() + INTERVAL '15 minutes'
+    )
+    ON CONFLICT (email)
+    DO UPDATE SET
+      password_hash = EXCLUDED.password_hash,
+      name = EXCLUDED.name,
+      terms_version = EXCLUDED.terms_version,
+      code_hash = EXCLUDED.code_hash,
+      attempts = 0,
+      expires_at = EXCLUDED.expires_at,
+      created_at = NOW()
   `
-  return mapAccount(rows[0])
+  return { code, email: normalizedEmail, name: name.trim() }
 }
 
 export async function loginAccount(email: string, password: string) {
@@ -117,32 +134,32 @@ export async function createEmailVerificationCode(email: string) {
   await ensureEmailVerificationTable(sql)
 
   const normalizedEmail = email.trim().toLowerCase()
-  const users = await sql`
-    SELECT id, email, name, provider, email_verified_at
-    FROM cof_users
+  const pending = await sql`
+    SELECT email, name
+    FROM cof_pending_registrations
     WHERE email = ${normalizedEmail}
+      AND expires_at > NOW()
     LIMIT 1
   `
-  const user = users[0] as Record<string, unknown> | undefined
-  if (!user || String(user.provider) !== 'local' || user.email_verified_at) return null
+  const registration = pending[0] as Record<string, unknown> | undefined
+  if (!registration) return null
 
   const code = String(randomInt(100000, 1000000))
-  const codeHash = hashToken(`${String(user.id)}:${code}`)
+  const codeHash = hashToken(`${normalizedEmail}:${code}`)
   await sql`
-    INSERT INTO cof_email_verification_codes (user_id, code_hash, attempts, expires_at)
-    VALUES (${String(user.id)}, ${codeHash}, 0, NOW() + INTERVAL '15 minutes')
-    ON CONFLICT (user_id)
-    DO UPDATE SET
-      code_hash = EXCLUDED.code_hash,
+    UPDATE cof_pending_registrations
+    SET
+      code_hash = ${codeHash},
       attempts = 0,
-      expires_at = EXCLUDED.expires_at,
+      expires_at = NOW() + INTERVAL '15 minutes',
       created_at = NOW()
+    WHERE email = ${normalizedEmail}
   `
 
   return {
     code,
-    email: String(user.email),
-    name: String(user.name),
+    email: String(registration.email),
+    name: String(registration.name),
   }
 }
 
@@ -152,24 +169,15 @@ export async function verifyEmailCode(email: string, code: string) {
   await ensureEmailVerificationTable(sql)
 
   const normalizedEmail = email.trim().toLowerCase()
-  const users = await sql`
-    SELECT id, email, name, avatar, provider, created_at, email_verified_at
-    FROM cof_users
+  const rows = await sql`
+    SELECT email, password_hash, name, terms_version, code_hash, attempts, expires_at
+    FROM cof_pending_registrations
     WHERE email = ${normalizedEmail}
     LIMIT 1
   `
-  const user = users[0] as Record<string, unknown> | undefined
-  if (!user) throw createError({ statusCode: 404, statusMessage: 'Account not found' })
-  if (user.email_verified_at) return mapAccount(user)
-
-  const rows = await sql`
-    SELECT code_hash, attempts, expires_at
-    FROM cof_email_verification_codes
-    WHERE user_id = ${String(user.id)}
-    LIMIT 1
-  `
   const row = rows[0] as Record<string, unknown> | undefined
-  if (!row || new Date(String(row.expires_at)).getTime() <= Date.now()) {
+  if (!row) throw createError({ statusCode: 404, statusMessage: 'Pending registration not found' })
+  if (new Date(String(row.expires_at)).getTime() <= Date.now()) {
     throw createError({ statusCode: 400, statusMessage: 'Verification code is expired' })
   }
   if (Number(row.attempts || 0) >= 5) {
@@ -177,23 +185,33 @@ export async function verifyEmailCode(email: string, code: string) {
   }
 
   const expected = String(row.code_hash)
-  const actual = hashToken(`${String(user.id)}:${code.trim()}`)
+  const actual = hashToken(`${normalizedEmail}:${code.trim()}`)
   if (expected !== actual) {
     await sql`
-      UPDATE cof_email_verification_codes
+      UPDATE cof_pending_registrations
       SET attempts = attempts + 1
-      WHERE user_id = ${String(user.id)}
+      WHERE email = ${normalizedEmail}
     `
     throw createError({ statusCode: 400, statusMessage: 'Verification code is invalid' })
   }
 
+  const existing = await sql`SELECT id FROM cof_users WHERE email = ${normalizedEmail} LIMIT 1`
+  if (existing.length) {
+    await sql`DELETE FROM cof_pending_registrations WHERE email = ${normalizedEmail}`
+    throw createError({ statusCode: 409, statusMessage: 'Email is already registered' })
+  }
+  const id = `local:${randomBytes(16).toString('hex')}`
   const verified = await sql`
-    UPDATE cof_users
-    SET email_verified_at = NOW(), updated_at = NOW()
-    WHERE id = ${String(user.id)}
+    INSERT INTO cof_users (
+      id, email, password_hash, name, provider, terms_accepted_at, terms_version, email_verified_at
+    )
+    VALUES (
+      ${id}, ${normalizedEmail}, ${String(row.password_hash)}, ${String(row.name)},
+      'local', NOW(), ${String(row.terms_version)}, NOW()
+    )
     RETURNING id, email, name, avatar, provider, created_at
   `
-  await sql`DELETE FROM cof_email_verification_codes WHERE user_id = ${String(user.id)}`
+  await sql`DELETE FROM cof_pending_registrations WHERE email = ${normalizedEmail}`
   return mapAccount(verified[0])
 }
 
