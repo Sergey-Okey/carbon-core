@@ -50,17 +50,33 @@ test('registration requires explicit legal consent', async () => {
   const privacy = await read('pages/privacy.vue')
   assert.match(authPanel, /form\.acceptedTerms/)
   assert.match(registerApi, /acceptedTerms === true/)
+  assert.match(registerApi, /verifyCaptcha/)
   assert.match(oauthRoute, /acceptedTerms === 'true'/)
   assert.match(authStorage, /Terms consent is required/)
   assert.match(privacy, /Отзыв согласия/)
   assert.match(privacy, /Удаление данных/)
   assert.match(authPanel, /register\(form\.email, form\.password, form\.name, 'cloud'/)
+  assert.match(authPanel, /captchaToken/)
+  assert.match(authPanel, /captchaAnswer/)
   assert.doesNotMatch(authPanel, /class="auth-mode"/)
   assert.doesNotMatch(authPanel, /class="auth-topbar"/)
   assert.match(authPanel, /Попробовать демо/)
   assert.doesNotMatch(authPanel, /Уже оплатил/)
   assert.match(authPanel, /overflow-wrap: normal/)
   assert.match(authPanel, /keepShortWords/)
+})
+
+test('auth forms use server captcha and reset mail supports STARTTLS', async () => {
+  const captchaApi = await read('server/api/auth/captcha.get.ts')
+  const loginApi = await read('server/api/auth/login.post.ts')
+  const resetApi = await read('server/api/auth/password-reset/request.post.ts')
+  const smtp = await read('server/utils/smtp.ts')
+
+  assert.match(captchaApi, /createCaptchaChallenge/)
+  assert.match(loginApi, /verifyCaptcha/)
+  assert.match(resetApi, /verifyCaptcha/)
+  assert.match(smtp, /STARTTLS/)
+  assert.match(smtp, /net\.connect/)
 })
 
 test('robokassa result trusts only signed payment email', async () => {

@@ -12,6 +12,7 @@
     :min="min"
     :maxlength="maxlength"
     :autocomplete="autocomplete"
+    :inputmode="inputmode"
     :rows="multiline ? rows : undefined"
     @input="handleInput"
   />
@@ -30,6 +31,7 @@ const props = withDefaults(
     min?: string | number
     maxlength?: string | number
     autocomplete?: string
+    inputmode?: string
     multiline?: boolean
     rows?: number
   }>(),
@@ -44,6 +46,7 @@ const props = withDefaults(
     min: undefined,
     maxlength: undefined,
     autocomplete: undefined,
+    inputmode: undefined,
     multiline: false,
     rows: 3,
   }

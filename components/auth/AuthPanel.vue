@@ -86,6 +86,7 @@
                 {{ isCheckingSubscription ? 'Проверяем…' : 'Проверить доступ' }}
               </AppButton>
               <p v-if="subscriptionError" class="error-text">{{ subscriptionError }}</p>
+              <p v-if="error" class="error-text">{{ error }}</p>
             </div>
           </template>
 
@@ -102,7 +103,7 @@
               </p>
             </div>
 
-            <label class="consent-control oauth-consent">
+            <label v-if="isRegister" class="consent-control oauth-consent">
               <input v-model="form.acceptedTerms" type="checkbox" />
               <span class="checkmark"><Check :size="12" /></span>
               <span>
@@ -115,6 +116,7 @@
               <button
                 class="oauth-button"
                 type="button"
+                :disabled="isStartingOAuth"
                 @click="startOAuth('google')"
               >
                 <svg class="oauth-icon google-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -128,6 +130,7 @@
               <button
                 class="oauth-button"
                 type="button"
+                :disabled="isStartingOAuth"
                 @click="startOAuth('yandex')"
               >
                 <span class="oauth-icon yandex-icon" aria-hidden="true">Я</span>
@@ -163,6 +166,21 @@
                   autocomplete="email"
                 />
               </AppFormField>
+              <div class="captcha-box">
+                <div>
+                  <span>Проверка</span>
+                  <strong>{{ captcha.question || '…' }}</strong>
+                </div>
+                <AppInput
+                  v-model="captcha.answer"
+                  inputmode="numeric"
+                  placeholder="Ответ"
+                  autocomplete="off"
+                />
+                <button type="button" class="captcha-refresh" @click="loadCaptcha">
+                  Обновить
+                </button>
+              </div>
 
               <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
               <p v-if="error" class="error-text">{{ error }}</p>
@@ -194,6 +212,21 @@
                   :autocomplete="isRegister ? 'new-password' : 'current-password'"
                 />
               </AppFormField>
+              <div class="captcha-box">
+                <div>
+                  <span>Проверка</span>
+                  <strong>{{ captcha.question || '…' }}</strong>
+                </div>
+                <AppInput
+                  v-model="captcha.answer"
+                  inputmode="numeric"
+                  placeholder="Ответ"
+                  autocomplete="off"
+                />
+                <button type="button" class="captcha-refresh" @click="loadCaptcha">
+                  Обновить
+                </button>
+              </div>
               <button v-if="!isRegister" type="button" class="forgot-link" @click="openResetMode">
                 Забыли пароль?
               </button>
@@ -261,12 +294,14 @@ const subscriptionEmail = ref('')
 const subscriptionError = ref('')
 const isCheckingSubscription = ref(false)
 const form = reactive({ name: '', email: '', password: '', acceptedTerms: false })
+const captcha = reactive({ token: '', question: '', answer: '' })
 const resetMode = ref(false)
 const resetEmail = ref('')
 const resetPassword = ref('')
 const resetMessage = ref('')
 const isRequestingReset = ref(false)
 const isConfirmingReset = ref(false)
+const isStartingOAuth = ref(false)
 const resetToken = computed(() => {
   const value = route.query.resetToken
   return typeof value === 'string' ? value : ''
@@ -275,11 +310,13 @@ const resetToken = computed(() => {
 onMounted(() => {
   const oauthError = typeof route.query.oauthError === 'string' ? route.query.oauthError : ''
   void resumePendingSubscription()
+  void loadCaptcha()
   if (!oauthError) return
 
   const message = getOAuthErrorMessage(oauthError)
   error.value = message
-  void router.replace(isRegister.value ? '/register' : '/auth')
+  addNotification({ type: 'error', message, duration: 6000 })
+  void router.replace({ path: isRegister.value ? '/register' : '/auth' })
 })
 
 function normalizeEmail(value: string) {
@@ -384,16 +421,42 @@ function goBack() {
   else router.push('/onboarding')
 }
 
+async function loadCaptcha() {
+  try {
+    const challenge = await backendFetch<{ question: string; token: string }>(
+      getBackendUrl('/api/auth/captcha'),
+      getBackendFetchOptions()
+    )
+    captcha.question = challenge.question
+    captcha.token = challenge.token
+    captcha.answer = ''
+  } catch {
+    captcha.question = ''
+    captcha.token = ''
+    captcha.answer = ''
+  }
+}
+
+function ensureCaptcha() {
+  if (!captcha.token || !captcha.answer.trim()) {
+    error.value = 'Решите проверку перед продолжением'
+    return false
+  }
+  return true
+}
+
 function startOAuth(provider: 'google' | 'yandex') {
   error.value = ''
   subscriptionError.value = ''
 
-  if (!form.acceptedTerms) {
+  if (isRegister.value && !form.acceptedTerms) {
     error.value = 'Перед входом через Google или Яндекс примите условия использования'
+    addNotification({ type: 'error', message: error.value })
     return
   }
 
-  const consent = form.acceptedTerms
+  isStartingOAuth.value = true
+  const consent = isRegister.value && form.acceptedTerms
     ? '?acceptedTerms=true&termsVersion=2026-06-07'
     : ''
   window.location.assign(`/api/auth/${provider}${consent}`)
@@ -442,17 +505,28 @@ async function requestPasswordReset() {
     error.value = 'Укажите email профиля'
     return
   }
+  if (!ensureCaptcha()) return
 
   isRequestingReset.value = true
   try {
-    await backendFetch(getBackendUrl('/api/auth/password-reset/request'), {
+    const response = await backendFetch<{ ok: boolean; sent: boolean }>(getBackendUrl('/api/auth/password-reset/request'), {
       method: 'POST',
-      body: { email },
+      body: { email, captchaToken: captcha.token, captchaAnswer: captcha.answer },
       ...getBackendFetchOptions(),
     })
-    resetMessage.value = 'Если профиль найден, письмо для восстановления уже отправлено.'
+    resetMessage.value = response.sent
+      ? 'Если профиль найден, письмо для восстановления уже отправлено.'
+      : 'Запрос принят, но почтовый сервис не настроен. Подключите SMTP в переменных сервера.'
+    addNotification({
+      type: response.sent ? 'success' : 'warning',
+      message: response.sent ? 'Письмо восстановления отправлено' : 'SMTP для писем не настроен',
+      duration: 6000,
+    })
+    await loadCaptcha()
   } catch {
-    error.value = 'Не удалось отправить письмо. Попробуйте чуть позже'
+    error.value = 'Не удалось отправить письмо. Проверьте email и проверку.'
+    addNotification({ type: 'error', message: error.value })
+    await loadCaptcha()
   } finally {
     isRequestingReset.value = false
   }
@@ -509,6 +583,7 @@ async function verifySubscription(
     if (!status.active) {
       if (options.silentMissing) return false
       subscriptionError.value = 'Оплата для этого email пока не найдена'
+      addNotification({ type: 'warning', message: subscriptionError.value, duration: 5000 })
       return false
     }
 
@@ -526,6 +601,9 @@ async function verifySubscription(
     return true
   } catch {
     subscriptionError.value = 'Не удалось проверить оплату. Попробуйте чуть позже'
+    if (!options.silentMissing) {
+      addNotification({ type: 'error', message: subscriptionError.value, duration: 5000 })
+    }
     return false
   } finally {
     isCheckingSubscription.value = false
@@ -540,6 +618,11 @@ async function submit() {
     error.value = 'Заполните обязательные поля'
     return
   }
+  if (!ensureCaptcha()) return
+  if (isRegister.value && !form.acceptedTerms) {
+    error.value = 'Примите условия использования'
+    return
+  }
   if (form.password.length < 8) {
     error.value = 'Пароль должен быть не короче 8 символов'
     return
@@ -550,10 +633,12 @@ async function submit() {
   }
   const wasRegister = isRegister.value
   const result = wasRegister
-    ? await authStore.register(form.email, form.password, form.name, 'cloud', form.acceptedTerms)
-    : await authStore.login(form.email, form.password, 'cloud')
+    ? await authStore.register(form.email, form.password, form.name, 'cloud', form.acceptedTerms, captcha.token, captcha.answer)
+    : await authStore.login(form.email, form.password, 'cloud', captcha.token, captcha.answer)
   if (!result.success) {
     error.value = result.error || 'Не удалось выполнить действие'
+    addNotification({ type: 'error', message: error.value })
+    await loadCaptcha()
     return
   }
   accessStore.activateSubscription()
@@ -781,6 +866,61 @@ function addWelcomeRegistrationLetter(name: string) {
   :deep(.app-button) {
     width: 100%;
     margin-top: 2px;
+  }
+}
+
+.captcha-box {
+  display: grid;
+  grid-template-columns: minmax(92px, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-md);
+  color: var(--text);
+
+  > div {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  span {
+    color: var(--dim);
+    font-size: 0.68rem;
+  }
+
+  strong {
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  :deep(.app-input) {
+    min-height: 36px;
+    border-radius: var(--border-radius-pill);
+    text-align: center;
+  }
+}
+
+.captcha-refresh {
+  min-height: 36px;
+  padding-inline: 12px;
+  border: none;
+  border-radius: var(--border-radius-pill);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: var(--dim);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard);
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent) 9%, transparent);
+    color: var(--text);
   }
 }
 
@@ -1092,12 +1232,12 @@ function addWelcomeRegistrationLetter(name: string) {
   }
 
   .auth-form-panel {
-    order: 2;
+    order: 1;
     justify-content: flex-start;
   }
 
   .auth-intro {
-    order: 1;
+    order: 2;
     gap: 20px;
   }
 
@@ -1129,6 +1269,15 @@ function addWelcomeRegistrationLetter(name: string) {
 
   .auth-form {
     gap: 13px;
+  }
+
+  .captcha-box {
+    grid-template-columns: 1fr 92px;
+
+    .captcha-refresh {
+      grid-column: 1 / -1;
+      width: 100%;
+    }
   }
 
   .auth-divider {

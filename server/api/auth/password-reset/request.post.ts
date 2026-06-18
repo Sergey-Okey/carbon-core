@@ -1,5 +1,6 @@
 import { getRequestURL, readBody } from 'h3'
 import { createPasswordResetToken, isAuthDatabaseConfigured } from '../../../utils/authStorage'
+import { verifyCaptcha } from '../../../utils/captcha'
 import { enforceRateLimit } from '../../../utils/rateLimit'
 import { sendMail } from '../../../utils/smtp'
 
@@ -11,6 +12,9 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody<Record<string, unknown>>(event)
   const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
+  if (!verifyCaptcha(body?.captchaToken, body?.captchaAnswer)) {
+    throw createError({ statusCode: 400, statusMessage: 'Captcha verification failed' })
+  }
   if (!email.includes('@')) throw createError({ statusCode: 400, statusMessage: 'Email is required' })
 
   const reset = await createPasswordResetToken(email)

@@ -3,6 +3,7 @@ import { isAuthDatabaseConfigured, loginAccount } from '../../utils/authStorage'
 import { setOAuthSession } from '../../utils/oauth'
 import { enforceRateLimit } from '../../utils/rateLimit'
 import { hasActiveSubscription } from '../../utils/subscriptionStorage'
+import { verifyCaptcha } from '../../utils/captcha'
 
 export default defineEventHandler(async (event) => {
   enforceRateLimit(event, 'login', 10, 15 * 60 * 1000)
@@ -12,6 +13,9 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<Record<string, unknown>>(event)
   const email = typeof body?.email === 'string' ? body.email : ''
   const password = typeof body?.password === 'string' ? body.password : ''
+  if (!verifyCaptcha(body?.captchaToken, body?.captchaAnswer)) {
+    throw createError({ statusCode: 400, statusMessage: 'Captcha verification failed' })
+  }
   if (!email || !password) throw createError({ statusCode: 400, statusMessage: 'Email and password are required' })
 
   let user

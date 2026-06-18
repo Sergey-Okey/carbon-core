@@ -3,6 +3,7 @@ import { isAuthDatabaseConfigured, registerAccount } from '../../utils/authStora
 import { setOAuthSession } from '../../utils/oauth'
 import { enforceRateLimit } from '../../utils/rateLimit'
 import { hasActiveSubscription } from '../../utils/subscriptionStorage'
+import { verifyCaptcha } from '../../utils/captcha'
 
 export default defineEventHandler(async (event) => {
   enforceRateLimit(event, 'register', 5, 15 * 60 * 1000)
@@ -15,6 +16,9 @@ export default defineEventHandler(async (event) => {
   const name = typeof body?.name === 'string' ? body.name.trim() : ''
   const acceptedTerms = body?.acceptedTerms === true
   const termsVersion = body?.termsVersion === '2026-06-07' ? body.termsVersion : ''
+  if (!verifyCaptcha(body?.captchaToken, body?.captchaAnswer)) {
+    throw createError({ statusCode: 400, statusMessage: 'Captcha verification failed' })
+  }
   if (!email.includes('@') || password.length < 8 || name.length < 2) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid registration data' })
   }

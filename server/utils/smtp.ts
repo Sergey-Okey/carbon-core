@@ -1,3 +1,4 @@
+import net from 'node:net'
 import tls from 'node:tls'
 
 type MailPayload = {
@@ -24,7 +25,8 @@ export async function sendMail(payload: MailPayload) {
 
   if (!host || !user || !password || !from) return false
 
-  const client = tls.connect({ host, port, servername: host })
+  let client: net.Socket | tls.TLSSocket =
+    port === 465 ? tls.connect({ host, port, servername: host }) : net.connect({ host, port })
   client.setEncoding('utf8')
 
   let buffer = ''
@@ -66,6 +68,14 @@ export async function sendMail(payload: MailPayload) {
   try {
     await waitFor([220])
     await command(`EHLO ${host}`, [250])
+    if (port !== 465) {
+      await command('STARTTLS', [220])
+      client = tls.connect({ socket: client, servername: host })
+      client.setEncoding('utf8')
+      await waitForSecureConnect(client as tls.TLSSocket)
+      buffer = ''
+      await command(`EHLO ${host}`, [250])
+    }
     await command('AUTH LOGIN', [334])
     await command(Buffer.from(user).toString('base64'), [334])
     await command(Buffer.from(password).toString('base64'), [235])
@@ -84,6 +94,25 @@ export async function sendMail(payload: MailPayload) {
 function extractEmail(value: string) {
   const match = value.match(/<([^>]+)>/)
   return (match?.[1] || value).trim()
+}
+
+function waitForSecureConnect(client: tls.TLSSocket) {
+  return new Promise<void>((resolve, reject) => {
+    const onSecure = () => {
+      cleanup()
+      resolve()
+    }
+    const onError = (error: Error) => {
+      cleanup()
+      reject(error)
+    }
+    const cleanup = () => {
+      client.off('secureConnect', onSecure)
+      client.off('error', onError)
+    }
+    client.once('secureConnect', onSecure)
+    client.once('error', onError)
+  })
 }
 
 function formatMessage(payload: MailPayload & { from: string }) {

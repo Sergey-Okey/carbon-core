@@ -11,5 +11,9 @@ export default defineEventHandler((event) => {
     query.acceptedTerms === 'true' && query.termsVersion === '2026-06-07'
       ? query.termsVersion
       : ''
-  return sendRedirect(event, createAuthorizationUrl(event, provider, termsVersion))
+  try {
+    return sendRedirect(event, createAuthorizationUrl(event, provider, termsVersion))
+  } catch {
+    return sendRedirect(event, '/auth?oauthError=provider')
+  }
 })
