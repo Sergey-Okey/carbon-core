@@ -79,6 +79,16 @@ test('auth forms use rate limits and reset mail supports STARTTLS', async () => 
   assert.match(smtp, /net\.connect/)
 })
 
+test('password reset can create a password for oauth accounts', async () => {
+  const authStorage = await read('server/utils/authStorage.ts')
+  const createResetBlock = authStorage.match(/export async function createPasswordResetToken[\s\S]*?export async function resetAccountPassword/)?.[0] || ''
+  const resetBlock = authStorage.match(/export async function resetAccountPassword[\s\S]*?export async function upsertOAuthAccount/)?.[0] || ''
+
+  assert.doesNotMatch(createResetBlock, /provider\)\s*!==\s*'local'/)
+  assert.match(resetBlock, /SET password_hash/)
+  assert.doesNotMatch(resetBlock, /provider\s*=\s*'local'/)
+})
+
 test('email registration requires a mailed verification code before session', async () => {
   const registerApi = await read('server/api/auth/register.post.ts')
   const verifyApi = await read('server/api/auth/email-verification/verify.post.ts')

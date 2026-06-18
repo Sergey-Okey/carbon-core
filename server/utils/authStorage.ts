@@ -222,13 +222,13 @@ export async function createPasswordResetToken(email: string) {
 
   const normalizedEmail = email.trim().toLowerCase()
   const users = await sql`
-    SELECT id, email, name, provider
+    SELECT id, email, name
     FROM cof_users
     WHERE email = ${normalizedEmail}
     LIMIT 1
   `
   const user = users[0] as Record<string, unknown> | undefined
-  if (!user || String(user.provider) !== 'local') return null
+  if (!user) return null
 
   const token = randomBytes(32).toString('base64url')
   const tokenHash = hashToken(token)
@@ -267,7 +267,9 @@ export async function resetAccountPassword(token: string, password: string) {
 
   await sql`
     UPDATE cof_users
-    SET password_hash = ${hashPassword(password)}, provider = 'local', updated_at = NOW()
+    SET password_hash = ${hashPassword(password)},
+        email_verified_at = COALESCE(email_verified_at, NOW()),
+        updated_at = NOW()
     WHERE id = ${String(row.user_id)}
   `
   await sql`
