@@ -17,11 +17,11 @@ type RuntimeMailConfig = {
 
 export async function sendMail(payload: MailPayload) {
   const config = useRuntimeConfig() as unknown as RuntimeMailConfig
-  const host = config.smtpHost?.trim()
-  const user = config.smtpUser?.trim()
-  const password = config.smtpPassword || ''
-  const from = config.smtpFrom?.trim() || user
-  const port = Number(config.smtpPort || 465)
+  const host = (config.smtpHost || process.env.SMTP_HOST || '').trim()
+  const user = (config.smtpUser || process.env.SMTP_USER || '').trim()
+  const password = config.smtpPassword || process.env.SMTP_PASSWORD || ''
+  const from = (config.smtpFrom || process.env.SMTP_FROM || '').trim() || user
+  const port = Number(config.smtpPort || process.env.SMTP_PORT || 465)
 
   if (!host || !user || !password || !from) return false
 

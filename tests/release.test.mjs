@@ -75,6 +75,8 @@ test('auth forms use rate limits and reset mail supports STARTTLS', async () => 
   assert.doesNotMatch(registerApi, /verifyCaptcha/)
   assert.doesNotMatch(loginApi, /verifyCaptcha/)
   assert.doesNotMatch(resetApi, /verifyCaptcha/)
+  assert.match(smtp, /process\.env\.SMTP_HOST/)
+  assert.match(smtp, /process\.env\.SMTP_PASSWORD/)
   assert.match(smtp, /STARTTLS/)
   assert.match(smtp, /net\.connect/)
 })
