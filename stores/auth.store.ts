@@ -177,9 +177,7 @@ export const useAuthStore = defineStore(
       password: string,
       name: string,
       mode: AuthMode = 'cloud',
-      acceptedTerms = false,
-      captchaToken = '',
-      captchaAnswer = ''
+      acceptedTerms = false
     ): Promise<{ success: boolean; error?: string; requiresVerification?: boolean; email?: string }> {
       isLoading.value = true
 
@@ -208,8 +206,6 @@ export const useAuthStore = defineStore(
                 name,
                 acceptedTerms,
                 termsVersion: '2026-06-07',
-                captchaToken,
-                captchaAnswer,
               },
               ...getBackendFetchOptions(),
             }
@@ -283,9 +279,7 @@ export const useAuthStore = defineStore(
     async function login(
       email: string,
       password: string,
-      mode: AuthMode = 'cloud',
-      captchaToken = '',
-      captchaAnswer = ''
+      mode: AuthMode = 'cloud'
     ): Promise<{ success: boolean; error?: string }> {
       isLoading.value = true
 
@@ -295,7 +289,7 @@ export const useAuthStore = defineStore(
             getBackendUrl('/api/auth/login'),
             {
               method: 'POST',
-              body: { email, password, captchaToken, captchaAnswer },
+              body: { email, password },
               ...getBackendFetchOptions(),
             }
           )

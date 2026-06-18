@@ -1,6 +1,5 @@
 import { readBody } from 'h3'
 import { createPendingRegistration, isAuthDatabaseConfigured } from '../../utils/authStorage'
-import { verifyCaptcha } from '../../utils/captcha'
 import { enforceRateLimit } from '../../utils/rateLimit'
 import { sendMail } from '../../utils/smtp'
 import { hasActiveSubscription } from '../../utils/subscriptionStorage'
@@ -18,9 +17,6 @@ export default defineEventHandler(async (event) => {
   const acceptedTerms = body?.acceptedTerms === true
   const termsVersion = body?.termsVersion === '2026-06-07' ? body.termsVersion : ''
 
-  if (!verifyCaptcha(body?.captchaToken, body?.captchaAnswer)) {
-    throw createError({ statusCode: 400, statusMessage: 'Captcha verification failed' })
-  }
   if (!email.includes('@') || password.length < 8 || name.length < 2) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid registration data' })
   }

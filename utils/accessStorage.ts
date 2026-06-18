@@ -1,7 +1,9 @@
 export type AccessMode = 'guest' | 'demo' | 'subscribed'
-export type AccessState = { mode: AccessMode; activatedAt: string }
+export type AccessState = { mode: AccessMode; activatedAt: string; expiresAt?: string }
 
 export const ACCESS_STORAGE_KEY = 'carbon-access'
+export const DEMO_STORAGE_KEY = 'carbon-demo-storage'
+export const DEMO_TTL_MS = 3 * 60 * 60 * 1000
 export const ACCESS_DATA_KEYS = [
   'carbon-user',
   'carbon-tasks',
@@ -15,6 +17,11 @@ export const ACCESS_DATA_KEYS = [
 const defaultAccessState: AccessState = {
   mode: 'guest',
   activatedAt: '',
+}
+
+type DemoStoragePayload = {
+  expiresAt: string
+  values: Record<string, string>
 }
 
 let runtimeAccessState: AccessState = { ...defaultAccessState }
@@ -47,6 +54,74 @@ function createMemoryStorage(): Storage {
 
 const demoMemoryStorage = createMemoryStorage()
 
+function isFuture(value?: string) {
+  return Boolean(value && new Date(value).getTime() > Date.now())
+}
+
+function clearPersistedDemo() {
+  if (!import.meta.client) return
+  localStorage.removeItem(DEMO_STORAGE_KEY)
+}
+
+function readDemoPayload(): DemoStoragePayload {
+  if (!import.meta.client) {
+    return { expiresAt: '', values: {} }
+  }
+
+  try {
+    const parsed = JSON.parse(localStorage.getItem(DEMO_STORAGE_KEY) || 'null') as
+      | Partial<DemoStoragePayload>
+      | null
+    if (!parsed?.expiresAt || !isFuture(parsed.expiresAt)) {
+      clearPersistedDemo()
+      return { expiresAt: '', values: {} }
+    }
+    return {
+      expiresAt: parsed.expiresAt,
+      values: parsed.values && typeof parsed.values === 'object' ? parsed.values : {},
+    }
+  } catch {
+    clearPersistedDemo()
+    return { expiresAt: '', values: {} }
+  }
+}
+
+function writeDemoPayload(payload: DemoStoragePayload) {
+  if (!import.meta.client) return
+  localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(payload))
+}
+
+function getDemoExpiresAt() {
+  if (isFuture(runtimeAccessState.expiresAt)) return runtimeAccessState.expiresAt!
+  return new Date(Date.now() + DEMO_TTL_MS).toISOString()
+}
+
+const demoPersistentStorage: Storage = {
+  get length() {
+    return Object.keys(readDemoPayload().values).length
+  },
+  clear() {
+    writeDemoPayload({ expiresAt: getDemoExpiresAt(), values: {} })
+  },
+  getItem(key: string) {
+    const payload = readDemoPayload()
+    return Object.prototype.hasOwnProperty.call(payload.values, key) ? payload.values[key] : null
+  },
+  key(index: number) {
+    return Object.keys(readDemoPayload().values)[index] ?? null
+  },
+  removeItem(key: string) {
+    const payload = readDemoPayload()
+    delete payload.values[key]
+    writeDemoPayload({ ...payload, expiresAt: getDemoExpiresAt() })
+  },
+  setItem(key: string, value: string) {
+    const payload = readDemoPayload()
+    payload.values[key] = value
+    writeDemoPayload({ ...payload, expiresAt: getDemoExpiresAt() })
+  },
+}
+
 function parsePersistedAccessState(raw: string | null): AccessState {
   if (!raw) return { ...defaultAccessState }
 
@@ -58,10 +133,18 @@ function parsePersistedAccessState(raw: string | null): AccessState {
         activatedAt: typeof parsed.activatedAt === 'string' ? parsed.activatedAt : '',
       }
     }
+    if (parsed.mode === 'demo' && isFuture(parsed.expiresAt)) {
+      return {
+        mode: 'demo',
+        activatedAt: typeof parsed.activatedAt === 'string' ? parsed.activatedAt : '',
+        expiresAt: parsed.expiresAt,
+      }
+    }
   } catch {
     return { ...defaultAccessState }
   }
 
+  clearPersistedDemo()
   return { ...defaultAccessState }
 }
 
@@ -90,7 +173,15 @@ export function writeAccessState(state: AccessState) {
     return
   }
 
+  if (state.mode === 'demo' && isFuture(state.expiresAt)) {
+    localStorage.setItem(ACCESS_STORAGE_KEY, JSON.stringify(runtimeAccessState))
+    const payload = readDemoPayload()
+    writeDemoPayload({ expiresAt: state.expiresAt!, values: payload.values })
+    return
+  }
+
   localStorage.removeItem(ACCESS_STORAGE_KEY)
+  clearPersistedDemo()
 }
 
 export function readAccessMode(): AccessMode {
@@ -99,10 +190,11 @@ export function readAccessMode(): AccessMode {
 
 export function resetDemoData() {
   demoMemoryStorage.clear()
+  clearPersistedDemo()
 }
 
 function activeStorage(): Storage {
-  return readAccessMode() === 'demo' ? demoMemoryStorage : localStorage
+  return readAccessMode() === 'demo' ? demoPersistentStorage : localStorage
 }
 
 export const accessAwareStorage: Storage = {
@@ -130,7 +222,8 @@ export function promoteDemoData() {
   if (!import.meta.client) return
 
   for (const key of ACCESS_DATA_KEYS) {
-    const value = demoMemoryStorage.getItem(key)
+    const value = demoPersistentStorage.getItem(key)
     if (value !== null) localStorage.setItem(key, value)
   }
+  clearPersistedDemo()
 }

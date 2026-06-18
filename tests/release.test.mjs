@@ -50,14 +50,11 @@ test('registration requires explicit legal consent', async () => {
   const privacy = await read('pages/privacy.vue')
   assert.match(authPanel, /form\.acceptedTerms/)
   assert.match(registerApi, /acceptedTerms === true/)
-  assert.match(registerApi, /verifyCaptcha/)
   assert.match(oauthRoute, /acceptedTerms === 'true'/)
   assert.match(authStorage, /Terms consent is required/)
   assert.match(privacy, /Отзыв согласия/)
   assert.match(privacy, /Удаление данных/)
   assert.match(authPanel, /register\(form\.email, form\.password, form\.name, 'cloud'/)
-  assert.match(authPanel, /captchaToken/)
-  assert.match(authPanel, /captchaAnswer/)
   assert.doesNotMatch(authPanel, /class="auth-mode"/)
   assert.doesNotMatch(authPanel, /class="auth-topbar"/)
   assert.match(authPanel, /Попробовать демо/)
@@ -66,15 +63,18 @@ test('registration requires explicit legal consent', async () => {
   assert.match(authPanel, /keepShortWords/)
 })
 
-test('auth forms use server captcha and reset mail supports STARTTLS', async () => {
-  const captchaApi = await read('server/api/auth/captcha.get.ts')
+test('auth forms use rate limits and reset mail supports STARTTLS', async () => {
+  const registerApi = await read('server/api/auth/register.post.ts')
   const loginApi = await read('server/api/auth/login.post.ts')
   const resetApi = await read('server/api/auth/password-reset/request.post.ts')
   const smtp = await read('server/utils/smtp.ts')
 
-  assert.match(captchaApi, /createCaptchaChallenge/)
-  assert.match(loginApi, /verifyCaptcha/)
-  assert.match(resetApi, /verifyCaptcha/)
+  assert.match(registerApi, /enforceRateLimit/)
+  assert.match(loginApi, /enforceRateLimit/)
+  assert.match(resetApi, /enforceRateLimit/)
+  assert.doesNotMatch(registerApi, /verifyCaptcha/)
+  assert.doesNotMatch(loginApi, /verifyCaptcha/)
+  assert.doesNotMatch(resetApi, /verifyCaptcha/)
   assert.match(smtp, /STARTTLS/)
   assert.match(smtp, /net\.connect/)
 })
@@ -161,6 +161,17 @@ test('theme schedule uses the custom time picker', async () => {
   assert.match(settings, /<AppTimePicker/)
   assert.doesNotMatch(settings, /type="time"/)
   assert.match(timePicker, /class="time-popover"/)
+})
+
+test('demo mode persists locally with a three hour TTL', async () => {
+  const accessStorage = await read('utils/accessStorage.ts')
+  const accessStore = await read('stores/access.store.ts')
+
+  assert.match(accessStorage, /DEMO_TTL_MS = 3 \* 60 \* 60 \* 1000/)
+  assert.match(accessStorage, /DEMO_STORAGE_KEY/)
+  assert.match(accessStorage, /carbon-demo-storage/)
+  assert.match(accessStore, /expiresAt/)
+  assert.match(accessStore, /DEMO_TTL_MS/)
 })
 
 test('native app keeps launch animation and skips onboarding route', async () => {

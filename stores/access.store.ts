@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import {
+  DEMO_TTL_MS,
   promoteDemoData,
   readAccessState,
   writeAccessState,
@@ -15,6 +16,7 @@ export const useAccessStore = defineStore('access', () => {
   const initialState = readAccessState()
   const mode = ref<AccessMode>(initialState.mode)
   const activatedAt = ref(initialState.activatedAt)
+  const expiresAt = ref(initialState.expiresAt || '')
 
   const isDemo = computed(() => mode.value === 'demo')
   const hasSubscription = computed(() => mode.value === 'subscribed')
@@ -24,12 +26,15 @@ export const useAccessStore = defineStore('access', () => {
     writeAccessState({
       mode: mode.value,
       activatedAt: activatedAt.value,
+      expiresAt: expiresAt.value,
     })
   }
 
   function startDemo() {
+    const now = new Date()
     mode.value = 'demo'
-    activatedAt.value = ''
+    activatedAt.value = now.toISOString()
+    expiresAt.value = new Date(now.getTime() + DEMO_TTL_MS).toISOString()
     persistState()
     browserLog.info('access', 'Демо-режим включен')
   }
@@ -38,6 +43,7 @@ export const useAccessStore = defineStore('access', () => {
     promoteDemoData()
     mode.value = 'subscribed'
     activatedAt.value = new Date().toISOString()
+    expiresAt.value = ''
     persistState()
     browserLog.info('access', 'Подписка активирована', { activatedAt: activatedAt.value })
   }
@@ -46,6 +52,7 @@ export const useAccessStore = defineStore('access', () => {
     if (mode.value !== 'demo') return
     mode.value = 'guest'
     activatedAt.value = ''
+    expiresAt.value = ''
     persistState()
     browserLog.info('access', 'Демо-режим завершен')
   }
@@ -53,6 +60,7 @@ export const useAccessStore = defineStore('access', () => {
   return {
     mode,
     activatedAt,
+    expiresAt,
     isDemo,
     hasSubscription,
     canPersist,
