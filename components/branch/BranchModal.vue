@@ -426,7 +426,7 @@ function handleQuickTask(data: TaskFormData) {
   padding: 0 14px;
   color: var(--text);
   background: transparent;
-  border: var(--ui-border);
+  border: none;
   border-radius: var(--border-radius-md);
   cursor: pointer;
   transition:
@@ -535,7 +535,7 @@ function handleQuickTask(data: TaskFormData) {
   aspect-ratio: 1;
   color: var(--dim);
   background: transparent;
-  border: var(--ui-border);
+  border: none;
   border-radius: var(--border-radius-pill);
   cursor: pointer;
   transition:

@@ -319,8 +319,8 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     flex: 0 0 34px;
     border-radius: var(--border-radius-pill);
     color: var(--node-marker-color);
-    background: color-mix(in srgb, var(--node-marker-color) 12%, var(--surface));
-    border: 1px solid color-mix(in srgb, var(--node-marker-color) 28%, var(--ui-border-color));
+    background: transparent;
+    border: none;
   }
 
   .node-icon :deep(svg) {

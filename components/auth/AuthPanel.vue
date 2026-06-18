@@ -60,15 +60,14 @@
               </div>
             </div>
 
-            <a
+            <button
               class="payment-link"
-              :href="SUBSCRIPTION_PAYMENT_URL"
-              target="_blank"
-              rel="noopener noreferrer"
+              type="button"
+              @click="startSubscriptionPayment"
             >
               Оплатить доступ · {{ SUBSCRIPTION_PRICE }} ₽
               <ArrowUpRight :size="16" />
-            </a>
+            </button>
 
             <div class="subscription-check">
               <AppFormField label="Email, указанный при оплате">
@@ -255,6 +254,9 @@ const accessBenefits = [
   { title: 'Дальнейшие обновления', description: keepShortWords('Новые возможности будут доступны в профиле.') },
 ]
 
+const PENDING_SUBSCRIPTION_KEY = 'carbon-pending-subscription'
+const PENDING_SUBSCRIPTION_TTL = 24 * 60 * 60 * 1000
+
 const error = ref('')
 const subscriptionEmail = ref('')
 const subscriptionError = ref('')
@@ -273,6 +275,7 @@ const resetToken = computed(() => {
 
 onMounted(() => {
   const oauthError = typeof route.query.oauthError === 'string' ? route.query.oauthError : ''
+  void resumePendingSubscription()
   if (!oauthError) return
 
   const message = getOAuthErrorMessage(oauthError)
@@ -280,6 +283,78 @@ onMounted(() => {
   addNotification({ type: 'warning', message, duration: 6000 })
   void router.replace('/auth')
 })
+
+function normalizeEmail(value: string) {
+  return value.trim().toLowerCase()
+}
+
+function readPendingSubscription() {
+  if (!import.meta.client) return null
+
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PENDING_SUBSCRIPTION_KEY) || 'null') as {
+      email?: string
+      createdAt?: number
+    } | null
+
+    if (!parsed?.email || !parsed.createdAt) return null
+    if (Date.now() - parsed.createdAt > PENDING_SUBSCRIPTION_TTL) {
+      localStorage.removeItem(PENDING_SUBSCRIPTION_KEY)
+      return null
+    }
+
+    return parsed
+  } catch {
+    localStorage.removeItem(PENDING_SUBSCRIPTION_KEY)
+    return null
+  }
+}
+
+function writePendingSubscription(email: string) {
+  if (!import.meta.client) return
+  localStorage.setItem(
+    PENDING_SUBSCRIPTION_KEY,
+    JSON.stringify({ email, createdAt: Date.now() })
+  )
+}
+
+function clearPendingSubscription() {
+  if (import.meta.client) localStorage.removeItem(PENDING_SUBSCRIPTION_KEY)
+}
+
+function buildSubscriptionPaymentUrl(email: string) {
+  const url = new URL(SUBSCRIPTION_PAYMENT_URL)
+  url.searchParams.set('EMail', email)
+  url.searchParams.set('Email', email)
+  url.searchParams.set('Shp_email', email)
+  url.searchParams.set('Shp_return', 'register')
+  return url.toString()
+}
+
+async function resumePendingSubscription() {
+  const pending = readPendingSubscription()
+  if (!pending) return
+  const pendingEmail = pending.email
+  if (!pendingEmail) return
+
+  subscriptionEmail.value = pendingEmail
+  if (!form.email) form.email = pendingEmail
+
+  if (!isRegister.value) {
+    await router.replace('/register')
+    return
+  }
+
+  const activated = await verifySubscription(pendingEmail, { silentMissing: true })
+  if (!activated) return
+
+  clearPendingSubscription()
+  addNotification({
+    type: 'success',
+    message: 'Оплата найдена. Теперь можно создать профиль',
+    duration: 6000,
+  })
+}
 
 function startDemo() {
   resetDemoData()
@@ -297,6 +372,21 @@ function startOAuth(provider: 'google' | 'yandex') {
     ? '?acceptedTerms=true&termsVersion=2026-06-07'
     : ''
   window.location.assign(`/api/auth/${provider}${consent}`)
+}
+
+function startSubscriptionPayment() {
+  const email = normalizeEmail(subscriptionEmail.value || form.email)
+  subscriptionError.value = ''
+
+  if (!email.includes('@')) {
+    subscriptionError.value = 'Сначала укажите email, на который оформляете оплату'
+    return
+  }
+
+  subscriptionEmail.value = email
+  form.email = email
+  writePendingSubscription(email)
+  window.location.assign(buildSubscriptionPaymentUrl(email))
 }
 
 function getOAuthErrorMessage(reason: string) {
@@ -369,8 +459,11 @@ async function confirmPasswordReset() {
   }
 }
 
-async function verifySubscription(emailValue = subscriptionEmail.value || form.email) {
-  const email = emailValue.trim().toLowerCase()
+async function verifySubscription(
+  emailValue = subscriptionEmail.value || form.email,
+  options: { silentMissing?: boolean } = {}
+) {
+  const email = normalizeEmail(emailValue)
   subscriptionError.value = ''
 
   if (!email.includes('@')) {
@@ -389,6 +482,7 @@ async function verifySubscription(emailValue = subscriptionEmail.value || form.e
     )
 
     if (!status.active) {
+      if (options.silentMissing) return false
       subscriptionError.value = 'Оплата для этого email пока не найдена'
       return false
     }
@@ -396,6 +490,7 @@ async function verifySubscription(emailValue = subscriptionEmail.value || form.e
     subscriptionEmail.value = email
     if (!form.email) form.email = email
     accessStore.activateSubscription()
+    clearPendingSubscription()
     return true
   } catch {
     subscriptionError.value = 'Не удалось проверить оплату. Попробуйте чуть позже'
@@ -423,8 +518,8 @@ async function submit() {
   }
   const wasRegister = isRegister.value
   const result = wasRegister
-    ? await authStore.register(form.email, form.password, form.name, 'local', form.acceptedTerms)
-    : await authStore.login(form.email, form.password, 'local')
+    ? await authStore.register(form.email, form.password, form.name, 'cloud', form.acceptedTerms)
+    : await authStore.login(form.email, form.password, 'cloud')
   if (!result.success) {
     error.value = result.error || 'Не удалось выполнить действие'
     return
@@ -880,8 +975,11 @@ function addWelcomeRegistrationLetter(name: string) {
   padding: 12px 20px;
   box-sizing: border-box;
   background: var(--accent);
+  border: none;
   border-radius: var(--border-radius-pill);
   color: var(--bg);
+  cursor: pointer;
+  font: inherit;
   font-weight: 600;
   text-decoration: none;
   transition: opacity var(--transition-standard);
@@ -927,9 +1025,12 @@ function addWelcomeRegistrationLetter(name: string) {
     align-items: center;
     gap: 12px;
     height: calc(100dvh - 32px);
+    padding-inline: 11px;
+    box-sizing: border-box;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-behavior: smooth;
+    scroll-padding-inline: 11px;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
     overscroll-behavior-x: contain;
@@ -966,8 +1067,6 @@ function addWelcomeRegistrationLetter(name: string) {
   .auth-intro {
     order: 1;
     gap: 20px;
-    transform: scale(0.97);
-    transform-origin: left center;
   }
 
   .intro-content {
@@ -1021,16 +1120,14 @@ function addWelcomeRegistrationLetter(name: string) {
 
   .auth-grid {
     height: calc(100dvh - 20px);
+    padding-inline: 9px;
+    scroll-padding-inline: 9px;
   }
 
   .auth-panel {
     flex-basis: calc(100vw - 38px);
     min-height: 0;
     padding: 18px;
-  }
-
-  .auth-intro {
-    transform: scale(0.975);
   }
 
   .intro-content h1 {

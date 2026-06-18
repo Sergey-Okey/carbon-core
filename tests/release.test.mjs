@@ -54,7 +54,7 @@ test('registration requires explicit legal consent', async () => {
   assert.match(authStorage, /Terms consent is required/)
   assert.match(privacy, /Отзыв согласия/)
   assert.match(privacy, /Удаление данных/)
-  assert.match(authPanel, /register\(form\.email, form\.password, form\.name, 'local'/)
+  assert.match(authPanel, /register\(form\.email, form\.password, form\.name, 'cloud'/)
   assert.doesNotMatch(authPanel, /class="auth-mode"/)
   assert.doesNotMatch(authPanel, /class="auth-topbar"/)
   assert.match(authPanel, /Попробовать демо/)
