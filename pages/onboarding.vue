@@ -1,11 +1,9 @@
 <template>
   <div class="onboarding">
-    <!-- Прогресс-бар -->
     <div class="top-progress">
       <div class="progress-fill" :style="{ width: progress + '%' }" />
     </div>
 
-    <!-- Центральная сфера с маркерами доски -->
     <div class="background-layer">
       <div class="board-sphere">
         <div class="sphere-core"></div>
@@ -27,10 +25,8 @@
       <div class="gradient-overlay"></div>
     </div>
 
-    <!-- Скролл-контейнер -->
     <div class="scroll-container" ref="scrollContainer" @scroll="handleScroll">
       <div class="first-slide">
-        <!-- Хедер -->
         <div class="fixed-header">
           <div
             v-motion
@@ -58,7 +54,6 @@
           </div>
         </div>
 
-        <!-- Шаг 1 – Вступление -->
         <section id="step-1" class="section hero-section">
           <div class="section-content">
             <div
@@ -144,7 +139,6 @@
         </section>
       </div>
 
-      <!-- Шаг 2 – Философия правила трёх -->
       <section id="step-2" class="section rule-section">
         <div class="section-content">
           <div
@@ -200,7 +194,6 @@
         </div>
       </section>
 
-      <!-- Шаг 3 – Визуализация прогресса -->
       <section id="step-3" class="section visual-section">
         <div class="section-content">
           <div
@@ -253,7 +246,6 @@
         </div>
       </section>
 
-      <!-- Шаг 4 – Инструменты -->
       <section id="step-4" class="section tools-section">
         <div class="section-content">
           <div
@@ -321,7 +313,6 @@
         </div>
       </section>
 
-      <!-- Шаг 5 – Безопасность -->
       <section id="step-5" class="section security-section">
         <div class="section-content">
           <div
@@ -364,7 +355,6 @@
         </div>
       </section>
 
-      <!-- Шаг 6 – О проекте (с аккордеоном для доната) -->
       <section id="step-6" class="section about-section">
         <div class="section-content">
           <div
@@ -415,7 +405,6 @@
               новые возможности.
             </p>
           </div>
-          <!-- Аккордеон с адресом -->
           <div class="donation-wrapper">
             <button
               class="donation-btn"
@@ -475,7 +464,6 @@
         </div>
       </section>
 
-      <!-- Шаг 7 – Старт -->
       <section id="step-7" class="section start-section">
         <div class="section-content">
           <div
@@ -949,22 +937,22 @@ onUnmounted(() => {
   100% {
     top: -5px;
     left: 50%;
-    background: #d6d6d6;
+    background: var(--accent);
   }
   28% {
     top: 22%;
     left: 92%;
-    background: #8da4ff;
+    background: color-mix(in srgb, var(--accent) 70%, var(--success));
   }
   57% {
     top: 88%;
     left: 68%;
-    background: #a8e6cf;
+    background: color-mix(in srgb, var(--success) 70%, var(--text));
   }
   81% {
     top: 62%;
     left: 4%;
-    background: #ffd3a5;
+    background: color-mix(in srgb, var(--warning) 70%, var(--text));
   }
 }
 
@@ -973,22 +961,22 @@ onUnmounted(() => {
   100% {
     top: 50%;
     left: calc(100% - 5px);
-    background: #d6d6d6;
+    background: var(--accent);
   }
   24% {
     top: 86%;
     left: 20%;
-    background: #f2a6c2;
+    background: color-mix(in srgb, var(--error) 45%, var(--text));
   }
   52% {
     top: 8%;
     left: 18%;
-    background: #9bd7ff;
+    background: color-mix(in srgb, var(--accent) 65%, var(--bg));
   }
   76% {
     top: 68%;
     left: 86%;
-    background: #d2b4ff;
+    background: color-mix(in srgb, var(--accent) 55%, var(--text));
   }
 }
 
@@ -997,22 +985,22 @@ onUnmounted(() => {
   100% {
     top: 82%;
     left: 14%;
-    background: #d6d6d6;
+    background: var(--accent);
   }
   31% {
     top: 4%;
     left: 62%;
-    background: #ffe28a;
+    background: color-mix(in srgb, var(--warning) 75%, var(--text));
   }
   63% {
     top: 46%;
     left: 94%;
-    background: #91e5c3;
+    background: color-mix(in srgb, var(--success) 75%, var(--text));
   }
   84% {
     top: 72%;
     left: 42%;
-    background: #aeb8ff;
+    background: color-mix(in srgb, var(--accent) 72%, var(--bg));
   }
 }
 
@@ -1443,10 +1431,9 @@ onUnmounted(() => {
   color: var(--accent);
 }
 
-/* ===== Обновлённые стили для секции "О проекте" ===== */
 .about-section {
   .about-text {
-    margin-bottom: 24px; // Уменьшаем отступы между параграфами
+    margin-bottom: 24px;
   }
 }
 
@@ -1685,7 +1672,6 @@ onUnmounted(() => {
   }
 }
 
-// Адаптивность (только необходимые правки)
 @media (max-width: 1024px) {
   .fixed-header {
     padding-block: calc(env(safe-area-inset-top, 0px) + 14px) 10px;

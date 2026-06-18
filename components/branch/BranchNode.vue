@@ -63,7 +63,6 @@
       </div>
     </Transition>
 
-    <!-- Хендлы -->
     <Handle
       :id="`target-top-${data.branchId}`"
       type="target"
@@ -165,7 +164,7 @@ const branchColor = computed(() => {
   const branch = branchesStore.branches.find(
     (b) => b.id === props.data.branchId
   )
-  return branch?.markerColor || branch?.backgroundColor || props.data.branchColor || '#d6d6d6'
+  return branch?.markerColor || branch?.backgroundColor || props.data.branchColor || 'var(--accent)'
 })
 
 const nodeStyle = computed(() => ({

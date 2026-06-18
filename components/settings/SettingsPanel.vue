@@ -706,13 +706,12 @@ async function resetAllData() {
   font: inherit;
   font-size: 0.92rem;
   font-weight: 600;
-  will-change: background-color, color;
   transition:
     background var(--transition-standard),
     color var(--transition-standard);
 
   &:hover:not(.active) {
-    background: color-mix(in srgb, var(--accent) 7%, transparent);
+    background: transparent;
     color: var(--text);
   }
 

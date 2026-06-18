@@ -63,7 +63,6 @@
       </div>
     </Transition>
 
-    <!-- Хендлы -->
     <Handle
       :id="`target-top-${data.milestone.id}`"
       type="target"
@@ -145,7 +144,7 @@ const branchesStore = useBranchesStore()
 const milestone = computed(() => props.data.milestone!)
 const branchColor = computed(() => {
   const branch = branchesStore.branches.find((item) => item.id === props.data.branchId)
-  return branch?.markerColor || branch?.backgroundColor || props.data.branchColor || '#d6d6d6'
+  return branch?.markerColor || branch?.backgroundColor || props.data.branchColor || 'var(--accent)'
 })
 const milestoneColor = computed(
   () => milestone.value.markerColor || milestone.value.backgroundColor || branchColor.value

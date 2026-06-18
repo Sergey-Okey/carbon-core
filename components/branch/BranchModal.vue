@@ -76,7 +76,7 @@
                 :class="{ selected: form.taskIds.includes(task.id) }"
                 @click.prevent="toggleTask(task.id)"
               >
-                <component :is="taskIcon(task.type)" :size="16" class="task-icon" />
+                <ListTodo :size="16" class="task-icon" />
                 <span class="custom-checkbox">
                   <input type="checkbox" :checked="form.taskIds.includes(task.id)" />
                   <span class="checkmark"></span>
@@ -124,7 +124,6 @@ import {
   Brain,
   Briefcase,
   CalendarDays,
-  CheckSquare,
   ChevronDown,
   Code,
   Compass,
@@ -153,6 +152,7 @@ import AppInput from '~/components/ui/AppInput.vue'
 import AppModal from '~/components/ui/AppModal.vue'
 import type { Branch } from '~/types/branch.types'
 import { useTasksStore } from '~/stores/tasks.store'
+import { useBranchesStore } from '~/stores/branches.store'
 import TaskForm from '~/components/task/TaskForm.vue'
 import type { TaskFormData } from '~/types/task.types'
 
@@ -171,10 +171,28 @@ const tasksExpanded = ref(false)
 const nameTouched = ref(false)
 const showQuickTask = ref(false)
 const tasksStore = useTasksStore()
+const branchesStore = useBranchesStore()
+const linkedTaskIds = computed(() => {
+  const ids = new Set<string>()
+  for (const branch of branchesStore.branches) {
+    const currentBranch = props.branch?.id === branch.id
+    const directIds = branch.directTaskIds || branch.taskIds || []
+    for (const id of directIds) {
+      if (!currentBranch || !form.taskIds.includes(id)) ids.add(id)
+    }
+    for (const milestone of branch.milestones) {
+      for (const id of milestone.taskIds || []) ids.add(id)
+    }
+  }
+  return ids
+})
 const availableTasks = computed(() =>
   tasksStore.tasks.filter(
     (task) =>
-      form.taskIds.includes(task.id) || (task.type !== 'HABIT' && task.type !== 'PURCHASE')
+      !task.done &&
+      task.type !== 'HABIT' &&
+      task.type !== 'PURCHASE' &&
+      (form.taskIds.includes(task.id) || !linkedTaskIds.value.has(task.id))
   )
 )
 
@@ -231,10 +249,6 @@ const iconComponent = (name: string) => {
   }
   return map[name] || Target
 }
-
-const taskIcon = (type: string) =>
-  ({ TASK_DAY: CheckSquare, TASK_WEEK: CalendarDays, TASK_MONTH: Bell, TASK_YEAR: Flag })[type] ||
-  ListTodo
 
 const canSubmit = computed(() => form.name.trim().length > 0)
 

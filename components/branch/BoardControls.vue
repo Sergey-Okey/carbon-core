@@ -1,76 +1,78 @@
 <template>
-  <Panel position="bottom-center" class="board-controls-panel">
-    <div class="board-controls">
-      <button @click="$emit('fit-view')" aria-label="Сбросить вид" data-tooltip="Сбросить вид">
-        <Maximize :size="18" />
-      </button>
-      <button @click="$emit('zoom-in')" aria-label="Приблизить" data-tooltip="Приблизить">
-        <ZoomIn :size="18" />
-      </button>
-      <button @click="$emit('zoom-out')" aria-label="Отдалить" data-tooltip="Отдалить">
-        <ZoomOut :size="18" />
-      </button>
-      <div class="divider"></div>
+  <Panel position="bottom-center">
+    <div class="board-controls-shell">
+      <div class="board-controls">
+        <button @click="$emit('fit-view')" aria-label="Сбросить вид" data-tooltip="Сбросить вид">
+          <Maximize :size="18" />
+        </button>
+        <button @click="$emit('zoom-in')" aria-label="Приблизить" data-tooltip="Приблизить">
+          <ZoomIn :size="18" />
+        </button>
+        <button @click="$emit('zoom-out')" aria-label="Отдалить" data-tooltip="Отдалить">
+          <ZoomOut :size="18" />
+        </button>
+        <div class="divider"></div>
 
-      <button @click="$emit('align-layout')" aria-label="Выровнять доску" data-tooltip="Выровнять доску">
-        <LayoutGrid :size="18" />
-      </button>
-      <button @click="$emit('export-png')" aria-label="Экспортировать доску в PNG" data-tooltip="Экспортировать доску в PNG">
-        <ImageDown :size="18" />
-      </button>
-      <label class="handle-control" aria-label="Дистанция между узлами">
-        <Route :size="16" />
-        <span class="handle-track">
-        <input
-          :value="spacing"
-          type="range"
-          :min="120"
-          :max="320"
-          :step="10"
-          @input="$emit('update:spacing', Number(($event.target as HTMLInputElement).value))"
-        />
-        </span>
-      </label>
-      <div class="divider"></div>
+        <button @click="$emit('align-layout')" aria-label="Выровнять доску" data-tooltip="Выровнять доску">
+          <LayoutGrid :size="18" />
+        </button>
+        <button @click="$emit('export-png')" aria-label="Экспортировать доску в PNG" data-tooltip="Экспортировать доску в PNG">
+          <ImageDown :size="18" />
+        </button>
+        <label class="handle-control" aria-label="Дистанция между узлами">
+          <Route :size="16" />
+          <span class="handle-track">
+          <input
+            :value="spacing"
+            type="range"
+            :min="120"
+            :max="320"
+            :step="10"
+            @input="$emit('update:spacing', Number(($event.target as HTMLInputElement).value))"
+          />
+          </span>
+        </label>
+        <div class="divider"></div>
 
-      <button
-        @click="$emit('add-branch')"
-        aria-label="Добавить ветку"
-        data-tooltip="Добавить ветку"
-        data-tour="board-add-branch"
-        :disabled="!canAddBranch"
-      >
-        <Plus :size="18" />
-      </button>
-      <button
-        @click="$emit('add-milestone')"
-        :aria-label="milestoneTooltip"
-        :data-tooltip="milestoneTooltip"
-        data-tour="board-add-milestone"
-        :disabled="!canAddMilestone"
-      >
-        <PlusCircle :size="18" />
-      </button>
-      <div class="divider"></div>
+        <button
+          @click="$emit('add-branch')"
+          aria-label="Добавить ветку"
+          data-tooltip="Добавить ветку"
+          data-tour="board-add-branch"
+          :disabled="!canAddBranch"
+        >
+          <Plus :size="18" />
+        </button>
+        <button
+          @click="$emit('add-milestone')"
+          :aria-label="milestoneTooltip"
+          :data-tooltip="milestoneTooltip"
+          data-tour="board-add-milestone"
+          :disabled="!canAddMilestone"
+        >
+          <PlusCircle :size="18" />
+        </button>
+        <div class="divider"></div>
 
-      <button
-        v-if="hasSelection"
-        @click="$emit('delete-selected')"
-        :aria-label="deleteTooltip"
-        :data-tooltip="deleteTooltip"
-        class="delete-btn"
-      >
-        <Unlink2 v-if="selectionType === 'edge'" :size="18" />
-        <Trash2 v-else :size="18" />
-      </button>
-      <div v-if="hasSelection" class="divider"></div>
+        <button
+          v-if="hasSelection"
+          @click="$emit('delete-selected')"
+          :aria-label="deleteTooltip"
+          :data-tooltip="deleteTooltip"
+          class="delete-btn"
+        >
+          <Unlink2 v-if="selectionType === 'edge'" :size="18" />
+          <Trash2 v-else :size="18" />
+        </button>
+        <div v-if="hasSelection" class="divider"></div>
 
-      <button @click="$emit('undo')" aria-label="Отменить" data-tooltip="Отменить" :disabled="!canUndo">
-        <Undo :size="18" />
-      </button>
-      <button @click="$emit('redo')" aria-label="Повторить" data-tooltip="Повторить" :disabled="!canRedo">
-        <Redo :size="18" />
-      </button>
+        <button @click="$emit('undo')" aria-label="Отменить" data-tooltip="Отменить" :disabled="!canUndo">
+          <Undo :size="18" />
+        </button>
+        <button @click="$emit('redo')" aria-label="Повторить" data-tooltip="Повторить" :disabled="!canRedo">
+          <Redo :size="18" />
+        </button>
+      </div>
     </div>
   </Panel>
 </template>
@@ -128,29 +130,31 @@ const deleteTooltip = computed(() =>
 </script>
 
 <style scoped lang="scss">
-.board-controls-panel {
+:global(.vue-flow__panel.bottom.center:has(.board-controls-shell)) {
+  overflow: visible;
   pointer-events: none;
   z-index: 10;
-  overflow: visible;
+}
+
+.board-controls-shell {
+  @include glass;
+  position: relative;
+  pointer-events: auto;
+  padding: 6px;
+  border-radius: var(--border-radius-pill);
+  background-clip: padding-box;
+  backdrop-filter: var(--glass-strong-filter);
+  -webkit-backdrop-filter: var(--glass-strong-filter);
+  transform: translateY(-16px);
 }
 
 .board-controls {
-  @include glass;
   position: relative;
-  isolation: isolate;
-  transform: translateY(-16px) translateZ(0);
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 6px;
-  border-radius: var(--border-radius-pill);
-  background: var(--glass-surface);
-  background-clip: padding-box;
-  backdrop-filter: var(--glass-strong-filter) !important;
-  -webkit-backdrop-filter: var(--glass-strong-filter) !important;
   pointer-events: auto;
   overflow: visible;
-  will-change: backdrop-filter, background-color;
 
   button {
     position: relative;

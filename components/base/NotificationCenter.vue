@@ -132,7 +132,7 @@ const tabs = computed(() => [
 
 const historyLabel = computed(() => {
   const count = notificationHistory.value.length
-  if (!count) return 'Только платформенные события'
+  if (!count) return 'Нет уведомлений'
   if (count === 1) return '1 важное событие'
   if (count < 5) return `${count} важных события`
   return `${count} важных событий`
@@ -141,7 +141,7 @@ const historyLabel = computed(() => {
 const emptyText = computed(() =>
   notificationHistory.value.length
     ? 'В этом разделе пока пусто'
-    : 'Здесь будут только важные уведомления платформы'
+    : 'Пока пусто'
 )
 
 function formatTime(value?: string) {
@@ -230,13 +230,13 @@ onBeforeUnmount(() => {
   inset-block-start: calc(72px + env(safe-area-inset-top, 0px));
   inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
   z-index: 4300;
-  inline-size: min(380px, calc(100dvw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+  inline-size: min(350px, calc(100dvw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
-  background: var(--glass-surface);
-  backdrop-filter: var(--glass-strong-filter);
-  -webkit-backdrop-filter: var(--glass-strong-filter);
+  background: var(--glass-surface) !important;
+  backdrop-filter: var(--glass-strong-filter) !important;
+  -webkit-backdrop-filter: var(--glass-strong-filter) !important;
   color: var(--text);
 }
 
@@ -244,27 +244,27 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding: 14px;
+  gap: 10px;
+  padding: 12px;
   border-bottom: var(--ui-border);
 
   h3 {
     margin: 0 0 2px;
-    font-size: 0.98rem;
+    font-size: 0.94rem;
     font-weight: 700;
   }
 
   span {
     color: var(--dim);
-    font-size: 0.82rem;
+    font-size: 0.76rem;
   }
 }
 
 .notification-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
-  padding: 10px;
+  gap: 4px;
+  padding: 7px 8px;
   border-bottom: var(--ui-border);
 }
 
@@ -272,54 +272,76 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: var(--control-height-md);
-  padding: 7px 10px;
+  gap: 5px;
+  min-width: 0;
+  min-height: 32px;
+  padding: 4px 7px;
   border: none;
   border-radius: var(--border-radius-pill);
   background: transparent;
   color: var(--dim);
   cursor: pointer;
-  font-size: 0.82rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1;
   transition:
     background var(--transition-standard),
     color var(--transition-standard);
 
+  svg {
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    opacity: 0.78;
+  }
+
+  span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   b {
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
     border-radius: 999px;
-    background: var(--glass-surface);
+    background: color-mix(in srgb, var(--text) 8%, transparent);
     color: var(--text);
-    font-size: 0.7rem;
-    line-height: 18px;
+    font-size: 0.62rem;
+    font-weight: 600;
+    line-height: 1;
   }
 
   &:hover {
-    background: var(--glass-surface);
+    background: color-mix(in srgb, var(--text) 5%, transparent);
     color: var(--text);
   }
 
   &.active {
-    background: var(--accent);
-    color: var(--bg);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--text);
   }
 
   &.active:hover {
-    background: var(--accent);
-    color: var(--bg);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--text);
   }
 
   &.active b {
-    background: var(--bg);
-    color: var(--text);
+    background: var(--accent);
+    color: var(--bg);
   }
 }
 
 @media (max-width: 767px) {
   .tab-btn {
-    min-height: 44px;
+    min-height: 34px;
   }
 }
 
@@ -333,8 +355,8 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
+  gap: 8px;
+  padding: 10px 12px;
   border-bottom: var(--ui-border);
 
   &:last-child {
@@ -371,7 +393,7 @@ onBeforeUnmount(() => {
 
   strong {
     color: var(--text);
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     font-weight: 600;
     line-height: 1.35;
     overflow-wrap: anywhere;
@@ -380,7 +402,7 @@ onBeforeUnmount(() => {
   span {
     margin-top: 2px;
     color: var(--dim);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
 }
 
@@ -388,7 +410,7 @@ onBeforeUnmount(() => {
   display: grid;
   justify-items: center;
   gap: 8px;
-  padding: 28px 16px;
+  padding: 22px 14px;
   color: var(--dim);
   font-size: 0.88rem;
 }
@@ -413,54 +435,53 @@ onBeforeUnmount(() => {
     inset-inline-end: max(10px, env(safe-area-inset-right, 0px));
     max-height: calc(100dvh - 82px - env(safe-area-inset-bottom, 0px));
     inline-size: auto;
-    border-radius: var(--border-radius-xl);
+    border-radius: var(--border-radius-lg);
   }
 
   .panel-header {
     align-items: flex-start;
-    padding: 12px;
+    padding: 10px;
 
     h3 {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
 
     span {
-      font-size: 0.76rem;
+      font-size: 0.72rem;
     }
   }
 
   .notification-tabs {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 5px;
-    padding: 8px;
+    gap: 4px;
+    padding: 6px;
   }
 
   .tab-btn {
-    min-width: 0;
-    gap: 5px;
-    padding-inline: 6px;
-    font-size: 0.75rem;
-
-    svg {
-      display: none;
-    }
+    gap: 4px;
+    padding-inline: 5px;
+    font-size: 0.68rem;
 
     span {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      max-width: 8ch;
+    }
+
+    b {
+      min-width: 15px;
+      height: 15px;
+      padding-inline: 3px;
+      font-size: 0.58rem;
     }
   }
 
   .history-list {
-    max-height: calc(100dvh - 230px);
+    max-height: calc(100dvh - 210px);
   }
 
   .history-item {
-    grid-template-columns: auto minmax(0, 1fr) 38px;
-    gap: 8px;
-    padding: 11px 10px;
+    grid-template-columns: auto minmax(0, 1fr) 34px;
+    gap: 7px;
+    padding: 9px;
   }
 }
 </style>

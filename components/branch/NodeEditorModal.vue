@@ -77,7 +77,7 @@
                 :class="{ selected: form.taskIds.includes(task.id) }"
                 @click.prevent="toggleTask(task.id)"
               >
-                <component :is="taskIcon(task.type)" :size="16" class="task-icon" />
+                <ListTodo :size="16" class="task-icon" />
                 <span class="custom-checkbox">
                   <input type="checkbox" :checked="form.taskIds.includes(task.id)" />
                   <span class="checkmark"></span>
@@ -135,7 +135,6 @@ import {
   Brain,
   Briefcase,
   CalendarDays,
-  CheckSquare,
   ChevronDown,
   Code,
   Compass,
@@ -238,17 +237,16 @@ const iconComponent = (name: string) => {
   return map[name] || Target
 }
 
-const taskIcon = (type: string) =>
-  ({ TASK_DAY: CheckSquare, TASK_WEEK: CalendarDays, TASK_MONTH: Bell, TASK_YEAR: Flag })[type] ||
-  ListTodo
-
 const taskIdsLinkedToOtherMilestones = computed(
   () =>
     new Set(
       branchesStore.branches.flatMap((branch) =>
-        branch.milestones
-          .filter((milestone) => milestone.id !== props.milestone.id)
-          .flatMap((milestone) => milestone.taskIds)
+        [
+          ...(branch.directTaskIds || branch.taskIds || []),
+          ...branch.milestones
+            .filter((milestone) => milestone.id !== props.milestone.id)
+            .flatMap((milestone) => milestone.taskIds),
+        ]
       )
     )
 )
@@ -256,9 +254,10 @@ const taskIdsLinkedToOtherMilestones = computed(
 const activeTasks = computed(() =>
   tasksStore.tasks.filter(
     (task) =>
-      (form.taskIds.includes(task.id) || !taskIdsLinkedToOtherMilestones.value.has(task.id)) &&
+      !task.done &&
       task.type !== 'HABIT' &&
-      task.type !== 'PURCHASE'
+      task.type !== 'PURCHASE' &&
+      (form.taskIds.includes(task.id) || !taskIdsLinkedToOtherMilestones.value.has(task.id))
   )
 )
 const canSubmit = computed(() => form.name.trim().length > 0)

@@ -1,6 +1,5 @@
 <template>
   <div class="branch-mobile-view">
-    <!-- Панель инструментов -->
     <div class="mobile-controls">
       <button data-tour="board-add-branch" @click="addBranch">
         <Plus :size="20" />
@@ -12,20 +11,17 @@
       </button>
     </div>
 
-    <!-- Список веток -->
     <div class="branches-list">
       <div
         v-for="branch in branches"
         :key="branch.id"
         class="branch-item"
         :class="{ expanded: expandedBranch === branch.id }"
-        :style="{ '--node-marker-color': branch.markerColor || branch.backgroundColor || '#d6d6d6' }"
+        :style="{ '--node-marker-color': branch.markerColor || branch.backgroundColor || 'var(--accent)' }"
         data-tour="board-branch-node"
       >
-        <!-- Заголовок ветки -->
         <div class="branch-header" @click="toggleBranch(branch.id)">
           <div class="branch-info">
-            <!-- Декоративный маркер ветки (квадрат) -->
             <div class="node-marker branch-marker"></div>
             <component :is="getIconComponent(branch.icon)" :size="22" class="branch-icon" />
             <div class="branch-text">
@@ -54,7 +50,6 @@
           </div>
         </div>
 
-        <!-- Список этапов ветки (раскрывается) -->
         <Transition name="expand">
           <div v-if="expandedBranch === branch.id" class="milestones-shell">
             <div class="milestones">
@@ -63,10 +58,9 @@
                 :key="milestone.id"
                 class="milestone-item"
                 :class="milestone.status"
-                :style="{ '--node-marker-color': milestone.markerColor || milestone.backgroundColor || branch.markerColor || branch.backgroundColor || '#d6d6d6' }"
+                :style="{ '--node-marker-color': milestone.markerColor || milestone.backgroundColor || branch.markerColor || branch.backgroundColor || 'var(--accent)' }"
                 @click="selectNode(milestone.id)"
               >
-              <!-- Декоративный маркер этапа (круг) -->
               <div class="node-marker milestone-marker"></div>
               <div class="milestone-number">{{ index + 1 }}</div>
               <div class="milestone-content">
@@ -313,17 +307,20 @@ function getIconComponent(iconName: string) {
 <style scoped lang="scss">
 .branch-mobile-view {
   width: 100%;
+  inline-size: 100%;
   padding:
     calc(72px + env(safe-area-inset-top, 0px))
     max(12px, env(safe-area-inset-right, 0px))
     calc(96px + env(safe-area-inset-bottom, 0px))
     max(12px, env(safe-area-inset-left, 0px));
   max-width: 100%;
+  max-inline-size: 100%;
   overflow-x: hidden;
   overflow-y: auto;
   background: transparent;
   min-height: 100%;
   box-sizing: border-box;
+  contain: inline-size;
 }
 
 .mobile-controls {
@@ -369,7 +366,11 @@ function getIconComponent(iconName: string) {
   flex-direction: column;
   gap: 16px;
   width: 100%;
+  inline-size: 100%;
   min-width: 0;
+  max-width: 100%;
+  max-inline-size: 100%;
+  overflow-x: clip;
 }
 
 .desktop-invitation {
@@ -426,13 +427,16 @@ function getIconComponent(iconName: string) {
 .branch-item {
   @include glass;
   width: 100%;
+  inline-size: 100%;
   min-width: 0;
   max-width: 100%;
+  max-inline-size: 100%;
   box-sizing: border-box;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
   background: var(--glass-surface);
   overflow: hidden;
+  contain: inline-size;
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard);
@@ -451,6 +455,8 @@ function getIconComponent(iconName: string) {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  max-width: 100%;
   padding: 14px 16px;
   min-width: 0;
   box-sizing: border-box;
@@ -471,6 +477,7 @@ function getIconComponent(iconName: string) {
   gap: 8px;
   flex: 1;
   min-width: 0;
+  max-width: 100%;
 
   .node-marker {
     margin-right: 2px;
@@ -519,8 +526,11 @@ function getIconComponent(iconName: string) {
 
   .progress-dashes {
     display: flex;
+    flex-wrap: wrap;
     gap: 4px;
     align-items: center;
+    min-width: 0;
+    max-width: 100%;
   }
 }
 
@@ -546,6 +556,7 @@ function getIconComponent(iconName: string) {
   align-items: center;
   gap: 8px;
   flex: 0 0 auto;
+  min-width: 0;
 
   button {
     background: transparent;
@@ -578,8 +589,12 @@ function getIconComponent(iconName: string) {
   display: grid;
   grid-template-rows: 1fr;
   width: 100%;
+  inline-size: 100%;
   min-width: 0;
+  max-width: 100%;
+  max-inline-size: 100%;
   overflow: hidden;
+  contain: inline-size;
 }
 
 .milestones {
@@ -587,10 +602,14 @@ function getIconComponent(iconName: string) {
   flex-direction: column;
   gap: 12px;
   width: 100%;
+  inline-size: 100%;
   min-width: 0;
+  max-width: 100%;
+  max-inline-size: 100%;
   min-height: 0;
   padding: 12px;
   box-sizing: border-box;
+  overflow-x: clip;
 }
 
 .milestone-item {
@@ -598,8 +617,10 @@ function getIconComponent(iconName: string) {
   align-items: flex-start;
   gap: 8px;
   width: 100%;
+  inline-size: 100%;
   min-width: 0;
   max-width: 100%;
+  max-inline-size: 100%;
   padding: 12px;
   box-sizing: border-box;
   @include glass;
@@ -641,6 +662,7 @@ function getIconComponent(iconName: string) {
   flex: 1;
   min-width: 0;
   max-width: 100%;
+  overflow: hidden;
 }
 
 .milestone-header {
@@ -656,6 +678,8 @@ function getIconComponent(iconName: string) {
     font-size: 0.9rem;
     margin: 0;
     color: var(--text);
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .milestone-badges {
@@ -666,8 +690,11 @@ function getIconComponent(iconName: string) {
 
   .task-dashes {
     display: flex;
+    flex-wrap: wrap;
     gap: 3px;
     align-items: center;
+    min-width: 0;
+    max-width: 100%;
   }
 }
 
@@ -676,6 +703,7 @@ function getIconComponent(iconName: string) {
   color: var(--dim);
   margin: 0;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .description-block {
@@ -695,9 +723,12 @@ function getIconComponent(iconName: string) {
 
 .progress-dashes {
   display: flex;
+  flex-wrap: wrap;
   gap: 3px;
   align-items: center;
   margin: 6px 0 4px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .task-counter {
@@ -731,6 +762,7 @@ function getIconComponent(iconName: string) {
     color: var(--text);
     padding: 4px 6px;
     border-radius: var(--border-radius-pill);
+    overflow-wrap: anywhere;
     transition:
       background var(--transition-standard),
       color var(--transition-standard);
@@ -893,7 +925,7 @@ function getIconComponent(iconName: string) {
 
   .milestone-item {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: 30px minmax(0, 1fr) var(--control-icon-size);
     gap: 8px;
     padding: 10px;
     border-radius: var(--border-radius-md);
@@ -910,6 +942,7 @@ function getIconComponent(iconName: string) {
 
   .milestone-actions {
     gap: 4px;
+    min-width: 0;
 
     button {
       display: inline-flex;
@@ -918,6 +951,7 @@ function getIconComponent(iconName: string) {
       width: var(--control-icon-size);
       height: var(--control-icon-size);
       padding: 0;
+      flex: 0 0 var(--control-icon-size);
     }
   }
 

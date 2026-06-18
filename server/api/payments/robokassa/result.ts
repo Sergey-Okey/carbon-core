@@ -25,6 +25,13 @@ function normalizeParams(value: unknown): Record<string, string> {
   return result
 }
 
+function getParam(params: Record<string, string>, name: string) {
+  const direct = params[name]
+  if (direct) return direct
+  const entry = Object.entries(params).find(([key]) => key.toLowerCase() === name.toLowerCase())
+  return entry?.[1] || ''
+}
+
 export default defineEventHandler(async (event) => {
   enforceRateLimit(event, 'robokassa-result', 120, 15 * 60 * 1000)
   const queryParams = normalizeParams(getQuery(event))
@@ -36,16 +43,16 @@ export default defineEventHandler(async (event) => {
   }
 
   const invoiceId = params.InvId || params.InvID || params.InvoiceID || params.invoiceId || ''
-  const email = params.EMail || params.Email || params.email || params.Shp_email || ''
+  const email = getParam(params, 'Shp_email')
   if (!invoiceId || !email) {
-    throw createError({ statusCode: 400, statusMessage: 'Payment invoice and email are required' })
+    throw createError({ statusCode: 400, statusMessage: 'Payment invoice and signed email are required' })
   }
 
   await recordRobokassaPayment({
     email,
     invoiceId,
     outSum: params.OutSum || params.outsum || '',
-    subscriptionId: params.SubscriptionId || params.subscriptionId || params.Shp_subscriptionId,
+    subscriptionId: params.SubscriptionId || params.subscriptionId || getParam(params, 'Shp_subscriptionId'),
     paymentMethod: params.PaymentMethod || params.paymentMethod,
     raw: params,
   })

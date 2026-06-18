@@ -96,7 +96,6 @@ export async function recordRobokassaPayment(payload: PaymentPayload) {
     )
     ON CONFLICT (invoice_id)
     DO UPDATE SET
-      email = EXCLUDED.email,
       subscription_id = EXCLUDED.subscription_id,
       amount = EXCLUDED.amount,
       payment_method = EXCLUDED.payment_method,

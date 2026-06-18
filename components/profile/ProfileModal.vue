@@ -54,15 +54,11 @@
     <div class="stats-info">
       <div class="stat-item">
         <Zap :size="18" />
-        <span>Уровень {{ userStore.level }} ({{ userStore.totalXP }} XP)</span>
+        <span>Уровень {{ userStore.level }}</span>
       </div>
       <div class="stat-item">
         <component :is="leagueIcon" :size="18" :class="leagueClass" />
         <span>{{ userStore.league }}</span>
-      </div>
-      <div class="stat-item">
-        <Coins :size="18" />
-        <span>{{ userStore.coins }} золота</span>
       </div>
     </div>
 
@@ -77,7 +73,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import { Award, Camera, Coins, Crown, Gem, Medal, UserCircle, Zap } from 'lucide-vue-next'
+import { Award, Camera, Crown, Gem, Medal, UserCircle, Zap } from 'lucide-vue-next'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppFormField from '~/components/ui/AppFormField.vue'
 import AppInput from '~/components/ui/AppInput.vue'

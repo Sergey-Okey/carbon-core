@@ -222,7 +222,7 @@ function handleBackdrop() {
     border: var(--ui-border);
     border-radius: var(--border-radius-xl);
     transform-origin: bottom center;
-    box-shadow: 0 22px 60px color-mix(in srgb, var(--bg) 34%, transparent);
+    box-shadow: none;
 
     &.allow-overflow {
       overflow: hidden;

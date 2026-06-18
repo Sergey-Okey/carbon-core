@@ -253,6 +253,8 @@ const accessBenefits = [
 
 const PENDING_SUBSCRIPTION_KEY = 'carbon-pending-subscription'
 const PENDING_SUBSCRIPTION_TTL = 24 * 60 * 60 * 1000
+const PENDING_SUBSCRIPTION_ATTEMPTS = 10
+const PENDING_SUBSCRIPTION_INTERVAL = 2500
 
 const error = ref('')
 const subscriptionEmail = ref('')
@@ -341,8 +343,11 @@ async function resumePendingSubscription() {
     return
   }
 
-  const activated = await verifySubscription(pendingEmail, { silentMissing: true })
-  if (!activated) return
+  const activated = await waitForSubscription(pendingEmail)
+  if (!activated) {
+    subscriptionError.value = 'Платёж ещё обрабатывается. Подождите немного и нажмите «Проверить доступ».'
+    return
+  }
 
   clearPendingSubscription()
   addNotification({
@@ -350,6 +355,22 @@ async function resumePendingSubscription() {
     message: 'Оплата найдена. Теперь можно создать профиль',
     duration: 6000,
   })
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms))
+}
+
+async function waitForSubscription(email: string) {
+  for (let attempt = 0; attempt < PENDING_SUBSCRIPTION_ATTEMPTS; attempt += 1) {
+    const activated = await verifySubscription(email, { silentMissing: true })
+    if (activated) return true
+    if (attempt < PENDING_SUBSCRIPTION_ATTEMPTS - 1) {
+      subscriptionError.value = 'Ждём подтверждение оплаты…'
+      await delay(PENDING_SUBSCRIPTION_INTERVAL)
+    }
+  }
+  return false
 }
 
 function startDemo() {

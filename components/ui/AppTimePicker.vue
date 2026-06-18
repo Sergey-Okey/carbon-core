@@ -267,7 +267,7 @@ onBeforeUnmount(() => {
   padding: 10px;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
-  box-shadow: 0 18px 48px color-mix(in srgb, var(--bg) 42%, transparent);
+  box-shadow: none;
 
   &.top {
     transform: translateY(-100%);
@@ -412,7 +412,7 @@ onBeforeUnmount(() => {
   .time-popover.sheet {
     padding: 12px;
     border-radius: calc(var(--border-radius-lg) + 8px) calc(var(--border-radius-lg) + 8px) var(--border-radius-lg) var(--border-radius-lg);
-    box-shadow: 0 22px 56px color-mix(in srgb, var(--bg) 30%, transparent);
+    box-shadow: none;
   }
 
   .time-preview {

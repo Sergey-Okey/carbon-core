@@ -63,6 +63,17 @@ test('registration requires explicit legal consent', async () => {
   assert.match(authPanel, /keepShortWords/)
 })
 
+test('robokassa result trusts only signed payment email', async () => {
+  const resultApi = await read('server/api/payments/robokassa/result.ts')
+  const subscriptionStorage = await read('server/utils/subscriptionStorage.ts')
+  const emailLine = resultApi.split(/\r?\n/).find((line) => line.includes('const email =')) || ''
+  const conflictBlock = subscriptionStorage.match(/ON CONFLICT \(invoice_id\)[\s\S]*?updated_at = NOW\(\)/)?.[0] || ''
+
+  assert.match(emailLine, /getParam\(params, 'Shp_email'\)/)
+  assert.doesNotMatch(emailLine, /params\.EMail|params\.Email|params\.email/)
+  assert.doesNotMatch(conflictBlock, /email\s*=\s*EXCLUDED\.email/)
+})
+
 test('onboarding does not use CSS gradients', async () => {
   const onboarding = await read('pages/onboarding.vue')
   const headerStyle = onboarding.match(/\.fixed-header\s*\{([^}]*)\}/s)?.[1] || ''

@@ -39,7 +39,6 @@
         <ChevronDown :size="16" />
       </span>
     </button>
-    <!-- Уровень и точки прогресса -->
     <div v-if="!isCollapsed" class="stat-item">
       <div class="stat-item__header">
         <Zap :size="18" />
@@ -60,7 +59,6 @@
       </div>
     </div>
 
-    <!-- Лига и точки прогресса -->
     <div v-if="!isCollapsed" class="stat-item">
       <div class="stat-item__header">
         <component :is="leagueIcon" :size="18" :class="leagueClass" />
@@ -79,7 +77,6 @@
       </div>
     </div>
 
-    <!-- Активность за 7 дней -->
     <div v-if="!isCollapsed" class="stat-item stat-item--chart">
       <div class="chart-summary">
         <span>Активность</span>
@@ -108,7 +105,6 @@
       </div>
     </div>
 
-    <!-- Счётчики задач -->
     <div v-if="!isCollapsed" class="stat-item stat-item--tasks">
       <div class="stat-item__body">
         <div class="task-counters">

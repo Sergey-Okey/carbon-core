@@ -8,7 +8,7 @@
 
       <div class="info-row">
         <span class="label">Прогресс</span>
-        <span class="value">{{ branch?.totalXP || 0 }} / {{ milestone.requiredXP }} XP</span>
+        <span class="value">{{ milestone.taskIds.length }} задач</span>
       </div>
 
       <div class="info-row">
