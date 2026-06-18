@@ -198,7 +198,7 @@ function cookieOptions(event: H3Event, maxAge: number) {
   const secure = getRequestURL(event).protocol === 'https:'
   return {
     httpOnly: true,
-    sameSite: secure ? ('none' as const) : ('lax' as const),
+    sameSite: 'lax' as const,
     secure,
     path: '/',
     maxAge,

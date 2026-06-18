@@ -51,9 +51,13 @@ function getStorageErrorMessage(error: unknown): string {
 }
 
 function getHttpStatus(error: unknown) {
-  return typeof error === 'object' && error !== null && 'statusCode' in error
-    ? Number((error as { statusCode?: unknown }).statusCode)
-    : 0
+  if (typeof error !== 'object' || error === null) return 0
+  const candidate = error as {
+    statusCode?: unknown
+    status?: unknown
+    response?: { status?: unknown }
+  }
+  return Number(candidate.statusCode || candidate.status || candidate.response?.status || 0)
 }
 
 export const useAuthStore = defineStore(
@@ -225,6 +229,8 @@ export const useAuthStore = defineStore(
         } catch (error) {
           const status = getHttpStatus(error)
           if (status === 409) return { success: false, error: 'Этот email уже зарегистрирован' }
+          if (status === 402) return { success: false, error: 'Подписка для этого email не найдена или истекла' }
+          if (status === 400) return { success: false, error: 'Проверьте имя, email, пароль и согласие с условиями' }
           if (status && status !== 503) return { success: false, error: 'Не удалось создать аккаунт' }
           return { success: false, error: 'Облачная регистрация недоступна. Выберите локальный режим' }
         }
@@ -301,6 +307,7 @@ export const useAuthStore = defineStore(
           const status = getHttpStatus(error)
           if (status === 401) return { success: false, error: 'Неверный email или пароль' }
           if (status === 403) return { success: false, error: 'Подтвердите email кодом из письма' }
+          if (status === 402) return { success: false, error: 'Подписка для этого email не найдена или истекла' }
           if (status && status !== 503) return { success: false, error: 'Не удалось выполнить вход' }
           return { success: false, error: 'Облачный вход недоступен. Выберите локальный режим' }
         }

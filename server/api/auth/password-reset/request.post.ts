@@ -32,6 +32,9 @@ export default defineEventHandler(async (event) => {
       'Берегите фокус и свой ритм.',
       'Core of Life',
     ].join('\n'),
+  }).catch((error) => {
+    console.error('[auth] password reset mail failed', error)
+    return false
   })
 
   return { ok: true, sent }

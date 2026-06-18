@@ -310,7 +310,6 @@ onMounted(() => {
   const message = getOAuthErrorMessage(oauthError)
   error.value = message
   oauthMessage.value = message
-  addNotification({ type: 'error', message, duration: 6000 })
   void router.replace({ path: isRegister.value ? '/register' : '/auth' })
 })
 
@@ -454,7 +453,7 @@ function startSubscriptionPayment() {
 function getOAuthErrorMessage(reason: string) {
   const map: Record<string, string> = {
     subscription:
-      'Аккаунт не найден или подписка не активна. Сначала оплатите доступ, затем завершите регистрацию.',
+      'Подписка для email этого аккаунта не найдена или истекла. Google/Яндекс должен быть с тем же email, который указан при оплате.',
     terms: 'Перед входом через Google или Яндекс нужно принять условия использования.',
     provider: 'Не удалось получить данные аккаунта у провайдера. Попробуйте ещё раз.',
     invalid: 'Некорректный ответ авторизации. Попробуйте войти ещё раз.',
@@ -540,15 +539,17 @@ async function requestPasswordReset() {
 
   isRequestingReset.value = true
   try {
-    const response = await backendFetch<{ ok: boolean; sent: boolean }>(getBackendUrl('/api/auth/password-reset/request'), {
+    const response = await backendFetch<{ ok: boolean; sent?: boolean }>(getBackendUrl('/api/auth/password-reset/request'), {
       method: 'POST',
       body: { email },
       ...getBackendFetchOptions(),
     })
-    resetMessage.value = 'Если профиль найден, письмо для восстановления уже отправлено.'
+    resetMessage.value = response.sent
+      ? 'Если профиль найден, письмо для восстановления уже отправлено.'
+      : 'Заявка принята, но почта на сервере пока не настроена. Напишите в поддержку, чтобы восстановить доступ вручную.'
     addNotification({
-      type: 'success',
-      message: response.sent ? 'Письмо восстановления отправлено' : 'Запрос восстановления принят',
+      type: response.sent ? 'success' : 'warning',
+      message: response.sent ? 'Письмо восстановления отправлено' : 'Почта сервера пока не настроена',
       duration: 6000,
     })
   } catch {
@@ -727,9 +728,13 @@ function addWelcomeRegistrationLetter(name: string) {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+  min-height: calc(100dvh - 48px);
+  display: flex;
+  align-items: center;
 }
 
 .auth-grid {
+  width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr);
   gap: 24px;
