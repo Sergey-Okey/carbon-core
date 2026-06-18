@@ -81,7 +81,7 @@
                 type="button"
                 variant="secondary"
                 :disabled="isCheckingSubscription"
-                @click="verifySubscription"
+                @click="() => verifySubscription()"
               >
                 {{ isCheckingSubscription ? 'Проверяем…' : 'Проверить доступ' }}
               </AppButton>
@@ -115,7 +115,6 @@
               <button
                 class="oauth-button"
                 type="button"
-                :disabled="!form.acceptedTerms"
                 @click="startOAuth('google')"
               >
                 <svg class="oauth-icon google-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -129,7 +128,6 @@
               <button
                 class="oauth-button"
                 type="button"
-                :disabled="!form.acceptedTerms"
                 @click="startOAuth('yandex')"
               >
                 <span class="oauth-icon yandex-icon" aria-hidden="true">Я</span>
@@ -279,8 +277,7 @@ onMounted(() => {
 
   const message = getOAuthErrorMessage(oauthError)
   error.value = message
-  addNotification({ type: 'warning', message, duration: 6000 })
-  void router.replace('/auth')
+  void router.replace(isRegister.value ? '/register' : '/auth')
 })
 
 function normalizeEmail(value: string) {
@@ -367,6 +364,14 @@ function goBack() {
 }
 
 function startOAuth(provider: 'google' | 'yandex') {
+  error.value = ''
+  subscriptionError.value = ''
+
+  if (!form.acceptedTerms) {
+    error.value = 'Перед входом через Google или Яндекс примите условия использования'
+    return
+  }
+
   const consent = form.acceptedTerms
     ? '?acceptedTerms=true&termsVersion=2026-06-07'
     : ''
@@ -490,6 +495,13 @@ async function verifySubscription(
     if (!form.email) form.email = email
     accessStore.activateSubscription()
     clearPendingSubscription()
+    if (!options.silentMissing) {
+      addNotification({
+        type: 'success',
+        message: 'Доступ подтверждён. Теперь можно создать профиль',
+        duration: 4500,
+      })
+    }
     return true
   } catch {
     subscriptionError.value = 'Не удалось проверить оплату. Попробуйте чуть позже'
@@ -1119,12 +1131,12 @@ function addWelcomeRegistrationLetter(name: string) {
 
   .auth-grid {
     height: calc(100dvh - 20px);
-    padding-inline: 18px;
-    scroll-padding-inline: 18px;
+    padding-inline: 22px;
+    scroll-padding-inline: 22px;
   }
 
   .auth-panel {
-    flex-basis: calc(100vw - 88px);
+    flex-basis: calc(100vw - 64px);
     min-height: 0;
     padding: 18px;
   }

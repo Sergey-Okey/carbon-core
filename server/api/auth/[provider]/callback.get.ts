@@ -35,6 +35,7 @@ export default defineEventHandler(async (event) => {
             ? 'provider'
             : 'failed'
 
-    return sendRedirect(event, `/auth?oauthError=${reason}`)
+    const targetPath = reason === 'subscription' || reason === 'terms' ? '/register' : '/auth'
+    return sendRedirect(event, `${targetPath}?oauthError=${reason}`)
   }
 })
