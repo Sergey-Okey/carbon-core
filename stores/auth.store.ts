@@ -180,7 +180,7 @@ export const useAuthStore = defineStore(
       acceptedTerms = false,
       captchaToken = '',
       captchaAnswer = ''
-    ): Promise<{ success: boolean; error?: string }> {
+    ): Promise<{ success: boolean; error?: string; requiresVerification?: boolean; email?: string }> {
       isLoading.value = true
 
       try {
@@ -194,7 +194,11 @@ export const useAuthStore = defineStore(
         }
 
         if (mode === 'cloud') try {
-          const response = await fetchBackend<{ user: Omit<User, 'password' | 'bio'> }>(
+          const response = await fetchBackend<{
+            user?: Omit<User, 'password' | 'bio'>
+            requiresVerification?: boolean
+            email?: string
+          }>(
             getBackendUrl('/api/auth/register'),
             {
               method: 'POST',
@@ -210,6 +214,14 @@ export const useAuthStore = defineStore(
               ...getBackendFetchOptions(),
             }
           )
+          if (response.requiresVerification) {
+            return {
+              success: true,
+              requiresVerification: true,
+              email: response.email || email.trim().toLowerCase(),
+            }
+          }
+          if (!response.user) return { success: false, error: 'Не удалось создать аккаунт' }
           applyServerUser(response.user)
           authMode.value = 'cloud'
           browserLog.info('auth', 'Регистрация выполнена', { mode: 'cloud', provider: 'local' })
@@ -294,6 +306,7 @@ export const useAuthStore = defineStore(
         } catch (error) {
           const status = getHttpStatus(error)
           if (status === 401) return { success: false, error: 'Неверный email или пароль' }
+          if (status === 403) return { success: false, error: 'Подтвердите email кодом из письма' }
           if (status && status !== 503) return { success: false, error: 'Не удалось выполнить вход' }
           return { success: false, error: 'Облачный вход недоступен. Выберите локальный режим' }
         }
@@ -328,6 +341,36 @@ export const useAuthStore = defineStore(
           message: error instanceof Error ? error.message : String(error),
         })
         return { success: false, error: getStorageErrorMessage(error) }
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    async function verifyEmail(
+      email: string,
+      code: string
+    ): Promise<{ success: boolean; error?: string }> {
+      isLoading.value = true
+
+      try {
+        const response = await fetchBackend<{ user: Omit<User, 'password' | 'bio'> }>(
+          getBackendUrl('/api/auth/email-verification/verify'),
+          {
+            method: 'POST',
+            body: { email, code },
+            ...getBackendFetchOptions(),
+          }
+        )
+        applyServerUser(response.user)
+        authMode.value = 'cloud'
+        browserLog.info('auth', 'Email подтверждён', { mode: 'cloud', provider: response.user.provider })
+        return { success: true }
+      } catch (error) {
+        const status = getHttpStatus(error)
+        if (status === 400) return { success: false, error: 'Неверный или устаревший код' }
+        if (status === 429) return { success: false, error: 'Слишком много попыток. Запросите новый код' }
+        if (status === 402) return { success: false, error: 'Для входа нужна активная подписка' }
+        return { success: false, error: 'Не удалось подтвердить email' }
       } finally {
         isLoading.value = false
       }
@@ -447,6 +490,7 @@ export const useAuthStore = defineStore(
       init,
       register,
       login,
+      verifyEmail,
       logout,
       updateProfile,
       deleteAccount,

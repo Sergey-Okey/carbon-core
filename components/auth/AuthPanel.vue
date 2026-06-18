@@ -140,7 +140,46 @@
 
             <div class="auth-divider"><span>или</span></div>
 
-            <form v-if="resetToken" class="auth-form" @submit.prevent="confirmPasswordReset">
+            <form v-if="pendingVerification.active" class="auth-form verification-form" @submit.prevent="confirmEmailVerification">
+              <div class="verification-card">
+                <span>Код отправлен на</span>
+                <strong>{{ pendingVerification.email }}</strong>
+                <p>Введите 6 цифр из письма. Код действует 15 минут.</p>
+              </div>
+              <AppFormField label="Код подтверждения">
+                <AppInput
+                  v-model="pendingVerification.code"
+                  inputmode="numeric"
+                  placeholder="000000"
+                  autocomplete="one-time-code"
+                />
+              </AppFormField>
+              <div class="captcha-box">
+                <div>
+                  <span>Проверка</span>
+                  <strong>{{ captcha.question || '…' }}</strong>
+                </div>
+                <AppInput
+                  v-model="captcha.answer"
+                  inputmode="numeric"
+                  placeholder="Ответ"
+                  autocomplete="off"
+                />
+                <button type="button" class="captcha-refresh" @click="loadCaptcha">
+                  Обновить
+                </button>
+              </div>
+              <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
+              <p v-if="error" class="error-text">{{ error }}</p>
+              <AppButton type="submit" variant="primary" :disabled="authStore.isLoading">
+                {{ authStore.isLoading ? 'Проверяем…' : 'Подтвердить email' }}
+              </AppButton>
+              <button type="button" class="forgot-link" @click="resendEmailVerification">
+                Отправить код ещё раз
+              </button>
+            </form>
+
+            <form v-else-if="resetToken" class="auth-form" @submit.prevent="confirmPasswordReset">
               <AppFormField label="Новый пароль" hint="Минимум 8 символов">
                 <AppInput
                   v-model="resetPassword"
@@ -295,6 +334,7 @@ const subscriptionError = ref('')
 const isCheckingSubscription = ref(false)
 const form = reactive({ name: '', email: '', password: '', acceptedTerms: false })
 const captcha = reactive({ token: '', question: '', answer: '' })
+const pendingVerification = reactive({ active: false, email: '', code: '' })
 const resetMode = ref(false)
 const resetEmail = ref('')
 const resetPassword = ref('')
@@ -493,8 +533,68 @@ function getOAuthErrorMessage(reason: string) {
 function openResetMode() {
   error.value = ''
   resetMessage.value = ''
+  pendingVerification.active = false
   resetEmail.value = form.email
   resetMode.value = true
+}
+
+async function confirmEmailVerification() {
+  error.value = ''
+  resetMessage.value = ''
+  const email = pendingVerification.email || form.email.trim().toLowerCase()
+  const code = pendingVerification.code.trim()
+  if (!/^\d{6}$/.test(code)) {
+    error.value = 'Введите 6 цифр из письма'
+    return
+  }
+
+  const result = await authStore.verifyEmail(email, code)
+  if (!result.success) {
+    error.value = result.error || 'Не удалось подтвердить email'
+    addNotification({ type: 'error', message: error.value, duration: 5000 })
+    return
+  }
+
+  accessStore.activateSubscription()
+  addWelcomeRegistrationLetter(form.name)
+  addNotification({ type: 'success', message: 'Email подтверждён. Профиль создан', duration: 5000 })
+  router.push('/')
+}
+
+async function resendEmailVerification() {
+  error.value = ''
+  resetMessage.value = ''
+  if (!ensureCaptcha()) return
+  const email = pendingVerification.email || form.email.trim().toLowerCase()
+  if (!email.includes('@')) {
+    error.value = 'Укажите email профиля'
+    return
+  }
+
+  try {
+    const response = await backendFetch<{ ok: boolean; sent: boolean }>(
+      getBackendUrl('/api/auth/email-verification/resend'),
+      {
+        method: 'POST',
+        body: { email, captchaToken: captcha.token, captchaAnswer: captcha.answer },
+        ...getBackendFetchOptions(),
+      }
+    )
+    resetMessage.value = response.sent
+      ? 'Новый код отправлен. Проверьте почту.'
+      : 'Код не отправлен: email уже подтверждён или почтовый сервис недоступен.'
+    addNotification({
+      type: response.sent ? 'success' : 'warning',
+      message: response.sent ? 'Код отправлен повторно' : 'Не удалось отправить новый код',
+      duration: 5000,
+    })
+  } catch {
+    error.value = 'Не удалось отправить новый код. Проверьте капчу и попробуйте ещё раз.'
+    addNotification({ type: 'error', message: error.value, duration: 5000 })
+  } finally {
+    pendingVerification.code = ''
+    await loadCaptcha()
+  }
 }
 
 async function requestPasswordReset() {
@@ -632,12 +732,37 @@ async function submit() {
     return
   }
   const wasRegister = isRegister.value
-  const result = wasRegister
+  const result: {
+    success: boolean
+    error?: string
+    requiresVerification?: boolean
+    email?: string
+  } = wasRegister
     ? await authStore.register(form.email, form.password, form.name, 'cloud', form.acceptedTerms, captcha.token, captcha.answer)
     : await authStore.login(form.email, form.password, 'cloud', captcha.token, captcha.answer)
   if (!result.success) {
     error.value = result.error || 'Не удалось выполнить действие'
     addNotification({ type: 'error', message: error.value })
+    if (!wasRegister && error.value.includes('Подтвердите email')) {
+      pendingVerification.active = true
+      pendingVerification.email = form.email.trim().toLowerCase()
+      pendingVerification.code = ''
+      resetMessage.value = 'Введите код из письма или запросите новый.'
+    }
+    await loadCaptcha()
+    return
+  }
+  if (result.requiresVerification) {
+    pendingVerification.active = true
+    pendingVerification.email = result.email || form.email.trim().toLowerCase()
+    pendingVerification.code = ''
+    resetMode.value = false
+    resetMessage.value = 'Мы отправили код подтверждения на вашу почту.'
+    addNotification({
+      type: 'success',
+      message: 'Код подтверждения отправлен на email',
+      duration: 6000,
+    })
     await loadCaptcha()
     return
   }
@@ -921,6 +1046,41 @@ function addWelcomeRegistrationLetter(name: string) {
   &:hover {
     background: color-mix(in srgb, var(--accent) 9%, transparent);
     color: var(--text);
+  }
+}
+
+.verification-form {
+  gap: 14px;
+}
+
+.verification-card {
+  @include glass;
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: var(--ui-border);
+  border-radius: var(--border-radius-md);
+
+  span {
+    color: var(--dim);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    color: var(--text);
+    font-size: 0.96rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  p {
+    margin: 0;
+    color: var(--dim);
+    font-size: 0.8rem;
+    line-height: 1.45;
   }
 }
 

@@ -1,7 +1,7 @@
 import { readBody } from 'h3'
-import { isAuthDatabaseConfigured, registerAccount } from '../../utils/authStorage'
-import { setOAuthSession } from '../../utils/oauth'
+import { createEmailVerificationCode, isAuthDatabaseConfigured, registerAccount } from '../../utils/authStorage'
 import { enforceRateLimit } from '../../utils/rateLimit'
+import { sendMail } from '../../utils/smtp'
 import { hasActiveSubscription } from '../../utils/subscriptionStorage'
 import { verifyCaptcha } from '../../utils/captcha'
 
@@ -29,13 +29,31 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 402, statusMessage: 'Active subscription is required' })
   }
 
-  let user
   try {
-    user = await registerAccount(email, password, name, termsVersion)
+    await registerAccount(email, password, name, termsVersion)
   } catch (error) {
     if (typeof error === 'object' && error !== null && 'statusCode' in error) throw error
     throw createError({ statusCode: 503, statusMessage: 'Account database is unavailable' })
   }
-  setOAuthSession(event, user)
-  return { user }
+
+  const verification = await createEmailVerificationCode(email)
+  const sent = verification
+    ? await sendMail({
+        to: verification.email,
+        subject: 'Код подтверждения Core of Life',
+        text: [
+          `${verification.name}, здравствуйте.`,
+          '',
+          'Введите этот код в Core of Life, чтобы подтвердить email:',
+          '',
+          verification.code,
+          '',
+          'Код действует 15 минут. Если это были не вы, просто проигнорируйте письмо.',
+          '',
+          'Core of Life',
+        ].join('\n'),
+      })
+    : false
+
+  return { requiresVerification: true, email: email.trim().toLowerCase(), sent }
 })

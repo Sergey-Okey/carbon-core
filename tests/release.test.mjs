@@ -79,6 +79,27 @@ test('auth forms use server captcha and reset mail supports STARTTLS', async () 
   assert.match(smtp, /net\.connect/)
 })
 
+test('email registration requires a mailed verification code before session', async () => {
+  const registerApi = await read('server/api/auth/register.post.ts')
+  const verifyApi = await read('server/api/auth/email-verification/verify.post.ts')
+  const resendApi = await read('server/api/auth/email-verification/resend.post.ts')
+  const authStorage = await read('server/utils/authStorage.ts')
+  const authStore = await read('stores/auth.store.ts')
+  const authPanel = await read('components/auth/AuthPanel.vue')
+
+  assert.match(registerApi, /createEmailVerificationCode/)
+  assert.match(registerApi, /requiresVerification/)
+  assert.doesNotMatch(registerApi, /setOAuthSession/)
+  assert.match(verifyApi, /verifyEmailCode/)
+  assert.match(verifyApi, /setOAuthSession/)
+  assert.match(resendApi, /sendMail/)
+  assert.match(authStorage, /email_verified_at/)
+  assert.match(authStorage, /cof_email_verification_codes/)
+  assert.match(authStorage, /Verification code is invalid/)
+  assert.match(authStore, /verifyEmail/)
+  assert.match(authPanel, /pendingVerification/)
+})
+
 test('robokassa result trusts only signed payment email', async () => {
   const resultApi = await read('server/api/payments/robokassa/result.ts')
   const subscriptionStorage = await read('server/utils/subscriptionStorage.ts')
