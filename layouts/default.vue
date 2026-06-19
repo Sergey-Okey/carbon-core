@@ -106,7 +106,16 @@ const uiStore = useUIStore()
     .main {
       overflow-x: hidden;
       overflow-y: auto;
+      scrollbar-width: none;
+      scrollbar-color: transparent transparent;
+      -ms-overflow-style: none;
       -webkit-overflow-scrolling: touch;
+
+      &::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+        display: none;
+      }
     }
 
     :deep(.nav-island) {

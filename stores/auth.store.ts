@@ -18,6 +18,9 @@ export interface User {
   provider?: 'local' | 'google' | 'yandex'
 }
 export type AuthMode = 'cloud' | 'local'
+export type SubscriptionSnapshot = { active: boolean; expiresAt: string }
+type ServerUser = Omit<User, 'password'> & { bio?: string }
+type SessionResponse = { user?: ServerUser | null; subscription?: SubscriptionSnapshot }
 type BackendFetch = <T = unknown>(
   url: string,
   options?: Record<string, unknown>
@@ -69,6 +72,7 @@ export const useAuthStore = defineStore(
     const initialized = ref(false)
     const usersCount = ref(0)
     const authMode = ref<AuthMode>('cloud')
+    const subscription = ref<SubscriptionSnapshot>({ active: false, expiresAt: '' })
     const fetchBackend = $fetch as unknown as BackendFetch
 
     const userInitials = computed(() => {
@@ -124,12 +128,24 @@ export const useAuthStore = defineStore(
       })
     }
 
-    function applyServerUser(user: Omit<User, 'password' | 'bio'> & { bio?: string }) {
+    function applyServerUser(user: ServerUser, serverSubscription?: SubscriptionSnapshot) {
       const accessStore = useAccessStore()
-      accessStore.activateSubscription()
+      const nextSubscription = serverSubscription || { active: true, expiresAt: '' }
+      subscription.value = nextSubscription
+      accessStore.syncSubscription(nextSubscription)
       currentUser.value = { ...user, password: '', bio: user.bio || '' }
       isAuthenticated.value = true
       syncUserProfile(currentUser.value)
+      persistSession()
+    }
+
+    function clearCloudSession() {
+      const accessStore = useAccessStore()
+      subscription.value = { active: false, expiresAt: '' }
+      accessStore.syncSubscription(subscription.value)
+      currentUser.value = null
+      isAuthenticated.value = false
+      syncUserProfile(null)
       persistSession()
     }
 
@@ -144,26 +160,9 @@ export const useAuthStore = defineStore(
       }
 
       try {
-        const session = await fetchBackend<{
-          user?: {
-            id: string
-            email: string
-            name: string
-            avatar: string
-            provider: 'local' | 'google' | 'yandex'
-            createdAt?: string
-          } | null
-        }>(getBackendUrl('/api/auth/session'), getBackendFetchOptions())
+        const session = await fetchBackend<SessionResponse>(getBackendUrl('/api/auth/session'), getBackendFetchOptions())
         if (session.user) {
-          currentUser.value = {
-            ...session.user,
-            password: '',
-            bio: '',
-            createdAt: currentUser.value?.createdAt || new Date().toISOString(),
-          }
-          isAuthenticated.value = true
-          syncUserProfile(currentUser.value)
-          persistSession()
+          applyServerUser(session.user, session.subscription)
           browserLog.info('auth', 'Восстановлена облачная сессия', {
             provider: session.user.provider,
           })
@@ -176,6 +175,25 @@ export const useAuthStore = defineStore(
       initialized.value = true
     }
 
+
+    async function refreshSession(): Promise<{ success: boolean; error?: string }> {
+      try {
+        const session = await fetchBackend<SessionResponse>(getBackendUrl('/api/auth/session'), getBackendFetchOptions())
+        if (!session.user) {
+          if (authMode.value === 'cloud' || currentUser.value?.provider) clearCloudSession()
+          return { success: false, error: 'Сессия не найдена' }
+        }
+
+        applyServerUser(session.user, session.subscription)
+        authMode.value = 'cloud'
+        return { success: true }
+      } catch (error) {
+        browserLog.warn('auth', 'Не удалось синхронизировать профиль', {
+          message: error instanceof Error ? error.message : String(error),
+        })
+        return { success: false, error: 'Не удалось синхронизировать профиль' }
+      }
+    }
     async function register(
       email: string,
       password: string,
@@ -197,7 +215,8 @@ export const useAuthStore = defineStore(
 
         if (mode === 'cloud') try {
           const response = await fetchBackend<{
-            user?: Omit<User, 'password' | 'bio'>
+            user?: ServerUser
+            subscription?: SubscriptionSnapshot
             requiresVerification?: boolean
             email?: string
           }>(
@@ -222,7 +241,7 @@ export const useAuthStore = defineStore(
             }
           }
           if (!response.user) return { success: false, error: 'Не удалось создать аккаунт' }
-          applyServerUser(response.user)
+          applyServerUser(response.user, response.subscription)
           authMode.value = 'cloud'
           browserLog.info('auth', 'Регистрация выполнена', { mode: 'cloud', provider: 'local' })
           return { success: true }
@@ -291,7 +310,7 @@ export const useAuthStore = defineStore(
 
       try {
         if (mode === 'cloud') try {
-          const response = await fetchBackend<{ user: Omit<User, 'password' | 'bio'> }>(
+          const response = await fetchBackend<{ user: ServerUser; subscription?: SubscriptionSnapshot }>(
             getBackendUrl('/api/auth/login'),
             {
               method: 'POST',
@@ -299,7 +318,7 @@ export const useAuthStore = defineStore(
               ...getBackendFetchOptions(),
             }
           )
-          applyServerUser(response.user)
+          applyServerUser(response.user, response.subscription)
           authMode.value = 'cloud'
           browserLog.info('auth', 'Вход выполнен', { mode: 'cloud', provider: response.user.provider })
           return { success: true }
@@ -354,7 +373,7 @@ export const useAuthStore = defineStore(
       isLoading.value = true
 
       try {
-        const response = await fetchBackend<{ user: Omit<User, 'password' | 'bio'> }>(
+        const response = await fetchBackend<{ user: ServerUser; subscription?: SubscriptionSnapshot }>(
           getBackendUrl('/api/auth/email-verification/verify'),
           {
             method: 'POST',
@@ -362,7 +381,7 @@ export const useAuthStore = defineStore(
             ...getBackendFetchOptions(),
           }
         )
-        applyServerUser(response.user)
+        applyServerUser(response.user, response.subscription)
         authMode.value = 'cloud'
         browserLog.info('auth', 'Email подтверждён', { mode: 'cloud', provider: response.user.provider })
         return { success: true }
@@ -419,7 +438,7 @@ export const useAuthStore = defineStore(
 
       try {
         if (authMode.value === 'cloud') {
-          const response = await fetchBackend<{ user: Omit<User, 'password' | 'bio'> }>(
+          const response = await fetchBackend<{ user: ServerUser; subscription?: SubscriptionSnapshot }>(
             getBackendUrl('/api/auth/account'),
             {
             method: 'PATCH',
@@ -427,7 +446,7 @@ export const useAuthStore = defineStore(
             ...getBackendFetchOptions(),
             }
           )
-          applyServerUser({ ...response.user, bio: updates.bio ?? previousUser.bio })
+          applyServerUser({ ...response.user, bio: response.user.bio ?? updates.bio ?? previousUser.bio }, response.subscription)
           browserLog.info('auth', 'Профиль обновлен', { mode: 'cloud' })
           return { success: true }
         }
@@ -486,9 +505,11 @@ export const useAuthStore = defineStore(
       isLoading,
       initialized,
       authMode,
+      subscription,
       userInitials,
       hasRegisteredUsers,
       init,
+      refreshSession,
       register,
       login,
       verifyEmail,

@@ -39,13 +39,27 @@ export const useAccessStore = defineStore('access', () => {
     browserLog.info('access', 'Демо-режим включен')
   }
 
-  function activateSubscription() {
+  function activateSubscription(subscription: { activatedAt?: string; expiresAt?: string } = {}) {
     promoteDemoData()
     mode.value = 'subscribed'
-    activatedAt.value = new Date().toISOString()
-    expiresAt.value = ''
+    activatedAt.value = subscription.activatedAt || activatedAt.value || new Date().toISOString()
+    expiresAt.value = subscription.expiresAt || ''
     persistState()
-    browserLog.info('access', 'Подписка активирована', { activatedAt: activatedAt.value })
+    browserLog.info('access', 'Подписка активирована', { activatedAt: activatedAt.value, expiresAt: expiresAt.value })
+  }
+
+  function syncSubscription(subscription: { active?: boolean; expiresAt?: string } | null | undefined) {
+    if (subscription?.active) {
+      activateSubscription({ expiresAt: subscription.expiresAt || '' })
+      return
+    }
+
+    if (mode.value === 'subscribed') {
+      mode.value = 'guest'
+      activatedAt.value = ''
+      expiresAt.value = ''
+      persistState()
+    }
   }
 
   function leaveDemo() {
@@ -66,6 +80,7 @@ export const useAccessStore = defineStore('access', () => {
     canPersist,
     startDemo,
     activateSubscription,
+    syncSubscription,
     leaveDemo,
   }
 })

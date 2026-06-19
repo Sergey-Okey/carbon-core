@@ -15,9 +15,13 @@ useSeoMeta({
 
 <style scoped lang="scss">
 .profile-page {
-  padding-bottom: 80px;
+  width: 100%;
+  max-width: 100%;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
 
   @include desktop {
+    padding-top: 0;
     padding-bottom: 0;
   }
 }

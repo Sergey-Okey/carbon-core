@@ -272,7 +272,7 @@ function handleSave(taskData: TaskFormData) {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
     min-height: 44px;
     margin-bottom: 16px;
   }
@@ -373,18 +373,30 @@ function handleSave(taskData: TaskFormData) {
   .tasks {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
 
   &.task-list--habits {
     .tasks {
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 10px;
+      gap: 8px;
     }
 
     .empty {
       grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 1180px) {
+    &.task-list--habits .tasks {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 980px) {
+    &.task-list--habits .tasks {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
@@ -438,11 +450,11 @@ function handleSave(taskData: TaskFormData) {
     }
 
     .tasks {
-      gap: 10px;
+      gap: 8px;
     }
 
     &.task-list--habits .tasks {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .tooltip {
@@ -484,7 +496,7 @@ function handleSave(taskData: TaskFormData) {
     }
 
     &.task-list--habits .tasks {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .empty {
@@ -502,6 +514,12 @@ function handleSave(taskData: TaskFormData) {
       display: none;
     }
 
+    &.task-list--habits .tasks {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 340px) {
     &.task-list--habits .tasks {
       grid-template-columns: 1fr;
     }

@@ -629,4 +629,16 @@ top: 45px;           /* фиксированный отступ от верхн�
   opacity: 0;
   transform: translateY(-6px);
 }
+@media (max-width: 767px) {
+  .branch-node .node-details {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      display: none;
+    }
+  }
+}
 </style>

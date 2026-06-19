@@ -128,9 +128,11 @@ function parsePersistedAccessState(raw: string | null): AccessState {
   try {
     const parsed = JSON.parse(raw) as Partial<AccessState>
     if (parsed.mode === 'subscribed') {
+      if (parsed.expiresAt && !isFuture(parsed.expiresAt)) return { ...defaultAccessState }
       return {
         mode: 'subscribed',
         activatedAt: typeof parsed.activatedAt === 'string' ? parsed.activatedAt : '',
+        expiresAt: typeof parsed.expiresAt === 'string' ? parsed.expiresAt : '',
       }
     }
     if (parsed.mode === 'demo' && isFuture(parsed.expiresAt)) {

@@ -1,7 +1,7 @@
 import { readBody } from 'h3'
 import { updateAccount } from '../../utils/authStorage'
 import { readOAuthSession, setOAuthSession } from '../../utils/oauth'
-import { hasActiveSubscription } from '../../utils/subscriptionStorage'
+import { getActiveSubscription, hasActiveSubscription } from '../../utils/subscriptionStorage'
 
 export default defineEventHandler(async (event) => {
   const session = readOAuthSession(event)
@@ -15,7 +15,9 @@ export default defineEventHandler(async (event) => {
     name: typeof body?.name === 'string' ? body.name : undefined,
     email: nextEmail || undefined,
     avatar: typeof body?.avatar === 'string' ? body.avatar : undefined,
+    bio: typeof body?.bio === 'string' ? body.bio : undefined,
   })
+  const subscription = await getActiveSubscription(user.email)
   setOAuthSession(event, user)
-  return { user }
+  return { user, subscription }
 })

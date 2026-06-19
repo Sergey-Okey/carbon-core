@@ -4,6 +4,7 @@ import { getDatabase } from './database'
 import { hasActiveSubscription } from './subscriptionStorage'
 
 export type AccountProfile = OAuthProfile & {
+  bio: string
   createdAt: string
 }
 
@@ -19,6 +20,7 @@ async function ensureUsersTable(sql: NonNullable<ReturnType<typeof getDatabase>>
       password_hash TEXT,
       name TEXT NOT NULL,
       avatar TEXT NOT NULL DEFAULT '',
+      bio TEXT NOT NULL DEFAULT '',
       provider TEXT NOT NULL,
       provider_id TEXT,
       terms_accepted_at TIMESTAMPTZ,
@@ -28,6 +30,7 @@ async function ensureUsersTable(sql: NonNullable<ReturnType<typeof getDatabase>>
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `
+  await sql`ALTER TABLE cof_users ADD COLUMN IF NOT EXISTS bio TEXT NOT NULL DEFAULT ''`
   await sql`ALTER TABLE cof_users ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ`
   await sql`ALTER TABLE cof_users ADD COLUMN IF NOT EXISTS terms_version TEXT`
   await sql`ALTER TABLE cof_users ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMPTZ`
@@ -113,7 +116,7 @@ export async function loginAccount(email: string, password: string) {
   await ensureUsersTable(sql)
 
   const rows = await sql`
-    SELECT id, email, password_hash, name, avatar, provider, email_verified_at, created_at
+    SELECT id, email, password_hash, name, avatar, bio, provider, email_verified_at, created_at
     FROM cof_users
     WHERE email = ${email.trim().toLowerCase()}
     LIMIT 1
@@ -209,7 +212,7 @@ export async function verifyEmailCode(email: string, code: string) {
       ${id}, ${normalizedEmail}, ${String(row.password_hash)}, ${String(row.name)},
       'local', NOW(), ${String(row.terms_version)}, NOW()
     )
-    RETURNING id, email, name, avatar, provider, created_at
+    RETURNING id, email, name, avatar, bio, provider, created_at
   `
   await sql`DELETE FROM cof_pending_registrations WHERE email = ${normalizedEmail}`
   return mapAccount(verified[0])
@@ -285,7 +288,7 @@ export async function upsertOAuthAccount(profile: OAuthProfile, termsVersion = '
   }
 
   const sql = getDatabase()
-  if (!sql) return { ...profile, createdAt: new Date().toISOString() } satisfies AccountProfile
+  if (!sql) return { ...profile, bio: '', createdAt: new Date().toISOString() } satisfies AccountProfile
   await ensureUsersTable(sql)
 
   const providerId = profile.id.slice(profile.provider.length + 1)
@@ -308,20 +311,35 @@ export async function upsertOAuthAccount(profile: OAuthProfile, termsVersion = '
       avatar = EXCLUDED.avatar,
       email_verified_at = COALESCE(cof_users.email_verified_at, NOW()),
       updated_at = NOW()
-    RETURNING id, email, name, avatar, provider, created_at
+    RETURNING id, email, name, avatar, bio, provider, created_at
   `
   return mapAccount(rows[0])
 }
 
+export async function getAccountById(id: string) {
+  const sql = getDatabase()
+  if (!sql) throw createError({ statusCode: 503, statusMessage: 'Account database is not configured' })
+  await ensureUsersTable(sql)
+
+  const rows = await sql`
+    SELECT id, email, name, avatar, bio, provider, created_at
+    FROM cof_users
+    WHERE id = ${id}
+    LIMIT 1
+  `
+  const row = rows[0] as Record<string, unknown> | undefined
+  if (!row) throw createError({ statusCode: 404, statusMessage: 'Account not found' })
+  return mapAccount(row)
+}
 export async function updateAccount(
   id: string,
-  updates: { name?: string; email?: string; avatar?: string }
+  updates: { name?: string; email?: string; avatar?: string; bio?: string }
 ) {
   const sql = getDatabase()
   if (!sql) throw createError({ statusCode: 503, statusMessage: 'Account database is not configured' })
   await ensureUsersTable(sql)
   const currentRows = await sql`
-    SELECT id, email, name, avatar, provider, created_at FROM cof_users WHERE id = ${id} LIMIT 1
+    SELECT id, email, name, avatar, bio, provider, created_at FROM cof_users WHERE id = ${id} LIMIT 1
   `
   const current = currentRows[0] as Record<string, unknown> | undefined
   if (!current) throw createError({ statusCode: 404, statusMessage: 'Account not found' })
@@ -329,12 +347,13 @@ export async function updateAccount(
   const email = updates.email?.trim().toLowerCase() || String(current.email)
   const name = updates.name?.trim() || String(current.name)
   const avatar = updates.avatar ?? String(current.avatar || '')
+  const bio = updates.bio ?? String(current.bio || '')
   try {
     const rows = await sql`
       UPDATE cof_users
-      SET email = ${email}, name = ${name}, avatar = ${avatar}, updated_at = NOW()
+      SET email = ${email}, name = ${name}, avatar = ${avatar}, bio = ${bio}, updated_at = NOW()
       WHERE id = ${id}
-      RETURNING id, email, name, avatar, provider, created_at
+      RETURNING id, email, name, avatar, bio, provider, created_at
     `
     return mapAccount(rows[0])
   } catch {
@@ -381,6 +400,7 @@ function mapAccount(row: Record<string, unknown>): AccountProfile {
     email: String(row.email),
     name: String(row.name),
     avatar: String(row.avatar || ''),
+    bio: String(row.bio || ''),
     provider: String(row.provider) as AccountProfile['provider'],
     createdAt: new Date(String(row.created_at)).toISOString(),
   }

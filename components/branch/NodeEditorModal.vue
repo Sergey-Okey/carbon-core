@@ -431,8 +431,10 @@ function handleQuickTask(data: TaskFormData) {
 }
 
 .icons-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--control-icon-size), 1fr));
+  align-items: center;
+  justify-items: center;
   width: 100%;
   gap: 6px;
 }
@@ -471,10 +473,10 @@ function handleQuickTask(data: TaskFormData) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  justify-self: center;
   width: var(--control-icon-size);
   height: var(--control-icon-size);
   min-width: var(--control-icon-size);
-  flex: 0 0 var(--control-icon-size);
   aspect-ratio: 1;
   color: var(--dim);
   background: transparent;
@@ -721,7 +723,6 @@ function handleQuickTask(data: TaskFormData) {
 .reveal-item-leave-active {
   position: absolute;
 }
-
 @media (max-width: 640px) {
   .board-form {
     gap: 12px;
@@ -746,6 +747,7 @@ function handleQuickTask(data: TaskFormData) {
   }
 
   .icons-grid {
+    grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
     gap: 8px;
   }
 
@@ -756,7 +758,6 @@ function handleQuickTask(data: TaskFormData) {
     white-space: normal;
     text-align: center;
   }
-
 
   .footer-actions {
     width: 100%;
@@ -773,11 +774,10 @@ function handleQuickTask(data: TaskFormData) {
   }
 
   .icon-option {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    min-height: 44px;
-    flex-basis: 44px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
   }
 
   .task-row {

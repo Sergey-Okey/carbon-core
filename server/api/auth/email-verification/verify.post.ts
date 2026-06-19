@@ -2,7 +2,7 @@ import { readBody } from 'h3'
 import { isAuthDatabaseConfigured, verifyEmailCode } from '../../../utils/authStorage'
 import { setOAuthSession } from '../../../utils/oauth'
 import { enforceRateLimit } from '../../../utils/rateLimit'
-import { hasActiveSubscription } from '../../../utils/subscriptionStorage'
+import { getActiveSubscription } from '../../../utils/subscriptionStorage'
 
 export default defineEventHandler(async (event) => {
   enforceRateLimit(event, 'email-verification-verify', 10, 15 * 60 * 1000)
@@ -18,9 +18,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const user = await verifyEmailCode(email, code)
-  if (!(await hasActiveSubscription(user.email))) {
+  const subscription = await getActiveSubscription(user.email)
+  if (!subscription.active) {
     throw createError({ statusCode: 402, statusMessage: 'Active subscription is required' })
   }
   setOAuthSession(event, user)
-  return { user }
+  return { user, subscription }
 })

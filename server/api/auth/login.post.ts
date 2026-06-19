@@ -2,7 +2,7 @@ import { readBody } from 'h3'
 import { isAuthDatabaseConfigured, loginAccount } from '../../utils/authStorage'
 import { setOAuthSession } from '../../utils/oauth'
 import { enforceRateLimit } from '../../utils/rateLimit'
-import { hasActiveSubscription } from '../../utils/subscriptionStorage'
+import { getActiveSubscription } from '../../utils/subscriptionStorage'
 
 export default defineEventHandler(async (event) => {
   enforceRateLimit(event, 'login', 10, 15 * 60 * 1000)
@@ -15,9 +15,11 @@ export default defineEventHandler(async (event) => {
   if (!email || !password) throw createError({ statusCode: 400, statusMessage: 'Email and password are required' })
 
   let user
+  let subscription
   try {
     user = await loginAccount(email, password)
-    if (!(await hasActiveSubscription(user.email))) {
+    subscription = await getActiveSubscription(user.email)
+    if (!subscription.active) {
       throw createError({ statusCode: 402, statusMessage: 'Active subscription is required' })
     }
   } catch (error) {
@@ -25,5 +27,5 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 503, statusMessage: 'Account database is unavailable' })
   }
   setOAuthSession(event, user)
-  return { user }
+  return { user, subscription }
 })

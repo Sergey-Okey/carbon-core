@@ -29,7 +29,10 @@
               <Play :size="15" />
               Попробовать демо
             </AppButton>
-            <NuxtLink class="route-link" :to="isRegister ? '/auth' : '/register'">
+            <AppButton type="button" variant="secondary" disabled>
+              App скоро
+            </AppButton>
+            <NuxtLink class="route-link" :to="isRegister ? '/auth' : '/register'" @click.prevent="openAuthMode">
               {{ isRegister ? 'Уже есть профиль? Войти' : 'Нет профиля? Получить доступ' }}
               <ArrowUpRight :size="15" />
             </NuxtLink>
@@ -42,7 +45,7 @@
           </div>
         </div>
 
-        <div class="auth-panel auth-form-panel">
+        <div ref="authFormPanel" class="auth-panel auth-form-panel">
           <template v-if="isRegister && !accessStore.hasSubscription">
             <div class="subscription-header">
               <span class="badge">Полный доступ</span>
@@ -242,7 +245,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 import { ArrowLeft, ArrowUpRight, Check, Play } from 'lucide-vue-next'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppFormField from '~/components/ui/AppFormField.vue'
@@ -282,7 +285,9 @@ const PENDING_SUBSCRIPTION_KEY = 'carbon-pending-subscription'
 const PENDING_SUBSCRIPTION_TTL = 24 * 60 * 60 * 1000
 const PENDING_SUBSCRIPTION_ATTEMPTS = 10
 const PENDING_SUBSCRIPTION_INTERVAL = 2500
+const AUTH_FORM_SCROLL_KEY = 'carbon-auth-open-form'
 
+const authFormPanel = ref<HTMLElement | null>(null)
 const error = ref('')
 const subscriptionEmail = ref('')
 const subscriptionError = ref('')
@@ -303,6 +308,11 @@ const resetToken = computed(() => {
 })
 
 onMounted(() => {
+  if (import.meta.client && sessionStorage.getItem(AUTH_FORM_SCROLL_KEY) === '1') {
+    sessionStorage.removeItem(AUTH_FORM_SCROLL_KEY)
+    scheduleAuthFormScroll()
+  }
+
   const oauthError = typeof route.query.oauthError === 'string' ? route.query.oauthError : ''
   void resumePendingSubscription()
   if (!oauthError) return
@@ -410,9 +420,25 @@ function startDemo() {
   router.push('/')
 }
 
+function scheduleAuthFormScroll() {
+  if (!import.meta.client) return
+
+  window.setTimeout(() => {
+    if (!window.matchMedia('(max-width: 820px)').matches) return
+    authFormPanel.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+  }, 80)
+}
+
+async function openAuthMode() {
+  const target = isRegister.value ? '/auth' : '/register'
+  if (import.meta.client) sessionStorage.setItem(AUTH_FORM_SCROLL_KEY, '1')
+  await router.push(target)
+  await nextTick()
+  scheduleAuthFormScroll()
+}
+
 function goBack() {
-  if (window.history.length > 1) router.back()
-  else router.push('/onboarding')
+  router.push('/onboarding')
 }
 
 function startOAuth(provider: 'google' | 'yandex') {
@@ -1272,12 +1298,13 @@ function addWelcomeRegistrationLetter(name: string) {
   }
 
   .auth-form-panel {
-    order: 1;
+    order: 2;
     justify-content: flex-start;
+    animation: auth-card-peek 0.82s ease-out 0.55s 1;
   }
 
   .auth-intro {
-    order: 2;
+    order: 1;
     gap: 20px;
   }
 
@@ -1367,6 +1394,29 @@ function addWelcomeRegistrationLetter(name: string) {
 
   .legal-links {
     gap: 8px 12px;
+  }
+}
+
+@keyframes auth-card-peek {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  24% {
+    transform: translateX(-12px);
+  }
+
+  40% {
+    transform: translateX(0);
+  }
+
+  64% {
+    transform: translateX(-8px);
+  }
+
+  80% {
+    transform: translateX(0);
   }
 }
 </style>

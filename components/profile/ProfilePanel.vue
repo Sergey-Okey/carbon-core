@@ -39,7 +39,7 @@
       <article class="profile-cell profile-cell--form">
         <div class="cell-title">
           <span>Данные профиля</span>
-          <strong>{{ createdAtLabel }}</strong>
+          <strong>{{ isSyncing ? 'Синхронизация…' : createdAtLabel }}</strong>
         </div>
 
         <form class="profile-form" @submit.prevent="saveProfile">
@@ -101,7 +101,7 @@
       <article class="profile-cell">
         <div class="cell-title">
           <span>Аккаунт</span>
-          <strong>{{ authStore.isAuthenticated ? 'Активен' : 'Гость' }}</strong>
+          <strong>{{ isSyncing ? 'Синхронизация…' : authStore.isAuthenticated ? 'Активен' : 'Гость' }}</strong>
         </div>
 
         <div class="info-list">
@@ -115,7 +115,7 @@
           </div>
           <div>
             <span>Создан</span>
-            <strong>{{ createdAtLabel }}</strong>
+            <strong>{{ isSyncing ? 'Синхронизация…' : createdAtLabel }}</strong>
           </div>
         </div>
 
@@ -135,7 +135,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { Camera, ChevronLeft, LogOut, Settings, Trash2, UserCircle2 } from 'lucide-vue-next'
 import AppButton from '~/components/ui/AppButton.vue'
 import { useNotification } from '~/composables/useNotification'
@@ -156,6 +156,7 @@ const router = useRouter()
 const fileInput = ref<HTMLInputElement | null>(null)
 const error = ref('')
 const savedMessage = ref('')
+const isSyncing = ref(false)
 
 const form = reactive({
   name: '',
@@ -175,6 +176,10 @@ watch(
   { immediate: true, deep: true }
 )
 
+onMounted(() => {
+  void syncProfileFromServer()
+})
+
 const previewName = computed(() => form.name || userStore.displayName)
 const previewBio = computed(
   () => form.bio || 'Короткое описание поможет быстрее вернуться в рабочий ритм.'
@@ -193,7 +198,7 @@ const accessModeLabel = computed(() => {
   return 'Гость'
 })
 const subscriptionStatus = computed(() => {
-  if (accessStore.hasSubscription) return 'Активна'
+  if (authStore.subscription.active || accessStore.hasSubscription) return 'Активна'
   if (accessStore.isDemo) return 'Демо-режим'
   return 'Не активна'
 })
@@ -206,8 +211,13 @@ const activatedAtLabel = computed(() => {
   })
 })
 const expiresAtLabel = computed(() => {
-  if (!accessStore.hasSubscription) return '—'
-  return 'Будет доступно после подключения API'
+  const expiresAt = authStore.subscription.expiresAt || accessStore.expiresAt
+  if (!expiresAt) return '—'
+  return new Date(expiresAt).toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
 })
 const providerLabel = computed(() => {
   const provider = authStore.currentUser?.provider
@@ -217,6 +227,20 @@ const providerLabel = computed(() => {
   return 'Локально'
 })
 
+async function syncProfileFromServer(showMessage = false) {
+  if (!authStore.isAuthenticated) return
+
+  isSyncing.value = true
+  const result = await authStore.refreshSession()
+  isSyncing.value = false
+
+  if (!result.success) {
+    if (showMessage) addNotification({ type: 'warning', message: result.error || 'Не удалось синхронизировать профиль' })
+    return
+  }
+
+  if (showMessage) addNotification({ type: 'success', message: 'Профиль синхронизирован' })
+}
 function triggerFileInput() {
   fileInput.value?.click()
 }
@@ -553,33 +577,150 @@ async function deleteAccount() {
 }
 
 @media (max-width: 640px) {
+  .profile-page {
+    gap: 12px;
+  }
+
   .profile-head,
   .profile-cell {
     padding: 14px;
+    border-radius: var(--border-radius-lg);
   }
 
-  .profile-head,
-  .identity,
-  .head-actions {
-    align-items: stretch;
-    flex-direction: column;
+  .profile-head {
+    display: grid;
+    gap: 14px;
+  }
+
+  .identity {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
   }
 
   .avatar-button {
-    width: 88px;
-    height: 88px;
+    width: 72px;
+    height: 72px;
+    padding: 8px;
+    border-radius: var(--border-radius-lg);
+
+    img {
+      width: 36px;
+      height: 36px;
+    }
+
+    span {
+      max-width: 100%;
+      overflow: hidden;
+      font-size: 0.68rem;
+      line-height: 1.1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .identity-copy {
+    h3 {
+      margin: 2px 0 4px;
+      font-size: 1.08rem;
+      line-height: 1.2;
+    }
+
+    p {
+      display: -webkit-box;
+      overflow: hidden;
+      font-size: 0.82rem;
+      line-height: 1.35;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
   }
 
   .head-actions,
   .form-actions,
   .danger-zone {
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+
+    :deep(.app-button) {
+      width: 100%;
+      min-height: 44px;
+      padding-inline: 10px;
+    }
+  }
+
+  .profile-grid {
+    gap: 12px;
+  }
+
+  .cell-title {
+    align-items: flex-start;
+    margin-bottom: 14px;
+
+    span {
+      font-size: 0.7rem;
+    }
+
+    strong {
+      font-size: 0.82rem;
+      text-align: right;
+    }
+  }
+
+  .profile-form {
+    gap: 12px;
+  }
+
+  .field {
+    gap: 7px;
+
+    input,
+    textarea {
+      min-height: 44px;
+      padding: 11px 12px;
+      border-radius: var(--border-radius-md);
+    }
+
+    textarea {
+      min-height: 108px;
+    }
+  }
+
+  .info-list {
+    gap: 8px;
+
+    > div {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--border-radius-md);
+    }
+
+    span,
+    strong {
+      overflow-wrap: anywhere;
+    }
+
+    strong {
+      font-size: 0.82rem;
+      text-align: right;
+    }
+  }
+}
+
+@media (max-width: 380px) {
+  .head-actions,
+  .form-actions,
+  .danger-zone {
     grid-template-columns: 1fr;
   }
 
   .info-list > div {
-    align-items: flex-start;
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
   .info-list strong {

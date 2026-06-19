@@ -294,9 +294,9 @@ async function handleDelete() {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 148px;
+  min-height: 132px;
   height: 100%;
-  padding: 1rem;
+  padding: 0.85rem;
   background: var(--glass-surface);
   background-clip: padding-box;
   border: var(--ui-border);
@@ -320,18 +320,26 @@ async function handleDelete() {
     background: color-mix(in srgb, var(--error) 5%, var(--glass-surface));
   }
 
+  &.HABIT {
+    min-height: 116px;
+
+    .task-bottom {
+      gap: 8px;
+    }
+  }
+
   .task-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 7px;
+    margin-bottom: 7px;
   }
 
   .title-row {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     min-width: 0;
     flex-wrap: wrap;
   }
@@ -358,30 +366,33 @@ async function handleDelete() {
   h4 {
     margin: 0;
     color: var(--text);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 600;
     line-height: 1.3;
     word-break: break-word;
   }
 
   .task-desc {
-    margin: 0 0 8px;
+    display: -webkit-box;
+    margin: 0 0 7px;
+    overflow: hidden;
     color: var(--dim);
-    font-size: 0.8rem;
-    line-height: 1.4;
+    font-size: 0.76rem;
+    line-height: 1.35;
     word-break: break-word;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .task-desc--empty {
-    opacity: 0.75;
-    font-style: italic;
+    display: none;
   }
 
   .task-bottom {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 9px;
     margin-top: auto;
     flex-wrap: nowrap;
   }
@@ -389,7 +400,7 @@ async function handleDelete() {
   .task-info {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     flex-wrap: wrap;
     min-width: 0;
     flex: 1;
@@ -409,8 +420,8 @@ async function handleDelete() {
 
   .branch-link {
     display: inline-block;
-    max-width: 116px;
-    padding: 2px 7px;
+    max-width: 104px;
+    padding: 2px 6px;
     overflow: hidden;
     border: var(--ui-border);
     border-radius: var(--border-radius-pill);
@@ -470,7 +481,7 @@ async function handleDelete() {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 6px;
+    gap: 5px;
     flex: 1;
     overflow-x: auto;
     overflow-y: hidden;
@@ -487,7 +498,7 @@ async function handleDelete() {
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     padding: 2px 6px;
     background: transparent;
     border: none;
@@ -599,12 +610,12 @@ async function handleDelete() {
 
 @media (max-width: 560px) {
   .task-card {
-    padding: 12px;
+    padding: 10px;
     min-height: auto;
 
     .task-header {
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 5px;
       margin-bottom: 10px;
     }
 
@@ -613,7 +624,7 @@ async function handleDelete() {
     }
 
     h4 {
-      font-size: 0.9rem;
+      font-size: 0.86rem;
     }
 
     .task-type {
@@ -622,20 +633,20 @@ async function handleDelete() {
     }
 
     .task-desc {
-      font-size: 0.75rem;
-      margin-bottom: 10px;
+      font-size: 0.72rem;
+      margin-bottom: 8px;
     }
 
     .task-bottom {
       flex-direction: row;
       flex-wrap: wrap;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
     }
 
     .task-info {
       flex: 1;
-      gap: 8px;
+      gap: 7px;
     }
 
     .due-date {
