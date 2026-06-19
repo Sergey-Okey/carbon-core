@@ -12,7 +12,7 @@ defineProps<{ noPadding?: boolean }>()
 .glass-card {
   @include glass;
   border-radius: var(--border-radius-lg);
-  padding: 1.5rem;
+  padding: var(--panel-padding);
   &.no-padding {
     padding: 0;
   }

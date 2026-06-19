@@ -4,6 +4,8 @@
       <div class="progress-fill" :style="{ width: progress + '%' }" />
     </div>
 
+    <ThemeToggleButton class="onboarding-theme-toggle" />
+
     <div class="background-layer">
       <div class="board-sphere">
         <div class="sphere-core"></div>
@@ -557,6 +559,7 @@ import {
 } from 'lucide-vue-next'
 import { useOnboardingStore } from '~/stores/onboarding.store'
 import { useAuthStore } from '~/stores/auth.store'
+import ThemeToggleButton from '~/components/ui/ThemeToggleButton.vue'
 
 definePageMeta({
   layout: false,
@@ -603,7 +606,7 @@ const router = useRouter()
 const scrollContainer = ref<HTMLElement | null>(null)
 const progress = ref(0)
 const showDonation = ref(false)
-const apkDownloadUrl = '/downloads/core-of-life.apk'
+const apkDownloadUrl = ''
 
 const allTags = [
   { id: 't1', label: '#фокус' },
@@ -739,6 +742,13 @@ onUnmounted(() => {
   flex-direction: column;
   font-family: 'Inter', sans-serif;
   isolation: isolate;
+}
+
+.onboarding-theme-toggle {
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right, 0px));
+  bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  z-index: 260;
 }
 
 .top-progress {
@@ -1108,6 +1118,10 @@ onUnmounted(() => {
   scroll-snap-stop: always;
 
   @media (max-width: 768px) {
+  .onboarding-theme-toggle {
+    right: max(14px, env(safe-area-inset-right, 0px));
+    bottom: max(14px, env(safe-area-inset-bottom, 0px));
+  }
     padding: 40px 20px 32px;
     min-height: 100dvh;
   }

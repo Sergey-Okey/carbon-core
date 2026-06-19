@@ -18,6 +18,7 @@
 
     <VueFlow
       v-else
+      :key="flowRenderKey"
       v-model:nodes="nodes"
       v-model:edges="edges"
       :node-types="nodeTypes"
@@ -182,6 +183,7 @@ const branchModal = ref<{ visible: boolean; branch: Branch | null }>({
   branch: null,
 })
 const boardWrapper = ref<HTMLElement | null>(null)
+const flowRenderKey = ref(0)
 
 const emptyMilestone: Milestone = {
   id: '',
@@ -527,9 +529,9 @@ function alignLayoutSmart() {
   if (branchesStore.branches.length === 0) return
 
   const density = {
-    compact: { nodeSep: 54 },
-    normal: { nodeSep: 78 },
-    wide: { nodeSep: 110 },
+    compact: { nodeSep: 54, componentGap: 180 },
+    normal: { nodeSep: 78, componentGap: 240 },
+    wide: { nodeSep: 110, componentGap: 320 },
   }[settingsStore.boardLayoutDensity]
 
   isAutoLayoutAnimating.value = true
@@ -545,6 +547,8 @@ function alignLayoutSmart() {
     marginX: Math.max(80, uiStore.panelWidth + 36),
     marginY: 80,
     snapGrid: 20,
+    edgeGap: connectionSpacing.value,
+    componentGap: density.componentGap,
   })
 
   layoutedNodes.forEach((node) => {
@@ -942,9 +946,13 @@ onMounted(() => {
   nextTick(() => {
     syncNodesAndEdges()
     if (!isMobile.value) {
+      requestAnimationFrame(() => {
+        flowRenderKey.value += 1
+        requestAnimationFrame(() => syncNodesAndEdges())
+      })
       setTimeout(() => {
         fitBoardView()
-      }, 100)
+      }, 120)
     }
     saveToHistory()
   })

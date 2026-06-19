@@ -612,6 +612,9 @@ function getIconComponent(iconName: string) {
 }
 
 .milestones-shell {
+  @include glass;
+  isolation: isolate;
+  will-change: backdrop-filter;
   display: grid;
   grid-template-rows: 1fr;
   width: 100%;

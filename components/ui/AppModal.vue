@@ -130,7 +130,7 @@ function handleBackdrop() {
   justify-content: space-between;
   gap: var(--panel-gap);
   min-height: 62px;
-  padding: 14px 16px;
+  padding: 14px var(--panel-padding);
 }
 
 .title-block {
@@ -157,7 +157,7 @@ function handleBackdrop() {
 
 .app-modal-body {
   min-height: 0;
-  padding: 16px;
+  padding: var(--panel-padding);
   color: var(--text);
   font-size: 0.92rem;
   line-height: 1.5;

@@ -1,5 +1,6 @@
 <template>
   <div class="auth-layout">
+    <ThemeToggleButton class="auth-theme-toggle" />
     <main class="auth-layout__content">
       <slot />
     </main>
@@ -9,6 +10,7 @@
 
 <script setup lang="ts">
 import ToastContainer from '~/components/base/ToastContainer.vue'
+import ThemeToggleButton from '~/components/ui/ThemeToggleButton.vue'
 </script>
 
 <style scoped lang="scss">
@@ -27,6 +29,13 @@ import ToastContainer from '~/components/base/ToastContainer.vue'
   overflow: hidden;
   padding-block: env(safe-area-inset-top, 0px) env(safe-area-inset-bottom, 0px);
   padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
+}
+
+.auth-theme-toggle {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  top: max(16px, env(safe-area-inset-top, 0px));
+  z-index: 20;
 }
 
 </style>

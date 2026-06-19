@@ -466,13 +466,10 @@ top: 45px;           /* фиксированный отступ от верхн�
     max-height: 220px;
     padding: 12px;
     overflow-y: auto;
-    background: var(--glass-surface);
-    background-clip: padding-box;
-    border: var(--ui-border);
+    @include glass;
     border-radius: var(--border-radius-md);
-    box-shadow: none;
-    backdrop-filter: var(--board-details-filter);
-    -webkit-backdrop-filter: var(--board-details-filter);
+    isolation: isolate;
+    will-change: backdrop-filter;
     font-size: 0.85rem;
     word-wrap: break-word;
 
