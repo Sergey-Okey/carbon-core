@@ -640,9 +640,9 @@ function getIconComponent(iconName: string) {
 
 .milestone-item {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
   align-items: start;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
   inline-size: 100%;
   min-width: 0;
@@ -675,12 +675,12 @@ function getIconComponent(iconName: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  background: transparent;
+  width: 22px;
+  height: 22px;
+  background: var(--glass-surface);
   border-radius: var(--border-radius-pill);
   font-weight: 600;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   flex-shrink: 0;
   color: var(--dim);
 }
@@ -693,15 +693,16 @@ function getIconComponent(iconName: string) {
 }
 
 .milestone-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
   gap: 10px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 
   h5 {
     font-weight: 600;
     font-size: 0.9rem;
+    line-height: 1.22;
     margin: 0;
     color: var(--text);
     min-width: 0;
@@ -733,10 +734,16 @@ function getIconComponent(iconName: string) {
 }
 
 .task-counter {
-  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 0 8px;
+  border-radius: var(--border-radius-pill);
+  background: var(--glass-surface);
   color: var(--dim);
-  font-size: 0.76rem;
-  line-height: 1.2;
+  font-size: 0.74rem;
+  line-height: 1;
   white-space: nowrap;
 }
 
@@ -745,24 +752,42 @@ function getIconComponent(iconName: string) {
     list-style: none;
     padding: 0;
     margin: 8px 0 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    display: grid;
+    gap: 6px;
   }
 
   li {
-    font-size: 0.8rem;
+    display: grid;
+    grid-template-columns: 6px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 7px 10px;
+    box-sizing: border-box;
+    border-radius: var(--border-radius-md);
+    background: var(--glass-surface);
     color: var(--text);
-    padding: 3px 0;
-    border-radius: var(--border-radius-pill);
+    font-size: 0.8rem;
+    line-height: 1.25;
     overflow-wrap: anywhere;
     transition:
       background var(--transition-standard),
-      color var(--transition-standard);
+      color var(--transition-standard),
+      opacity var(--transition-standard);
+
+    &::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: var(--border-radius-pill);
+      background: var(--dim);
+      opacity: 0.72;
+    }
 
     &.done {
       color: var(--dim);
       text-decoration: line-through;
+      opacity: 0.72;
     }
   }
 }
@@ -918,7 +943,7 @@ function getIconComponent(iconName: string) {
   }
 
   .milestone-item {
-    grid-template-columns: 24px minmax(0, 1fr) var(--control-icon-size);
+    grid-template-columns: 22px minmax(0, 1fr) var(--control-icon-size);
     gap: 8px;
     padding: 10px;
     border-radius: var(--border-radius-md);
@@ -946,29 +971,26 @@ function getIconComponent(iconName: string) {
   }
 
   .milestone-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 4px;
-
-    h5 {
-      font-weight: 600;
-      font-size: 0.9rem;
-      margin: 0;
-      color: var(--text);
-      min-width: 0;
-      overflow-wrap: anywhere;
-    }
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
   }
 
-  /* Icon rotation */
-  svg {
-    transition: transform var(--transition-standard);
+  .task-counter {
+    justify-self: start;
+  }
 
-    &.rotated {
-      transform: rotate(180deg);
-    }
+  .milestone-tasks li {
+    min-height: 34px;
+    padding: 7px 9px;
+  }
+}
+
+/* Icon rotation */
+svg {
+  transition: transform var(--transition-standard);
+
+  &.rotated {
+    transform: rotate(180deg);
   }
 }
 </style>
