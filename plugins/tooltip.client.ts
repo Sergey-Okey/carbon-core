@@ -21,8 +21,10 @@ function ensureTooltip() {
 }
 
 function getTooltipTarget(target: EventTarget | null): TooltipTarget | null {
-  if (!(target instanceof HTMLElement)) return null
-  return target.closest<HTMLElement>('[data-tooltip], [title]') as TooltipTarget | null
+  if (!(target instanceof Element)) return null
+  return target.closest<HTMLElement>(
+    '[data-tooltip], [title]'
+  ) as TooltipTarget | null
 }
 
 function getTooltipText(target: TooltipTarget) {
@@ -55,8 +57,14 @@ function placeTooltip(target: TooltipTarget, tooltip: HTMLDivElement) {
     top = rect.top + rect.height / 2 - tooltipRect.height / 2
   }
 
-  left = Math.min(Math.max(margin, left), window.innerWidth - tooltipRect.width - margin)
-  top = Math.min(Math.max(margin, top), window.innerHeight - tooltipRect.height - margin)
+  left = Math.min(
+    Math.max(margin, left),
+    window.innerWidth - tooltipRect.width - margin
+  )
+  top = Math.min(
+    Math.max(margin, top),
+    window.innerHeight - tooltipRect.height - margin
+  )
 
   tooltip.style.left = `${left}px`
   tooltip.style.top = `${top}px`
@@ -74,14 +82,19 @@ function showTooltip(target: TooltipTarget) {
   activeTarget = target
   const tooltip = ensureTooltip()
   tooltip.textContent = text
-  tooltip.classList.add('is-visible')
-  requestAnimationFrame(() => placeTooltip(target, tooltip))
+  tooltip.style.display = 'block'
+  tooltip.classList.remove('is-visible')
+  requestAnimationFrame(() => {
+    placeTooltip(target, tooltip)
+    tooltip.classList.add('is-visible')
+  })
 }
 
 function hideTooltip() {
   if (!tooltipEl) return
 
   tooltipEl.classList.remove('is-visible')
+  tooltipEl.style.display = 'none'
   activeTarget = null
 }
 
@@ -106,7 +119,11 @@ export default defineNuxtPlugin(() => {
     (event) => {
       const target = getTooltipTarget(event.target)
       if (!target) return
-      if (event.relatedTarget instanceof Node && target.contains(event.relatedTarget)) return
+      if (
+        event.relatedTarget instanceof Node &&
+        target.contains(event.relatedTarget)
+      )
+        return
       restoreNativeTitle(target)
       hideTimer = window.setTimeout(hideTooltip, 80)
     },
@@ -134,4 +151,5 @@ export default defineNuxtPlugin(() => {
 
   window.addEventListener('scroll', () => activeTarget && hideTooltip(), true)
   window.addEventListener('resize', () => activeTarget && hideTooltip())
+  document.addEventListener('pointerdown', () => hideTooltip())
 })

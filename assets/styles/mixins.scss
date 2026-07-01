@@ -1,12 +1,33 @@
 @mixin glass {
-  background-color: var(--glass-surface);
+  position: relative;
+  background-color: var(--glass-surface, rgba(17, 24, 39, 0.72));
+  background-image: linear-gradient(
+    135deg,
+    var(--glass-highlight, rgba(255, 255, 255, 0.16)) 0%,
+    transparent 70%
+  );
   background-clip: padding-box;
-  -webkit-backdrop-filter: var(--glass-filter) !important;
-  backdrop-filter: var(--glass-filter) !important;
-  border: var(--ui-border);
-  box-shadow: none;
+  border: var(--ui-border, 1px solid rgba(255, 255, 255, 0.16));
+  box-shadow: var(--glass-shadow, none);
+  color: inherit;
+  overflow: hidden;
+  isolation: isolate;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  backdrop-filter: var(--glass-filter, blur(18px) saturate(1.2)) !important;
+  -webkit-backdrop-filter: var(
+    --glass-filter,
+    blur(18px) saturate(1.2)
+  ) !important;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+
+  @supports not (
+    (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+  ) {
+    background-color: var(--glass-surface-strong, rgba(14, 18, 26, 0.86));
+    box-shadow: var(--glass-shadow, 0 16px 32px rgba(0, 0, 0, 0.2));
+  }
 }
 
 @mixin desktop {

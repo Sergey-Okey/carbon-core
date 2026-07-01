@@ -10,7 +10,11 @@ import { upsertOAuthAccount } from '../../../utils/authStorage'
 export default defineEventHandler(async (event) => {
   const provider = getRouterParam(event, 'provider')
   const query = getQuery(event)
-  if (!isOAuthProvider(provider) || typeof query.code !== 'string' || typeof query.state !== 'string') {
+  if (
+    !isOAuthProvider(provider) ||
+    typeof query.code !== 'string' ||
+    typeof query.state !== 'string'
+  ) {
     return sendRedirect(event, '/auth?oauthError=invalid')
   }
 
@@ -18,9 +22,12 @@ export default defineEventHandler(async (event) => {
     const termsVersion = validateOAuthState(event, provider, query.state)
     setOAuthSession(
       event,
-      await upsertOAuthAccount(await exchangeOAuthCode(event, provider, query.code), termsVersion)
+      await upsertOAuthAccount(
+        await exchangeOAuthCode(event, provider, query.code),
+        termsVersion
+      )
     )
-    return sendRedirect(event, '/?oauth=success')
+    return sendRedirect(event, '/?oauth=success&refresh=1')
   } catch (error) {
     const statusCode =
       typeof error === 'object' && error !== null && 'statusCode' in error
@@ -35,7 +42,8 @@ export default defineEventHandler(async (event) => {
             ? 'provider'
             : 'failed'
 
-    const targetPath = reason === 'subscription' || reason === 'terms' ? '/register' : '/auth'
+    const targetPath =
+      reason === 'subscription' || reason === 'terms' ? '/register' : '/auth'
     return sendRedirect(event, `${targetPath}?oauthError=${reason}`)
   }
 })

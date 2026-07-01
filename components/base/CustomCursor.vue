@@ -18,7 +18,14 @@ import { onMounted, onUnmounted, ref } from 'vue'
 const cursorRef = ref<HTMLElement | null>(null)
 const visualRef = ref<HTMLElement | null>(null)
 
-type CursorState = 'default' | 'pointer' | 'text' | 'grab' | 'grabbing' | 'precision' | 'disabled'
+type CursorState =
+  | 'default'
+  | 'pointer'
+  | 'text'
+  | 'grab'
+  | 'grabbing'
+  | 'precision'
+  | 'disabled'
 const validStates = new Set<CursorState>([
   'default',
   'pointer',
@@ -33,6 +40,7 @@ let x = 0
 let y = 0
 let pressed = false
 let pressedState: CursorState | null = null
+let rafId = 0
 
 function elementAtPointer() {
   return document.elementFromPoint(x, y)
@@ -42,13 +50,26 @@ function stateFor(element: Element | null): CursorState {
   if (pressedState) return pressedState === 'grab' ? 'grabbing' : pressedState
   if (!element) return 'default'
 
-  const explicit = element.closest<HTMLElement>('[data-cursor]')?.dataset.cursor as CursorState
-  if (validStates.has(explicit)) return pressed && explicit === 'grab' ? 'grabbing' : explicit
+  const explicit = element.closest<HTMLElement>('[data-cursor]')?.dataset
+    .cursor as CursorState
+  if (validStates.has(explicit))
+    return pressed && explicit === 'grab' ? 'grabbing' : explicit
   if (element.closest(':disabled, [aria-disabled="true"]')) return 'disabled'
-  if (element.closest('textarea, [contenteditable="true"], input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"])')) return 'text'
+  if (
+    element.closest(
+      'textarea, [contenteditable="true"], input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"])'
+    )
+  )
+    return 'text'
   if (element.closest('.vue-flow__handle, .palette-wheel')) return 'precision'
-  if (element.closest('button, a, summary, label, select, [role="button"], [role="link"], [role="tab"], [role="menuitem"]')) return 'pointer'
-  if (element.closest('.vue-flow__node, .vue-flow__pane')) return pressed ? 'grabbing' : 'grab'
+  if (
+    element.closest(
+      'button, a, summary, label, select, [role="button"], [role="link"], [role="tab"], [role="menuitem"]'
+    )
+  )
+    return 'pointer'
+  if (element.closest('.vue-flow__node, .vue-flow__pane'))
+    return pressed ? 'grabbing' : 'grab'
   return 'default'
 }
 
@@ -60,34 +81,44 @@ function render() {
   visual.dataset.state = stateFor(elementAtPointer())
 }
 
+function scheduleRender() {
+  if (rafId) window.cancelAnimationFrame(rafId)
+  rafId = window.requestAnimationFrame(() => {
+    render()
+    rafId = 0
+  })
+}
+
+function updatePosition(clientX: number, clientY: number) {
+  x = clientX
+  y = clientY
+  cursorRef.value?.classList.add('visible')
+  scheduleRender()
+}
+
 function onPointerMove(event: PointerEvent) {
   if (event.pointerType !== 'mouse') return
-  x = event.clientX
-  y = event.clientY
-  cursorRef.value?.classList.add('visible')
-  render()
+  updatePosition(event.clientX, event.clientY)
 }
 
 function onPointerDown(event: PointerEvent) {
   if (event.pointerType !== 'mouse') return
-  x = event.clientX
-  y = event.clientY
+  updatePosition(event.clientX, event.clientY)
   pressedState = stateFor(elementAtPointer())
   pressed = true
   visualRef.value?.classList.add('pressed')
-  render()
+  scheduleRender()
 }
 
 function releasePointer(event?: PointerEvent) {
   if (event?.pointerType && event.pointerType !== 'mouse') return
   if (event) {
-    x = event.clientX
-    y = event.clientY
+    updatePosition(event.clientX, event.clientY)
   }
   pressed = false
   pressedState = null
   visualRef.value?.classList.remove('pressed')
-  render()
+  scheduleRender()
 }
 
 function releaseDrag() {
@@ -101,6 +132,10 @@ function hideCursor() {
   visualRef.value?.classList.remove('pressed')
 }
 
+function handleScroll() {
+  scheduleRender()
+}
+
 function releaseWithoutMoving() {
   releasePointer()
 }
@@ -109,12 +144,29 @@ onMounted(() => {
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
 
   document.documentElement.classList.add('custom-cursor-enabled')
-  document.addEventListener('pointermove', onPointerMove, { capture: true, passive: true })
-  document.addEventListener('pointerdown', onPointerDown, { capture: true, passive: true })
-  document.addEventListener('pointerup', releasePointer, { capture: true, passive: true })
-  document.addEventListener('pointercancel', releasePointer, { capture: true, passive: true })
-  document.addEventListener('scroll', render, { capture: true, passive: true })
-  document.addEventListener('contextmenu', releaseWithoutMoving, { capture: true })
+  document.addEventListener('pointermove', onPointerMove, {
+    capture: true,
+    passive: true,
+  })
+  document.addEventListener('pointerdown', onPointerDown, {
+    capture: true,
+    passive: true,
+  })
+  document.addEventListener('pointerup', releasePointer, {
+    capture: true,
+    passive: true,
+  })
+  document.addEventListener('pointercancel', releasePointer, {
+    capture: true,
+    passive: true,
+  })
+  document.addEventListener('scroll', handleScroll, {
+    capture: true,
+    passive: true,
+  })
+  document.addEventListener('contextmenu', releaseWithoutMoving, {
+    capture: true,
+  })
   document.documentElement.addEventListener('mouseleave', hideCursor)
   window.addEventListener('blur', releaseWithoutMoving)
   window.addEventListener('dragend', releaseDrag)
@@ -124,9 +176,13 @@ onUnmounted(() => {
   document.removeEventListener('pointermove', onPointerMove, { capture: true })
   document.removeEventListener('pointerdown', onPointerDown, { capture: true })
   document.removeEventListener('pointerup', releasePointer, { capture: true })
-  document.removeEventListener('pointercancel', releasePointer, { capture: true })
-  document.removeEventListener('scroll', render, { capture: true })
-  document.removeEventListener('contextmenu', releaseWithoutMoving, { capture: true })
+  document.removeEventListener('pointercancel', releasePointer, {
+    capture: true,
+  })
+  document.removeEventListener('scroll', handleScroll, { capture: true })
+  document.removeEventListener('contextmenu', releaseWithoutMoving, {
+    capture: true,
+  })
   document.documentElement.removeEventListener('mouseleave', hideCursor)
   window.removeEventListener('blur', releaseWithoutMoving)
   window.removeEventListener('dragend', releaseDrag)
@@ -144,8 +200,10 @@ onUnmounted(() => {
   block-size: 1px;
   opacity: 0;
   pointer-events: none;
-  will-change: transform;
+  will-change: transform, opacity;
   transition: opacity 0.12s ease;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.2));
+  backface-visibility: hidden;
 
   &.visible {
     opacity: 1;
@@ -165,6 +223,8 @@ onUnmounted(() => {
     transform 0.12s ease,
     inline-size 0.12s ease,
     block-size 0.12s ease;
+  transform-origin: 8px 7px;
+  backface-visibility: hidden;
 
   svg {
     display: block;

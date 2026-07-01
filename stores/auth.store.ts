@@ -20,7 +20,10 @@ export interface User {
 export type AuthMode = 'cloud' | 'local'
 export type SubscriptionSnapshot = { active: boolean; expiresAt: string }
 type ServerUser = Omit<User, 'password'> & { bio?: string }
-type SessionResponse = { user?: ServerUser | null; subscription?: SubscriptionSnapshot }
+type SessionResponse = {
+  user?: ServerUser | null
+  subscription?: SubscriptionSnapshot
+}
 type BackendFetch = <T = unknown>(
   url: string,
   options?: Record<string, unknown>
@@ -60,7 +63,9 @@ function getHttpStatus(error: unknown) {
     status?: unknown
     response?: { status?: unknown }
   }
-  return Number(candidate.statusCode || candidate.status || candidate.response?.status || 0)
+  return Number(
+    candidate.statusCode || candidate.status || candidate.response?.status || 0
+  )
 }
 
 export const useAuthStore = defineStore(
@@ -72,7 +77,10 @@ export const useAuthStore = defineStore(
     const initialized = ref(false)
     const usersCount = ref(0)
     const authMode = ref<AuthMode>('cloud')
-    const subscription = ref<SubscriptionSnapshot>({ active: false, expiresAt: '' })
+    const subscription = ref<SubscriptionSnapshot>({
+      active: false,
+      expiresAt: '',
+    })
     const fetchBackend = $fetch as unknown as BackendFetch
 
     const userInitials = computed(() => {
@@ -128,9 +136,15 @@ export const useAuthStore = defineStore(
       })
     }
 
-    function applyServerUser(user: ServerUser, serverSubscription?: SubscriptionSnapshot) {
+    function applyServerUser(
+      user: ServerUser,
+      serverSubscription?: SubscriptionSnapshot
+    ) {
       const accessStore = useAccessStore()
-      const nextSubscription = serverSubscription || { active: true, expiresAt: '' }
+      const nextSubscription = serverSubscription || {
+        active: true,
+        expiresAt: '',
+      }
       subscription.value = nextSubscription
       accessStore.syncSubscription(nextSubscription)
       currentUser.value = { ...user, password: '', bio: user.bio || '' }
@@ -149,38 +163,54 @@ export const useAuthStore = defineStore(
       persistSession()
     }
 
-    async function init() {
-      if (!import.meta.client || initialized.value) return
+    async function init(options: { force?: boolean } = {}) {
+      if (!import.meta.client || (initialized.value && !options.force)) return
 
       usersCount.value = getUsers().length
-      browserLog.info('auth', 'Инициализация авторизации', { localUsers: usersCount.value })
+      browserLog.info('auth', 'Инициализация авторизации', {
+        localUsers: usersCount.value,
+      })
 
       if (currentUser.value && isAuthenticated.value) {
         syncUserProfile(currentUser.value)
       }
 
       try {
-        const session = await fetchBackend<SessionResponse>(getBackendUrl('/api/auth/session'), getBackendFetchOptions())
+        const session = await fetchBackend<SessionResponse>(
+          getBackendUrl('/api/auth/session'),
+          getBackendFetchOptions()
+        )
         if (session.user) {
           applyServerUser(session.user, session.subscription)
           browserLog.info('auth', 'Восстановлена облачная сессия', {
             provider: session.user.provider,
           })
+        } else if (options.force) {
+          clearCloudSession()
         }
       } catch {
         // Local profiles remain available when the OAuth backend is offline.
-        browserLog.warn('auth', 'Облачная сессия недоступна, используется локальный режим')
+        browserLog.warn(
+          'auth',
+          'Облачная сессия недоступна, используется локальный режим'
+        )
       }
 
       initialized.value = true
     }
 
-
-    async function refreshSession(): Promise<{ success: boolean; error?: string }> {
+    async function refreshSession(): Promise<{
+      success: boolean
+      error?: string
+    }> {
       try {
-        const session = await fetchBackend<SessionResponse>(getBackendUrl('/api/auth/session'), getBackendFetchOptions())
+        const session = await fetchBackend<SessionResponse>(
+          getBackendUrl('/api/auth/session'),
+          getBackendFetchOptions()
+        )
         if (!session.user) {
-          if (authMode.value === 'cloud' || currentUser.value?.provider) clearCloudSession()
+          if (authMode.value === 'cloud' || currentUser.value?.provider)
+            clearCloudSession()
           return { success: false, error: 'Сессия не найдена' }
         }
 
@@ -200,28 +230,38 @@ export const useAuthStore = defineStore(
       name: string,
       mode: AuthMode = 'cloud',
       acceptedTerms = false
-    ): Promise<{ success: boolean; error?: string; requiresVerification?: boolean; email?: string }> {
+    ): Promise<{
+      success: boolean
+      error?: string
+      requiresVerification?: boolean
+      email?: string
+    }> {
       isLoading.value = true
 
       try {
         const accessStore = useAccessStore()
         if (!accessStore.hasSubscription) {
-          return { success: false, error: 'Для регистрации нужна активная подписка' }
+          return {
+            success: false,
+            error: 'Для регистрации нужна активная подписка',
+          }
         }
 
         if (!acceptedTerms) {
-          return { success: false, error: 'Необходимо принять условия использования' }
+          return {
+            success: false,
+            error: 'Необходимо принять условия использования',
+          }
         }
 
-        if (mode === 'cloud') try {
-          const response = await fetchBackend<{
-            user?: ServerUser
-            subscription?: SubscriptionSnapshot
-            requiresVerification?: boolean
-            email?: string
-          }>(
-            getBackendUrl('/api/auth/register'),
-            {
+        if (mode === 'cloud')
+          try {
+            const response = await fetchBackend<{
+              user?: ServerUser
+              subscription?: SubscriptionSnapshot
+              requiresVerification?: boolean
+              email?: string
+            }>(getBackendUrl('/api/auth/register'), {
               method: 'POST',
               body: {
                 email,
@@ -231,28 +271,45 @@ export const useAuthStore = defineStore(
                 termsVersion: '2026-06-07',
               },
               ...getBackendFetchOptions(),
+            })
+            if (response.requiresVerification) {
+              return {
+                success: true,
+                requiresVerification: true,
+                email: response.email || email.trim().toLowerCase(),
+              }
             }
-          )
-          if (response.requiresVerification) {
+            if (!response.user)
+              return { success: false, error: 'Не удалось создать аккаунт' }
+            applyServerUser(response.user, response.subscription)
+            authMode.value = 'cloud'
+            browserLog.info('auth', 'Регистрация выполнена', {
+              mode: 'cloud',
+              provider: 'local',
+            })
+            return { success: true }
+          } catch (error) {
+            const status = getHttpStatus(error)
+            if (status === 409)
+              return { success: false, error: 'Этот email уже зарегистрирован' }
+            if (status === 402)
+              return {
+                success: false,
+                error: 'Подписка для этого email не найдена или истекла',
+              }
+            if (status === 400)
+              return {
+                success: false,
+                error: 'Проверьте имя, email, пароль и согласие с условиями',
+              }
+            if (status && status !== 503)
+              return { success: false, error: 'Не удалось создать аккаунт' }
             return {
-              success: true,
-              requiresVerification: true,
-              email: response.email || email.trim().toLowerCase(),
+              success: false,
+              error:
+                'Облачная регистрация недоступна. Выберите локальный режим',
             }
           }
-          if (!response.user) return { success: false, error: 'Не удалось создать аккаунт' }
-          applyServerUser(response.user, response.subscription)
-          authMode.value = 'cloud'
-          browserLog.info('auth', 'Регистрация выполнена', { mode: 'cloud', provider: 'local' })
-          return { success: true }
-        } catch (error) {
-          const status = getHttpStatus(error)
-          if (status === 409) return { success: false, error: 'Этот email уже зарегистрирован' }
-          if (status === 402) return { success: false, error: 'Подписка для этого email не найдена или истекла' }
-          if (status === 400) return { success: false, error: 'Проверьте имя, email, пароль и согласие с условиями' }
-          if (status && status !== 503) return { success: false, error: 'Не удалось создать аккаунт' }
-          return { success: false, error: 'Облачная регистрация недоступна. Выберите локальный режим' }
-        }
 
         await new Promise((resolve) => setTimeout(resolve, 350))
         const users = getUsers()
@@ -309,27 +366,44 @@ export const useAuthStore = defineStore(
       isLoading.value = true
 
       try {
-        if (mode === 'cloud') try {
-          const response = await fetchBackend<{ user: ServerUser; subscription?: SubscriptionSnapshot }>(
-            getBackendUrl('/api/auth/login'),
-            {
+        if (mode === 'cloud')
+          try {
+            const response = await fetchBackend<{
+              user: ServerUser
+              subscription?: SubscriptionSnapshot
+            }>(getBackendUrl('/api/auth/login'), {
               method: 'POST',
               body: { email, password },
               ...getBackendFetchOptions(),
+            })
+            applyServerUser(response.user, response.subscription)
+            authMode.value = 'cloud'
+            browserLog.info('auth', 'Вход выполнен', {
+              mode: 'cloud',
+              provider: response.user.provider,
+            })
+            return { success: true }
+          } catch (error) {
+            const status = getHttpStatus(error)
+            if (status === 401)
+              return { success: false, error: 'Неверный email или пароль' }
+            if (status === 403)
+              return {
+                success: false,
+                error: 'Подтвердите email кодом из письма',
+              }
+            if (status === 402)
+              return {
+                success: false,
+                error: 'Подписка для этого email не найдена или истекла',
+              }
+            if (status && status !== 503)
+              return { success: false, error: 'Не удалось выполнить вход' }
+            return {
+              success: false,
+              error: 'Облачный вход недоступен. Выберите локальный режим',
             }
-          )
-          applyServerUser(response.user, response.subscription)
-          authMode.value = 'cloud'
-          browserLog.info('auth', 'Вход выполнен', { mode: 'cloud', provider: response.user.provider })
-          return { success: true }
-        } catch (error) {
-          const status = getHttpStatus(error)
-          if (status === 401) return { success: false, error: 'Неверный email или пароль' }
-          if (status === 403) return { success: false, error: 'Подтвердите email кодом из письма' }
-          if (status === 402) return { success: false, error: 'Подписка для этого email не найдена или истекла' }
-          if (status && status !== 503) return { success: false, error: 'Не удалось выполнить вход' }
-          return { success: false, error: 'Облачный вход недоступен. Выберите локальный режим' }
-        }
+          }
 
         await new Promise((resolve) => setTimeout(resolve, 300))
         const users = getUsers()
@@ -373,23 +447,32 @@ export const useAuthStore = defineStore(
       isLoading.value = true
 
       try {
-        const response = await fetchBackend<{ user: ServerUser; subscription?: SubscriptionSnapshot }>(
-          getBackendUrl('/api/auth/email-verification/verify'),
-          {
-            method: 'POST',
-            body: { email, code },
-            ...getBackendFetchOptions(),
-          }
-        )
+        const response = await fetchBackend<{
+          user: ServerUser
+          subscription?: SubscriptionSnapshot
+        }>(getBackendUrl('/api/auth/email-verification/verify'), {
+          method: 'POST',
+          body: { email, code },
+          ...getBackendFetchOptions(),
+        })
         applyServerUser(response.user, response.subscription)
         authMode.value = 'cloud'
-        browserLog.info('auth', 'Email подтверждён', { mode: 'cloud', provider: response.user.provider })
+        browserLog.info('auth', 'Email подтверждён', {
+          mode: 'cloud',
+          provider: response.user.provider,
+        })
         return { success: true }
       } catch (error) {
         const status = getHttpStatus(error)
-        if (status === 400) return { success: false, error: 'Неверный или устаревший код' }
-        if (status === 429) return { success: false, error: 'Слишком много попыток. Запросите новый код' }
-        if (status === 402) return { success: false, error: 'Для входа нужна активная подписка' }
+        if (status === 400)
+          return { success: false, error: 'Неверный или устаревший код' }
+        if (status === 429)
+          return {
+            success: false,
+            error: 'Слишком много попыток. Запросите новый код',
+          }
+        if (status === 402)
+          return { success: false, error: 'Для входа нужна активная подписка' }
         return { success: false, error: 'Не удалось подтвердить email' }
       } finally {
         isLoading.value = false
@@ -438,15 +521,21 @@ export const useAuthStore = defineStore(
 
       try {
         if (authMode.value === 'cloud') {
-          const response = await fetchBackend<{ user: ServerUser; subscription?: SubscriptionSnapshot }>(
-            getBackendUrl('/api/auth/account'),
-            {
+          const response = await fetchBackend<{
+            user: ServerUser
+            subscription?: SubscriptionSnapshot
+          }>(getBackendUrl('/api/auth/account'), {
             method: 'PATCH',
             body: updates,
             ...getBackendFetchOptions(),
-            }
+          })
+          applyServerUser(
+            {
+              ...response.user,
+              bio: response.user.bio ?? updates.bio ?? previousUser.bio,
+            },
+            response.subscription
           )
-          applyServerUser({ ...response.user, bio: response.user.bio ?? updates.bio ?? previousUser.bio }, response.subscription)
           browserLog.info('auth', 'Профиль обновлен', { mode: 'cloud' })
           return { success: true }
         }
@@ -474,7 +563,10 @@ export const useAuthStore = defineStore(
       }
     }
 
-    async function deleteAccount(): Promise<{ success: boolean; error?: string }> {
+    async function deleteAccount(): Promise<{
+      success: boolean
+      error?: string
+    }> {
       if (!currentUser.value) return { success: false }
 
       if (authMode.value === 'cloud') {
@@ -484,11 +576,16 @@ export const useAuthStore = defineStore(
             ...getBackendFetchOptions(),
           })
         } catch {
-          return { success: false, error: 'Не удалось удалить облачный аккаунт' }
+          return {
+            success: false,
+            error: 'Не удалось удалить облачный аккаунт',
+          }
         }
       }
 
-      const users = getUsers().filter((user) => user.id !== currentUser.value?.id)
+      const users = getUsers().filter(
+        (user) => user.id !== currentUser.value?.id
+      )
       saveUsers(users)
       logout()
       return { success: true }

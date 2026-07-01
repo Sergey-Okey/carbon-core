@@ -107,7 +107,6 @@ textarea {
   z-index: 7000;
   max-width: min(320px, calc(100vw - 24px));
   padding: 7px 10px;
-  border: var(--ui-border);
   border-radius: var(--border-radius-md);
   color: var(--text);
   font-size: 0.72rem;
@@ -116,17 +115,23 @@ textarea {
   overflow-wrap: anywhere;
   text-align: left;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transform: translateY(4px) scale(0.98);
+  contain: layout paint;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  transform: translate3d(0, 4px, 0) scale(0.98);
   transition:
     opacity var(--transition-standard),
-    transform var(--transition-standard);
+    transform var(--transition-standard),
+    visibility var(--transition-standard);
   will-change: opacity, transform;
 }
 
 .app-tooltip.is-visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  visibility: visible;
+  transform: translate3d(0, 0, 0) scale(1);
 }
 
 @media (max-width: 767px) {
@@ -359,10 +364,12 @@ html[data-background-mode='image'] .layout::before {
   pointer-events: none;
 }
 
-html[data-background-mode='image'][data-background-intensity='soft'] .layout::before {
+html[data-background-mode='image'][data-background-intensity='soft']
+  .layout::before {
   background: color-mix(in srgb, var(--bg) 58%, transparent);
 }
 
-html[data-background-mode='image'][data-background-intensity='contrast'] .layout::before {
+html[data-background-mode='image'][data-background-intensity='contrast']
+  .layout::before {
   background: color-mix(in srgb, var(--bg) 26%, transparent);
 }

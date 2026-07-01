@@ -3,7 +3,13 @@
     <div class="auth-workspace">
       <div class="auth-grid">
         <div class="auth-panel auth-intro">
-          <AppButton type="button" variant="ghost" size="sm" class="back-action" @click="goBack">
+          <AppButton
+            type="button"
+            variant="ghost"
+            size="sm"
+            class="back-action"
+            @click="goBack"
+          >
             <ArrowLeft :size="16" />
             Назад
           </AppButton>
@@ -32,8 +38,16 @@
             <AppButton type="button" variant="secondary" disabled>
               App скоро
             </AppButton>
-            <NuxtLink class="route-link" :to="isRegister ? '/auth' : '/register'" @click.prevent="openAuthMode">
-              {{ isRegister ? 'Уже есть профиль? Войти' : 'Нет профиля? Получить доступ' }}
+            <NuxtLink
+              class="route-link"
+              :to="isRegister ? '/auth' : '/register'"
+              @click.prevent="openAuthMode"
+            >
+              {{
+                isRegister
+                  ? 'Уже есть профиль? Войти'
+                  : 'Нет профиля? Получить доступ'
+              }}
               <ArrowUpRight :size="15" />
             </NuxtLink>
           </div>
@@ -50,11 +64,18 @@
             <div class="subscription-header">
               <span class="badge">Полный доступ</span>
               <h2>Оформите подписку</h2>
-              <p>После оплаты вы сможете создать профиль и пользоваться всеми разделами COF.</p>
+              <p>
+                После оплаты вы сможете создать профиль и пользоваться всеми
+                разделами COF.
+              </p>
             </div>
 
             <div class="benefits-list">
-              <div v-for="item in accessBenefits" :key="item.title" class="benefit-item">
+              <div
+                v-for="item in accessBenefits"
+                :key="item.title"
+                class="benefit-item"
+              >
                 <Check :size="16" />
                 <div>
                   <strong>{{ item.title }}</strong>
@@ -88,14 +109,18 @@
               >
                 {{ isCheckingSubscription ? 'Проверяем…' : 'Проверить доступ' }}
               </AppButton>
-              <p v-if="subscriptionError" class="error-text">{{ subscriptionError }}</p>
+              <p v-if="subscriptionError" class="error-text">
+                {{ subscriptionError }}
+              </p>
               <p v-if="error" class="error-text">{{ error }}</p>
             </div>
           </template>
 
           <template v-else>
             <div class="form-header">
-              <span class="badge">{{ isRegister ? 'Регистрация' : 'Авторизация' }}</span>
+              <span class="badge">{{
+                isRegister ? 'Регистрация' : 'Авторизация'
+              }}</span>
               <h2>{{ isRegister ? 'Создайте профиль' : 'С возвращением' }}</h2>
               <p>
                 {{
@@ -110,7 +135,8 @@
               <input v-model="form.acceptedTerms" type="checkbox" />
               <span class="checkmark"><Check :size="12" /></span>
               <span>
-                Принимаю <NuxtLink to="/terms">условия использования</NuxtLink> и
+                Принимаю
+                <NuxtLink to="/terms">условия использования</NuxtLink> и
                 <NuxtLink to="/privacy">политику конфиденциальности</NuxtLink>
               </span>
             </label>
@@ -122,11 +148,27 @@
                 :disabled="isStartingOAuth"
                 @click="startOAuth('google')"
               >
-                <svg class="oauth-icon google-icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <path fill="#4285f4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z" />
-                  <path fill="#34a853" d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.62A10 10 0 0 0 12 22Z" />
-                  <path fill="#fbbc05" d="M6.39 13.93A6.02 6.02 0 0 1 6.07 12c0-.67.11-1.32.32-1.93V7.45H3.04A10 10 0 0 0 2 12c0 1.61.39 3.14 1.04 4.55l3.35-2.62Z" />
-                  <path fill="#ea4335" d="M12 5.94c1.47 0 2.79.51 3.83 1.5l2.87-2.87A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.96 5.45l3.35 2.62C7.18 7.7 9.39 5.94 12 5.94Z" />
+                <svg
+                  class="oauth-icon google-icon"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill="#4285f4"
+                    d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z"
+                  />
+                  <path
+                    fill="#34a853"
+                    d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.62A10 10 0 0 0 12 22Z"
+                  />
+                  <path
+                    fill="#fbbc05"
+                    d="M6.39 13.93A6.02 6.02 0 0 1 6.07 12c0-.67.11-1.32.32-1.93V7.45H3.04A10 10 0 0 0 2 12c0 1.61.39 3.14 1.04 4.55l3.35-2.62Z"
+                  />
+                  <path
+                    fill="#ea4335"
+                    d="M12 5.94c1.47 0 2.79.51 3.83 1.5l2.87-2.87A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.96 5.45l3.35 2.62C7.18 7.7 9.39 5.94 12 5.94Z"
+                  />
                 </svg>
                 Google
               </button>
@@ -140,11 +182,17 @@
                 Яндекс
               </button>
             </div>
-            <p v-if="oauthMessage" class="oauth-message error-text">{{ oauthMessage }}</p>
+            <p v-if="oauthMessage" class="oauth-message error-text">
+              {{ oauthMessage }}
+            </p>
 
             <div class="auth-divider"><span>или</span></div>
 
-            <form v-if="pendingVerification.active" class="auth-form verification-form" @submit.prevent="confirmEmailVerification">
+            <form
+              v-if="pendingVerification.active"
+              class="auth-form verification-form"
+              @submit.prevent="confirmEmailVerification"
+            >
               <div class="verification-card">
                 <span>Код отправлен на</span>
                 <strong>{{ pendingVerification.email }}</strong>
@@ -160,15 +208,27 @@
               </AppFormField>
               <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
               <p v-if="error" class="error-text">{{ error }}</p>
-              <AppButton type="submit" variant="primary" :disabled="authStore.isLoading">
+              <AppButton
+                type="submit"
+                variant="primary"
+                :disabled="authStore.isLoading"
+              >
                 {{ authStore.isLoading ? 'Проверяем…' : 'Подтвердить email' }}
               </AppButton>
-              <button type="button" class="forgot-link" @click="resendEmailVerification">
+              <button
+                type="button"
+                class="forgot-link"
+                @click="resendEmailVerification"
+              >
                 Отправить код ещё раз
               </button>
             </form>
 
-            <form v-else-if="resetToken" class="auth-form" @submit.prevent="confirmPasswordReset">
+            <form
+              v-else-if="resetToken"
+              class="auth-form"
+              @submit.prevent="confirmPasswordReset"
+            >
               <AppFormField label="Новый пароль" hint="Минимум 8 символов">
                 <AppInput
                   v-model="resetPassword"
@@ -180,12 +240,22 @@
 
               <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
               <p v-if="error" class="error-text">{{ error }}</p>
-              <AppButton type="submit" variant="primary" :disabled="isConfirmingReset">
-                {{ isConfirmingReset ? 'Сохраняем…' : 'Сохранить новый пароль' }}
+              <AppButton
+                type="submit"
+                variant="primary"
+                :disabled="isConfirmingReset"
+              >
+                {{
+                  isConfirmingReset ? 'Сохраняем…' : 'Сохранить новый пароль'
+                }}
               </AppButton>
             </form>
 
-            <form v-else-if="resetMode" class="auth-form" @submit.prevent="requestPasswordReset">
+            <form
+              v-else-if="resetMode"
+              class="auth-form"
+              @submit.prevent="requestPasswordReset"
+            >
               <AppFormField label="Email профиля">
                 <AppInput
                   v-model="resetEmail"
@@ -196,17 +266,29 @@
               </AppFormField>
               <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
               <p v-if="error" class="error-text">{{ error }}</p>
-              <AppButton type="submit" variant="primary" :disabled="isRequestingReset">
+              <AppButton
+                type="submit"
+                variant="primary"
+                :disabled="isRequestingReset"
+              >
                 {{ isRequestingReset ? 'Отправляем…' : 'Отправить письмо' }}
               </AppButton>
-              <button type="button" class="forgot-link" @click="resetMode = false">
+              <button
+                type="button"
+                class="forgot-link"
+                @click="resetMode = false"
+              >
                 Вернуться ко входу
               </button>
             </form>
 
             <form v-else class="auth-form" @submit.prevent="submit">
               <AppFormField v-if="isRegister" label="Имя">
-                <AppInput v-model="form.name" placeholder="Как к вам обращаться" autocomplete="name" />
+                <AppInput
+                  v-model="form.name"
+                  placeholder="Как к вам обращаться"
+                  autocomplete="name"
+                />
               </AppFormField>
               <AppFormField label="Email">
                 <AppInput
@@ -216,15 +298,25 @@
                   autocomplete="email"
                 />
               </AppFormField>
-              <AppFormField label="Пароль" :hint="isRegister ? 'Минимум 8 символов' : undefined">
+              <AppFormField
+                label="Пароль"
+                :hint="isRegister ? 'Минимум 8 символов' : undefined"
+              >
                 <AppInput
                   v-model="form.password"
                   type="password"
                   placeholder="Введите пароль"
-                  :autocomplete="isRegister ? 'new-password' : 'current-password'"
+                  :autocomplete="
+                    isRegister ? 'new-password' : 'current-password'
+                  "
                 />
               </AppFormField>
-              <button v-if="!isRegister" type="button" class="forgot-link" @click="openResetMode">
+              <button
+                v-if="!isRegister"
+                type="button"
+                class="forgot-link"
+                @click="openResetMode"
+              >
                 Забыли пароль?
               </button>
 
@@ -232,9 +324,17 @@
               <AppButton
                 type="submit"
                 variant="primary"
-                :disabled="authStore.isLoading || (isRegister && !form.acceptedTerms)"
+                :disabled="
+                  authStore.isLoading || (isRegister && !form.acceptedTerms)
+                "
               >
-                {{ authStore.isLoading ? 'Подождите…' : isRegister ? 'Создать профиль' : 'Войти' }}
+                {{
+                  authStore.isLoading
+                    ? 'Подождите…'
+                    : isRegister
+                      ? 'Создать профиль'
+                      : 'Войти'
+                }}
               </AppButton>
             </form>
           </template>
@@ -276,9 +376,18 @@ const keepShortWords = (text: string) =>
   text.replace(/(^|[\s(])([А-Яа-яЁё]{1,2})\s+/g, '$1$2\u00a0')
 
 const accessBenefits = [
-  { title: 'Личный профиль', description: keepShortWords('Вход и доступ к вашему пространству COF.') },
-  { title: 'Все инструменты', description: keepShortWords('Задачи, привычки, доска, фокус и аналитика.') },
-  { title: 'Дальнейшие обновления', description: keepShortWords('Новые возможности будут доступны в профиле.') },
+  {
+    title: 'Личный профиль',
+    description: keepShortWords('Вход и доступ к вашему пространству COF.'),
+  },
+  {
+    title: 'Все инструменты',
+    description: keepShortWords('Задачи, привычки, доска, фокус и аналитика.'),
+  },
+  {
+    title: 'Дальнейшие обновления',
+    description: keepShortWords('Новые возможности будут доступны в профиле.'),
+  },
 ]
 
 const PENDING_SUBSCRIPTION_KEY = 'carbon-pending-subscription'
@@ -292,7 +401,12 @@ const error = ref('')
 const subscriptionEmail = ref('')
 const subscriptionError = ref('')
 const isCheckingSubscription = ref(false)
-const form = reactive({ name: '', email: '', password: '', acceptedTerms: false })
+const form = reactive({
+  name: '',
+  email: '',
+  password: '',
+  acceptedTerms: false,
+})
 const pendingVerification = reactive({ active: false, email: '', code: '' })
 const resetMode = ref(false)
 const resetEmail = ref('')
@@ -308,13 +422,26 @@ const resetToken = computed(() => {
 })
 
 onMounted(() => {
-  if (import.meta.client && sessionStorage.getItem(AUTH_FORM_SCROLL_KEY) === '1') {
+  if (
+    import.meta.client &&
+    sessionStorage.getItem(AUTH_FORM_SCROLL_KEY) === '1'
+  ) {
     sessionStorage.removeItem(AUTH_FORM_SCROLL_KEY)
     scheduleAuthFormScroll()
   }
 
-  const oauthError = typeof route.query.oauthError === 'string' ? route.query.oauthError : ''
+  const oauthError =
+    typeof route.query.oauthError === 'string' ? route.query.oauthError : ''
+  const oauthSuccess = route.query.oauth === 'success'
   void resumePendingSubscription()
+
+  if (oauthSuccess) {
+    void authStore.init({ force: true }).then(() => {
+      void router.replace('/')
+    })
+    return
+  }
+
   if (!oauthError) return
 
   const message = getOAuthErrorMessage(oauthError)
@@ -331,7 +458,9 @@ function readPendingSubscription() {
   if (!import.meta.client) return null
 
   try {
-    const parsed = JSON.parse(localStorage.getItem(PENDING_SUBSCRIPTION_KEY) || 'null') as {
+    const parsed = JSON.parse(
+      localStorage.getItem(PENDING_SUBSCRIPTION_KEY) || 'null'
+    ) as {
       email?: string
       createdAt?: number
     } | null
@@ -386,7 +515,8 @@ async function resumePendingSubscription() {
 
   const activated = await waitForSubscription(pendingEmail)
   if (!activated) {
-    subscriptionError.value = 'Платёж ещё обрабатывается. Подождите немного и нажмите «Проверить доступ».'
+    subscriptionError.value =
+      'Платёж ещё обрабатывается. Подождите немного и нажмите «Проверить доступ».'
     return
   }
 
@@ -425,7 +555,11 @@ function scheduleAuthFormScroll() {
 
   window.setTimeout(() => {
     if (!window.matchMedia('(max-width: 820px)').matches) return
-    authFormPanel.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    authFormPanel.value?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center',
+    })
   }, 80)
 }
 
@@ -447,7 +581,8 @@ function startOAuth(provider: 'google' | 'yandex') {
   subscriptionError.value = ''
 
   if (isRegister.value && !form.acceptedTerms) {
-    const message = 'Перед входом через Google или Яндекс примите условия использования'
+    const message =
+      'Перед входом через Google или Яндекс примите условия использования'
     error.value = message
     oauthMessage.value = message
     addNotification({ type: 'error', message })
@@ -455,9 +590,10 @@ function startOAuth(provider: 'google' | 'yandex') {
   }
 
   isStartingOAuth.value = true
-  const consent = isRegister.value && form.acceptedTerms
-    ? '?acceptedTerms=true&termsVersion=2026-06-07'
-    : ''
+  const consent =
+    isRegister.value && form.acceptedTerms
+      ? '?acceptedTerms=true&termsVersion=2026-06-07'
+      : ''
   window.location.assign(getBackendUrl(`/api/auth/${provider}${consent}`))
 }
 
@@ -480,10 +616,13 @@ function getOAuthErrorMessage(reason: string) {
   const map: Record<string, string> = {
     subscription:
       'Подписка для email этого аккаунта не найдена или истекла. Google/Яндекс должен быть с тем же email, который указан при оплате.',
-    terms: 'Перед входом через Google или Яндекс нужно принять условия использования.',
-    provider: 'Не удалось получить данные аккаунта у провайдера. Попробуйте ещё раз.',
+    terms:
+      'Перед входом через Google или Яндекс нужно принять условия использования.',
+    provider:
+      'Не удалось получить данные аккаунта у провайдера. Попробуйте ещё раз.',
     invalid: 'Некорректный ответ авторизации. Попробуйте войти ещё раз.',
-    failed: 'Вход через сервис не выполнен. Проверьте подписку или попробуйте другой способ.',
+    failed:
+      'Вход через сервис не выполнен. Проверьте подписку или попробуйте другой способ.',
   }
 
   return map[reason] || map.failed
@@ -516,7 +655,11 @@ async function confirmEmailVerification() {
 
   accessStore.activateSubscription()
   addWelcomeRegistrationLetter(form.name)
-  addNotification({ type: 'success', message: 'Email подтверждён. Профиль создан', duration: 5000 })
+  addNotification({
+    type: 'success',
+    message: 'Email подтверждён. Профиль создан',
+    duration: 5000,
+  })
   router.push('/')
 }
 
@@ -543,11 +686,14 @@ async function resendEmailVerification() {
       : 'Код не отправлен: email уже подтверждён или почтовый сервис недоступен.'
     addNotification({
       type: response.sent ? 'success' : 'warning',
-      message: response.sent ? 'Код отправлен повторно' : 'Не удалось отправить новый код',
+      message: response.sent
+        ? 'Код отправлен повторно'
+        : 'Не удалось отправить новый код',
       duration: 5000,
     })
   } catch {
-    error.value = 'Не удалось отправить новый код. Попробуйте ещё раз чуть позже.'
+    error.value =
+      'Не удалось отправить новый код. Попробуйте ещё раз чуть позже.'
     addNotification({ type: 'error', message: error.value, duration: 5000 })
   } finally {
     pendingVerification.code = ''
@@ -565,21 +711,27 @@ async function requestPasswordReset() {
 
   isRequestingReset.value = true
   try {
-    const response = await backendFetch<{ ok: boolean; sent?: boolean }>(getBackendUrl('/api/auth/password-reset/request'), {
-      method: 'POST',
-      body: { email },
-      ...getBackendFetchOptions(),
-    })
+    const response = await backendFetch<{ ok: boolean; sent?: boolean }>(
+      getBackendUrl('/api/auth/password-reset/request'),
+      {
+        method: 'POST',
+        body: { email },
+        ...getBackendFetchOptions(),
+      }
+    )
     resetMessage.value = response.sent
       ? 'Если профиль найден, письмо для восстановления уже отправлено.'
       : 'Заявка принята, но почта на сервере пока не настроена. Напишите в поддержку, чтобы восстановить доступ вручную.'
     addNotification({
       type: response.sent ? 'success' : 'warning',
-      message: response.sent ? 'Письмо восстановления отправлено' : 'Почта сервера пока не настроена',
+      message: response.sent
+        ? 'Письмо восстановления отправлено'
+        : 'Почта сервера пока не настроена',
       duration: 6000,
     })
   } catch {
-    error.value = 'Не удалось отправить письмо. Проверьте email и попробуйте ещё раз.'
+    error.value =
+      'Не удалось отправить письмо. Проверьте email и попробуйте ещё раз.'
     addNotification({ type: 'error', message: error.value })
   } finally {
     isRequestingReset.value = false
@@ -637,7 +789,11 @@ async function verifySubscription(
     if (!status.active) {
       if (options.silentMissing) return false
       subscriptionError.value = 'Оплата для этого email пока не найдена'
-      addNotification({ type: 'warning', message: subscriptionError.value, duration: 5000 })
+      addNotification({
+        type: 'warning',
+        message: subscriptionError.value,
+        duration: 5000,
+      })
       return false
     }
 
@@ -654,9 +810,14 @@ async function verifySubscription(
     }
     return true
   } catch {
-    subscriptionError.value = 'Не удалось проверить оплату. Попробуйте чуть позже'
+    subscriptionError.value =
+      'Не удалось проверить оплату. Попробуйте чуть позже'
     if (!options.silentMissing) {
-      addNotification({ type: 'error', message: subscriptionError.value, duration: 5000 })
+      addNotification({
+        type: 'error',
+        message: subscriptionError.value,
+        duration: 5000,
+      })
     }
     return false
   } finally {
@@ -691,7 +852,13 @@ async function submit() {
     requiresVerification?: boolean
     email?: string
   } = wasRegister
-    ? await authStore.register(form.email, form.password, form.name, 'cloud', form.acceptedTerms)
+    ? await authStore.register(
+        form.email,
+        form.password,
+        form.name,
+        'cloud',
+        form.acceptedTerms
+      )
     : await authStore.login(form.email, form.password, 'cloud')
   if (!result.success) {
     error.value = result.error || 'Не удалось выполнить действие'
@@ -721,7 +888,10 @@ async function submit() {
   if (wasRegister) {
     addWelcomeRegistrationLetter(form.name)
   }
-  addNotification({ type: 'success', message: wasRegister ? 'Профиль создан' : 'Вход выполнен' })
+  addNotification({
+    type: 'success',
+    message: wasRegister ? 'Профиль создан' : 'Вход выполнен',
+  })
   router.push('/')
 }
 
@@ -742,21 +912,26 @@ function addWelcomeRegistrationLetter(name: string) {
 <style scoped lang="scss">
 .auth-page {
   min-height: 100dvh;
-  padding: 24px;
+  height: 100dvh;
+  padding: clamp(12px, 2vw, 24px);
   box-sizing: border-box;
   background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 .auth-workspace {
   width: 100%;
   max-width: 1200px;
+  height: 100%;
   margin: 0 auto;
-  min-height: calc(100dvh - 48px);
+  min-height: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .auth-grid {
@@ -765,13 +940,15 @@ function addWelcomeRegistrationLetter(name: string) {
   grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr);
   gap: 24px;
   align-items: stretch;
+  max-height: 100%;
 
   @media (max-width: 820px) {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 16px;
 
     .auth-panel {
       min-height: 0;
+      max-height: none;
     }
   }
 }
@@ -779,16 +956,16 @@ function addWelcomeRegistrationLetter(name: string) {
 .auth-panel {
   @include glass;
   min-width: 0;
-  min-height: 600px;
-  padding: clamp(26px, 3.2vw, 40px);
+  min-height: 0;
+  max-height: 100%;
+  padding: clamp(22px, 2.8vw, 40px);
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
   box-sizing: border-box;
+  overflow: hidden;
 
   @media (max-width: 560px) {
-    padding: 24px;
-  }
-}
+    padding: 20px;
 
 /* Левая панель (введение) */
 .auth-intro {
@@ -1277,7 +1454,6 @@ function addWelcomeRegistrationLetter(name: string) {
     &::-webkit-scrollbar {
       display: none;
     }
-
   }
 
   .auth-panel {

@@ -6,8 +6,8 @@
     "node": ">=20.19.0"
   },
   "scripts": {
-    "dev": "node node_modules/nuxt/bin/nuxt.mjs cleanup && node node_modules/nuxt/bin/nuxt.mjs dev --host 0.0.0.0 --port 3000",
-    "dev:local": "node node_modules/nuxt/bin/nuxt.mjs cleanup && node node_modules/nuxt/bin/nuxt.mjs dev --host 0.0.0.0 --port 3005",
+    "dev": "node ./scripts/dev-safe.mjs",
+    "dev:local": "node ./scripts/dev-safe.mjs 3005",
     "build": "node node_modules/nuxt/bin/nuxt.mjs build",
     "generate": "node node_modules/nuxt/bin/nuxt.mjs generate",
     "typecheck": "vue-tsc --noEmit",
