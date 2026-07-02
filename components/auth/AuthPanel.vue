@@ -356,14 +356,12 @@ import {
   useAccessStore,
 } from '~/stores/access.store'
 import { useAuthStore } from '~/stores/auth.store'
-import { useNotification } from '~/composables/useNotification'
 import { resetDemoData } from '~/utils/accessStorage'
 import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
 
 const props = defineProps<{ mode: 'login' | 'register' }>()
 const accessStore = useAccessStore()
 const authStore = useAuthStore()
-const { addNotification } = useNotification()
 const router = useRouter()
 const route = useRoute()
 const isRegister = computed(() => props.mode === 'register')
@@ -521,11 +519,6 @@ async function resumePendingSubscription() {
   }
 
   clearPendingSubscription()
-  addNotification({
-    type: 'success',
-    message: 'Оплата найдена. Теперь можно создать профиль',
-    duration: 6000,
-  })
 }
 
 function delay(ms: number) {
@@ -585,7 +578,6 @@ function startOAuth(provider: 'google' | 'yandex') {
       'Перед входом через Google или Яндекс примите условия использования'
     error.value = message
     oauthMessage.value = message
-    addNotification({ type: 'error', message })
     return
   }
 
@@ -649,17 +641,10 @@ async function confirmEmailVerification() {
   const result = await authStore.verifyEmail(email, code)
   if (!result.success) {
     error.value = result.error || 'Не удалось подтвердить email'
-    addNotification({ type: 'error', message: error.value, duration: 5000 })
     return
   }
 
   accessStore.activateSubscription()
-  addWelcomeRegistrationLetter(form.name)
-  addNotification({
-    type: 'success',
-    message: 'Email подтверждён. Профиль создан',
-    duration: 5000,
-  })
   router.push('/')
 }
 
@@ -684,17 +669,9 @@ async function resendEmailVerification() {
     resetMessage.value = response.sent
       ? 'Новый код отправлен. Проверьте почту.'
       : 'Код не отправлен: email уже подтверждён или почтовый сервис недоступен.'
-    addNotification({
-      type: response.sent ? 'success' : 'warning',
-      message: response.sent
-        ? 'Код отправлен повторно'
-        : 'Не удалось отправить новый код',
-      duration: 5000,
-    })
   } catch {
     error.value =
       'Не удалось отправить новый код. Попробуйте ещё раз чуть позже.'
-    addNotification({ type: 'error', message: error.value, duration: 5000 })
   } finally {
     pendingVerification.code = ''
   }
@@ -722,17 +699,9 @@ async function requestPasswordReset() {
     resetMessage.value = response.sent
       ? 'Если профиль найден, письмо для восстановления уже отправлено.'
       : 'Заявка принята, но почта на сервере пока не настроена. Напишите в поддержку, чтобы восстановить доступ вручную.'
-    addNotification({
-      type: response.sent ? 'success' : 'warning',
-      message: response.sent
-        ? 'Письмо восстановления отправлено'
-        : 'Почта сервера пока не настроена',
-      duration: 6000,
-    })
   } catch {
     error.value =
       'Не удалось отправить письмо. Проверьте email и попробуйте ещё раз.'
-    addNotification({ type: 'error', message: error.value })
   } finally {
     isRequestingReset.value = false
   }
@@ -755,7 +724,6 @@ async function confirmPasswordReset() {
     })
     resetPassword.value = ''
     resetMessage.value = 'Пароль обновлён. Теперь можно войти.'
-    addNotification({ type: 'success', message: 'Пароль обновлён' })
     await router.replace('/auth')
   } catch {
     error.value = 'Ссылка устарела или уже использована'
@@ -789,11 +757,6 @@ async function verifySubscription(
     if (!status.active) {
       if (options.silentMissing) return false
       subscriptionError.value = 'Оплата для этого email пока не найдена'
-      addNotification({
-        type: 'warning',
-        message: subscriptionError.value,
-        duration: 5000,
-      })
       return false
     }
 
@@ -801,24 +764,10 @@ async function verifySubscription(
     if (!form.email) form.email = email
     accessStore.activateSubscription()
     clearPendingSubscription()
-    if (!options.silentMissing) {
-      addNotification({
-        type: 'success',
-        message: 'Доступ подтверждён. Теперь можно создать профиль',
-        duration: 4500,
-      })
-    }
     return true
   } catch {
     subscriptionError.value =
       'Не удалось проверить оплату. Попробуйте чуть позже'
-    if (!options.silentMissing) {
-      addNotification({
-        type: 'error',
-        message: subscriptionError.value,
-        duration: 5000,
-      })
-    }
     return false
   } finally {
     isCheckingSubscription.value = false
@@ -862,7 +811,6 @@ async function submit() {
     : await authStore.login(form.email, form.password, 'cloud')
   if (!result.success) {
     error.value = result.error || 'Не удалось выполнить действие'
-    addNotification({ type: 'error', message: error.value })
     if (!wasRegister && error.value.includes('Подтвердите email')) {
       pendingVerification.active = true
       pendingVerification.email = form.email.trim().toLowerCase()
@@ -877,35 +825,10 @@ async function submit() {
     pendingVerification.code = ''
     resetMode.value = false
     resetMessage.value = 'Мы отправили код подтверждения на вашу почту.'
-    addNotification({
-      type: 'success',
-      message: 'Код подтверждения отправлен на email',
-      duration: 6000,
-    })
     return
   }
   accessStore.activateSubscription()
-  if (wasRegister) {
-    addWelcomeRegistrationLetter(form.name)
-  }
-  addNotification({
-    type: 'success',
-    message: wasRegister ? 'Профиль создан' : 'Вход выполнен',
-  })
   router.push('/')
-}
-
-function addWelcomeRegistrationLetter(name: string) {
-  const displayName = name.trim() || 'Добро пожаловать'
-
-  addNotification({
-    type: 'success',
-    category: 'user',
-    source: 'platform',
-    history: true,
-    silent: true,
-    message: `${displayName}, регистрация прошла успешно. Начните с трёх простых шагов: создайте первую ветку, добавьте 1-3 задачи на сегодня и запустите фокус на 25 минут. Пусть Core of Life помогает держать курс спокойно, без лишнего шума.`,
-  })
 }
 </script>
 
@@ -966,6 +889,8 @@ function addWelcomeRegistrationLetter(name: string) {
 
   @media (max-width: 560px) {
     padding: 20px;
+  }
+}
 
 /* Левая панель (введение) */
 .auth-intro {
@@ -1006,7 +931,6 @@ function addWelcomeRegistrationLetter(name: string) {
     overflow-wrap: normal;
     word-break: normal;
     hyphens: none;
-    text-wrap: pretty;
 
     span {
       display: block;
