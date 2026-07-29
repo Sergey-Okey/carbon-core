@@ -1,6 +1,7 @@
 <template>
   <GlassCard
     class="task-card"
+    variant="surface"
     :class="[task.type, { completed: isVisuallyCompleted, 'habit-checked': isHabitDoneToday, overdue: isOverdue }]"
   >
     <div class="task-header">
@@ -297,12 +298,8 @@ async function handleDelete() {
   min-height: 132px;
   height: 100%;
   padding: 0.85rem;
-  background: var(--glass-surface);
-  background-clip: padding-box;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
-  backdrop-filter: var(--glass-filter);
-  -webkit-backdrop-filter: var(--glass-filter);
+  background: transparent;
+  border-radius: var(--radius-lg);
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard);
@@ -316,8 +313,8 @@ async function handleDelete() {
   }
 
   &.overdue {
-    border-color: color-mix(in srgb, var(--error) 28%, var(--ui-border-color));
-    background: color-mix(in srgb, var(--error) 5%, var(--glass-surface));
+    border-color: color-mix(in srgb, var(--color-error) 28%, var(--ui-border-color));
+    background: color-mix(in srgb, var(--color-error) 5%, var(--color-surface-1));
   }
 
   &.HABIT {
@@ -448,7 +445,7 @@ async function handleDelete() {
     height: 24px;
     border-radius: var(--border-radius-pill);
     border: none;
-    background: var(--glass-surface);
+    background: var(--color-surface-2);
     color: var(--dim);
     display: inline-flex;
     align-items: center;
@@ -461,7 +458,7 @@ async function handleDelete() {
     z-index: 2;
 
     &:hover:not(:disabled) {
-      background: var(--glass-surface);
+      background: var(--color-surface-2);
       color: var(--text);
     }
     &:disabled {
@@ -573,7 +570,7 @@ async function handleDelete() {
       transform 0.16s ease;
 
     &:hover:not(:disabled) {
-      background: var(--glass-surface);
+      background: var(--color-surface-2);
       color: var(--text);
       transform: translateY(-1px);
     }

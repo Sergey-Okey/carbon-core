@@ -72,10 +72,12 @@
             </article>
           </div>
 
-          <div v-else class="empty-state">
-            <BellOff :size="20" />
-            <span>{{ emptyText }}</span>
-          </div>
+          <EmptyState
+            v-else
+            size="sm"
+            :icon="BellOff"
+            :description="emptyText"
+          />
         </section>
       </Transition>
     </Teleport>
@@ -85,7 +87,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { Bell, BellOff, Shield, Trash2, UserCircle } from 'lucide-vue-next'
-import AppButton from '~/components/ui/AppButton.vue'
+import AppButton from '~/components/ui/primitives/AppButton.vue'
+import EmptyState from '~/components/ui/feedback/EmptyState.vue'
 import { useNotification } from '~/composables/useNotification'
 
 const {
@@ -192,12 +195,12 @@ onBeforeUnmount(() => {
   background: transparent;
 
   &:focus-visible {
-    background: var(--glass-surface);
+    background: var(--color-surface-2);
   }
 
   @media (hover: hover) and (pointer: fine) {
     &:hover {
-      background: var(--glass-surface);
+      background: var(--color-surface-2);
     }
   }
 
@@ -229,15 +232,15 @@ onBeforeUnmount(() => {
   position: fixed;
   inset-block-start: calc(72px + env(safe-area-inset-top, 0px));
   inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
-  z-index: 4300;
+  z-index: var(--z-dropdown);
   inline-size: min(350px, calc(100dvw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
   overflow: hidden;
   border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--radius-lg);
   background: var(--glass-surface) !important;
   backdrop-filter: var(--glass-strong-filter) !important;
   -webkit-backdrop-filter: var(--glass-strong-filter) !important;
-  color: var(--text);
+  color: var(--color-text-primary);
 }
 
 .panel-header {
@@ -407,12 +410,10 @@ onBeforeUnmount(() => {
 }
 
 .empty-state {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  padding: 22px 14px;
-  color: var(--dim);
-  font-size: 0.88rem;
+  margin: var(--space-2);
+  border: none;
+  box-shadow: none;
+  background: transparent;
 }
 
 .panel-enter-active,

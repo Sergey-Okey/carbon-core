@@ -79,17 +79,16 @@ async function handleNavClick(section: NavSection) {
 
 <style scoped lang="scss">
 .nav-island {
-  @include glass;
+  @include surface-panel;
   position: relative;
   overflow: visible;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 3000;
-  color: var(--text);
-  border-radius: var(--border-radius-pill);
-  background: transparent;
+  z-index: var(--z-sticky);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-full);
   transition:
     border-color var(--transition-standard),
     background var(--transition-standard);
@@ -99,22 +98,20 @@ async function handleNavClick(section: NavSection) {
     inline-size: 56px;
     margin-block: 0;
     margin-inline: auto;
-    padding-block: 10px;
+    padding-block: var(--space-2);
     border: var(--ui-border);
   }
 
   @include mobile {
     position: fixed;
     inset-inline-start: 50%;
-    inset-block-end: calc(env(safe-area-inset-bottom, 0px) + 14px);
+    inset-block-end: calc(env(safe-area-inset-bottom, 0px) + var(--space-3));
     inline-size: auto;
-    max-inline-size: calc(100dvw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
-    padding-block: 10px;
-    padding-inline: 13px;
+    max-inline-size: calc(100dvw - var(--space-6) - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
     transform: translateX(-50%);
-    border-radius: var(--border-radius-pill);
-    backdrop-filter: var(--glass-strong-filter);
-    -webkit-backdrop-filter: var(--glass-strong-filter);
+    border-radius: var(--radius-full);
   }
 }
 
@@ -124,12 +121,12 @@ async function handleNavClick(section: NavSection) {
   align-items: center;
   justify-content: center;
   width: 100%;
-  gap: 10px;
+  gap: var(--space-2);
 
   @include mobile {
     flex-direction: row;
     justify-content: center;
-    gap: 10px;
+    gap: var(--space-2);
   }
 }
 
@@ -138,14 +135,14 @@ async function handleNavClick(section: NavSection) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  min-width: 40px;
-  height: 40px;
+  width: var(--space-10);
+  min-width: var(--space-10);
+  height: var(--space-10);
   padding: 0;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: transparent;
-  color: var(--dim);
+  color: var(--color-text-secondary);
   cursor: pointer;
   outline: none;
   box-sizing: border-box;
@@ -153,35 +150,39 @@ async function handleNavClick(section: NavSection) {
     background var(--transition-standard),
     color var(--transition-standard);
 
+  &:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+    outline-offset: 2px;
+  }
+
   @media (hover: hover) and (pointer: fine) {
     &:hover:not(.active) {
-      background: color-mix(in srgb, var(--accent) 7%, transparent);
-      color: var(--text);
+      background: color-mix(in srgb, var(--color-accent) 7%, transparent);
+      color: var(--color-text-primary);
     }
   }
 
   &.active,
   &.active:hover {
-    color: var(--bg);
-    background: var(--accent);
+    color: var(--color-bg);
+    background: var(--color-accent);
   }
 
   &:active {
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    background: color-mix(in srgb, var(--color-accent) 8%, transparent);
   }
 
   @include mobile {
-    width: 44px;
-    min-width: 44px;
-    height: 44px;
-
+    width: var(--space-11);
+    min-width: var(--space-11);
+    height: var(--space-11);
   }
 }
 
 @media (horizontal-viewport-segments: 2) and (max-width: 767px) {
   .nav-island {
     inset-inline-start: calc(env(viewport-segment-left 0 0) + (env(viewport-segment-width 0 0) / 2));
-    max-inline-size: calc(env(viewport-segment-width 0 0) - 24px);
+    max-inline-size: calc(env(viewport-segment-width 0 0) - var(--space-6));
   }
 }
 
@@ -192,7 +193,7 @@ async function handleNavClick(section: NavSection) {
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   color: inherit;
   transition:
     background var(--transition-standard),
@@ -204,5 +205,4 @@ async function handleNavClick(section: NavSection) {
     height: 18px;
   }
 }
-
 </style>

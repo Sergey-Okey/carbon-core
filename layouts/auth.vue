@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 import ToastContainer from '~/components/base/ToastContainer.vue'
-import ThemeToggleButton from '~/components/ui/ThemeToggleButton.vue'
+import ThemeToggleButton from '~/components/ui/primitives/ThemeToggleButton.vue'
 </script>
 
 <style scoped lang="scss">

@@ -1,20 +1,51 @@
 <template>
-  <div class="glass-card" :class="{ 'no-padding': noPadding }">
+  <div
+    class="glass-card"
+    :class="[`variant-${variant}`, { 'no-padding': noPadding }]"
+  >
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{ noPadding?: boolean }>()
+withDefaults(
+  defineProps<{
+    noPadding?: boolean
+    /** glass — real blur overlays; frosted — Vue Flow / transformed UI; surface — solid panels */
+    variant?: 'glass' | 'frosted' | 'surface'
+  }>(),
+  {
+    noPadding: false,
+    variant: 'glass',
+  }
+)
 </script>
 
 <style scoped lang="scss">
 .glass-card {
-  @include glass;
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--radius-lg);
   padding: var(--panel-padding);
+  color: var(--color-text-primary);
+
   &.no-padding {
     padding: 0;
   }
+}
+
+.variant-glass {
+  @include glass;
+  border: var(--ui-border);
+}
+
+.variant-frosted {
+  @include frosted;
+  background-color: var(--frosted-surface);
+  overflow: visible;
+}
+
+.variant-surface {
+  border: var(--ui-border);
+  background: var(--color-surface-1);
+  box-shadow: none;
 }
 </style>

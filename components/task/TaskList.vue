@@ -56,9 +56,12 @@
         @edit="handleEdit"
         @restore="handleRestore"
       />
-      <p v-if="tasks.length === 0" key="empty-state" class="empty">
-        {{ emptyText || emptyMessage }}
-      </p>
+      <EmptyState
+        v-if="tasks.length === 0"
+        key="empty-state"
+        size="sm"
+        :description="emptyText || emptyMessage"
+      />
     </TransitionGroup>
     <Teleport to="body">
       <TaskForm
@@ -79,6 +82,7 @@ import { useNotification } from '~/composables/useNotification'
 import { useTaskActions } from '~/composables/useTaskActions'
 import TaskCard from './TaskCard.vue'
 import TaskForm from './TaskForm.vue'
+import EmptyState from '~/components/ui/feedback/EmptyState.vue'
 import { Plus, Info } from 'lucide-vue-next'
 import type { Task, TaskFormData, TaskType } from '~/types/task.types'
 
@@ -382,10 +386,10 @@ function handleSave(taskData: TaskFormData) {
       grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 8px;
     }
+  }
 
-    .empty {
-      grid-column: 1 / -1;
-    }
+  .empty-state {
+    grid-column: 1 / -1;
   }
 
   @media (max-width: 1180px) {
@@ -398,16 +402,6 @@ function handleSave(taskData: TaskFormData) {
     &.task-list--habits .tasks {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
-  }
-
-  .empty {
-    @include glass;
-    text-align: center;
-    color: var(--dim);
-    padding: 24px 16px;
-    font-size: 0.9rem;
-    border: var(--ui-border);
-    border-radius: var(--border-radius-lg);
   }
 
   /* Анимации списка */
@@ -497,11 +491,6 @@ function handleSave(taskData: TaskFormData) {
 
     &.task-list--habits .tasks {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .empty {
-      padding: 16px 12px;
-      font-size: 0.85rem;
     }
   }
 

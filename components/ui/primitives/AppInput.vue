@@ -3,12 +3,15 @@
     :is="multiline ? 'textarea' : 'input'"
     :id="id"
     class="app-input"
-    :class="{ invalid }"
+    :class="[`size-${size}`, { invalid }]"
     :type="multiline ? undefined : type"
     :value="modelValue"
     :placeholder="placeholder"
     :required="required"
     :disabled="disabled"
+    :aria-invalid="invalid || undefined"
+    :data-disabled="disabled ? '' : undefined"
+    :data-invalid="invalid ? '' : undefined"
     :min="min"
     :maxlength="maxlength"
     :autocomplete="autocomplete"
@@ -28,6 +31,7 @@ const props = withDefaults(
     required?: boolean
     disabled?: boolean
     invalid?: boolean
+    size?: 'sm' | 'md'
     min?: string | number
     maxlength?: string | number
     autocomplete?: string
@@ -43,6 +47,7 @@ const props = withDefaults(
     required: false,
     disabled: false,
     invalid: false,
+    size: 'md',
     min: undefined,
     maxlength: undefined,
     autocomplete: undefined,
@@ -68,65 +73,89 @@ function handleInput(event: Event) {
 
 <style scoped lang="scss">
 .app-input {
-  @include glass;
   appearance: none;
   -webkit-appearance: none;
   inline-size: 100%;
-  min-height: var(--control-height-md);
-  padding-inline: 14px;
+  padding-inline: var(--space-4);
   border: var(--ui-border);
-  border-radius: var(--border-radius-md);
-  color: var(--text);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-1);
+  color: var(--color-text-primary);
   font: inherit;
-  font-size: 0.92rem;
-  line-height: 1.2;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-normal);
+  line-height: var(--leading-tight);
+  box-shadow: var(--shadow-xs);
   transition:
     background var(--transition-standard),
-    border-color var(--transition-standard);
-  box-shadow: none;
+    border-color var(--transition-standard),
+    box-shadow var(--transition-standard);
 
   &::placeholder {
-    color: var(--dim);
-    opacity: 0.68;
+    color: var(--color-text-muted);
+    opacity: 1;
   }
 
-  &:hover:not(:disabled) {
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--ui-border-color));
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:disabled):not([data-disabled]) {
+      border-color: color-mix(in srgb, var(--color-accent) 45%, var(--ui-border-color));
+    }
   }
 
-  &:focus,
-  &:focus-visible {
-    border-color: var(--text);
+  &:focus {
     outline: none;
-    background: color-mix(in srgb, var(--accent) 5%, var(--glass-surface));
-    box-shadow: none;
+  }
+
+  &:focus-visible {
+    border-color: var(--color-accent);
+    outline: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+    outline-offset: 1px;
+    background: var(--color-surface-2);
+    box-shadow: var(--shadow-sm);
   }
 
   &:-webkit-autofill,
   &:-webkit-autofill:hover,
   &:-webkit-autofill:focus {
-    -webkit-text-fill-color: var(--text);
-    caret-color: var(--text);
+    -webkit-text-fill-color: var(--color-text-primary);
+    caret-color: var(--color-text-primary);
     border-color: var(--ui-border-color);
-    box-shadow: 0 0 0 1000px color-mix(in srgb, var(--surface) 80%, transparent) inset;
+    box-shadow: 0 0 0 1000px var(--color-surface-1) inset;
     transition: background-color 9999s ease-out;
   }
 
-  &:disabled {
+  &:disabled,
+  &[data-disabled] {
     opacity: 0.6;
     cursor: not-allowed;
+    box-shadow: none;
   }
 
+  &[data-invalid],
   &.invalid {
-    border-color: var(--error);
+    border-color: var(--color-error);
+
+    &:focus-visible {
+      outline-color: color-mix(in srgb, var(--color-error) 40%, transparent);
+    }
   }
 }
 
+.size-md {
+  min-height: var(--control-height-md);
+}
+
+.size-sm {
+  min-height: var(--control-height-sm);
+  padding-inline: var(--space-3);
+  font-size: var(--text-xs);
+}
+
 textarea.app-input {
-  min-height: 88px;
-  padding-top: 11px;
-  padding-bottom: 11px;
-  line-height: 1.45;
+  min-height: calc(var(--space-11) * 2);
+  padding-block: var(--space-3);
+  line-height: var(--leading-normal);
   resize: vertical;
 }
 
@@ -142,10 +171,14 @@ input[type='search'].app-input {
   }
 }
 
-@media (pointer: coarse), (max-width: 640px) {
+@media (pointer: coarse), (max-width: 767px) {
   .app-input {
-    min-height: 44px;
-    font-size: 16px;
+    min-height: var(--space-11);
+    font-size: var(--text-md);
+  }
+
+  .size-sm {
+    min-height: var(--space-11);
   }
 }
 </style>

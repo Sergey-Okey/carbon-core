@@ -52,19 +52,26 @@
       </div>
     </div>
 
-    <div v-else class="tag-empty">
-      <Tags :size="18" />
-      <span>Тегов пока нет. Создайте первый, чтобы группировать задачи и привычки.</span>
-    </div>
+    <EmptyState
+      v-else
+      size="sm"
+      title="Тегов пока нет"
+      description="Создайте первый, чтобы группировать задачи и привычки."
+    >
+      <template #icon>
+        <Tags :size="18" />
+      </template>
+    </EmptyState>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { Check, Pencil, Plus, Tags, Trash2, X } from 'lucide-vue-next'
-import AppButton from '~/components/ui/AppButton.vue'
-import AppCustomColorPicker from '~/components/ui/AppCustomColorPicker.vue'
-import AppInput from '~/components/ui/AppInput.vue'
+import AppButton from '~/components/ui/primitives/AppButton.vue'
+import AppCustomColorPicker from '~/components/ui/forms/AppCustomColorPicker.vue'
+import AppInput from '~/components/ui/primitives/AppInput.vue'
+import EmptyState from '~/components/ui/feedback/EmptyState.vue'
 import { useConfirm } from '~/composables/useConfirm'
 import { useNotification } from '~/composables/useNotification'
 import { useTagsStore } from '~/stores/tags.store'
@@ -248,15 +255,6 @@ function usageLabel(id: string) {
       color: var(--error);
     }
   }
-}
-
-.tag-empty {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 64px;
-  color: var(--dim);
-  font-size: 0.84rem;
 }
 
 @include mobile {

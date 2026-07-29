@@ -4,7 +4,8 @@
       <div
         class="app-modal-overlay"
         :class="{ 'form-sheet-overlay': asForm }"
-        :style="{ '--modal-z-index': zIndex }"
+        :style="{ '--modal-z-index': resolvedZIndex }"
+        role="presentation"
         @click.self="handleBackdrop"
       >
         <Transition name="modal-panel" appear>
@@ -12,6 +13,9 @@
             :is="asForm ? 'form' : 'div'"
             class="app-modal"
             :class="[`size-${size}`, { 'allow-overflow': allowOverflow, 'is-form-sheet': asForm }]"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="title"
             @submit.prevent="emit('submit')"
             @keydown.stop
           >
@@ -25,6 +29,7 @@
                 variant="ghost"
                 icon-only
                 :title="closeTitle"
+                :aria-label="closeTitle"
                 @click="emit('close')"
               >
                 <X :size="20" />
@@ -46,8 +51,9 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { X } from 'lucide-vue-next'
-import AppButton from '~/components/ui/AppButton.vue'
+import AppButton from '~/components/ui/primitives/AppButton.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -68,7 +74,7 @@ const props = withDefaults(
     closable: true,
     closeOnBackdrop: true,
     closeTitle: 'Закрыть',
-    zIndex: 5000,
+    zIndex: undefined,
     allowOverflow: false,
   }
 )
@@ -77,6 +83,8 @@ const emit = defineEmits<{
   (e: 'close'): void
   (e: 'submit'): void
 }>()
+
+const resolvedZIndex = computed(() => props.zIndex ?? 'var(--z-modal)')
 
 function handleBackdrop() {
   if (props.closeOnBackdrop) emit('close')
@@ -91,24 +99,26 @@ function handleBackdrop() {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  padding: max(var(--space-4), env(safe-area-inset-top, 0px))
+    max(var(--space-4), env(safe-area-inset-right, 0px))
+    max(var(--space-4), env(safe-area-inset-bottom, 0px))
+    max(var(--space-4), env(safe-area-inset-left, 0px));
   overflow: hidden;
-  background: color-mix(in srgb, var(--bg) 54%, transparent);
+  background: color-mix(in srgb, var(--color-bg) 54%, transparent);
   backdrop-filter: var(--glass-strong-filter);
   -webkit-backdrop-filter: var(--glass-strong-filter);
 }
 
 .app-modal {
-  @include glass;
+  @include surface-panel;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   width: min(100%, 520px);
-  max-height: min(calc(100dvh - 32px), 760px);
+  max-height: min(calc(100dvh - var(--space-8)), 760px);
   min-height: 0;
   overflow: hidden;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
-  color: var(--text);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
 
   &.allow-overflow {
     overflow: visible;
@@ -129,28 +139,28 @@ function handleBackdrop() {
   align-items: center;
   justify-content: space-between;
   gap: var(--panel-gap);
-  min-height: 62px;
-  padding: 14px var(--panel-padding);
+  min-height: calc(var(--space-12) + var(--space-3));
+  padding: var(--space-3) var(--panel-padding);
 }
 
 .title-block {
   min-width: 0;
 
   h3 {
-    margin: 2px 0 0;
-    color: var(--text);
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.25;
+    margin: var(--space-1) 0 0;
+    color: var(--color-text-primary);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
     word-break: break-word;
   }
 }
 
 .modal-kicker {
   display: block;
-  color: var(--dim);
-  font-size: 0.7rem;
-  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -158,9 +168,9 @@ function handleBackdrop() {
 .app-modal-body {
   min-height: 0;
   padding: var(--panel-padding);
-  color: var(--text);
-  font-size: 0.92rem;
-  line-height: 1.5;
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
   overflow-y: auto;
 
   &.allow-overflow {
@@ -168,7 +178,7 @@ function handleBackdrop() {
   }
 
   &::-webkit-scrollbar {
-    width: 4px;
+    width: var(--space-1);
   }
 
   &::-webkit-scrollbar-track {
@@ -177,7 +187,7 @@ function handleBackdrop() {
 
   &::-webkit-scrollbar-thumb {
     background: var(--ui-border-color);
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--radius-sm);
   }
 }
 
@@ -201,19 +211,22 @@ function handleBackdrop() {
 .modal-panel-enter-from,
 .modal-panel-leave-to {
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateY(var(--space-2));
 }
 
 @media (max-width: 640px) {
   .app-modal-overlay {
-    padding: max(10px, env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px));
+    padding: max(var(--space-2), env(safe-area-inset-top, 0px))
+      max(var(--space-2), env(safe-area-inset-right, 0px))
+      max(var(--space-2), env(safe-area-inset-bottom, 0px))
+      max(var(--space-2), env(safe-area-inset-left, 0px));
     overflow-y: auto;
     overscroll-behavior: contain;
   }
 
   .app-modal-overlay.form-sheet-overlay {
     align-items: flex-end;
-    padding: max(10px, env(safe-area-inset-top, 0px)) 0 0;
+    padding: max(var(--space-2), env(safe-area-inset-top, 0px)) 0 0;
   }
 
   .app-modal.is-form-sheet {
@@ -222,9 +235,9 @@ function handleBackdrop() {
     max-block-size: min(86dvh, 720px);
     border: var(--ui-border);
     border-bottom: none;
-    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     transform-origin: bottom center;
-    box-shadow: none;
+    box-shadow: var(--shadow-lg);
 
     &.allow-overflow {
       overflow: hidden;
@@ -233,7 +246,7 @@ function handleBackdrop() {
 
   .app-modal-header,
   .app-modal-footer {
-    padding: 14px;
+    padding: var(--space-3);
   }
 
   .app-modal.is-form-sheet .app-modal-footer {
@@ -242,7 +255,7 @@ function handleBackdrop() {
   }
 
   .app-modal-body {
-    padding: 14px;
+    padding: var(--space-3);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 

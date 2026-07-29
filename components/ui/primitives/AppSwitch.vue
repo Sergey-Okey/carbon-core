@@ -2,11 +2,13 @@
   <button
     type="button"
     class="app-switch"
-    :class="{ checked: modelValue }"
+    :class="[`size-${size}`, { checked: modelValue }]"
     role="switch"
     :aria-checked="modelValue"
     :aria-label="ariaLabel"
     :disabled="disabled"
+    :data-disabled="disabled ? '' : undefined"
+    :data-checked="modelValue ? '' : undefined"
     @click="toggle"
   >
     <span class="switch-track">
@@ -21,10 +23,12 @@ const props = withDefaults(
     modelValue: boolean
     ariaLabel?: string
     disabled?: boolean
+    size?: 'sm' | 'md'
   }>(),
   {
     ariaLabel: 'Переключатель',
     disabled: false,
+    size: 'md',
   }
 )
 
@@ -45,35 +49,41 @@ function toggle() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  min-width: 46px;
-  height: 44px;
+  min-width: var(--space-11);
+  min-height: var(--space-11);
   padding: 0;
   border: none;
-  border-radius: var(--border-radius-pill);
+  border-radius: var(--radius-full);
   background: transparent;
   cursor: pointer;
   outline: none;
-  transition: opacity var(--transition-standard);
   vertical-align: middle;
+  transition: opacity var(--transition-standard);
 
   &:focus-visible .switch-track {
-    outline: 1px solid var(--accent);
-    outline-offset: 1px;
+    outline: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+    outline-offset: 2px;
   }
 
-  &:disabled {
+  &:disabled,
+  &[data-disabled] {
     cursor: not-allowed;
     opacity: 0.5;
   }
 
   @include mobile {
-    justify-self: end;
     margin-inline-start: 0;
-    width: 46px;
-    min-width: 46px;
-    height: 44px;
   }
+}
+
+.size-md {
+  width: 46px;
+  min-width: 46px;
+}
+
+.size-sm {
+  width: 40px;
+  min-width: 40px;
 }
 
 .switch-track {
@@ -81,16 +91,21 @@ function toggle() {
   display: block;
   width: 46px;
   height: 26px;
-  border-radius: var(--border-radius-pill);
   border: var(--ui-border);
-  background: color-mix(in srgb, var(--surface) 82%, var(--text) 18%);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-surface-1) 82%, var(--color-text-primary) 18%);
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard);
 
+  .size-sm & {
+    width: 40px;
+    height: 22px;
+  }
+
   .checked & {
-    background: var(--accent);
-    border-color: color-mix(in srgb, var(--accent) 70%, var(--text) 30%);
+    background: var(--color-accent);
+    border-color: color-mix(in srgb, var(--color-accent) 70%, var(--color-text-primary) 30%);
   }
 }
 
@@ -100,19 +115,28 @@ function toggle() {
   top: 50%;
   width: 20px;
   height: 20px;
-  border-radius: 50%;
-  background: var(--bg);
   border: var(--ui-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  transform: translateY(-50%);
   transition:
     transform var(--transition-standard),
     background var(--transition-standard),
     border-color var(--transition-standard);
-  transform: translateY(-50%);
   will-change: transform;
+
+  .size-sm & {
+    width: 16px;
+    height: 16px;
+  }
 
   .checked & {
     transform: translate(20px, -50%);
-    border-color: color-mix(in srgb, var(--bg) 84%, var(--text) 16%);
+    border-color: color-mix(in srgb, var(--color-bg) 84%, var(--color-text-primary) 16%);
+  }
+
+  .size-sm.checked & {
+    transform: translate(18px, -50%);
   }
 }
 </style>

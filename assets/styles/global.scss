@@ -1,3 +1,4 @@
+@use 'tokens/index';
 @use 'variables' as *;
 @use 'mixins' as *;
 
@@ -7,13 +8,13 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--glass-surface);
-  border-radius: var(--border-radius-sm);
+  background: var(--color-surface-2);
+  border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--dim);
-  border-radius: var(--border-radius-sm);
+  background: var(--color-text-muted);
+  border-radius: var(--radius-sm);
 }
 
 .fade-enter-active,
@@ -40,34 +41,6 @@ html.no-animations::view-transition-new(root) {
   animation: none !important;
 }
 
-@keyframes app-glow-scan {
-  0% {
-    opacity: 0;
-    transform: translateX(-120%);
-  }
-
-  25% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateX(120%);
-  }
-}
-
-@keyframes app-glow-breathe {
-  0%,
-  100% {
-    opacity: 0.32;
-  }
-
-  50% {
-    opacity: 0.56;
-  }
-}
-
-/* ✅ ГЛОБАЛЬНЫЕ МИКРО-ВЗАИМОДЕЙСТВИЯ */
 button {
   touch-action: manipulation;
   transition:
@@ -104,7 +77,7 @@ textarea {
 .app-tooltip {
   @include glass;
   position: fixed;
-  z-index: 7000;
+  z-index: var(--z-tooltip);
   max-width: min(320px, calc(100vw - 24px));
   padding: 7px 10px;
   border-radius: var(--border-radius-md);
@@ -144,45 +117,8 @@ textarea {
 * {
   &.completed {
     transition:
-      filter 0.3s,
-      opacity 0.3s;
-  }
-}
-
-/* Анимация для success/error уведомлений */
-.notification {
-  animation: slideInDown 0.3s ease-out;
-
-  &.success {
-    animation: slideInDown 0.3s ease-out;
-  }
-
-  &.error {
-    animation: shake 0.3s ease-in-out;
-  }
-}
-
-@keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-5px);
-  }
-  75% {
-    transform: translateX(5px);
+      filter var(--duration-normal),
+      opacity var(--duration-normal);
   }
 }
 

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <AppLaunchScreen />
   <NuxtLayout>
     <NuxtPage />
@@ -15,7 +15,7 @@ import { useDebounceFn } from '@vueuse/core'
 import { SpeedInsights } from '@vercel/speed-insights/vue'
 import CustomCursor from '~/components/base/CustomCursor.vue'
 import AppLaunchScreen from '~/components/base/AppLaunchScreen.vue'
-import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
+import ConfirmDialog from '~/components/ui/feedback/ConfirmDialog.vue'
 import { useAuthStore } from '~/stores/auth.store'
 import { useAccessStore } from '~/stores/access.store'
 import { useBranchesStore } from '~/stores/branches.store'

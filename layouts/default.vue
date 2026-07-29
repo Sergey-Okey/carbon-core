@@ -37,13 +37,8 @@ const uiStore = useUIStore()
   background-repeat: no-repeat;
   background-size: cover;
   color: var(--text);
-  isolation: isolate;
+  /* Do not use isolation:isolate — it becomes a backdrop-root and kills header blur */
   transition: background var(--transition-standard);
-
-  > * {
-    position: relative;
-    z-index: 1;
-  }
 }
 
 .layout-content {

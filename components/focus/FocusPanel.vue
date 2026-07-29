@@ -100,7 +100,7 @@ import {
   Target,
   Timer,
 } from 'lucide-vue-next'
-import AppButton from '~/components/ui/AppButton.vue'
+import AppButton from '~/components/ui/primitives/AppButton.vue'
 import { useNotification } from '~/composables/useNotification'
 import { useGuidedTourStore } from '~/stores/guidedTour.store'
 import { useFeedback } from '~/composables/useFeedback'
@@ -323,7 +323,7 @@ onBeforeUnmount(() => {
 .focus-head,
 .timer-card,
 .focus-panel {
-  @include glass;
+  @include surface-panel;
   border: var(--ui-border);
 }
 

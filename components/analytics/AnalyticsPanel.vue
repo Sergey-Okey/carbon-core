@@ -456,7 +456,7 @@ function getLocalDateKey(date: Date) {
 
 .analytics-head,
 .metric-cell {
-  @include glass;
+  @include surface-panel;
   border: var(--ui-border);
 }
 

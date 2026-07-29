@@ -225,25 +225,36 @@ onUnmounted(() => {
 }
 
 .date-trigger {
-  @include glass;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--space-2);
   inline-size: 100%;
-  min-height: 40px;
-  padding-inline: 14px;
+  min-height: var(--control-height-md);
+  padding-inline: var(--space-4);
   border: var(--ui-border);
-  border-radius: var(--border-radius-md);
-  color: var(--text);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-1);
+  box-shadow: var(--shadow-xs);
+  color: var(--color-text-primary);
   cursor: pointer;
   font: inherit;
+  font-size: var(--text-sm);
   transition:
     background var(--transition-standard),
-    color var(--transition-standard);
+    border-color var(--transition-standard),
+    box-shadow var(--transition-standard);
 
-  &:hover {
-    background: color-mix(in srgb, var(--accent) 7%, transparent);
+  &:focus-visible {
+    border-color: var(--color-accent);
+    outline: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+    outline-offset: 1px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface-1));
+    }
   }
 }
 
@@ -251,15 +262,16 @@ onUnmounted(() => {
   @include glass;
   position: fixed;
   display: grid;
-  gap: 12px;
-  z-index: 5200;
-  inline-size: min(284px, calc(100dvw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
-  max-height: min(332px, calc(100dvh - 24px));
-  padding: 10px;
+  gap: var(--space-3);
+  z-index: var(--z-dropdown);
+  inline-size: min(284px, calc(100dvw - var(--space-6) - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+  max-height: min(332px, calc(100dvh - var(--space-6)));
+  padding: var(--space-2);
   overflow: hidden;
   border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--radius-lg);
   background: var(--glass-surface);
+  box-shadow: var(--shadow-md);
   backdrop-filter: var(--glass-strong-filter);
   -webkit-backdrop-filter: var(--glass-strong-filter);
 }
@@ -269,22 +281,29 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
 
   button {
-    min-height: 28px;
-    padding-inline: 8px;
+    min-height: var(--space-7);
+    padding-inline: var(--space-2);
     border: none;
-    border-radius: var(--border-radius-md);
+    border-radius: var(--radius-md);
     background: transparent;
-    color: var(--text);
+    color: var(--color-text-primary);
     cursor: pointer;
     transition:
       background var(--transition-standard),
       color var(--transition-standard);
 
-    &:hover {
-      background: color-mix(in srgb, var(--accent) 8%, transparent);
+    &:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+      outline-offset: 1px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+      }
     }
   }
 }
@@ -294,16 +313,17 @@ onUnmounted(() => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 32px;
-    min-width: 32px;
+    flex: 0 0 var(--space-8);
+    min-width: var(--space-8);
     padding-inline: 0;
   }
 }
 
 .date-head strong {
   flex: 1;
-  color: var(--text);
-  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
   text-align: center;
   text-transform: capitalize;
 }
@@ -312,14 +332,14 @@ onUnmounted(() => {
 .days-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .weekdays {
-  margin: 12px 0 6px;
-  color: var(--dim);
-  font-size: 0.65rem;
-  font-weight: 700;
+  margin: var(--space-3) 0 var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
   text-align: center;
 }
 
@@ -329,15 +349,15 @@ onUnmounted(() => {
   justify-content: center;
   aspect-ratio: 1;
   border: var(--ui-border);
-  border-radius: var(--border-radius-pill);
+  border-radius: var(--radius-full);
   background: transparent;
-  color: var(--text);
+  color: var(--color-text-primary);
   cursor: pointer;
   font: inherit;
-  font-size: 0.74rem;
+  font-size: var(--text-xs);
 
   &.muted {
-    color: var(--dim);
+    color: var(--color-text-muted);
     opacity: 0.5;
   }
 
@@ -347,15 +367,15 @@ onUnmounted(() => {
 
   &.active,
   &:hover {
-    border-color: var(--text);
-    background: var(--accent);
-    color: var(--bg);
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-bg);
   }
 
   &.active:hover {
-    border-color: var(--text);
-    background: var(--accent);
-    color: var(--bg);
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-bg);
   }
 }
 
@@ -367,26 +387,26 @@ onUnmounted(() => {
   .date-trigger,
   .date-head button,
   .date-actions button {
-    min-height: 44px;
+    min-height: var(--space-11);
   }
 
   .date-popover {
     inset-block-start: auto !important;
-    inset-block-end: max(10px, env(safe-area-inset-bottom, 0px));
-    inset-inline: max(10px, env(safe-area-inset-left, 0px)) max(10px, env(safe-area-inset-right, 0px));
-    left: max(10px, env(safe-area-inset-left, 0px)) !important;
-    right: max(10px, env(safe-area-inset-right, 0px)) !important;
+    inset-block-end: max(var(--space-2), env(safe-area-inset-bottom, 0px));
+    inset-inline: max(var(--space-2), env(safe-area-inset-left, 0px)) max(var(--space-2), env(safe-area-inset-right, 0px));
+    left: max(var(--space-2), env(safe-area-inset-left, 0px)) !important;
+    right: max(var(--space-2), env(safe-area-inset-right, 0px)) !important;
     width: auto !important;
-    max-height: calc(100dvh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
-    padding: 14px;
-    border-radius: var(--border-radius-lg);
+    max-height: calc(100dvh - var(--space-5) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
   }
 
   .date-head {
-    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    grid-template-columns: var(--space-11) minmax(0, 1fr) var(--space-11);
 
     strong {
-      font-size: 0.96rem;
+      font-size: var(--text-md);
     }
   }
 
@@ -396,13 +416,13 @@ onUnmounted(() => {
 
   .day-btn {
     min-width: 0;
-    min-height: 40px;
+    min-height: var(--space-10);
     aspect-ratio: auto;
   }
 
   .date-actions {
-    gap: 8px;
-    margin-top: 4px;
+    gap: var(--space-2);
+    margin-top: var(--space-1);
 
     button {
       flex: 1;

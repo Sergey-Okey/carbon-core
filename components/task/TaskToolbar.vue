@@ -57,9 +57,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { ChevronDown, ChevronUp, Search, Tags } from 'lucide-vue-next'
-import AppInput from '~/components/ui/AppInput.vue'
-import AppSelect from '~/components/ui/AppSelect.vue'
-import AppSegmentedControl from '~/components/ui/AppSegmentedControl.vue'
+import AppInput from '~/components/ui/primitives/AppInput.vue'
+import AppSelect from '~/components/ui/forms/AppSelect.vue'
+import AppSegmentedControl from '~/components/ui/navigation/AppSegmentedControl.vue'
 import type { AppSelectOption } from '~/types/ui.types'
 
 type TaskView = 'active' | 'all' | 'completed'
@@ -131,7 +131,7 @@ const viewModel = computed({
 
 <style scoped lang="scss">
 .tasks-toolbar {
-  @include glass;
+  @include surface-panel;
   display: grid;
   grid-template-columns: minmax(220px, 1.25fr) minmax(180px, 0.85fr) minmax(292px, auto);
   gap: var(--panel-gap);
@@ -209,7 +209,7 @@ label,
     padding: 8px 10px 8px 12px;
     border: none;
     border-radius: calc(var(--border-radius-lg) - 6px);
-    background: color-mix(in srgb, var(--glass-surface) 92%, transparent);
+    background: color-mix(in srgb, var(--color-surface-1) 92%, transparent);
     color: var(--text);
     font: inherit;
     font-size: 0.85rem;

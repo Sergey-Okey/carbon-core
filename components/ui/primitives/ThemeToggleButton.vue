@@ -31,15 +31,15 @@ function toggleTheme() {
 
 <style scoped lang="scss">
 .theme-toggle-button {
-  @include glass;
+  @include surface-panel;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 44px;
   height: 44px;
   padding: 0;
-  border-radius: var(--border-radius-pill);
-  color: var(--text);
+  border-radius: var(--radius-full);
+  color: var(--color-text-primary);
   cursor: pointer;
   transition:
     background var(--transition-standard),
@@ -48,8 +48,8 @@ function toggleTheme() {
     transform var(--transition-standard);
 
   &:hover {
-    background: color-mix(in srgb, var(--accent) 8%, var(--glass-surface));
-    color: var(--text);
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface-1));
+    color: var(--color-text-primary);
     transform: translateY(-1px);
   }
 

@@ -2,7 +2,8 @@
   <div
     ref="rootRef"
     class="app-select"
-    :class="{ open: isOpen, disabled }"
+    :class="[`size-${size}`, { open: isOpen }]"
+    :data-disabled="disabled ? '' : undefined"
     @keydown.down.prevent="moveHighlight(1)"
     @keydown.up.prevent="moveHighlight(-1)"
     @keydown.enter.prevent="selectHighlighted"
@@ -48,17 +49,14 @@
               active: option.value === modelValue,
               highlighted: index === highlightedIndex,
             }"
-            :style="{ '--option-color': option.color || 'var(--accent)' }"
+            :style="{ '--option-color': option.color || 'var(--color-accent)' }"
             :disabled="option.disabled"
             role="option"
             :aria-selected="option.value === modelValue"
             @mouseenter="highlightedIndex = index"
             @click="selectOption(option)"
           >
-            <span
-              v-if="option.color"
-              class="option-dot"
-            />
+            <span v-if="option.color" class="option-dot" />
             <span class="option-label">{{ option.label }}</span>
             <Check v-if="option.value === modelValue" :size="15" />
           </button>
@@ -80,11 +78,13 @@ const props = withDefaults(
     placeholder?: string
     disabled?: boolean
     id?: string
+    size?: 'sm' | 'md'
   }>(),
   {
     placeholder: 'Выберите',
     disabled: false,
     id: undefined,
+    size: 'md',
   }
 )
 
@@ -131,7 +131,6 @@ function updateMenuPosition() {
   const availableAbove = rect.top - gap
   const openUp = availableBelow < 180 && availableAbove > availableBelow
   const menuHeight = Math.min(maxHeight, openUp ? availableAbove : availableBelow)
-  const isInsideModal = Boolean(root.closest('.app-modal'))
 
   menuPlacement.value = openUp ? 'top' : 'bottom'
   menuStyle.value = {
@@ -139,7 +138,7 @@ function updateMenuPosition() {
     top: openUp ? `${rect.top - gap}px` : `${rect.bottom + gap}px`,
     width: `${rect.width}px`,
     maxHeight: `${Math.max(140, menuHeight)}px`,
-    zIndex: isInsideModal ? '5200' : '4200',
+    zIndex: 'var(--z-dropdown)',
   }
 }
 
@@ -205,54 +204,62 @@ onBeforeUnmount(() => {
   position: relative;
   inline-size: 100%;
 
-  &.disabled {
+  &[data-disabled] {
     opacity: 0.6;
     pointer-events: none;
   }
 }
 
 .select-trigger {
-  @include glass;
   position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   inline-size: 100%;
   min-block-size: var(--control-height-md);
-  padding-inline: 12px 34px;
+  padding-inline: var(--space-3) calc(var(--space-8) + var(--space-1));
   overflow: hidden;
   border: var(--ui-border);
-  border-radius: var(--border-radius-md);
-  color: var(--text);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-1);
+  box-shadow: var(--shadow-xs);
+  color: var(--color-text-primary);
   font: inherit;
-  font-size: 0.9rem;
-  line-height: 1;
+  font-size: var(--text-sm);
+  line-height: var(--leading-none);
   text-align: start;
   cursor: pointer;
   transition:
     border-color var(--transition-standard),
-    background var(--transition-standard);
+    background var(--transition-standard),
+    box-shadow var(--transition-standard);
+
+  .size-sm & {
+    min-block-size: var(--control-height-sm);
+    padding-inline: var(--space-2) var(--space-8);
+    font-size: var(--text-xs);
+  }
 
   .app-select.open & {
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--ui-border-color));
+    border-color: color-mix(in srgb, var(--color-accent) 45%, var(--ui-border-color));
+    box-shadow: var(--shadow-sm);
   }
 
   @media (hover: hover) and (pointer: fine) {
     &:hover:not(:disabled) {
-      border-color: color-mix(in srgb, var(--accent) 45%, var(--ui-border-color));
+      border-color: color-mix(in srgb, var(--color-accent) 45%, var(--ui-border-color));
     }
   }
 
   &:focus-visible {
-    border-color: var(--text);
-    outline: none;
-    outline: 2px solid color-mix(in srgb, var(--accent) 14%, transparent);
-    outline-offset: 2px;
+    border-color: var(--color-accent);
+    outline: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+    outline-offset: 1px;
   }
 
   :deep(svg:not(.select-arrow)) {
     flex-shrink: 0;
-    color: var(--dim);
+    color: var(--color-text-secondary);
   }
 }
 
@@ -264,7 +271,7 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 
   &.muted {
-    color: var(--dim);
+    color: var(--color-text-muted);
   }
 }
 
@@ -272,17 +279,18 @@ onBeforeUnmount(() => {
   flex: 0 0 auto;
   width: 9px;
   height: 9px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: var(--option-color);
 }
 
 .select-arrow {
   position: absolute;
-  inset-inline-end: 12px;
+  inset-inline-end: var(--space-3);
   inset-block-start: 50%;
-  color: var(--dim);
+  color: var(--color-text-secondary);
   pointer-events: none;
   transform: translateY(-50%);
+  transition: transform var(--transition-standard);
 
   .app-select.open & {
     transform: translateY(-50%) rotate(180deg);
@@ -292,9 +300,11 @@ onBeforeUnmount(() => {
 .select-menu {
   @include glass;
   position: fixed;
-  padding: 6px;
+  padding: var(--space-1);
   overflow-y: auto;
-  border-radius: var(--border-radius-md);
+  border: var(--ui-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
 
   &.top {
     transform: translateY(-100%);
@@ -305,16 +315,16 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--space-2);
   inline-size: 100%;
   min-height: var(--control-height-sm);
-  padding-inline: 10px;
+  padding-inline: var(--space-2);
   border: none;
-  border-radius: calc(var(--border-radius-md) - 4px);
+  border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--text);
+  color: var(--color-text-primary);
   font: inherit;
-  font-size: 0.88rem;
+  font-size: var(--text-sm);
   text-align: start;
   cursor: pointer;
   transition:
@@ -331,39 +341,40 @@ onBeforeUnmount(() => {
 
   &:disabled {
     cursor: not-allowed;
+    opacity: 0.5;
   }
 
   &.highlighted {
-    background: var(--glass-surface);
+    background: color-mix(in srgb, var(--color-accent) 8%, transparent);
   }
 
   &.active {
-    background: var(--accent);
-    color: var(--bg);
-    font-weight: 600;
+    background: var(--color-accent);
+    color: var(--color-bg);
+    font-weight: var(--weight-semibold);
   }
 
   &.active.highlighted {
-    background: var(--accent);
-    color: var(--bg);
+    background: var(--color-accent);
+    color: var(--color-bg);
   }
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .select-option:hover:not(:disabled) {
-    background: var(--glass-surface);
+  .select-option:hover:not(:disabled):not(.active) {
+    background: color-mix(in srgb, var(--color-accent) 8%, transparent);
   }
 
   .select-option.active:hover {
-    background: var(--accent);
-    color: var(--bg);
+    background: var(--color-accent);
+    color: var(--color-bg);
   }
 }
 
 @media (pointer: coarse), (max-width: 767px) {
   .select-trigger,
   .select-option {
-    min-height: 44px;
+    min-height: var(--space-11);
   }
 }
 

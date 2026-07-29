@@ -5,13 +5,14 @@
         <img src="/app.ico" alt="" />
       </div>
       <strong>Core of Life</strong>
-      <span></span>
+      <Skeleton width="38px" height="3px" round />
     </div>
   </Transition>
 </template>
 
 <script setup lang="ts">
 import { Capacitor } from '@capacitor/core'
+import Skeleton from '~/components/ui/feedback/Skeleton.vue'
 
 const visible = ref(Capacitor.isNativePlatform())
 
@@ -60,14 +61,6 @@ strong {
   font-weight: 600;
 }
 
-.launch-screen > span {
-  inline-size: 38px;
-  block-size: 3px;
-  border-radius: var(--border-radius-pill);
-  background: var(--accent);
-  animation: launch-pulse 700ms ease-in-out infinite alternate;
-}
-
 .launch-leave-active {
   transition: opacity 320ms ease;
 }
@@ -88,21 +81,8 @@ strong {
   }
 }
 
-@keyframes launch-pulse {
-  from {
-    opacity: 0.35;
-    transform: scaleX(0.55);
-  }
-
-  to {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .launch-mark,
-  .launch-screen > span {
+  .launch-mark {
     animation: none;
   }
 }

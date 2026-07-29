@@ -15,7 +15,7 @@
           </AppButton>
 
           <div class="intro-content">
-            <span class="badge">Core of Life</span>
+            <AppBadge variant="eyebrow" class="intro-badge">Core of Life</AppBadge>
             <h1 v-if="isRegister">
               Соберите свою систему задач
               <span>в одном месте.</span>
@@ -62,7 +62,7 @@
         <div ref="authFormPanel" class="auth-panel auth-form-panel">
           <template v-if="isRegister && !accessStore.hasSubscription">
             <div class="subscription-header">
-              <span class="badge">Полный доступ</span>
+              <AppBadge variant="eyebrow" class="panel-badge">Полный доступ</AppBadge>
               <h2>Оформите подписку</h2>
               <p>
                 После оплаты вы сможете создать профиль и пользоваться всеми
@@ -118,9 +118,9 @@
 
           <template v-else>
             <div class="form-header">
-              <span class="badge">{{
+              <AppBadge variant="eyebrow" class="panel-badge">{{
                 isRegister ? 'Регистрация' : 'Авторизация'
-              }}</span>
+              }}</AppBadge>
               <h2>{{ isRegister ? 'Создайте профиль' : 'С возвращением' }}</h2>
               <p>
                 {{
@@ -131,15 +131,16 @@
               </p>
             </div>
 
-            <label v-if="isRegister" class="consent-control oauth-consent">
-              <input v-model="form.acceptedTerms" type="checkbox" />
-              <span class="checkmark"><Check :size="12" /></span>
-              <span>
-                Принимаю
-                <NuxtLink to="/terms">условия использования</NuxtLink> и
-                <NuxtLink to="/privacy">политику конфиденциальности</NuxtLink>
-              </span>
-            </label>
+            <AppCheckbox
+              v-if="isRegister"
+              v-model="form.acceptedTerms"
+              size="sm"
+              class="oauth-consent"
+            >
+              Принимаю
+              <NuxtLink to="/terms">условия использования</NuxtLink> и
+              <NuxtLink to="/privacy">политику конфиденциальности</NuxtLink>
+            </AppCheckbox>
 
             <div class="oauth-actions" aria-label="Войти через сервис">
               <button
@@ -347,9 +348,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 import { ArrowLeft, ArrowUpRight, Check, Play } from 'lucide-vue-next'
-import AppButton from '~/components/ui/AppButton.vue'
-import AppFormField from '~/components/ui/AppFormField.vue'
-import AppInput from '~/components/ui/AppInput.vue'
+import AppBadge from '~/components/ui/primitives/AppBadge.vue'
+import AppButton from '~/components/ui/primitives/AppButton.vue'
+import AppCheckbox from '~/components/ui/primitives/AppCheckbox.vue'
+import AppFormField from '~/components/ui/forms/AppFormField.vue'
+import AppInput from '~/components/ui/primitives/AppInput.vue'
 import {
   SUBSCRIPTION_PAYMENT_URL,
   SUBSCRIPTION_PRICE,
@@ -877,7 +880,7 @@ async function submit() {
 }
 
 .auth-panel {
-  @include glass;
+  @include surface-panel;
   min-width: 0;
   min-height: 0;
   max-height: 100%;
@@ -910,19 +913,13 @@ async function submit() {
   flex: 1;
   max-width: 460px;
 
-  .badge {
-    display: inline-block;
-    margin-bottom: 14px;
-    color: var(--dim);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  .intro-badge {
+    margin-bottom: var(--space-3);
   }
 
   h1 {
-    margin: 0 0 18px;
-    color: var(--text);
+    margin: 0 0 var(--space-4);
+    color: var(--color-text-primary);
     font-family: 'Space Grotesk', sans-serif;
     font-size: clamp(2.2rem, 4vw, 3.5rem);
     font-weight: 600;
@@ -1009,22 +1006,17 @@ async function submit() {
 
 .form-header,
 .subscription-header {
-  margin-bottom: 26px;
+  margin-bottom: var(--space-6);
   text-align: left;
 
-  .badge {
+  .panel-badge {
     display: block;
-    margin-bottom: 9px;
-    color: var(--dim);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    margin-bottom: var(--space-2);
   }
 
   h2 {
-    margin: 0 0 10px;
-    color: var(--text);
+    margin: 0 0 var(--space-2);
+    color: var(--color-text-primary);
     font-size: clamp(1.65rem, 3vw, 2rem);
     font-weight: 600;
     line-height: 1.08;
@@ -1055,7 +1047,7 @@ async function submit() {
 }
 
 .verification-card {
-  @include glass;
+  @include surface-panel;
   display: grid;
   gap: 6px;
   padding: 14px;
@@ -1161,49 +1153,18 @@ async function submit() {
   }
 }
 
-.consent-control {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: start;
-  gap: 10px;
-  cursor: pointer;
+.oauth-consent {
+  margin-bottom: var(--space-4);
+  align-items: flex-start;
+  color: var(--color-text-secondary);
   font-size: 0.8rem;
-  color: var(--dim);
 
-  input {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
+  :deep(.app-checkbox__box) {
+    margin-top: 2px;
   }
 
-  .checkmark {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    margin-top: 1px;
-    border: var(--ui-border);
-    border-radius: 4px;
-    background: var(--glass-surface);
-    color: transparent;
-    transition: all var(--transition-standard);
-  }
-
-  input:checked + .checkmark {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--bg);
-  }
-
-  input:focus-visible + .checkmark {
-    outline: 2px solid color-mix(in srgb, var(--accent) 18%, transparent);
-    outline-offset: 2px;
-  }
-
-  a {
-    color: var(--accent);
+  :deep(a) {
+    color: var(--color-accent);
     text-decoration: none;
 
     &:hover {
@@ -1212,12 +1173,8 @@ async function submit() {
   }
 }
 
-.oauth-consent {
-  margin-bottom: 16px;
-}
-
 .oauth-message {
-  margin-top: 10px;
+  margin-top: var(--space-2);
   text-align: center;
   line-height: 1.35;
 }

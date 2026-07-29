@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { Home, RefreshCw } from 'lucide-vue-next'
-import AppButton from '~/components/ui/AppButton.vue'
+import AppButton from '~/components/ui/primitives/AppButton.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -73,7 +73,7 @@ function handlePrimaryAction() {
 }
 
 .error-shell {
-  @include glass;
+  @include surface-panel;
   display: grid;
   grid-template-rows: auto 1fr auto;
   min-height: calc(100vh - clamp(32px, 6vw, 56px));

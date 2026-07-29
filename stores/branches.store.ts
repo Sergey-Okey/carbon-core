@@ -7,15 +7,29 @@ import { useTasksStore } from './tasks.store'
 import { accessAwareStorage } from '~/utils/accessStorage'
 
 const edgeStyle = { stroke: 'var(--dim)', strokeWidth: 1.15 }
-const edgePathOptions = { borderRadius: 50, offset: 24 }
+const edgePathOptions = { borderRadius: 16, offset: 10 }
 const defaultMarkerColor = '#d6d6d6'
 
-function sourcePort(nodeId: string, side: 'right' | 'bottom' = 'right') {
+type PortSide = 'top' | 'right' | 'bottom' | 'left'
+
+function sourcePort(nodeId: string, side: PortSide = 'right') {
   return `source-${side}-${nodeId}`
 }
 
-function targetPort(nodeId: string, side: 'left' | 'top' = 'left') {
+function targetPort(nodeId: string, side: PortSide = 'left') {
   return `target-${side}-${nodeId}`
+}
+
+function oppositePortSide(side: PortSide): PortSide {
+  if (side === 'top') return 'bottom'
+  if (side === 'right') return 'left'
+  if (side === 'bottom') return 'top'
+  return 'right'
+}
+
+function dominantPortSide(dx: number, dy: number): PortSide {
+  if (Math.abs(dx) >= Math.abs(dy)) return dx >= 0 ? 'right' : 'left'
+  return dy >= 0 ? 'bottom' : 'top'
 }
 
 function isSourceHandle(handle?: string | null) {
@@ -297,51 +311,102 @@ export const useBranchesStore = defineStore(
       return getMilestoneLocation(nodeId)?.milestone.position
     }
 
-    function normalizeEdgePorts(edge: Edge): Edge {
-      const normalizedDirection =
-        isTargetHandle(edge.sourceHandle) || isSourceHandle(edge.targetHandle)
-          ? {
-              ...edge,
-              source: edge.target,
-              target: edge.source,
-              sourceHandle: edge.targetHandle,
-              targetHandle: edge.sourceHandle,
-            }
-          : edge
-      edge = normalizedDirection
+    function getNodeCenter(nodeId: string) {
+      const position = getNodePosition(nodeId)
+      if (!position) return null
+      const isBranch = !!getBranch(nodeId)
+      const width = isBranch ? 240 : 220
+      const height = isBranch ? 138 : 120
+      return {
+        x: position.x + width / 2,
+        y: position.y + height / 2,
+      }
+    }
 
-      const sourcePosition = getNodePosition(edge.source)
-      const targetPosition = getNodePosition(edge.target)
-      const dx =
-        sourcePosition && targetPosition ? targetPosition.x - sourcePosition.x : 0
-      const dy =
-        sourcePosition && targetPosition ? targetPosition.y - sourcePosition.y : 0
-      const isMostlyVertical = Math.abs(dy) > Math.max(90, Math.abs(dx) * 0.55)
+    function portSideFromHandle(handle?: string | null): PortSide | null {
+      if (!handle) return null
+      if (handle.includes('-top-')) return 'top'
+      if (handle.includes('-right-')) return 'right'
+      if (handle.includes('-bottom-')) return 'bottom'
+      if (handle.includes('-left-')) return 'left'
+      return null
+    }
+
+    function normalizeEdgePorts(edge: Edge, forceFromPositions = false): Edge {
+      let next = { ...edge }
+
+      // Started/stored from a target port → reverse direction
+      if (isTargetHandle(next.sourceHandle)) {
+        next = {
+          ...next,
+          source: edge.target,
+          target: edge.source,
+          sourceHandle: edge.targetHandle,
+          targetHandle: edge.sourceHandle,
+        }
+      }
+
+      // Stacked source handle used as target → remap to target port on same side
+      if (isSourceHandle(next.targetHandle)) {
+        const side = portSideFromHandle(next.targetHandle) || 'left'
+        next = {
+          ...next,
+          targetHandle: targetPort(next.target, side),
+        }
+      }
+
+      if (isTargetHandle(next.sourceHandle)) {
+        const side = portSideFromHandle(next.sourceHandle) || 'right'
+        next = {
+          ...next,
+          sourceHandle: sourcePort(next.source, side),
+        }
+      }
+
+      const sourceCenter = getNodeCenter(next.source)
+      const targetCenter = getNodeCenter(next.target)
+      const canCompute =
+        !!sourceCenter &&
+        !!targetCenter &&
+        (forceFromPositions ||
+          !isSourceHandle(next.sourceHandle) ||
+          !isTargetHandle(next.targetHandle))
+
+      if (canCompute && sourceCenter && targetCenter) {
+        const dx = targetCenter.x - sourceCenter.x
+        const dy = targetCenter.y - sourceCenter.y
+        const side = dominantPortSide(dx, dy)
+        return {
+          ...next,
+          sourceHandle: sourcePort(next.source, side),
+          targetHandle: targetPort(next.target, oppositePortSide(side)),
+          type: next.type || 'smoothstep',
+          pathOptions: edgePathOptions,
+          style: edgeStyle,
+        } as Edge
+      }
 
       return {
-        ...edge,
-        sourceHandle:
-          edge.sourceHandle ||
-          sourcePort(edge.source, isMostlyVertical && dy > 0 ? 'bottom' : 'right'),
-        targetHandle:
-          edge.targetHandle ||
-          targetPort(edge.target, isMostlyVertical && dy > 0 ? 'top' : 'left'),
-        type: edge.type || 'smoothstep',
-        pathOptions:
-          (edge as Edge & { pathOptions?: typeof edgePathOptions }).pathOptions ||
-          edgePathOptions,
+        ...next,
+        sourceHandle: next.sourceHandle || sourcePort(next.source),
+        targetHandle: next.targetHandle || targetPort(next.target),
+        type: next.type || 'smoothstep',
+        pathOptions: edgePathOptions,
         style: edgeStyle,
       } as Edge
+    }
+
+    function refreshEdgePortsFromPositions() {
+      edges.value = (edges.value as Edge[]).map((edge) =>
+        normalizeEdgePorts(edge, true)
+      )
     }
 
     function getAllMilestones(): Milestone[] {
       return branches.value.flatMap((branch) => branch.milestones)
     }
 
-    function collectReachableMilestoneIds(startId: string): Set<string> {
-      const milestoneIds = new Set(
-        getAllMilestones().map((milestone) => milestone.id)
-      )
+    function collectReachableNodeIds(startId: string): Set<string> {
       const visited = new Set<string>()
       const queue = [startId]
       const normalizedEdges: Edge[] = (edges.value as Edge[]).map(normalizeEdgePorts)
@@ -350,13 +415,32 @@ export const useBranchesStore = defineStore(
         const currentId = queue.shift()!
         for (const edge of normalizedEdges) {
           if (edge.source !== currentId) continue
-          if (!milestoneIds.has(edge.target) || visited.has(edge.target)) continue
+          if (visited.has(edge.target)) continue
           visited.add(edge.target)
           queue.push(edge.target)
         }
       }
 
       return visited
+    }
+
+    function collectReachableMilestoneIds(startId: string): Set<string> {
+      const milestoneIds = new Set(
+        getAllMilestones().map((milestone) => milestone.id)
+      )
+      const reachable = collectReachableNodeIds(startId)
+      return new Set([...reachable].filter((id) => milestoneIds.has(id)))
+    }
+
+    function countIncomingEdges(nodeId: string) {
+      const normalizedEdges: Edge[] = (edges.value as Edge[]).map(normalizeEdgePorts)
+      return normalizedEdges.filter((edge) => edge.target === nodeId).length
+    }
+
+    function wouldCreateCycle(sourceId: string, targetId: string) {
+      // Adding source → target closes a loop if target can already reach source.
+      if (sourceId === targetId) return true
+      return collectReachableNodeIds(targetId).has(sourceId)
     }
 
     function collectRelatedMilestoneIds(startIds: string | string[]): Set<string> {
@@ -900,6 +984,11 @@ export const useBranchesStore = defineStore(
         sourceKind === 'branch' ? getBranch(sourceId) : findBranchByMilestone(sourceId)
       if (!sourceBranch) return { ok: false, reason: 'Источник связи не найден' }
 
+      // Strict: no directed cycles — they break readable auto-layout.
+      if (wouldCreateCycle(sourceId, targetId)) {
+        return { ok: false, reason: 'Нельзя создавать замыкающую связь' }
+      }
+
       if (targetKind === 'branch') {
         if (sourceKind !== 'milestone') {
           return { ok: false, reason: 'К ветке можно подключить только этап' }
@@ -909,10 +998,16 @@ export const useBranchesStore = defineStore(
       }
 
       const targetBranch = findBranchByMilestone(targetId)
-      if (collectReachableMilestoneIds(targetId).has(sourceId)) {
-        return { ok: false, reason: 'Нельзя создавать циклическую связь' }
-      }
       if (!targetBranch) return { ok: false, reason: 'Целевой этап не найден' }
+
+      // Tree rule: a milestone may have only one incoming link.
+      // Multiple parents create diamonds and tangled orthogonal routes.
+      if (countIncomingEdges(targetId) > 0) {
+        return {
+          ok: false,
+          reason: 'У этапа уже есть входящая связь — сначала удалите старую',
+        }
+      }
 
       if (sourceKind === 'branch') {
         addEdge(createEdge(sourceId, targetId, sourceHandle, targetHandle))
@@ -970,6 +1065,7 @@ export const useBranchesStore = defineStore(
       refreshBranch,
       refreshAllBranches,
       replaceEdges,
+      refreshEdgePortsFromPositions,
     }
   },
   {

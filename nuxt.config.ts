@@ -6,6 +6,10 @@ export default defineNuxtConfig({
   telemetry: false,
   devServer: { host: '0.0.0.0', port: 3000 },
   experimental: { appManifest: false, viteEnvironmentApi: true },
+  components: [
+    { path: '~/components/ui', pathPrefix: false },
+    { path: '~/components', ignore: ['**/ui/**'] },
+  ],
   modules: [
     '@pinia/nuxt',
     '@vueuse/nuxt',

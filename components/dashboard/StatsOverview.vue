@@ -323,7 +323,7 @@ onMounted(() => {
   align-items: center;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
-  @include glass;
+  @include surface-panel;
   border-radius: var(--border-radius-lg);
   padding: 12px 42px 12px 18px;
   border: var(--ui-border);
@@ -402,7 +402,7 @@ onMounted(() => {
   padding: 8px 10px 8px 12px;
   border: none;
   border-radius: calc(var(--border-radius-lg) - 6px);
-  background: color-mix(in srgb, var(--glass-surface) 90%, transparent);
+  background: color-mix(in srgb, var(--color-surface-1) 90%, transparent);
   color: var(--text);
   cursor: pointer;
   transition:
@@ -413,7 +413,7 @@ onMounted(() => {
   &:hover,
   &:focus-visible {
     outline: none;
-    background: color-mix(in srgb, var(--accent) 8%, var(--glass-surface));
+    background: color-mix(in srgb, var(--accent) 8%, var(--color-surface-1));
   }
 }
 
@@ -590,7 +590,7 @@ onMounted(() => {
   min-height: 27px;
   padding: 3px 6px;
   border-radius: var(--border-radius-pill);
-  background: var(--glass-surface);
+  background: var(--color-surface-2);
   border: var(--ui-border);
   font-size: 0.8rem;
   color: var(--text);

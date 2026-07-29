@@ -1,24 +1,13 @@
 @mixin glass {
   position: relative;
   background-color: var(--glass-surface, rgba(17, 24, 39, 0.72));
-  background-image: linear-gradient(
-    135deg,
-    var(--glass-highlight, rgba(255, 255, 255, 0.16)) 0%,
-    transparent 70%
-  );
   background-clip: padding-box;
   border: var(--ui-border, 1px solid rgba(255, 255, 255, 0.16));
   box-shadow: var(--glass-shadow, none);
   color: inherit;
   overflow: hidden;
-  isolation: isolate;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  backdrop-filter: var(--glass-filter, blur(18px) saturate(1.2)) !important;
-  -webkit-backdrop-filter: var(
-    --glass-filter,
-    blur(18px) saturate(1.2)
-  ) !important;
+  backdrop-filter: var(--glass-filter, blur(18px) saturate(1.2));
+  -webkit-backdrop-filter: var(--glass-filter, blur(18px) saturate(1.2));
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
 
@@ -28,6 +17,28 @@
     background-color: var(--glass-surface-strong, rgba(14, 18, 26, 0.86));
     box-shadow: var(--glass-shadow, 0 16px 32px rgba(0, 0, 0, 0.2));
   }
+}
+
+/**
+ * Solid frosted fill without backdrop-filter or gradients.
+ * For Vue Flow nodes: Chromium cannot reliably blur inside a transformed viewport.
+ */
+@mixin frosted {
+  position: relative;
+  background-color: var(--frosted-surface, var(--glass-surface-strong));
+  background-image: none;
+  border: var(--ui-border);
+  box-shadow: var(--shadow-sm);
+  color: inherit;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+@mixin surface-panel {
+  background: var(--color-surface-1);
+  border: var(--ui-border);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-primary);
 }
 
 @mixin desktop {

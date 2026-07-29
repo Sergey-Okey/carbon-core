@@ -25,10 +25,12 @@
           :tag-options="tagOptions"
         />
 
-        <div v-if="isTasksEmpty" class="tasks-empty-overview">
-          <h3>Задач пока нет</h3>
-          <p>Добавьте первую привычку или задачу через кнопку плюс в нужном блоке.</p>
-        </div>
+        <EmptyState
+          v-if="isTasksEmpty"
+          class="tasks-empty-overview"
+          title="Задач пока нет"
+          description="Добавьте первую привычку или задачу через кнопку плюс в нужном блоке."
+        />
 
         <TaskSections
           :show-active-sections="showActiveSections"
@@ -81,6 +83,7 @@ import FocusPanel from '~/components/focus/FocusPanel.vue'
 import TaskForm from '~/components/task/TaskForm.vue'
 import TaskSections from '~/components/task/TaskSections.vue'
 import TaskToolbar from '~/components/task/TaskToolbar.vue'
+import EmptyState from '~/components/ui/feedback/EmptyState.vue'
 import SettingsPanel from '~/components/settings/SettingsPanel.vue'
 import GuidedTourOverlay from '~/components/guided/GuidedTourOverlay.vue'
 import { useGuidedTourStore } from '~/stores/guidedTour.store'
@@ -238,27 +241,8 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
   }
 }
 
-/* Пустое состояние задач */
 .tasks-empty-overview {
-  @include glass;
-  padding: 32px 24px;
-  text-align: center;
-  border-radius: var(--border-radius-lg);
-  border: var(--ui-border);
-
-  h3 {
-    margin: 0 0 8px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--accent);
-  }
-
-  p {
-    margin: 0;
-    color: var(--dim);
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
+  margin-block: var(--space-2);
 }
 
 @keyframes page-block-in {

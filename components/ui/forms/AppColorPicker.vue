@@ -53,27 +53,28 @@ const emit = defineEmits<{
 
 <style scoped lang="scss">
 .color-picker {
-  @include glass;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1);
   width: fit-content;
   max-width: 100%;
-  padding: 5px;
+  padding: var(--space-1);
   border: var(--ui-border);
-  border-radius: var(--border-radius-pill);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-1);
+  box-shadow: var(--shadow-xs);
 }
 
 .color-option {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: var(--control-icon-size);
+  height: var(--control-icon-size);
   padding: 0;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: transparent;
   cursor: pointer;
   transition:
@@ -84,19 +85,26 @@ const emit = defineEmits<{
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
+    width: var(--space-5);
+    height: var(--space-5);
+    border-radius: var(--radius-full);
     background: var(--picker-color);
-    color: var(--bg);
+    color: var(--color-bg);
     transition:
       outline-color var(--transition-standard),
       outline-offset var(--transition-standard),
       transform var(--transition-standard);
   }
 
-  &:hover {
-    background: color-mix(in srgb, var(--picker-color) 10%, transparent);
+  &:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+    outline-offset: 1px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: color-mix(in srgb, var(--picker-color) 10%, transparent);
+    }
   }
 
   &.active,
@@ -104,7 +112,7 @@ const emit = defineEmits<{
     background: color-mix(in srgb, var(--picker-color) 14%, transparent);
 
     .color-dot {
-      outline: 2px solid color-mix(in srgb, var(--picker-color) 64%, var(--text) 36%);
+      outline: 2px solid color-mix(in srgb, var(--picker-color) 64%, var(--color-text-primary) 36%);
       outline-offset: 3px;
     }
   }
@@ -114,14 +122,14 @@ const emit = defineEmits<{
   .color-picker {
     width: 100%;
     justify-content: space-between;
-    border-radius: var(--border-radius-lg);
+    border-radius: var(--radius-lg);
   }
 
   .color-option {
-    width: 44px;
-    min-width: 44px;
-    height: 44px;
-    min-height: 44px;
+    width: var(--space-11);
+    min-width: var(--space-11);
+    height: var(--space-11);
+    min-height: var(--space-11);
   }
 }
 </style>

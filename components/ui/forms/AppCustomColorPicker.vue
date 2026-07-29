@@ -83,10 +83,10 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import AppButton from '~/components/ui/AppButton.vue'
-import AppFormField from '~/components/ui/AppFormField.vue'
-import AppInput from '~/components/ui/AppInput.vue'
-import AppModal from '~/components/ui/AppModal.vue'
+import AppButton from '~/components/ui/primitives/AppButton.vue'
+import AppFormField from '~/components/ui/forms/AppFormField.vue'
+import AppInput from '~/components/ui/primitives/AppInput.vue'
+import AppModal from '~/components/ui/overlays/AppModal.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -246,15 +246,15 @@ function apply() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-2);
   width: max-content;
   max-width: 100%;
   min-height: var(--control-height-md);
-  padding: 4px 10px;
+  padding: var(--space-1) var(--space-2);
   border: var(--ui-border);
-  border-radius: var(--border-radius-pill);
-  background: transparent;
-  color: var(--text);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-1);
+  color: var(--color-text-primary);
   cursor: pointer;
   font: inherit;
   font-size: 0.82rem;

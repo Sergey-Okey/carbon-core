@@ -363,11 +363,11 @@ import {
   Trash2,
   Upload,
 } from 'lucide-vue-next'
-import AppButton from '~/components/ui/AppButton.vue'
-import AppColorPicker from '~/components/ui/AppColorPicker.vue'
-import AppCustomColorPicker from '~/components/ui/AppCustomColorPicker.vue'
-import AppSwitch from '~/components/ui/AppSwitch.vue'
-import AppTimePicker from '~/components/ui/AppTimePicker.vue'
+import AppButton from '~/components/ui/primitives/AppButton.vue'
+import AppColorPicker from '~/components/ui/forms/AppColorPicker.vue'
+import AppCustomColorPicker from '~/components/ui/forms/AppCustomColorPicker.vue'
+import AppSwitch from '~/components/ui/primitives/AppSwitch.vue'
+import AppTimePicker from '~/components/ui/forms/AppTimePicker.vue'
 import { useConfirm } from '~/composables/useConfirm'
 import TagManager from '~/components/settings/TagManager.vue'
 import { useNotification } from '~/composables/useNotification'
@@ -620,7 +620,7 @@ async function resetAllData() {
 }
 
 .settings-head {
-  @include glass;
+  @include surface-panel;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   width: 100%;
@@ -667,7 +667,7 @@ async function resetAllData() {
 }
 
 .settings-nav {
-  @include glass;
+  @include surface-panel;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -677,9 +677,6 @@ async function resetAllData() {
   padding: 5px;
   border: var(--ui-border);
   border-radius: var(--border-radius-pill);
-  background: var(--glass-surface);
-  backdrop-filter: var(--glass-strong-filter) !important;
-  -webkit-backdrop-filter: var(--glass-strong-filter) !important;
 
   @include mobile {
     justify-self: stretch;
@@ -753,7 +750,7 @@ async function resetAllData() {
 }
 
 .settings-group {
-  @include glass;
+  @include surface-panel;
   width: 100%;
   min-width: 0;
   max-width: 100%;

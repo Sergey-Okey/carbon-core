@@ -137,7 +137,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { Camera, ChevronLeft, LogOut, Settings, Trash2, UserCircle2 } from 'lucide-vue-next'
-import AppButton from '~/components/ui/AppButton.vue'
+import AppButton from '~/components/ui/primitives/AppButton.vue'
 import { useNotification } from '~/composables/useNotification'
 import { useAccessStore } from '~/stores/access.store'
 import { useAuthStore } from '~/stores/auth.store'
@@ -366,7 +366,7 @@ async function deleteAccount() {
 
 .profile-head,
 .profile-cell {
-  @include glass;
+  @include surface-panel;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
 }
@@ -500,13 +500,13 @@ async function deleteAccount() {
 
   input,
   textarea {
-    @include glass;
+    @include surface-panel;
     width: 100%;
     border: var(--ui-border);
     border-radius: var(--border-radius-md);
     padding: 12px 14px;
     color: var(--text);
-    background: var(--glass-surface);
+    background: var(--color-surface-1);
     font: inherit;
     resize: vertical;
   }
@@ -547,7 +547,7 @@ async function deleteAccount() {
     padding: 12px 14px;
     border: var(--ui-border);
     border-radius: var(--border-radius-md);
-    background: var(--glass-surface);
+    background: var(--color-surface-1);
   }
 
   span {

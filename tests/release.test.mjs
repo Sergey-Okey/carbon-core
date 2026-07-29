@@ -49,12 +49,16 @@ test('registration requires explicit legal consent', async () => {
   const authStorage = await read('server/utils/authStorage.ts')
   const privacy = await read('pages/privacy.vue')
   assert.match(authPanel, /form\.acceptedTerms/)
+  assert.match(authPanel, /AppCheckbox/)
   assert.match(registerApi, /acceptedTerms === true/)
   assert.match(oauthRoute, /acceptedTerms === 'true'/)
   assert.match(authStorage, /Terms consent is required/)
   assert.match(privacy, /Отзыв согласия/)
   assert.match(privacy, /Удаление данных/)
-  assert.match(authPanel, /register\(form\.email, form\.password, form\.name, 'cloud'/)
+  assert.match(
+    authPanel,
+    /register\(\s*form\.email,\s*form\.password,\s*form\.name,\s*'cloud'/
+  )
   assert.doesNotMatch(authPanel, /class="auth-mode"/)
   assert.doesNotMatch(authPanel, /class="auth-topbar"/)
   assert.match(authPanel, /Попробовать демо/)
@@ -168,11 +172,28 @@ test('strict typecheck inherits Nuxt module resolution', async () => {
 
 test('theme schedule uses the custom time picker', async () => {
   const settings = await read('components/settings/SettingsPanel.vue')
-  const timePicker = await read('components/ui/AppTimePicker.vue')
+  const timePicker = await read('components/ui/forms/AppTimePicker.vue')
 
   assert.match(settings, /<AppTimePicker/)
   assert.doesNotMatch(settings, /type="time"/)
   assert.match(timePicker, /class="time-popover"/)
+})
+
+test('ui primitives live in the design-system folder structure', async () => {
+  const expected = [
+    'components/ui/primitives/AppButton.vue',
+    'components/ui/primitives/AppInput.vue',
+    'components/ui/forms/AppFormField.vue',
+    'components/ui/overlays/AppModal.vue',
+    'components/ui/feedback/EmptyState.vue',
+    'components/ui/navigation/AppSegmentedControl.vue',
+  ]
+
+  for (const path of expected) {
+    await assert.doesNotReject(() => read(path))
+  }
+
+  await assert.rejects(() => read('components/ui/AppButton.vue'))
 })
 
 test('demo mode persists locally with a three hour TTL', async () => {
@@ -193,7 +214,7 @@ test('native app keeps launch animation and skips onboarding route', async () =>
 
   assert.match(app, /<AppLaunchScreen \/>/)
   assert.match(launch, /Capacitor\.isNativePlatform\(\)/)
-  assert.match(launch, /launch-pulse/)
+  assert.match(launch, /Skeleton/)
   assert.match(middleware, /isNative && to\.path === '\/onboarding'/)
 })
 

@@ -2,6 +2,7 @@
   <GlassCard
     :id="`node-${data.milestone.id}`"
     class="milestone-node"
+    variant="surface"
     :class="{
       completed: data.milestone.status === 'completed',
       expanded: isExpanded,
@@ -45,21 +46,34 @@
 
     <Transition name="expand">
       <div v-if="isExpanded" class="node-details">
-        <span class="detail-label">Описание</span>
-        <p v-if="data.milestone.description">
-          {{ data.milestone.description }}
-        </p>
-        <p v-else class="placeholder">Нет описания</p>
-        <div class="linked-tasks">
-          <span class="label">Привязанные задачи:</span>
-          <ul v-if="linkedTasks.length">
-            <li v-for="task in linkedTasks" :key="task.id" :class="{ done: task.done }">
-              {{ task.title }}
-              <span v-if="task.done">выполнена</span>
+        <section class="detail-section">
+          <h5 class="detail-label">Описание</h5>
+          <p v-if="data.milestone.description" class="detail-text">
+            {{ data.milestone.description }}
+          </p>
+          <p v-else class="detail-empty">Нет описания</p>
+        </section>
+
+        <section class="detail-section">
+          <div class="detail-heading">
+            <h5 class="detail-label">Задачи</h5>
+            <span v-if="linkedTasks.length" class="detail-count">
+              {{ completedLinkedTasks }}/{{ linkedTasks.length }}
+            </span>
+          </div>
+          <ul v-if="linkedTasks.length" class="task-list">
+            <li
+              v-for="(task, index) in linkedTasks"
+              :key="task.id"
+              class="task-row"
+              :class="{ done: task.done }"
+            >
+              <span class="task-index" aria-hidden="true">{{ index + 1 }}</span>
+              <span class="task-title">{{ task.title }}</span>
             </li>
           </ul>
-          <span v-else class="empty">Задачи не привязаны</span>
-        </div>
+          <p v-else class="detail-empty">Нет привязанных задач</p>
+        </section>
       </div>
     </Transition>
 
@@ -67,27 +81,79 @@
       :id="`target-top-${data.milestone.id}`"
       type="target"
       :position="Position.Top"
+      :connectable="true"
+      :connectable-start="true"
+      :connectable-end="true"
       class="handle handle-top handle-target"
       :style="targetHandleStyle"
+    />
+    <Handle
+      :id="`source-top-${data.milestone.id}`"
+      type="source"
+      :position="Position.Top"
+      :connectable="true"
+      :connectable-start="true"
+      :connectable-end="true"
+      class="handle handle-top handle-source"
+      :style="sourceHandleStyle"
     />
     <Handle
       :id="`target-left-${data.milestone.id}`"
       type="target"
       :position="Position.Left"
+      :connectable="true"
+      :connectable-start="true"
+      :connectable-end="true"
       class="handle handle-left handle-target"
+      :style="targetHandleStyle"
+    />
+    <Handle
+      :id="`source-left-${data.milestone.id}`"
+      type="source"
+      :position="Position.Left"
+      :connectable="true"
+      :connectable-start="true"
+      :connectable-end="true"
+      class="handle handle-left handle-source"
+      :style="sourceHandleStyle"
+    />
+    <Handle
+      :id="`target-right-${data.milestone.id}`"
+      type="target"
+      :position="Position.Right"
+      :connectable="true"
+      :connectable-start="true"
+      :connectable-end="true"
+      class="handle handle-right handle-target"
       :style="targetHandleStyle"
     />
     <Handle
       :id="`source-right-${data.milestone.id}`"
       type="source"
       :position="Position.Right"
+      :connectable="true"
+      :connectable-start="true"
+      :connectable-end="true"
       class="handle handle-right handle-source"
       :style="sourceHandleStyle"
+    />
+    <Handle
+      :id="`target-bottom-${data.milestone.id}`"
+      type="target"
+      :position="Position.Bottom"
+      :connectable="true"
+      :connectable-start="true"
+      :connectable-end="true"
+      class="handle handle-bottom handle-target"
+      :style="targetHandleStyle"
     />
     <Handle
       :id="`source-bottom-${data.milestone.id}`"
       type="source"
       :position="Position.Bottom"
+      :connectable="true"
+      :connectable-start="true"
+      :connectable-end="true"
       class="handle handle-bottom handle-source"
       :style="sourceHandleStyle"
     />
@@ -95,7 +161,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
 import {
   TrendingUp,
@@ -136,6 +202,7 @@ import type { Milestone, BranchNodeData } from '~/types/branch.types'
 const props = defineProps<{
   data: Extract<BranchNodeData, { type: 'milestone' }>
   selected?: boolean
+  forceExpanded?: boolean
 }>()
 const emit = defineEmits<{ (e: 'edit', milestone: Milestone): void }>()
 
@@ -158,7 +225,7 @@ const sourceHandleStyle = computed(() => ({
   borderColor: branchColor.value,
 }))
 const targetHandleStyle = computed(() => ({
-  background: 'var(--glass-surface)',
+  background: branchColor.value,
   borderColor: branchColor.value,
 }))
 
@@ -204,6 +271,10 @@ const linkedTasks = computed(() => {
   return tasksStore.tasks.filter((t) => milestone.value.taskIds.includes(t.id))
 })
 
+const completedLinkedTasks = computed(
+  () => linkedTasks.value.filter((t) => t.done).length
+)
+
 const indicatorTasks = computed(() => milestone.value.taskIds.length)
 const completedIndicatorTasks = computed(
   () => linkedTasks.value.filter((t) => t.done).length
@@ -222,8 +293,14 @@ function handleMouseLeave() {
   updateExpanded()
 }
 function updateExpanded() {
-  isExpanded.value = hovered.value || isPinned.value
+  isExpanded.value = !!props.forceExpanded || hovered.value || isPinned.value
 }
+
+watch(
+  () => props.forceExpanded,
+  () => updateExpanded(),
+  { immediate: true }
+)
 function handleClickOutside(event: MouseEvent) {
   const node = document.getElementById(`node-${milestone.value.id}`)
   if (node && !node.contains(event.target as Node)) {
@@ -244,15 +321,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   padding: 12px;
   position: relative;
   overflow: visible;
-  transition:
-    border-color var(--transition-standard),
-    background-color var(--transition-standard);
-  background: var(--glass-surface);
-  background-clip: padding-box;
-  border: var(--ui-border);
-  box-shadow: none;
-  backdrop-filter: var(--board-card-filter);
-  -webkit-backdrop-filter: var(--board-card-filter);
+  transition: border-color var(--transition-standard);
 
   .node-main {
     display: flex;
@@ -308,11 +377,12 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     background: var(--node-marker-color);
     border-radius: 50%;
     border: none;
+    opacity: 0.85;
     transition: opacity var(--transition-standard);
     z-index: 2;
   }
@@ -416,19 +486,19 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   }
 
   .node-details {
+    @include surface-panel;
     position: absolute;
     left: 0;
     top: calc(100% + 8px);
     z-index: 80;
+    display: flex;
+    flex-direction: column;
     width: 100%;
     box-sizing: border-box;
-    max-height: 220px;
+    max-height: 260px;
     padding: 12px;
     overflow-y: auto;
-    @include glass;
     border-radius: var(--border-radius-md);
-    isolation: isolate;
-    will-change: backdrop-filter;
     font-size: 0.85rem;
     word-wrap: break-word;
 
@@ -445,134 +515,197 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
       border-radius: var(--border-radius-sm);
     }
 
-    p {
-      margin: 0 0 8px;
-      color: var(--text);
+    .detail-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+
+      & + .detail-section {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--ui-border-color);
+      }
     }
+
+    .detail-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 1em;
+    }
+
     .detail-label {
-      display: block;
-      margin-bottom: 5px;
+      margin: 0;
       color: var(--dim);
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 700;
       letter-spacing: 0.06em;
+      line-height: 1.2;
       text-transform: uppercase;
     }
-    .placeholder {
-      color: var(--dim);
-      font-style: italic;
-    }
-    .linked-tasks {
-      .label {
-        display: block;
-        margin-bottom: 4px;
-        font-weight: 500;
-        color: var(--dim);
-      }
-      ul {
-        list-style: none;
-        padding-left: 12px;
-        margin: 0;
-      }
-      li {
-        color: var(--text);
-        font-size: 0.8rem;
-        margin-bottom: 2px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        &::before {
-          content: '•';
-          color: var(--text);
-          margin-right: 6px;
-        }
 
-        &.done {
+    .detail-count {
+      flex: 0 0 auto;
+      color: var(--dim);
+      font-size: 0.68rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+    }
+
+    .detail-text,
+    .detail-empty {
+      margin: 0;
+      padding: 0;
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+
+    .detail-text {
+      color: var(--text);
+      white-space: pre-wrap;
+    }
+
+    .detail-empty {
+      color: var(--dim);
+    }
+
+    .task-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .task-row {
+      display: grid;
+      grid-template-columns: 1.25rem minmax(0, 1fr);
+      column-gap: 8px;
+      align-items: baseline;
+      min-width: 0;
+      padding: 4px 0;
+      margin: 0;
+      background: none;
+
+      &.done {
+        .task-title {
           color: var(--dim);
           text-decoration: line-through;
         }
 
-        span {
-          flex: 0 0 auto;
+        .task-index {
           color: var(--success);
-          font-size: 0.68rem;
-          text-decoration: none;
         }
       }
-      .empty {
-        color: var(--dim);
-        font-size: 0.8rem;
+    }
+
+    .task-index {
+      grid-column: 1;
+      color: var(--dim);
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.4;
+      text-align: right;
+    }
+
+    .task-title {
+      grid-column: 2;
+      display: block;
+      min-width: 0;
+      color: var(--text);
+      font-size: 0.8rem;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+
+      &::first-letter {
+        text-transform: uppercase;
       }
     }
   }
 
-  /* Хендлы */
+  /* Circles aligned with Vue Flow defaults so edges dock to the tip */
   .handle {
-    transition:
-      transform var(--transition-standard),
-      outline-color var(--transition-standard);
-    background: var(--node-handle-color);
-    border: 1px solid color-mix(in srgb, var(--node-handle-color) 46%, var(--ui-border-color));
-    opacity: 1;
     z-index: 10;
+    width: 12px !important;
+    height: 12px !important;
+    min-width: 12px !important;
+    min-height: 12px !important;
+    border-radius: 50% !important;
+    opacity: 0.34;
+    border: 1.5px solid color-mix(in srgb, var(--node-handle-color) 70%, var(--ui-border-color));
+    background: var(--node-handle-color) !important;
+    box-shadow: none;
+    pointer-events: all !important;
+    cursor: crosshair;
+    transition:
+      opacity var(--transition-standard),
+      outline-color var(--transition-standard);
   }
 
   .handle-target {
-    background: var(--glass-surface);
-    border-color: var(--node-handle-color);
+    z-index: 10;
   }
 
   .handle-source {
-    background: var(--node-handle-color);
+    z-index: 11;
   }
 
+  /* While drawing a link, lift the receiving handle above the stacked source */
+  .handle.connectionindicator {
+    z-index: 12 !important;
+    opacity: 1;
+  }
+
+  /* Match @vue-flow/core handle-* transforms exactly */
   .handle-top {
-    width: 12px;
-    height: 5px;
-    border-radius: var(--border-radius-sm);
+    top: 0 !important;
     left: 50% !important;
-    transform: translateX(-50%) !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
   }
 
-  .handle-top.handle-target {
-    top: -3px !important;
-  }
-
-  .handle-left,
-  .handle-right,
   .handle-bottom {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    transform: none !important;
-  }
-
-  .handle-left.handle-target {
-    left: -5px !important;
-    top: 54px !important;
-  }
-
-  .handle-right.handle-source {
-    right: -5px !important;
-    top: 54px !important;
-  }
-
-  .handle-bottom.handle-source {
-    bottom: -5px !important;
+    bottom: 0 !important;
     left: 50% !important;
-    transform: translateX(-50%) !important;
+    top: auto !important;
+    right: auto !important;
+    transform: translate(-50%, 50%) !important;
+  }
+
+  .handle-left {
+    top: 50% !important;
+    left: 0 !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
+  }
+
+  .handle-right {
+    top: 50% !important;
+    right: 0 !important;
+    left: auto !important;
+    bottom: auto !important;
+    transform: translate(50%, -50%) !important;
   }
 
   &:hover .handle,
   &.selected .handle {
-    outline: 2px solid color-mix(in srgb, var(--node-handle-color) 35%, var(--ui-border-color));
-    outline-offset: 1px;
+    opacity: 0.95;
+    outline: 2px solid color-mix(in srgb, var(--node-handle-color) 30%, transparent);
+    outline-offset: 2px;
   }
 
+  .handle:hover,
   .handle:active {
-    outline: 2px solid var(--node-handle-color);
-    outline-offset: 1px;
+    opacity: 1;
+    outline: 2px solid color-mix(in srgb, var(--node-handle-color) 45%, transparent);
+    outline-offset: 2px;
   }
 }
 

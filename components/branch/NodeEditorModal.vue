@@ -156,11 +156,11 @@ import {
   WalletCards,
   Plus,
 } from 'lucide-vue-next'
-import AppButton from '~/components/ui/AppButton.vue'
-import AppCustomColorPicker from '~/components/ui/AppCustomColorPicker.vue'
-import AppFormField from '~/components/ui/AppFormField.vue'
-import AppInput from '~/components/ui/AppInput.vue'
-import AppModal from '~/components/ui/AppModal.vue'
+import AppButton from '~/components/ui/primitives/AppButton.vue'
+import AppCustomColorPicker from '~/components/ui/forms/AppCustomColorPicker.vue'
+import AppFormField from '~/components/ui/forms/AppFormField.vue'
+import AppInput from '~/components/ui/primitives/AppInput.vue'
+import AppModal from '~/components/ui/overlays/AppModal.vue'
 import { useConfirm } from '~/composables/useConfirm'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useBranchesStore } from '~/stores/branches.store'
