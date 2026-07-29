@@ -180,7 +180,7 @@ const emit = defineEmits<{
 
 const tagsStore = useTagsStore()
 const branchesStore = useBranchesStore()
-const { addNotification } = useNotification()
+const { success, warning } = useNotification()
 const editing = computed(() => !!props.task)
 const createBranch = ref(false)
 const taskTypeOptions: AppSelectOption[] = [
@@ -320,9 +320,9 @@ function createTag() {
   if (existingGlobal) {
     if (!form.tagIds.includes(existingGlobal.id)) {
       selectExistingTag(existingGlobal)
-      addNotification({ type: 'success', message: `Тег «${name}» добавлен` })
+      success(`Тег «${name}» добавлен`)
     } else {
-      addNotification({ type: 'warning', message: 'Этот тег уже выбран' })
+      warning('Этот тег уже выбран')
     }
     closeAddTagModal()
     return
@@ -338,7 +338,7 @@ function createTag() {
   form.tags.push({ ...tag, order: form.tags.length })
   form.tagIds.push(tag.id)
 
-  addNotification({ type: 'success', message: `Тег «${name}» создан` })
+  success(`Тег «${name}» создан`)
   closeAddTagModal()
 }
 
@@ -359,7 +359,7 @@ function deleteTag(tagId: string) {
   if (index === -1) return
   form.tags.splice(index, 1)
   form.tagIds = form.tagIds.filter((id) => id !== tagId)
-  addNotification({ type: 'success', message: 'Тег отвязан' })
+  success('Тег отвязан')
 }
 
 function getTaskTags(task: Task): TaskTag[] {

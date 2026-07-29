@@ -99,7 +99,7 @@ const uiStore = useUIStore()
 const settingsStore = useSettingsStore()
 const tasksStore = useTasksStore()
 const guidedTour = useGuidedTourStore()
-const { addNotification } = useNotification()
+const { success, warning } = useNotification()
 const { saveTask } = useTaskActions()
 const showTaskForm = ref(false)
 const activeTaskType = ref<TaskType>('TASK_DAY')
@@ -123,10 +123,7 @@ const {
 
 function openTaskCreator(type: TaskType) {
   if (!tasksStore.canAddTask(type)) {
-    addNotification({
-      type: 'warning',
-      message: 'Лимит задач на этот период исчерпан',
-    })
+    warning('Лимит задач на этот период исчерпан')
     return
   }
 

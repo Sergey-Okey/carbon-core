@@ -12,6 +12,7 @@ export const ACCESS_DATA_KEYS = [
   'carbon-tags',
   'carbon-ui',
   'carbon-settings',
+  'carbon-notifications',
 ] as const
 
 const defaultAccessState: AccessState = {

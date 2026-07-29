@@ -18,7 +18,7 @@ export function useTaskActions() {
   const tasksStore = useTasksStore()
   const branchesStore = useBranchesStore()
   const guidedTour = useGuidedTourStore()
-  const { addNotification } = useNotification()
+  const { success, warning } = useNotification()
   const { trigger } = useFeedback()
 
   function saveTask(taskData: TaskFormData, options: SaveTaskOptions = {}): boolean {
@@ -26,7 +26,7 @@ export function useTaskActions() {
 
     if (options.editingTask) {
       tasksStore.updateTask(options.editingTask.id, cleanTaskData)
-      addNotification({ type: 'success', message: 'Задача обновлена' })
+      success('Задача обновлена')
       return true
     }
 
@@ -38,26 +38,21 @@ export function useTaskActions() {
     } as Omit<Task, 'id' | 'createdAt' | 'done'>)
 
     if (!result) {
-      addNotification({ type: 'warning', message: 'Лимит задач на этот период исчерпан' })
+      warning('Лимит задач на этот период исчерпан')
       return false
     }
 
     if (createBranch && result.type !== 'HABIT') {
       branchesStore.addBranch(result.title, 'help-circle', result.description || '', [result.id])
-      addNotification({
-        type: 'success',
-        message: `Ветка «${result.title}» создана в доске`,
-      })
+      success(`Ветка «${result.title}» создана в доске`)
       return true
     }
 
-    addNotification({
-      type: 'success',
-      message:
-        result.type === 'HABIT'
-          ? `Привычка «${result.title}» добавлена`
-          : `«${result.title}» добавлено`,
-    })
+    success(
+      result.type === 'HABIT'
+        ? `Привычка «${result.title}» добавлена`
+        : `«${result.title}» добавлено`
+    )
     return true
   }
 

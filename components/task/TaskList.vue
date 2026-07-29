@@ -105,7 +105,7 @@ const emit = defineEmits<{
 }>()
 
 const tasksStore = useTasksStore()
-const { addNotification } = useNotification()
+const { warning, success } = useNotification()
 const { saveTask, toggleTask, removeTask } = useTaskActions()
 const showForm = ref(false)
 const editingTask = ref<Task | undefined>(undefined)
@@ -206,11 +206,10 @@ function handleAddClick() {
   }
 
   if (!tasksStore.canAddTask(type)) {
-    addNotification({
-      type: 'warning',
-      message: `Достигнут лимит: 3 активные задачи на ${props.title.toLowerCase()}. Завершите что-то, чтобы добавить новое.`,
-      duration: 5000,
-    })
+    warning(
+      `Достигнут лимит: 3 активные задачи на ${props.title.toLowerCase()}. Завершите что-то, чтобы добавить новое.`,
+      { duration: 5000 }
+    )
     return
   }
 
@@ -246,12 +245,11 @@ function handleRestore(taskId: string) {
       ? tasksStore.restoreTask(taskId)
       : tasksStore.reopenTask(taskId)
 
-  addNotification({
-    type: restored ? 'success' : 'warning',
-    message: restored
-      ? 'Задача восстановлена'
-      : 'Сначала освободите место: в горизонте уже 3 активные задачи.',
-  })
+  if (restored) {
+    success('Задача восстановлена')
+  } else {
+    warning('Сначала освободите место: в горизонте уже 3 активные задачи.')
+  }
 }
 
 function closeForm() {

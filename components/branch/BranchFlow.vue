@@ -143,7 +143,7 @@ const uiStore = useUIStore()
 const { fitView, getSelectedNodes } = useVueFlow()
 const { applyNetworkLayout } = useAutoLayout()
 const { confirm } = useConfirm()
-const { addNotification } = useNotification()
+const { success, info, warning, error: notifyError } = useNotification()
 const connectionSpacing = ref(56)
 const boardSearchQuery = ref('')
 const boardSearchActiveId = ref<string | null>(null)
@@ -406,7 +406,7 @@ function onConnect(connection: Connection) {
     normalizedConnection.targetHandle
   )
   if (!result.ok) {
-    addNotification({ type: 'warning', message: result.reason || 'Связь недоступна' })
+    warning(result.reason || 'Связь недоступна')
     return
   }
   saveToHistory()
@@ -429,7 +429,7 @@ function onEdgeUpdate({ edge, connection }: { edge: Edge; connection: Connection
   )
   if (!result.ok) {
     branchesStore.addEdge(edge)
-    addNotification({ type: 'warning', message: result.reason || 'Связь недоступна' })
+    warning(result.reason || 'Связь недоступна')
   }
   saveToHistory()
 }
@@ -575,7 +575,7 @@ function alignLayout() {
 
   syncNodesAndEdges()
   saveToHistory()
-  addNotification({ type: 'success', message: 'Доска выровнена' })
+  success('Доска выровнена')
 }
 
 function alignLayoutSmart() {
@@ -630,7 +630,7 @@ function alignLayoutSmart() {
       void fitBoardView()
     }, 460)
   })
-  addNotification({ type: 'success', message: 'Доска выровнена по связям' })
+  success('Доска выровнена по связям')
 }
 
 function getBoardSearchMatches(query: string) {
@@ -702,7 +702,7 @@ function onBoardSearchNext() {
   const matches = getBoardSearchMatches(boardSearchQuery.value)
   if (!matches.length) {
     if (boardSearchQuery.value.trim()) {
-      addNotification({ type: 'info', message: 'Ничего не найдено' })
+      info('Ничего не найдено')
     }
     return
   }
@@ -757,7 +757,7 @@ function addMilestoneToSelectedBranch(sourceNodeId?: string) {
   }
 
   if (!selectedNodeId.value) {
-    addNotification({ type: 'warning', message: 'Выберите ветку или этап' })
+    warning('Выберите ветку или этап')
     return
   }
 
@@ -922,11 +922,11 @@ async function fitBoardView() {
 
 async function exportBoardPng() {
   if (isMobile.value) {
-    addNotification({ type: 'error', message: 'Экспорт доступен на десктопе' })
+    notifyError('Экспорт доступен на десктопе')
     return
   }
   if (!branchesStore.branches.length) {
-    addNotification({ type: 'error', message: 'Доска пуста' })
+    notifyError('Доска пуста')
     return
   }
 
@@ -937,9 +937,9 @@ async function exportBoardPng() {
       tasks: tasksStore.tasks,
       getBranchTaskIds: (branchId) => branchesStore.getBranchTaskIds(branchId),
     })
-    addNotification({ type: 'success', message: 'Доска экспортирована в PNG' })
+    success('Доска экспортирована в PNG')
   } catch {
-    addNotification({ type: 'error', message: 'Не удалось экспортировать доску' })
+    notifyError('Не удалось экспортировать доску')
   }
 }
 

@@ -112,7 +112,7 @@ import {
   type FocusPresetKey,
 } from '~/utils/focusTimer'
 
-const { addNotification } = useNotification()
+const { push } = useNotification()
 const guidedTour = useGuidedTourStore()
 const { trigger } = useFeedback()
 
@@ -210,11 +210,10 @@ function tick() {
   stopTimer()
   completedSessions.value += 1
   persistSessions()
-  addNotification({
+  push({
     type: 'success',
     category: 'user',
-    important: true,
-    message: `${activePreset.value.label} завершен`,
+    message: `${activePreset.value.label} завершён`,
   })
   void trigger('focusComplete')
   persistState()

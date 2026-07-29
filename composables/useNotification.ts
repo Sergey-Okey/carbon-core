@@ -1,15 +1,21 @@
-import { ref } from 'vue'
-import { useSettingsStore } from '~/stores/settings.store'
+import { storeToRefs } from 'pinia'
+import { useNotificationsStore } from '~/stores/notifications.store'
+import { useFeedback } from '~/composables/useFeedback'
+import type {
+  NotificationAction,
+  NotificationCategory,
+  NotificationType,
+  NotifyOptions,
+} from '~/types/notification.types'
 
-export type NotificationType = 'info' | 'success' | 'warning' | 'error'
-export type NotificationCategory = 'system' | 'user'
+export type {
+  NotificationType,
+  NotificationCategory,
+  NotificationAction,
+} from '~/types/notification.types'
 
-export interface NotificationAction {
-  label: string
-  handler: () => void
-}
-
-export interface Notification {
+/** @deprecated call-site compatibility shape */
+export type Notification = {
   id: string
   type: NotificationType
   category: NotificationCategory
@@ -20,13 +26,23 @@ export interface Notification {
   createdAt?: string
 }
 
-const notifications = ref<Notification[]>([])
-const notificationHistory = ref<Notification[]>([])
-
+/**
+ * Facade over notifications.store.
+ * Prefer success/info/warning/error/toast/push in new code.
+ */
 export function useNotification() {
-  const settingsStore = useSettingsStore()
+  const store = useNotificationsStore()
   const { trigger } = useFeedback()
+  const { toasts, inbox, unreadCount, inboxCount } = storeToRefs(store)
 
+  function buzz(type: NotificationType, silent?: boolean) {
+    if (silent) return
+    if (type === 'error' || type === 'warning') {
+      void trigger(type === 'error' ? 'error' : 'warning')
+    }
+  }
+
+  /** Legacy entry — maps to toast and/or inbox */
   function addNotification(
     notification: Omit<Notification, 'id' | 'createdAt' | 'category'> & {
       category?: NotificationCategory
@@ -34,76 +50,75 @@ export function useNotification() {
       history?: boolean
       important?: boolean
       source?: 'platform' | 'app'
+      persist?: boolean
     }
   ) {
-    if (!settingsStore.notificationsEnabled) return
-
-    const isImportant =
-      notification.important ?? ['warning', 'error'].includes(notification.type)
-
+    const type = notification.type
+    const message = notification.message
     const category = notification.category ?? 'system'
-    const isRecentDuplicate = notificationHistory.value.some(
-      (item) =>
-        item.message === notification.message &&
-        item.category === category &&
-        item.createdAt &&
-        Date.now() - new Date(item.createdAt).getTime() < 5000
-    )
 
-    if (isRecentDuplicate) return
+    const forcePersist =
+      notification.persist === true ||
+      notification.history === true ||
+      notification.source === 'platform' ||
+      notification.important === true
 
-    const id = Date.now().toString() + Math.random().toString(36).substr(2, 5)
-    const newNotification: Notification = {
-      ...notification,
-      id,
-      category,
-      createdAt: new Date().toISOString(),
-      duration: notification.duration ?? settingsStore.toastDuration * 1000,
+    const persist =
+      forcePersist ||
+      (notification.persist !== false && (type === 'warning' || type === 'error'))
+
+    if (persist) {
+      const id = store.push({
+        type,
+        message,
+        category,
+        duration: notification.duration,
+        action: notification.action,
+        silent: notification.silent,
+        toast: !notification.silent,
+      })
+      buzz(type, notification.silent)
+      return id
     }
 
-    const shouldSaveToHistory =
-      notification.source === 'platform' && (notification.history ?? isImportant)
-
-    if (shouldSaveToHistory) {
-      notificationHistory.value.unshift(newNotification)
-      notificationHistory.value = notificationHistory.value.slice(0, 30)
-    }
-
-    if (!notification.silent) {
-      notifications.value.push(newNotification)
-    }
-
-    if (!notification.silent && ['warning', 'error'].includes(notification.type)) {
-      void trigger(notification.type === 'error' ? 'error' : 'warning')
-    }
-
-    if (!notification.silent && (newNotification.duration ?? 0) > 0) {
-      setTimeout(() => {
-        removeNotification(id)
-      }, newNotification.duration ?? 0)
-    }
+    if (notification.silent) return null
+    const id = store.toast({
+      type,
+      message,
+      duration: notification.duration,
+      action: notification.action,
+    })
+    buzz(type)
+    return id
   }
 
-  function removeNotification(id: string) {
-    const index = notifications.value.findIndex((n) => n.id === id)
-    if (index !== -1) notifications.value.splice(index, 1)
-  }
-
-  function removeHistoryItem(id: string) {
-    const index = notificationHistory.value.findIndex((n) => n.id === id)
-    if (index !== -1) notificationHistory.value.splice(index, 1)
-  }
-
-  function clearNotificationHistory() {
-    notificationHistory.value = []
+  function withBuzz<T extends NotificationType>(
+    type: T,
+    fn: (message: string, opts?: NotifyOptions) => string | null
+  ) {
+    return (message: string, opts?: NotifyOptions) => {
+      const id = fn(message, opts)
+      buzz(type, opts?.silent)
+      return id
+    }
   }
 
   return {
-    notifications,
-    notificationHistory,
+    notifications: toasts,
+    notificationHistory: inbox,
+    unreadCount,
+    inboxCount,
     addNotification,
-    removeNotification,
-    removeHistoryItem,
-    clearNotificationHistory,
+    removeNotification: store.removeToast,
+    removeHistoryItem: store.removeInboxItem,
+    clearNotificationHistory: store.clearInbox,
+    markAllRead: store.markAllRead,
+    markRead: store.markRead,
+    toast: store.toast,
+    push: store.push,
+    success: withBuzz('success', store.success),
+    info: withBuzz('info', store.info),
+    warning: withBuzz('warning', store.warning),
+    error: withBuzz('error', store.error),
   }
 }

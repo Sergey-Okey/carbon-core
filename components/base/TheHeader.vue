@@ -84,7 +84,7 @@ import AppButton from '~/components/ui/primitives/AppButton.vue'
 import HeaderBrand from '~/components/base/header/HeaderBrand.vue'
 import HeaderQuickActions from '~/components/base/header/HeaderQuickActions.vue'
 import HeaderUserMenu from '~/components/base/header/HeaderUserMenu.vue'
-import NotificationCenter from '~/components/base/NotificationCenter.vue'
+import NotificationCenter from '~/components/base/header/NotificationCenter.vue'
 import { useNotification } from '~/composables/useNotification'
 import { useAuthStore } from '~/stores/auth.store'
 import { useUserStore } from '~/stores/user.store'
@@ -107,7 +107,7 @@ const uiStore = useUIStore()
 const guidedTour = useGuidedTourStore()
 const accessStore = useAccessStore()
 const route = useRoute()
-const { addNotification } = useNotification()
+const { info } = useNotification()
 const isProfileModalOpen = ref(false)
 const isFocusWidgetPanelOpen = ref(false)
 const headerRoot = ref<HTMLElement | null>(null)
@@ -199,7 +199,7 @@ function toggleFocusWidgetPanel() {
 function logout() {
   isProfileModalOpen.value = false
   authStore.logout()
-  addNotification({ type: 'info', message: 'Вы вышли из аккаунта' })
+  info('Вы вышли из аккаунта')
   navigateTo('/auth')
 }
 

@@ -139,7 +139,7 @@ const emit = defineEmits<{
 
 const tagsStore = useTagsStore()
 const branchesStore = useBranchesStore()
-const { addNotification } = useNotification()
+const { success, info } = useNotification()
 const { confirm } = useConfirm()
 
 const taskTags = computed(() => {
@@ -258,13 +258,11 @@ const restoreButtonTitle = computed(() =>
 function handleToggle() {
   if (props.disableToggle || (props.task.type !== 'HABIT' && isCompleted.value)) return
 
-  addNotification({
-    type: 'success',
-    message:
-      props.task.type === 'HABIT'
-        ? `Привычка «${props.task.title}» выполнена`
-        : `Задача «${props.task.title}» выполнена`,
-  })
+  success(
+    props.task.type === 'HABIT'
+      ? `Привычка «${props.task.title}» выполнена`
+      : `Задача «${props.task.title}» выполнена`
+  )
 
   emit('toggle', props.task.id)
 }
@@ -280,10 +278,7 @@ async function handleDelete() {
   const ok = await confirm(`Удалить задачу «${props.task.title}»?`)
   if (!ok) return
 
-  addNotification({
-    type: 'info',
-    message: `«${props.task.title}» удалено`,
-  })
+  info(`«${props.task.title}» удалено`)
 
   emit('delete', props.task.id)
 }

@@ -386,7 +386,7 @@ type SettingsTab = 'appearance' | 'focus' | 'board' | 'tags' | 'data'
 const settingsStore = useSettingsStore()
 const accessStore = useAccessStore()
 const { confirm } = useConfirm()
-const { addNotification } = useNotification()
+const { success, warning, error: notifyError } = useNotification()
 const activeTab = ref<SettingsTab>('appearance')
 
 const tabs = [
@@ -520,13 +520,13 @@ function resetAppearance() {
   settingsStore.setAppBackgroundMode('default')
   settingsStore.setCustomBackgroundImage('')
   settingsStore.setBackgroundIntensity('normal')
-  addNotification({ type: 'success', message: 'Оформление сброшено' })
+  success('Оформление сброшено')
 }
 
 function createBackup() {
   saveAutoBackup()
   settingsStore.recordBackup()
-  addNotification({ type: 'success', message: 'Резервная копия создана' })
+  success('Резервная копия создана')
 }
 
 function exportData() {
@@ -539,10 +539,10 @@ function exportData() {
     anchor.download = `cof-backup-${new Date().toISOString().split('T')[0]}.json`
     anchor.click()
     URL.revokeObjectURL(url)
-    addNotification({ type: 'success', message: 'Данные экспортированы' })
-  } catch (error) {
-    console.error(error)
-    addNotification({ type: 'error', message: 'Ошибка экспорта' })
+    success('Данные экспортированы')
+  } catch (err) {
+    console.error(err)
+    notifyError('Ошибка экспорта')
   }
 }
 
@@ -558,11 +558,11 @@ function importData() {
       const payload = JSON.parse(await file.text())
       const restored = restoreBackupPayload(payload)
       if (!restored) throw new Error('Restore failed')
-      addNotification({ type: 'success', message: 'Данные импортированы. Перезагрузка...' })
+      success('Данные импортированы. Перезагрузка...')
       setTimeout(() => window.location.reload(), 1000)
     } catch (err) {
       console.error(err)
-      addNotification({ type: 'error', message: 'Ошибка импорта' })
+      notifyError('Ошибка импорта')
     }
   }
   input.click()
@@ -572,16 +572,16 @@ function restoreAutoBackup() {
   try {
     const backup = readAutoBackup()
     if (!backup) {
-      addNotification({ type: 'warning', message: 'Нет сохраненной копии' })
+      warning('Нет сохранённой копии')
       return
     }
     const restored = restoreBackupPayload(backup)
     if (!restored) throw new Error('Restore failed')
-    addNotification({ type: 'success', message: 'Данные восстановлены. Перезагрузка...' })
+    success('Данные восстановлены. Перезагрузка...')
     setTimeout(() => window.location.reload(), 1000)
   } catch (err) {
     console.error(err)
-    addNotification({ type: 'error', message: 'Ошибка восстановления' })
+    notifyError('Ошибка восстановления')
   }
 }
 
@@ -598,7 +598,7 @@ async function resetAllData() {
     localStorage.clear()
     if (accessState) localStorage.setItem(ACCESS_STORAGE_KEY, accessState)
   }
-  addNotification({ type: 'success', message: 'Данные сброшены. Перезагрузка...' })
+  success('Данные сброшены. Перезагрузка...')
   setTimeout(() => window.location.reload(), 1000)
 }
 </script>

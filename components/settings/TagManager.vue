@@ -81,7 +81,7 @@ import type { Tag } from '~/types/tag.types'
 const tagsStore = useTagsStore()
 const tasksStore = useTasksStore()
 const { confirm } = useConfirm()
-const { addNotification } = useNotification()
+const { success, warning } = useNotification()
 
 const newTagName = ref('')
 const newTagColor = ref('var(--accent)')
@@ -97,7 +97,7 @@ function createTag() {
 
   const existing = tagsStore.findTagByName(name)
   if (existing) {
-    addNotification({ type: 'warning', message: 'Такой тег уже существует' })
+    warning('Такой тег уже существует')
     return
   }
 
@@ -109,7 +109,7 @@ function createTag() {
   })
   newTagName.value = ''
   newTagColor.value = 'var(--accent)'
-  addNotification({ type: 'success', message: `Тег «${name}» создан` })
+  success(`Тег «${name}» создан`)
 }
 
 function startEdit(tag: Tag) {
@@ -128,7 +128,7 @@ function saveEdit(id: string) {
 
   tagsStore.updateTag(id, { name, color: draftColor.value }, tasksStore.tasks)
   editingId.value = null
-  addNotification({ type: 'success', message: 'Тег обновлён' })
+  success('Тег обновлён')
 }
 
 async function removeTag(id: string, name: string) {
@@ -139,7 +139,7 @@ async function removeTag(id: string, name: string) {
   if (!(await confirm(message))) return
 
   tagsStore.deleteTag(id, tasksStore.tasks)
-  addNotification({ type: 'success', message: 'Тег удалён' })
+  success('Тег удалён')
 }
 
 function usageCount(id: string) {
