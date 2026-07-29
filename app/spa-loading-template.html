@@ -1,0 +1,158 @@
+<style>
+  html, body {
+    margin: 0;
+    background: #000;
+  }
+  #cof-spa-boot {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: #000;
+  }
+  #cof-spa-boot canvas {
+    display: block;
+  }
+</style>
+<div id="cof-spa-boot" role="status" aria-label="Загрузка">
+  <canvas id="cof-spa-sphere" width="376" height="376" style="width:188px;height:188px"></canvas>
+</div>
+<script>
+(function () {
+  var canvas = document.getElementById('cof-spa-sphere')
+  if (!canvas || !canvas.getContext) return
+  var ctx = canvas.getContext('2d')
+  var dpr = Math.min(window.devicePixelRatio || 1, 2)
+  var size = 188
+  canvas.width = Math.round(size * dpr)
+  canvas.height = Math.round(size * dpr)
+
+  function rand(min, max) {
+    return min + Math.random() * (max - min)
+  }
+  function easeInOut(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+  }
+  function bootForm(localT) {
+    if (localT < 0.18) return 0
+    if (localT < 0.48) return easeInOut((localT - 0.18) / 0.3)
+    return 1
+  }
+  function scramble(p) {
+    var theta = Math.random() * Math.PI * 2
+    var r = Math.sqrt(Math.random()) * 1.1
+    p.cx = Math.cos(theta) * r
+    p.cy = Math.sin(theta) * r
+    p.cz = rand(-0.35, 0.35) * (1 - r * 0.25)
+  }
+
+  var particles = []
+  var rings = 24
+  var segments = 36
+  for (var i = 0; i <= rings; i++) {
+    var lat = (i / rings) * Math.PI - Math.PI / 2
+    var cosLat = Math.cos(lat)
+    var sinLat = Math.sin(lat)
+    var ringSegments = Math.max(6, Math.round(segments * Math.max(0.18, Math.abs(cosLat))))
+    for (var j = 0; j < ringSegments; j++) {
+      var lon = (j / ringSegments) * Math.PI * 2
+      var p = {
+        sx: cosLat * Math.cos(lon),
+        sy: sinLat,
+        sz: cosLat * Math.sin(lon),
+        cx: 0,
+        cy: 0,
+        cz: 0,
+        delay: Math.random() * 0.18,
+        drift: rand(0.6, 1.8),
+        spin: rand(-1.2, 1.2),
+      }
+      scramble(p)
+      particles.push(p)
+    }
+  }
+
+  var time = 0
+  var last = 0
+  var angle = 0
+  var cycle = 4.2
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  function frame(ts) {
+    if (!canvas.isConnected) return
+    var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0
+    last = ts
+    if (!reduced) {
+      time += dt
+      angle += 0.35 * dt
+    }
+
+    var w = canvas.width
+    var h = canvas.height
+    var cx = w / 2
+    var cy = h / 2
+    var radius = w * 0.47
+    var focal = 2.6
+    var tilt = 0.18
+    var cosA = Math.cos(angle)
+    var sinA = Math.sin(angle)
+    var cosT = Math.cos(tilt)
+    var sinT = Math.sin(tilt)
+
+    ctx.clearRect(0, 0, w, h)
+    ctx.fillStyle = '#fff'
+    var baseDot = Math.max(1.05 * dpr, w * 0.007)
+
+    for (var k = 0; k < particles.length; k++) {
+      var pt = particles[k]
+      var local = Math.min(1, time / cycle + pt.delay * 0.35)
+      var form = reduced ? 1 : bootForm(local)
+      var driftAmp = (1 - form) * 0.1
+      var driftT = time * pt.drift
+      var dx = Math.sin(driftT + pt.spin * 3) * driftAmp
+      var dy = Math.cos(driftT * 0.85 + pt.delay * 8) * driftAmp
+      var dz = Math.sin(driftT * 1.1 - pt.spin) * driftAmp * 0.6
+
+      var x = pt.cx + (pt.sx - pt.cx) * form + dx
+      var y = pt.cy + (pt.sy - pt.cy) * form + dy
+      var z = pt.cz + (pt.sz - pt.cz) * form + dz
+
+      if (form < 0.85) {
+        var flat = Math.hypot(x, y)
+        var maxR = 1.12
+        if (flat > maxR) {
+          x = (x / flat) * maxR
+          y = (y / flat) * maxR
+        }
+      }
+
+      if (form > 0.2) {
+        var mix = (form - 0.2) / 0.8
+        var rx = x * cosA - z * sinA
+        var rz = x * sinA + z * cosA
+        x = x + (rx - x) * mix
+        z = z + (rz - z) * mix
+      }
+
+      var y2 = y * cosT - z * sinT
+      var z2 = y * sinT + z * cosT
+      var depth = (z2 + 1.4) * 0.4
+      var scale = focal / (focal + z2)
+      var sx = cx + x * radius * scale
+      var sy = cy + y2 * radius * scale
+      var alpha = 0.28 + Math.min(1, Math.max(0, depth)) * 0.72
+      var r = baseDot * (0.65 + Math.min(1, Math.max(0, depth)) * 0.55)
+
+      ctx.globalAlpha = alpha
+      ctx.beginPath()
+      ctx.arc(sx, sy, r, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    ctx.globalAlpha = 1
+    window.__cofSpaRaf = requestAnimationFrame(frame)
+  }
+
+  window.__cofSpaRaf = requestAnimationFrame(frame)
+})()
+</script>

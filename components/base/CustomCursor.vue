@@ -1,7 +1,16 @@
 <template>
   <Teleport to="body">
-    <div ref="cursorRef" class="custom-cursor" aria-hidden="true">
-      <div ref="visualRef" class="cursor-visual" data-state="default">
+    <div
+      ref="cursorRef"
+      class="custom-cursor"
+      aria-hidden="true"
+      :class="{ visible: isVisible }"
+    >
+      <div
+        class="cursor-visual"
+        :class="{ pressed }"
+        :data-state="cursorState"
+      >
         <svg viewBox="0 0 32 38" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M5.6 4.8C4.35 3.95 2.8 5 3.1 6.45L7.65 31.9C7.95 33.55 10.1 33.9 10.95 32.45L16.95 23.2C17.55 22.3 18.5 21.8 19.6 21.75L27.65 21.6C29.35 21.55 29.9 19.35 28.5 18.4L5.6 4.8Z"
@@ -15,9 +24,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 
-const cursorRef = ref<HTMLElement | null>(null)
-const visualRef = ref<HTMLElement | null>(null)
-
 type CursorState =
   | 'default'
   | 'pointer'
@@ -26,6 +32,7 @@ type CursorState =
   | 'grabbing'
   | 'precision'
   | 'disabled'
+
 const validStates = new Set<CursorState>([
   'default',
   'pointer',
@@ -36,115 +43,364 @@ const validStates = new Set<CursorState>([
   'disabled',
 ])
 
+const cursorRef = ref<HTMLElement | null>(null)
+const isVisible = ref(false)
+const pressed = ref(false)
+const cursorState = ref<CursorState>('default')
+
 let x = 0
 let y = 0
-let pressed = false
 let pressedState: CursorState | null = null
+let hoverEl: Element | null = null
 let rafId = 0
+let active = false
+/** Native scrollbar drag: browser rarely sends mousemove — track the thumb instead */
+let scrollbarSession: {
+  el: HTMLElement
+  axis: 'x' | 'y'
+  isViewport: boolean
+} | null = null
+let thumbRafId = 0
+let mediaQuery: MediaQueryList | null = null
 
-function elementAtPointer() {
-  return document.elementFromPoint(x, y)
+function finePointerOk() {
+  return window.matchMedia('(hover: hover) and (pointer: fine)').matches
+}
+
+function setEnabledClass(on: boolean) {
+  document.documentElement.classList.toggle('custom-cursor-enabled', on)
+}
+
+function isScrollableY(node: HTMLElement) {
+  const oy = getComputedStyle(node).overflowY
+  return (
+    node.scrollHeight > node.clientHeight + 1 &&
+    (oy === 'auto' || oy === 'scroll' || oy === 'overlay')
+  )
+}
+
+function isScrollableX(node: HTMLElement) {
+  const ox = getComputedStyle(node).overflowX
+  return (
+    node.scrollWidth > node.clientWidth + 1 &&
+    (ox === 'auto' || ox === 'scroll' || ox === 'overlay')
+  )
+}
+
+function resolveScrollbarSession(
+  event: PointerEvent | MouseEvent
+): { el: HTMLElement; axis: 'x' | 'y'; isViewport: boolean } | null {
+  const doc = document.documentElement
+  const viewportY =
+    doc.scrollHeight > window.innerHeight &&
+    event.clientX >= doc.clientWidth
+  const viewportX =
+    doc.scrollWidth > window.innerWidth &&
+    event.clientY >= doc.clientHeight
+
+  if (viewportY) {
+    return { el: doc, axis: 'y', isViewport: true }
+  }
+  if (viewportX) {
+    return { el: doc, axis: 'x', isViewport: true }
+  }
+
+  let node: HTMLElement | null =
+    event.target instanceof HTMLElement ? event.target : null
+
+  while (node) {
+    const rect = node.getBoundingClientRect()
+    const localX = event.clientX - rect.left
+    const localY = event.clientY - rect.top
+    const scrollY = isScrollableY(node)
+    const scrollX = isScrollableX(node)
+
+    if (scrollY && localX >= node.clientWidth) {
+      return { el: node, axis: 'y', isViewport: false }
+    }
+    if (scrollX && localY >= node.clientHeight) {
+      return { el: node, axis: 'x', isViewport: false }
+    }
+
+    // offset trick when target is the scrollable itself
+    if (
+      node === event.target &&
+      (event.offsetX >= node.clientWidth || event.offsetY >= node.clientHeight)
+    ) {
+      if (scrollY && event.offsetX >= node.clientWidth) {
+        return { el: node, axis: 'y', isViewport: false }
+      }
+      if (scrollX && event.offsetY >= node.clientHeight) {
+        return { el: node, axis: 'x', isViewport: false }
+      }
+    }
+
+    node = node.parentElement
+  }
+
+  return null
+}
+
+/** Map current scroll → scrollbar thumb center in viewport coords */
+function thumbCenter(
+  el: HTMLElement,
+  axis: 'x' | 'y',
+  isViewport: boolean
+): { x: number; y: number } {
+  if (isViewport) {
+    if (axis === 'y') {
+      const clientH = document.documentElement.clientHeight
+      const scrollH = document.documentElement.scrollHeight
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+      const maxScroll = Math.max(1, scrollH - clientH)
+      const track = clientH
+      const thumb = Math.max(24, (clientH / scrollH) * track)
+      const travel = Math.max(0, track - thumb)
+      const sb = Math.max(8, window.innerWidth - document.documentElement.clientWidth)
+      return {
+        x: document.documentElement.clientWidth + sb / 2,
+        y: (scrollTop / maxScroll) * travel + thumb / 2,
+      }
+    }
+    const clientW = document.documentElement.clientWidth
+    const scrollW = document.documentElement.scrollWidth
+    const scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft
+    const maxScroll = Math.max(1, scrollW - clientW)
+    const track = clientW
+    const thumb = Math.max(24, (clientW / scrollW) * track)
+    const travel = Math.max(0, track - thumb)
+    const sb = Math.max(8, window.innerHeight - document.documentElement.clientHeight)
+    return {
+      x: (scrollLeft / maxScroll) * travel + thumb / 2,
+      y: document.documentElement.clientHeight + sb / 2,
+    }
+  }
+
+  const rect = el.getBoundingClientRect()
+  if (axis === 'y') {
+    const maxScroll = Math.max(1, el.scrollHeight - el.clientHeight)
+    const track = el.clientHeight
+    const thumb = Math.max(24, (el.clientHeight / el.scrollHeight) * track)
+    const travel = Math.max(0, track - thumb)
+    const sb = Math.max(8, el.offsetWidth - el.clientWidth)
+    return {
+      x: rect.left + el.clientWidth + sb / 2,
+      y: rect.top + (el.scrollTop / maxScroll) * travel + thumb / 2,
+    }
+  }
+
+  const maxScroll = Math.max(1, el.scrollWidth - el.clientWidth)
+  const track = el.clientWidth
+  const thumb = Math.max(24, (el.clientWidth / el.scrollWidth) * track)
+  const travel = Math.max(0, track - thumb)
+  const sb = Math.max(8, el.offsetHeight - el.clientHeight)
+  return {
+    x: rect.left + (el.scrollLeft / maxScroll) * travel + thumb / 2,
+    y: rect.top + el.clientHeight + sb / 2,
+  }
+}
+
+function syncCursorToThumb() {
+  if (!scrollbarSession || !active) return
+  const point = thumbCenter(
+    scrollbarSession.el,
+    scrollbarSession.axis,
+    scrollbarSession.isViewport
+  )
+  x = point.x
+  y = point.y
+  isVisible.value = true
+  scheduleRender()
+}
+
+function startThumbLoop() {
+  stopThumbLoop()
+  const tick = () => {
+    if (!scrollbarSession) {
+      thumbRafId = 0
+      return
+    }
+    syncCursorToThumb()
+    thumbRafId = window.requestAnimationFrame(tick)
+  }
+  thumbRafId = window.requestAnimationFrame(tick)
+}
+
+function stopThumbLoop() {
+  if (thumbRafId) {
+    window.cancelAnimationFrame(thumbRafId)
+    thumbRafId = 0
+  }
 }
 
 function stateFor(element: Element | null): CursorState {
+  if (scrollbarSession) return 'grabbing'
   if (pressedState) return pressedState === 'grab' ? 'grabbing' : pressedState
   if (!element) return 'default'
 
   const explicit = element.closest<HTMLElement>('[data-cursor]')?.dataset
-    .cursor as CursorState
-  if (validStates.has(explicit))
-    return pressed && explicit === 'grab' ? 'grabbing' : explicit
+    .cursor as CursorState | undefined
+  if (explicit && validStates.has(explicit)) {
+    return pressed.value && explicit === 'grab' ? 'grabbing' : explicit
+  }
   if (element.closest(':disabled, [aria-disabled="true"]')) return 'disabled'
   if (
     element.closest(
-      'textarea, [contenteditable="true"], input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"])'
+      'textarea, [contenteditable="true"], input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"])'
     )
-  )
+  ) {
     return 'text'
+  }
   if (element.closest('.vue-flow__handle, .palette-wheel')) return 'precision'
   if (
     element.closest(
-      'button, a, summary, label, select, [role="button"], [role="link"], [role="tab"], [role="menuitem"]'
+      'button, a, summary, label, select, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="option"], [role="switch"]'
     )
-  )
+  ) {
     return 'pointer'
-  if (element.closest('.vue-flow__node, .vue-flow__pane'))
-    return pressed ? 'grabbing' : 'grab'
+  }
+  if (element.closest('.vue-flow__node, .vue-flow__pane')) {
+    return pressed.value ? 'grabbing' : 'grab'
+  }
   return 'default'
 }
 
 function render() {
+  if (!active) return
   const cursor = cursorRef.value
-  const visual = visualRef.value
-  if (!cursor || !visual) return
+  if (!cursor) return
+
   cursor.style.transform = `translate3d(${x}px, ${y}px, 0)`
-  visual.dataset.state = stateFor(elementAtPointer())
+
+  if (scrollbarSession) {
+    cursorState.value = 'grabbing'
+    return
+  }
+
+  const el =
+    hoverEl && document.contains(hoverEl)
+      ? hoverEl
+      : document.elementFromPoint(x, y)
+  cursorState.value = stateFor(el)
 }
 
 function scheduleRender() {
-  if (rafId) window.cancelAnimationFrame(rafId)
+  if (rafId) return
   rafId = window.requestAnimationFrame(() => {
-    render()
     rafId = 0
+    render()
   })
 }
 
-function updatePosition(clientX: number, clientY: number) {
+function showAt(clientX: number, clientY: number, target?: EventTarget | null) {
+  if (!active) return
+  // While tracking thumb, ignore sparse mouse coords (often stuck at press point)
+  if (scrollbarSession) return
   x = clientX
   y = clientY
-  cursorRef.value?.classList.add('visible')
+  if (target instanceof Element) hoverEl = target
+  isVisible.value = true
   scheduleRender()
 }
 
 function onPointerMove(event: PointerEvent) {
-  if (event.pointerType !== 'mouse') return
-  updatePosition(event.clientX, event.clientY)
+  if (!active || event.pointerType !== 'mouse') return
+  showAt(event.clientX, event.clientY, event.target)
+}
+
+function onMouseMove(event: MouseEvent) {
+  if (!active) return
+  showAt(event.clientX, event.clientY, event.target)
 }
 
 function onPointerDown(event: PointerEvent) {
-  if (event.pointerType !== 'mouse') return
-  updatePosition(event.clientX, event.clientY)
-  pressedState = stateFor(elementAtPointer())
-  pressed = true
-  visualRef.value?.classList.add('pressed')
-  scheduleRender()
-}
+  if (!active || event.pointerType !== 'mouse') return
 
-function releasePointer(event?: PointerEvent) {
-  if (event?.pointerType && event.pointerType !== 'mouse') return
-  if (event) {
-    updatePosition(event.clientX, event.clientY)
+  const session = resolveScrollbarSession(event)
+  if (session) {
+    scrollbarSession = session
+    pressed.value = true
+    pressedState = 'grab'
+    // Start at click, then lock to thumb while dragging
+    x = event.clientX
+    y = event.clientY
+    isVisible.value = true
+    scheduleRender()
+    startThumbLoop()
+    return
   }
-  pressed = false
-  pressedState = null
-  visualRef.value?.classList.remove('pressed')
+
+  showAt(event.clientX, event.clientY, event.target)
+  pressedState = stateFor(
+    event.target instanceof Element ? event.target : document.elementFromPoint(x, y)
+  )
+  pressed.value = true
   scheduleRender()
 }
 
-function releaseDrag() {
-  releasePointer()
+function endScrollbarSession() {
+  scrollbarSession = null
+  stopThumbLoop()
+}
+
+function onPointerUp(event?: PointerEvent | MouseEvent) {
+  if (event && 'pointerType' in event && event.pointerType && event.pointerType !== 'mouse') {
+    return
+  }
+
+  const wasScrollbar = !!scrollbarSession
+  endScrollbarSession()
+  pressed.value = false
+  pressedState = null
+
+  if (!active) return
+  if (event && !wasScrollbar) {
+    showAt(event.clientX, event.clientY, event.target)
+  } else if (event && wasScrollbar) {
+    // After scrollbar: resume from event if valid, else keep thumb spot
+    x = event.clientX
+    y = event.clientY
+    isVisible.value = true
+    scheduleRender()
+  } else {
+    scheduleRender()
+  }
+}
+
+function onScroll() {
+  if (!active) return
+  if (scrollbarSession) {
+    syncCursorToThumb()
+    return
+  }
+  hoverEl = document.elementFromPoint(x, y)
+  scheduleRender()
 }
 
 function hideCursor() {
-  pressed = false
+  if (scrollbarSession) return
+  pressed.value = false
   pressedState = null
-  cursorRef.value?.classList.remove('visible')
-  visualRef.value?.classList.remove('pressed')
+  isVisible.value = false
 }
 
-function handleScroll() {
-  scheduleRender()
+function onBlur() {
+  endScrollbarSession()
+  pressed.value = false
+  pressedState = null
+  isVisible.value = false
 }
 
-function releaseWithoutMoving() {
-  releasePointer()
-}
+function attach() {
+  if (active) return
+  active = true
+  setEnabledClass(true)
 
-onMounted(() => {
-  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
-
-  document.documentElement.classList.add('custom-cursor-enabled')
   document.addEventListener('pointermove', onPointerMove, {
+    capture: true,
+    passive: true,
+  })
+  document.addEventListener('mousemove', onMouseMove, {
     capture: true,
     passive: true,
   })
@@ -152,41 +408,65 @@ onMounted(() => {
     capture: true,
     passive: true,
   })
-  document.addEventListener('pointerup', releasePointer, {
+  document.addEventListener('pointerup', onPointerUp, {
     capture: true,
     passive: true,
   })
-  document.addEventListener('pointercancel', releasePointer, {
+  document.addEventListener('pointercancel', onPointerUp, {
     capture: true,
     passive: true,
   })
-  document.addEventListener('scroll', handleScroll, {
+  document.addEventListener('mouseup', onPointerUp, {
     capture: true,
     passive: true,
   })
-  document.addEventListener('contextmenu', releaseWithoutMoving, {
-    capture: true,
-  })
+  document.addEventListener('scroll', onScroll, { capture: true, passive: true })
+  document.addEventListener('contextmenu', onPointerUp, { capture: true })
   document.documentElement.addEventListener('mouseleave', hideCursor)
-  window.addEventListener('blur', releaseWithoutMoving)
-  window.addEventListener('dragend', releaseDrag)
+  window.addEventListener('blur', onBlur)
+  window.addEventListener('dragend', onPointerUp as EventListener)
+}
+
+function detach() {
+  active = false
+  endScrollbarSession()
+  pressed.value = false
+  pressedState = null
+  isVisible.value = false
+  setEnabledClass(false)
+
+  document.removeEventListener('pointermove', onPointerMove, { capture: true })
+  document.removeEventListener('mousemove', onMouseMove, { capture: true })
+  document.removeEventListener('pointerdown', onPointerDown, { capture: true })
+  document.removeEventListener('pointerup', onPointerUp, { capture: true })
+  document.removeEventListener('pointercancel', onPointerUp, { capture: true })
+  document.removeEventListener('mouseup', onPointerUp, { capture: true })
+  document.removeEventListener('scroll', onScroll, { capture: true })
+  document.removeEventListener('contextmenu', onPointerUp, { capture: true })
+  document.documentElement.removeEventListener('mouseleave', hideCursor)
+  window.removeEventListener('blur', onBlur)
+  window.removeEventListener('dragend', onPointerUp as EventListener)
+
+  if (rafId) {
+    window.cancelAnimationFrame(rafId)
+    rafId = 0
+  }
+}
+
+function syncEnabled() {
+  if (finePointerOk()) attach()
+  else detach()
+}
+
+onMounted(() => {
+  mediaQuery = window.matchMedia('(hover: hover) and (pointer: fine)')
+  mediaQuery.addEventListener('change', syncEnabled)
+  syncEnabled()
 })
 
 onUnmounted(() => {
-  document.removeEventListener('pointermove', onPointerMove, { capture: true })
-  document.removeEventListener('pointerdown', onPointerDown, { capture: true })
-  document.removeEventListener('pointerup', releasePointer, { capture: true })
-  document.removeEventListener('pointercancel', releasePointer, {
-    capture: true,
-  })
-  document.removeEventListener('scroll', handleScroll, { capture: true })
-  document.removeEventListener('contextmenu', releaseWithoutMoving, {
-    capture: true,
-  })
-  document.documentElement.removeEventListener('mouseleave', hideCursor)
-  window.removeEventListener('blur', releaseWithoutMoving)
-  window.removeEventListener('dragend', releaseDrag)
-  document.documentElement.classList.remove('custom-cursor-enabled')
+  mediaQuery?.removeEventListener('change', syncEnabled)
+  detach()
 })
 </script>
 
@@ -217,13 +497,12 @@ onUnmounted(() => {
   inline-size: 15px;
   block-size: 18px;
   border-radius: 30px;
-  transform-origin: 1px 2px;
+  transform-origin: 8px 7px;
   transition:
     opacity 0.12s ease,
     transform 0.12s ease,
     inline-size 0.12s ease,
     block-size 0.12s ease;
-  transform-origin: 8px 7px;
   backface-visibility: hidden;
 
   svg {
@@ -281,8 +560,7 @@ onUnmounted(() => {
     }
   }
 
-  &[data-state='grab'],
-  &[data-state='grabbing'] {
+  &[data-state='grab'] {
     inline-size: 13px;
     block-size: 13px;
     border: 1.5px solid var(--text);
@@ -295,13 +573,24 @@ onUnmounted(() => {
     }
   }
 
-  &[data-state='grabbing'],
+  &[data-state='grabbing'] {
+    inline-size: 13px;
+    block-size: 13px;
+    border: 1.5px solid var(--text);
+    border-radius: 50%;
+    background: var(--bg);
+    transform: translate(-6.5px, -6.5px) scale(0.82);
+
+    path {
+      opacity: 0;
+    }
+  }
+
   &.pressed[data-state='pointer'] {
     transform: scale(0.82);
   }
 
-  &.pressed[data-state='grab'],
-  &[data-state='grabbing'] {
+  &.pressed[data-state='grab'] {
     transform: translate(-6.5px, -6.5px) scale(0.82);
   }
 
@@ -350,6 +639,14 @@ onUnmounted(() => {
   :global(html.custom-cursor-enabled),
   :global(html.custom-cursor-enabled *) {
     cursor: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-cursor,
+  .cursor-visual,
+  .cursor-visual path {
+    transition: none !important;
   }
 }
 </style>

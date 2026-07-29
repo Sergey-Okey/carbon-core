@@ -73,6 +73,7 @@ export default defineNuxtConfig({
   },
   typescript: { strict: true, typeCheck: false },
   ssr: false,
+  spaLoadingTemplate: true,
   app: {
     head: {
       htmlAttrs: { lang: 'ru' },
