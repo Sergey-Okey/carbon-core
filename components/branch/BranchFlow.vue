@@ -4,17 +4,7 @@
     class="branch-flow-wrapper"
     :class="{ 'is-auto-layouting': isAutoLayoutAnimating }"
   >
-    <BranchMobileView
-      v-if="isMobile"
-      :selected-node-id="selectedNodeId"
-      @edit-milestone="openMilestoneEditor"
-      @select-node="selectMobileNode"
-      @add-milestone="addMilestoneToSelectedBranch"
-      @add-branch="openAddBranchModal"
-      @edit-branch="openBranchEditor"
-      @delete-branch="handleDeleteBranchFromMobile"
-      @delete-milestone="handleDeleteMilestoneFromMobile"
-    />
+    <BranchMobileView v-if="isMobile" />
 
     <VueFlow
       v-else
@@ -75,7 +65,6 @@
         <BranchNode
           :data="nodeProps.data"
           :selected="isNodeSelected(nodeProps.id)"
-          :force-expanded="isExporting"
           @edit="openBranchEditor(nodeProps.data.branchId)"
         />
       </template>
@@ -83,7 +72,6 @@
         <MilestoneNode
           :data="nodeProps.data"
           :selected="isNodeSelected(nodeProps.id)"
-          :force-expanded="isExporting"
           @edit="
             nodeProps.data.milestone &&
             openMilestoneEditor(nodeProps.data.milestone)
@@ -142,6 +130,7 @@ import BranchModal from './BranchModal.vue'
 import BranchMobileView from './BranchMobileView.vue'
 import BoardControls from './BoardControls.vue'
 import type { Milestone, Branch, BranchNodeData } from '~/types/branch.types'
+import { exportBoardImage } from '~/utils/exportBoardImage'
 
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
@@ -159,7 +148,6 @@ const connectionSpacing = ref(56)
 const boardSearchQuery = ref('')
 const boardSearchActiveId = ref<string | null>(null)
 const searchMatchIndex = ref(0)
-const isExporting = ref(false)
 const defaultEdgeOptions = computed(() => ({
   type: 'smoothstep',
   pathOptions: { borderRadius: 16, offset: 10 },
@@ -776,13 +764,6 @@ function addMilestoneToSelectedBranch(sourceNodeId?: string) {
   openMilestoneCreator()
 }
 
-function selectMobileNode(nodeId: string | null) {
-  selectedNodeId.value = nodeId
-  selectedEdgeId.value = null
-  selectedEdge.value = null
-  if (nodeId) guidedTour.handleAction('branch-selected')
-}
-
 function handleCreateMilestone(data: Partial<Milestone>) {
   if (!selectedNodeId.value) return
 
@@ -821,14 +802,10 @@ function openBranchEditor(branchId: string) {
 }
 
 function openAddBranchModal() {
-  if (!canAddBranch.value) {
-    addNotification({ type: 'warning', message: 'Снимите выделение, чтобы создать ветку' })
-    return
-  }
-
   selectedNodeId.value = null
   selectedEdgeId.value = null
   selectedEdge.value = null
+  setNodesSelected([])
 
   branchModal.value = { visible: true, branch: null }
   guidedTour.handleAction('branch-modal-open')
@@ -867,34 +844,6 @@ async function handleDeleteBranch() {
   branchesStore.deleteBranch(branch.id)
   branchModal.value.visible = false
   selectedNodeId.value = null
-  saveToHistory()
-}
-
-async function handleDeleteBranchFromMobile(branchId: string) {
-  const branch = branchesStore.branches.find((item) => item.id === branchId)
-  if (!branch) return
-
-  if (settingsStore.boardConfirmBranchDelete) {
-    const ok = await confirm(`Удалить ветку «${branch.displayName}»?`)
-    if (!ok) return
-  }
-
-  branchesStore.deleteBranch(branchId)
-  saveToHistory()
-}
-
-async function handleDeleteMilestoneFromMobile(milestoneId: string) {
-  const milestone = branchesStore.branches
-    .flatMap((branch) => branch.milestones)
-    .find((item) => item.id === milestoneId)
-  if (!milestone) return
-
-  if (settingsStore.confirmDangerActions) {
-    const ok = await confirm(`Удалить этап «${milestone.name}»?`)
-    if (!ok) return
-  }
-
-  branchesStore.deleteMilestone(milestoneId)
   saveToHistory()
 }
 
@@ -971,142 +920,26 @@ async function fitBoardView() {
   })
 }
 
-function packNodesForExpandedExport(sourceNodes: Node[]) {
-  const gap = 28
-  const detailPanel = 268 // 8px gap + max-height 260 of .node-details
-  type Box = { id: string; x: number; y: number; w: number; h: number }
-
-  const boxes: Box[] = sourceNodes.map((node) => {
-    const baseH = node.type === 'branch-node' ? 138 : 120
-    return {
-      id: node.id,
-      x: node.position.x,
-      y: node.position.y,
-      w: 240,
-      h: baseH + detailPanel,
-    }
-  })
-
-  boxes.sort((a, b) => a.y - b.y || a.x - b.x)
-
-  const overlaps = (a: Box, b: Box) =>
-    a.x < b.x + b.w + gap &&
-    a.x + a.w + gap > b.x &&
-    a.y < b.y + b.h + gap &&
-    a.y + a.h + gap > b.y
-
-  const placed: Box[] = []
-  boxes.forEach((box) => {
-    let moved = true
-    let guard = 0
-    while (moved && guard < 48) {
-      moved = false
-      guard += 1
-      for (const other of placed) {
-        if (!overlaps(box, other)) continue
-        const pushDown = other.y + other.h + gap - box.y
-        const pushRight = other.x + other.w + gap - box.x
-        if (pushDown <= pushRight) box.y += Math.max(0, pushDown)
-        else box.x += Math.max(0, pushRight)
-        moved = true
-      }
-    }
-    placed.push(box)
-  })
-
-  const byId = new Map(placed.map((box) => [box.id, box]))
-  nodes.value = sourceNodes.map((node) => {
-    const box = byId.get(node.id)
-    if (!box) return node
-    return {
-      ...node,
-      position: { x: box.x, y: box.y },
-      selected: false,
-    }
-  })
-}
-
 async function exportBoardPng() {
-  const wrapper = boardWrapper.value
-  if (!wrapper || isMobile.value) {
+  if (isMobile.value) {
     addNotification({ type: 'error', message: 'Экспорт доступен на десктопе' })
     return
   }
-  if (!nodes.value.length) {
+  if (!branchesStore.branches.length) {
     addNotification({ type: 'error', message: 'Доска пуста' })
     return
   }
 
-  const previousNodes = nodes.value.map((node) => ({
-    ...node,
-    position: { ...node.position },
-    selected: node.selected,
-  }))
-
-  isExporting.value = true
-  wrapper.classList.add('is-exporting')
-  selectedNodeId.value = null
-  selectedEdgeId.value = null
-  selectedEdge.value = null
-
   try {
-    packNodesForExpandedExport(previousNodes)
-    await nextTick()
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+    await exportBoardImage({
+      branches: branchesStore.branches,
+      edges: branchesStore.edges as Edge[],
+      tasks: tasksStore.tasks,
+      getBranchTaskIds: (branchId) => branchesStore.getBranchTaskIds(branchId),
     })
-
-    await fitView({
-      padding: 0.06,
-      minZoom: 0.05,
-      maxZoom: 1.25,
-      duration: 0,
-    })
-    await nextTick()
-    await new Promise<void>((resolve) => {
-      window.setTimeout(() => resolve(), 80)
-    })
-
-    const flowEl = wrapper.querySelector('.vue-flow') as HTMLElement | null
-    if (!flowEl) throw new Error('Vue Flow root not found')
-
-    const { toPng } = await import('html-to-image')
-    const css = getComputedStyle(document.documentElement)
-    const background = css.getPropertyValue('--bg').trim() || '#121212'
-    const width = flowEl.clientWidth
-    const height = flowEl.clientHeight
-
-    const dataUrl = await toPng(flowEl, {
-      width,
-      height,
-      canvasWidth: width,
-      canvasHeight: height,
-      pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
-      backgroundColor: background,
-      cacheBust: true,
-      filter: (node) => {
-        if (!(node instanceof HTMLElement)) return true
-        if (node.classList.contains('vue-flow__panel')) return false
-        if (node.classList.contains('board-controls-shell')) return false
-        if (node.classList.contains('vue-flow__minimap')) return false
-        return true
-      },
-    })
-
-    const link = document.createElement('a')
-    link.download = `carbon-board-${new Date().toISOString().slice(0, 10)}.png`
-    link.href = dataUrl
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
     addNotification({ type: 'success', message: 'Доска экспортирована в PNG' })
   } catch {
     addNotification({ type: 'error', message: 'Не удалось экспортировать доску' })
-  } finally {
-    isExporting.value = false
-    wrapper.classList.remove('is-exporting')
-    nodes.value = previousNodes
-    await nextTick()
   }
 }
 
@@ -1244,27 +1077,6 @@ watch(
   transition:
     stroke var(--transition-standard),
     opacity var(--transition-standard);
-}
-
-.branch-flow-wrapper.is-exporting {
-  :deep(.vue-flow__panel),
-  :deep(.board-controls-shell) {
-    display: none !important;
-  }
-
-  :deep(.expand-enter-active),
-  :deep(.expand-leave-active),
-  :deep(.vue-flow__node),
-  :deep(.vue-flow__edge-path) {
-    transition: none !important;
-    animation: none !important;
-  }
-
-  :deep(.edit-btn),
-  :deep(.expand-btn) {
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
 }
 
 :deep(.vue-flow__edge.selected .vue-flow__edge-path) {
