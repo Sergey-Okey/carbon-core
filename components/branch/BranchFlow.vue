@@ -113,6 +113,7 @@ import {
   type Node,
   type Edge,
   type Connection,
+  type NodeMouseEvent,
 } from '@vue-flow/core'
 import { Background, BackgroundVariant } from '@vue-flow/background'
 import { useBranchesStore } from '~/stores/branches.store'
@@ -165,7 +166,8 @@ const nodeTypes = {
   'branch-node': BranchNode as any,
   'milestone-node': MilestoneNode as any,
 } as any
-const nodes = shallowRef<Node<BranchNodeData>[]>([])
+type FlowNode = Node<BranchNodeData> & { selected?: boolean }
+const nodes = shallowRef<FlowNode[]>([])
 const edges = shallowRef<Edge[]>([])
 const isMobile = ref(false)
 const selectedNodeId = ref<string | null>(null)
@@ -188,8 +190,6 @@ const emptyMilestone: Milestone = {
   name: '',
   icon: 'target',
   description: '',
-  requiredXP: 500,
-  currentXP: 0,
   status: 'pending',
   taskIds: [],
   markerColor: '#d6d6d6',
@@ -283,7 +283,7 @@ function syncNodesAndEdges() {
   isSyncingFlow.value = true
   const baseEdgeOptions = defaultEdgeOptions.value
   const previouslySelected = new Set(nodes.value.filter((node) => node.selected).map((node) => node.id))
-  const newNodes: Node<BranchNodeData>[] = []
+  const newNodes: FlowNode[] = []
   branchesStore.branches.forEach((branch) => {
     newNodes.push({
       id: branch.id,
@@ -847,11 +847,11 @@ async function handleDeleteBranch() {
   saveToHistory()
 }
 
-function onNodeClick({ node, event }: { node: Node; event?: MouseEvent }) {
+function onNodeClick({ node, event }: NodeMouseEvent) {
   selectedEdgeId.value = null
   selectedEdge.value = null
 
-  const multi = !!(event && (event.ctrlKey || event.metaKey || event.shiftKey))
+  const multi = !!(event.ctrlKey || event.metaKey || event.shiftKey)
 
   if (multi) {
     const current = new Set(selectedNodeIds.value)
@@ -984,6 +984,20 @@ watch(
   () => tasksStore.tasks,
   () => branchesStore.refreshAllBranches(),
   { deep: true }
+)
+
+watch(
+  () => uiStore.pendingNavTarget,
+  (target) => {
+    if (!target) return
+    if (target.kind !== 'branch' && target.kind !== 'milestone') return
+    const id = target.id
+    uiStore.clearPendingNavTarget()
+    nextTick(() => {
+      setTimeout(() => focusBoardSearchMatch(id), 120)
+    })
+  },
+  { immediate: true }
 )
 </script>
 

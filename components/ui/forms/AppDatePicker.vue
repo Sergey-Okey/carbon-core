@@ -260,16 +260,15 @@ onUnmounted(() => {
 
 .date-popover {
   @include glass;
+  @include nest-shell(var(--radius-lg), var(--space-2));
   position: fixed;
   display: grid;
   gap: var(--space-3);
   z-index: var(--z-dropdown);
   inline-size: min(284px, calc(100dvw - var(--space-6) - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
   max-height: min(332px, calc(100dvh - var(--space-6)));
-  padding: var(--space-2);
   overflow: hidden;
   border: var(--ui-border);
-  border-radius: var(--radius-lg);
   background: var(--glass-surface);
   box-shadow: var(--shadow-md);
   backdrop-filter: var(--glass-strong-filter);
@@ -284,10 +283,10 @@ onUnmounted(() => {
   gap: var(--space-2);
 
   button {
+    @include nest-item;
     min-height: var(--space-7);
     padding-inline: var(--space-2);
     border: none;
-    border-radius: var(--radius-md);
     background: transparent;
     color: var(--color-text-primary);
     cursor: pointer;

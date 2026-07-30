@@ -89,42 +89,37 @@ export const useBranchesStore = defineStore(
             name: 'Идея и концепция',
             icon: 'target',
             description: 'Определение миссии, целевой аудитории и ключевых фич',
-            requiredXP: 200,
-            currentXP: 0,
-            status: 'pending',
+            status: 'completed',
             taskIds: [],
             position: { x: 200, y: 200 },
+            achieved: true,
           },
           {
             id: 'cof-m2',
             name: 'Дизайн интерфейса',
             icon: 'palette',
             description: 'Прототипирование, UI Kit, адаптивный дизайн',
-            requiredXP: 300,
-            currentXP: 0,
-            status: 'pending',
+            status: 'completed',
             taskIds: [],
             position: { x: 500, y: 150 },
+            achieved: true,
           },
           {
             id: 'cof-m3',
             name: 'Frontend (Vue 3)',
             icon: 'code',
             description: 'Компоненты, маршрутизация, хранение состояния',
-            requiredXP: 400,
-            currentXP: 0,
-            status: 'pending',
+            status: 'completed',
             taskIds: [],
             position: { x: 500, y: 300 },
+            achieved: true,
           },
           {
             id: 'cof-m4',
             name: 'Backend & API',
             icon: 'server',
             description: 'Создание API, авторизация, база данных',
-            requiredXP: 500,
-            currentXP: 0,
-            status: 'pending',
+            status: 'active',
             taskIds: [],
             position: { x: 800, y: 150 },
           },
@@ -133,8 +128,6 @@ export const useBranchesStore = defineStore(
             name: 'Интеграция и тестирование',
             icon: 'test-tube',
             description: 'Юнит-тесты, e2e, исправление багов',
-            requiredXP: 300,
-            currentXP: 0,
             status: 'pending',
             taskIds: [],
             position: { x: 800, y: 300 },
@@ -144,8 +137,6 @@ export const useBranchesStore = defineStore(
             name: 'Деплой и мониторинг',
             icon: 'rocket',
             description: 'Развёртывание, CI/CD, аналитика',
-            requiredXP: 250,
-            currentXP: 0,
             status: 'pending',
             taskIds: [],
             position: { x: 1100, y: 220 },
@@ -409,7 +400,9 @@ export const useBranchesStore = defineStore(
     function collectReachableNodeIds(startId: string): Set<string> {
       const visited = new Set<string>()
       const queue = [startId]
-      const normalizedEdges: Edge[] = (edges.value as Edge[]).map(normalizeEdgePorts)
+      const normalizedEdges: Edge[] = (edges.value as Edge[]).map((edge) =>
+        normalizeEdgePorts(edge)
+      )
 
       while (queue.length) {
         const currentId = queue.shift()!
@@ -433,7 +426,9 @@ export const useBranchesStore = defineStore(
     }
 
     function countIncomingEdges(nodeId: string) {
-      const normalizedEdges: Edge[] = (edges.value as Edge[]).map(normalizeEdgePorts)
+      const normalizedEdges: Edge[] = (edges.value as Edge[]).map((edge) =>
+        normalizeEdgePorts(edge)
+      )
       return normalizedEdges.filter((edge) => edge.target === nodeId).length
     }
 
@@ -451,7 +446,9 @@ export const useBranchesStore = defineStore(
       const visitedNodes = new Set<string>(initialIds)
       const visitedMilestones = new Set<string>()
       const queue = [...initialIds]
-      const normalizedEdges: Edge[] = (edges.value as Edge[]).map(normalizeEdgePorts)
+      const normalizedEdges: Edge[] = (edges.value as Edge[]).map((edge) =>
+        normalizeEdgePorts(edge)
+      )
 
       initialIds.forEach((id) => {
         if (milestoneIds.has(id)) visitedMilestones.add(id)
@@ -557,15 +554,26 @@ export const useBranchesStore = defineStore(
         .map((id) => tasksStore.tasks.find((task) => task.id === id))
         .filter(Boolean)
 
-      const completed = linkedTasks.filter((task) => task?.done).length
-      milestone.currentXP = completed
+      // Milestones without linked tasks keep board-driven status (demo / manual).
+      if (linkedTasks.length === 0) {
+        if (milestone.achieved || milestone.status === 'completed') {
+          milestone.status = 'completed'
+          milestone.achieved = true
+        }
+        return
+      }
 
-      if (linkedTasks.length === 0 || completed === 0) {
+      const completed = linkedTasks.filter((task) => task?.done).length
+
+      if (completed === 0) {
         milestone.status = 'pending'
+        milestone.achieved = false
       } else if (completed >= linkedTasks.length) {
         milestone.status = 'completed'
+        milestone.achieved = true
       } else {
         milestone.status = 'active'
+        milestone.achieved = false
       }
     }
 
@@ -634,25 +642,6 @@ export const useBranchesStore = defineStore(
     function getBranchTaskIds(branchId: string): string[] {
       const branch = branches.value.find((item) => item.id === branchId)
       return branch ? collectBranchTaskIds(branch) : []
-    }
-
-    function addXPToBranch(branchId: BranchId, xp: number) {
-      const branch = branches.value.find((item) => item.id === branchId)
-      if (!branch) return
-      const activeMilestone =
-        branch.milestones.find((milestone) => milestone.status === 'active') ||
-        branch.milestones.find((milestone) => milestone.status === 'pending')
-      if (!activeMilestone) return
-      activeMilestone.currentXP = Math.min(
-        activeMilestone.requiredXP,
-        activeMilestone.currentXP + xp
-      )
-      if (activeMilestone.currentXP >= activeMilestone.requiredXP) {
-        activeMilestone.status = 'completed'
-      } else if (activeMilestone.currentXP > 0) {
-        activeMilestone.status = 'active'
-      }
-      updateBranchStatus(branch)
     }
 
     function syncMilestoneIcon(milestoneId: string) {
@@ -771,8 +760,6 @@ export const useBranchesStore = defineStore(
         icon: branch?.icon || 'target',
         description: '',
         markerColor: branch?.markerColor || branch?.backgroundColor || defaultMarkerColor,
-        requiredXP: 500,
-        currentXP: 0,
         status: 'pending',
         taskIds: [],
         position: position || {
@@ -819,8 +806,6 @@ export const useBranchesStore = defineStore(
         icon: branch.icon,
         description: data.description || '',
         markerColor: data.markerColor || data.backgroundColor || branch.markerColor || branch.backgroundColor || defaultMarkerColor,
-        requiredXP: data.requiredXP || 500,
-        currentXP: data.currentXP || 0,
         status: data.status || 'pending',
         taskIds: data.taskIds || [],
         position: data.position || {
@@ -1024,7 +1009,7 @@ export const useBranchesStore = defineStore(
     }
 
     function replaceEdges(nextEdges: Edge[]) {
-      edges.value = nextEdges.map(normalizeEdgePorts)
+      edges.value = nextEdges.map((edge) => normalizeEdgePorts(edge))
       normalizeBoard()
     }
 
@@ -1038,7 +1023,6 @@ export const useBranchesStore = defineStore(
       branches,
       edges,
       graphRevision,
-      addXPToBranch,
       addBranch,
       deleteBranch,
       addMilestone,
@@ -1070,7 +1054,23 @@ export const useBranchesStore = defineStore(
   },
   {
     persist: import.meta.client
-      ? { key: 'carbon-branches', storage: accessAwareStorage }
+      ? {
+          key: 'carbon-branches',
+          storage: accessAwareStorage,
+          afterHydrate: (ctx) => {
+            try {
+              const raw = accessAwareStorage.getItem('carbon-branches')
+              if (!raw) return
+              const parsed = JSON.parse(raw) as { edges?: Edge[] }
+              if (!Array.isArray(parsed.edges)) return
+              const store = ctx.store as ReturnType<typeof useBranchesStore>
+              // shallowRef ignores $patch — restore edges explicitly
+              store.replaceEdges(parsed.edges)
+            } catch {
+              // ignore corrupt persistence payload
+            }
+          },
+        }
       : undefined,
   }
 )

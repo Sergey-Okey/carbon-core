@@ -271,13 +271,13 @@ label,
 
   .view-switch {
     :deep(.app-segmented) {
+      --nest-pad: 2px;
       min-height: var(--control-height-sm);
-      padding: 2px;
+      padding: var(--nest-pad);
     }
 
     :deep(.segment-option) {
       min-height: var(--control-height-sm);
-      border-radius: calc(var(--border-radius-md) - 2px);
     }
   }
 }

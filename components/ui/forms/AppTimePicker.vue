@@ -326,23 +326,22 @@ onBeforeUnmount(() => {
 }
 
 .time-options {
+  @include nest-shell(var(--radius-md), var(--space-1));
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-1);
   height: 194px;
-  padding: var(--space-1);
   overflow-y: auto;
   overscroll-behavior: contain;
   border: var(--ui-border);
-  border-radius: var(--radius-md);
   scrollbar-width: thin;
   scroll-snap-type: y proximity;
 }
 
 .time-option {
+  @include nest-item;
   min-height: var(--space-9);
   border: none;
-  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--color-text-secondary);
   font: inherit;

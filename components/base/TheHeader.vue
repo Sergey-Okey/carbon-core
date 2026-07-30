@@ -32,9 +32,7 @@
       <HeaderUserMenu
         ref="userMenu"
         :open="isProfileModalOpen"
-        :name="userName"
-        :email="userEmail"
-        :avatar="userStore.profile.avatar"
+        :avatar="headerAvatar"
         @toggle="toggleProfilePanel"
         @open-profile="openProfile"
         @logout="logout"
@@ -129,7 +127,15 @@ const sectionTitles: Record<NavSection, string> = {
   settings: 'Настройки',
 }
 
-const currentSectionTitle = computed(() => sectionTitles[uiStore.activeNav])
+const currentSectionTitle = computed(() => {
+  if (route.path === '/profile') return 'Профиль'
+  return sectionTitles[uiStore.activeNav]
+})
+
+const headerAvatar = computed(
+  () => authStore.currentUser?.avatar || userStore.profile.avatar || ''
+)
+
 const shouldHighlightGuideEntry = computed(
   () => accessStore.isDemo && !guidedTour.hasStarted && !guidedTour.isCompleted
 )
@@ -151,11 +157,6 @@ const focusWidgetTime = computed(() => {
   const seconds = focusWidget.value.remainingSeconds % 60
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 })
-const userName = computed(() => userStore.displayName || 'COF User')
-const userEmail = computed(
-  () => userStore.profile.email || authStore.currentUser?.email || 'Локальный профиль'
-)
-
 function openProfile() {
   isProfileModalOpen.value = false
   navigateTo('/profile')

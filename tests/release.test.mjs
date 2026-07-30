@@ -213,8 +213,9 @@ test('native app keeps launch animation and skips onboarding route', async () =>
   const middleware = await read('middleware/entry.global.ts')
 
   assert.match(app, /<AppLaunchScreen \/>/)
-  assert.match(launch, /Capacitor\.isNativePlatform\(\)/)
-  assert.match(launch, /Skeleton/)
+  assert.match(launch, /DotSphereLoader/)
+  assert.match(launch, /mode="boot"/)
+  assert.match(middleware, /Capacitor\.isNativePlatform\(\)/)
   assert.match(middleware, /isNative && to\.path === '\/onboarding'/)
 })
 

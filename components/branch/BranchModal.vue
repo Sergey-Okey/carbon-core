@@ -1,7 +1,6 @@
 <template>
   <AppModal
     :title="branch ? 'Редактировать ветку' : 'Новая ветка'"
-    kicker="Ветка"
     as-form
     size="lg"
     allow-overflow

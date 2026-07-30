@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useSettingsStore } from '~/stores/settings.store'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useUIStore } from '~/stores/ui.store'
@@ -139,6 +139,17 @@ function openTaskEditor(task: Task) {
   showTaskForm.value = true
 }
 
+watch(
+  () => uiStore.pendingNavTarget,
+  (target) => {
+    if (!target || target.kind !== 'task') return
+    const task = tasksStore.tasks.find((item) => item.id === target.id)
+    uiStore.clearPendingNavTarget()
+    if (!task) return
+    openTaskEditor(task)
+  }
+)
+
 function closeTaskForm() {
   showTaskForm.value = false
   editingTask.value = undefined
@@ -172,6 +183,15 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
   @include desktop {
     padding-block-end: 0;
     min-block-size: 100%;
+  }
+
+  @include mobile {
+    gap: var(--space-3);
+    padding-block-end: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+
+  @include tablet {
+    gap: var(--space-3);
   }
 
   &.is-board {

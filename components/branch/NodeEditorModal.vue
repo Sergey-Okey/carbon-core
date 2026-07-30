@@ -1,7 +1,6 @@
 <template>
   <AppModal
     :title="props.isCreateMode ? 'Новый этап' : 'Редактировать этап'"
-    kicker="Этап"
     as-form
     size="lg"
     allow-overflow
@@ -179,7 +178,7 @@ const tasksStore = useTasksStore()
 const branchesStore = useBranchesStore()
 const { confirm } = useConfirm()
 const iconsExpanded = ref(false)
-const tasksExpanded = ref(false)
+const tasksExpanded = ref(true)
 const nameTouched = ref(false)
 const showQuickTask = ref(false)
 
@@ -378,12 +377,13 @@ function handleQuickTask(data: TaskFormData) {
   }
 }
 
-.icon-section,
 .tasks-section {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
 }
 
 .toggle-btn {
@@ -394,9 +394,10 @@ function handleQuickTask(data: TaskFormData) {
   width: 100%;
   min-height: var(--control-height-md);
   padding: 0 14px;
+  box-sizing: border-box;
   color: var(--text);
-  background: transparent;
-  border: none;
+  background: color-mix(in srgb, var(--color-surface-2) 80%, transparent);
+  border: var(--ui-border);
   border-radius: var(--border-radius-md);
   cursor: pointer;
   transition:
@@ -415,13 +416,20 @@ function handleQuickTask(data: TaskFormData) {
   }
 
   &.expanded {
-    border-color: color-mix(in srgb, var(--accent) 24%, var(--ui-border-color));
+    border-color: color-mix(in srgb, var(--accent) 28%, var(--ui-border-color));
     background: color-mix(in srgb, var(--accent) 6%, transparent);
   }
 
   .rotated {
     transform: rotate(180deg);
   }
+}
+
+.icon-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .selected-icon {
@@ -466,7 +474,56 @@ function handleQuickTask(data: TaskFormData) {
 }
 
 .task-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
   color: var(--dim);
+  line-height: 0;
+}
+
+.custom-checkbox {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+  }
+
+  .checkmark {
+    display: block;
+    width: 18px;
+    height: 18px;
+    border: var(--ui-border);
+    border-radius: var(--border-radius-sm);
+    background: transparent;
+    box-sizing: border-box;
+  }
+
+  input:checked + .checkmark {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+}
+
+.task-row.selected .custom-checkbox {
+  .checkmark {
+    border-color: color-mix(in srgb, var(--bg) 35%, transparent);
+    background: transparent;
+  }
+
+  input:checked + .checkmark {
+    background: var(--bg);
+    border-color: var(--bg);
+  }
 }
 
 .icon-option {
@@ -507,42 +564,35 @@ function handleQuickTask(data: TaskFormData) {
 }
 
 .tasks-list {
-  @include glass;
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(100% + 8px);
-  z-index: 20;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
   min-width: 0;
-  max-width: 100%;
-  max-height: 220px;
+  max-height: 240px;
   padding: 8px;
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
   border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
-  grid-column: 1 / -1;
-  box-shadow: 0 14px 34px color-mix(in srgb, var(--bg) 18%, transparent);
+  border-radius: var(--border-radius-md);
+  background: color-mix(in srgb, var(--color-surface-2) 72%, transparent);
 }
 
 .task-row {
-  @include glass;
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  column-gap: 10px;
   width: 100%;
   min-width: 0;
-  padding: 10px 12px;
+  min-height: 40px;
+  padding: 8px 10px;
   box-sizing: border-box;
   color: var(--text);
   border: none;
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--border-radius-md);
+  background: color-mix(in srgb, var(--color-surface-1) 88%, transparent);
   cursor: pointer;
 
   &.selected {
@@ -555,45 +605,17 @@ function handleQuickTask(data: TaskFormData) {
 
     .task-marker {
       color: color-mix(in srgb, var(--bg) 72%, transparent);
+      background: color-mix(in srgb, var(--bg) 14%, transparent);
+    }
+
+    .linked-elsewhere {
+      color: color-mix(in srgb, var(--bg) 70%, transparent);
     }
   }
 
   &.selected:hover {
     background: var(--accent);
     color: var(--bg);
-  }
-}
-
-.tasks-section {
-  padding: 0;
-  border: none;
-  background: transparent;
-}
-
-.custom-checkbox {
-  position: relative;
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
-
-  input {
-    position: absolute;
-    opacity: 0;
-    inset: 0;
-  }
-}
-
-.checkmark {
-  display: block;
-  width: 18px;
-  height: 18px;
-  border: none;
-  border-radius: var(--border-radius-sm);
-  background: var(--glass-surface);
-
-  input:checked + & {
-    background: var(--accent);
-    border-color: var(--text);
   }
 }
 
@@ -703,7 +725,7 @@ function handleQuickTask(data: TaskFormData) {
 .expand-enter-from,
 .expand-leave-to {
   opacity: 0;
-  transform: translateY(-5px);
+  transform: translateY(6px);
 }
 
 .reveal-item-enter-active,
@@ -784,15 +806,14 @@ function handleQuickTask(data: TaskFormData) {
     grid-template-columns: auto auto minmax(0, 1fr) auto;
     align-items: center;
     gap: 8px;
-    padding: 9px 10px;
+    min-height: 44px;
+    padding: 8px 10px;
   }
 
   .tasks-list {
-    position: static;
     max-height: min(300px, 46dvh);
     gap: 6px;
-    padding: 7px;
-    border-radius: var(--border-radius-md);
+    padding: 8px;
   }
 
   .task-title {

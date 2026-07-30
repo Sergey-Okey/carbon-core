@@ -14,12 +14,26 @@ type NewTaskData = Omit<Task, 'id' | 'createdAt' | 'done'> & {
 }
 export type DeletedTask = Task & { deletedAt: number }
 
+export type CompletionLogEntry = {
+  id: string
+  at: number
+  taskId: string
+  type: TaskType
+  title: string
+}
+
+const COMPLETION_LOG_MAX_DAYS = 90
+const COMPLETION_LOG_MAX = 3000
+const HISTORY_MAX_DAYS = 90
+
 export const useTasksStore = defineStore(
   'tasks',
   () => {
     const tasks = ref<Task[]>([])
     const deletedTasks = ref<DeletedTask[]>([])
     const completedTasksHistory = ref<{ date: string; count: number }[]>([])
+    /** Append-only completion events for hour charts / feeds (persisted). */
+    const completionLog = ref<CompletionLogEntry[]>([])
 
     function getTodayDateString(): string {
       return getLocalDateKey(new Date())
@@ -41,6 +55,50 @@ export const useTasksStore = defineStore(
       return getActiveTasksByType(type).length < 3
     }
 
+    function pruneHistory() {
+      const cutoff = new Date()
+      cutoff.setHours(0, 0, 0, 0)
+      cutoff.setDate(cutoff.getDate() - (HISTORY_MAX_DAYS - 1))
+      const cutoffKey = getLocalDateKey(cutoff)
+      completedTasksHistory.value = completedTasksHistory.value
+        .filter((entry) => entry.date >= cutoffKey)
+        .sort((a, b) => a.date.localeCompare(b.date))
+    }
+
+    function pruneCompletionLog() {
+      const cutoff = Date.now() - COMPLETION_LOG_MAX_DAYS * 24 * 60 * 60 * 1000
+      completionLog.value = completionLog.value
+        .filter((entry) => entry.at >= cutoff)
+        .slice(-COMPLETION_LOG_MAX)
+    }
+
+    function bumpHistory(dateKey: string, delta: number) {
+      if (!delta) return
+      const existing = completedTasksHistory.value.find((item) => item.date === dateKey)
+      if (existing) {
+        existing.count = Math.max(0, existing.count + delta)
+        if (existing.count === 0) {
+          completedTasksHistory.value = completedTasksHistory.value.filter(
+            (item) => item.date !== dateKey
+          )
+        }
+      } else if (delta > 0) {
+        completedTasksHistory.value.push({ date: dateKey, count: delta })
+      }
+      pruneHistory()
+    }
+
+    function appendCompletionLog(entry: Omit<CompletionLogEntry, 'id'> & { id?: string }) {
+      completionLog.value.push({
+        id: entry.id || uuidv4(),
+        at: entry.at,
+        taskId: entry.taskId,
+        type: entry.type,
+        title: entry.title,
+      })
+      pruneCompletionLog()
+    }
+
     function addTask(taskData: NewTaskData): Task | null {
       if (!canAddTask(taskData.type)) return null
 
@@ -55,16 +113,18 @@ export const useTasksStore = defineStore(
       return newTask
     }
 
-    function recordCompletion() {
+    function recordCompletion(task: Task, at = Date.now()) {
       const userStore = useUserStore()
-      const today = getTodayDateString()
-      const existing = completedTasksHistory.value.find((item) => item.date === today)
+      const dateKey = getLocalDateKey(new Date(at))
 
       userStore.incrementCompletedTasks()
-      if (existing) existing.count += 1
-      else completedTasksHistory.value.push({ date: today, count: 1 })
-
-      completedTasksHistory.value = completedTasksHistory.value.slice(-30)
+      bumpHistory(dateKey, 1)
+      appendCompletionLog({
+        at,
+        taskId: task.id,
+        type: task.type,
+        title: task.title,
+      })
     }
 
     function completeTask(id: string) {
@@ -75,16 +135,12 @@ export const useTasksStore = defineStore(
       const branchesStore = useBranchesStore()
       const rewardsStore = useRewardsStore()
       const tags = getTaskTags(task)
+      const at = Date.now()
 
       if (task.type === 'HABIT') {
-        task.lastCompletedAt = Date.now()
-
-        const xpPerTag = 50
-        tags.forEach((tag) => {
-          if (tag.branchId) branchesStore.addXPToBranch(tag.branchId, xpPerTag)
-        })
-        userStore.addXP(xpPerTag * tags.length)
-        recordCompletion()
+        task.lastCompletedAt = at
+        userStore.addLeaguePoints(25 * Math.max(1, tags.length))
+        recordCompletion(task, at)
         branchesStore.refreshMilestonesByTaskId(task.id)
         return
       }
@@ -92,14 +148,11 @@ export const useTasksStore = defineStore(
       if (task.done) return
 
       task.done = true
-      task.completedAt = Date.now()
+      task.completedAt = at
 
-      const baseXP = task.type === 'PURCHASE' ? 500 : 100
-      tags.forEach((tag) => {
-        if (tag.branchId) branchesStore.addXPToBranch(tag.branchId, baseXP)
-      })
-      userStore.addXP(baseXP * tags.length)
-      if (task.type !== 'PURCHASE') recordCompletion()
+      const leagueGain = task.type === 'PURCHASE' ? 250 : 50
+      userStore.addLeaguePoints(leagueGain * Math.max(1, tags.length))
+      if (task.type !== 'PURCHASE') recordCompletion(task, at)
 
       if (task.type === 'PURCHASE' && task.purchaseRewardId) {
         rewardsStore.confirmPurchase(task.purchaseRewardId)
@@ -144,9 +197,25 @@ export const useTasksStore = defineStore(
       if (!task || !task.done) return null
       if (!canAddTask(task.type)) return null
 
+      const completedAt = task.completedAt
       task.done = false
       delete task.completedAt
       task.updatedAt = Date.now()
+
+      if (completedAt) {
+        const userStore = useUserStore()
+        const dateKey = getLocalDateKey(new Date(completedAt))
+        bumpHistory(dateKey, -1)
+        userStore.decrementCompletedTasks(1)
+
+        const logIndex = [...completionLog.value]
+          .reverse()
+          .findIndex((entry) => entry.taskId === id && entry.at === completedAt)
+        if (logIndex !== -1) {
+          const realIndex = completionLog.value.length - 1 - logIndex
+          completionLog.value.splice(realIndex, 1)
+        }
+      }
 
       const branchesStore = useBranchesStore()
       branchesStore.refreshMilestonesByTaskId(id)
@@ -202,10 +271,16 @@ export const useTasksStore = defineStore(
       return tagsStore.getTagsByIds(task.tagIds)
     }
 
+    function replaceCompletionLog(entries: CompletionLogEntry[]) {
+      completionLog.value = entries
+      pruneCompletionLog()
+    }
+
     return {
       tasks,
       deletedTasks,
       completedTasksHistory,
+      completionLog,
       addTask,
       completeTask,
       deleteTask,
@@ -218,6 +293,8 @@ export const useTasksStore = defineStore(
       getCompletedTasks,
       getHabits,
       canAddTask,
+      replaceCompletionLog,
+      appendCompletionLog,
     }
   },
   {

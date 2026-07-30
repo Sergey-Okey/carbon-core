@@ -151,8 +151,7 @@ function onClear() {
 
 .board-controls-surface {
   @include surface-panel;
-  padding: 6px;
-  border-radius: var(--border-radius-pill);
+  @include nest-shell(var(--border-radius-pill), 6px);
   background: var(--color-surface-1);
   overflow: visible;
 }
@@ -178,7 +177,7 @@ function onClear() {
     width: var(--control-icon-size);
     height: var(--control-icon-size);
     padding: 0;
-    border-radius: var(--border-radius-pill);
+    @include nest-item;
     color: var(--text);
     background: transparent;
     border: none;

@@ -1,365 +1,340 @@
 <template>
-  <div class="settings-page">
-    <div class="settings-head">
-      <div class="settings-title">
-        <h2>Настройки</h2>
-        <p>Тема, рабочее поведение, доска и локальные данные приложения.</p>
-      </div>
+  <section class="settings" aria-label="Настройки">
+    <div class="settings-bento">
+      <!-- Appearance -->
+      <article class="tile tile--appearance">
+        <header class="tile-head">
+          <h2>Оформление</h2>
+          <span class="tile-head__aside">{{ accentLabel }}</span>
+        </header>
 
-      <nav class="settings-nav" aria-label="Разделы настроек">
-        <button
-          v-for="tab in tabs"
-          :key="tab.key"
-          type="button"
-          class="nav-option"
-          :class="{ active: activeTab === tab.key }"
-          :aria-label="tab.label"
-          :data-tooltip="tab.label"
-          @click="activeTab = tab.key"
-        >
-          <component :is="tab.icon" :size="18" />
-          <span class="nav-label">{{ tab.label }}</span>
-        </button>
-      </nav>
-    </div>
-
-    <div class="settings-layout">
-      <div class="settings-content">
-        <section v-if="activeTab === 'appearance'" class="settings-group">
-          <div class="group-header">
-            <div>
-              <Palette :size="22" />
-              <h3>Оформление</h3>
+        <div class="stat-rows">
+          <div class="stat-row">
+            <div class="stat-copy">
+              <span>Звуки действий</span>
+              <em>Сигналы при задачах, предупреждениях и фокусе</em>
             </div>
+            <AppSwitch
+              :model-value="settingsStore.soundEnabled"
+              aria-label="Звуки действий"
+              @update:model-value="toggleSounds"
+            />
           </div>
 
-          <div class="group-body">
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Звуки действий</span>
-                <span class="desc">Короткие сигналы при завершении задач, предупреждениях и окончании фокуса.</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.soundEnabled"
-                aria-label="Звуки действий"
-                @update:model-value="toggleSounds"
-              />
+          <div class="stat-row">
+            <div class="stat-copy">
+              <span>Вибрация</span>
+              <em>Тактильный отклик на поддерживаемых устройствах</em>
             </div>
+            <AppSwitch
+              :model-value="settingsStore.hapticsEnabled"
+              aria-label="Вибрация"
+              @update:model-value="toggleHaptics"
+            />
+          </div>
 
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Вибрация</span>
-                <span class="desc">Тактильный отклик на поддерживаемых телефонах и в Android-приложении.</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.hapticsEnabled"
-                aria-label="Вибрация"
-                @update:model-value="toggleHaptics"
-              />
+          <div class="stat-row">
+            <div class="stat-copy">
+              <span>Светлая тема</span>
+              <em>{{ themeLabel }}</em>
             </div>
+            <AppSwitch
+              :model-value="settingsStore.theme === 'light'"
+              aria-label="Светлая тема"
+              @update:model-value="toggleTheme"
+            >
+              <template #off>
+                <Moon :size="14" />
+              </template>
+              <template #on>
+                <Sun :size="14" />
+              </template>
+            </AppSwitch>
+          </div>
 
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Светлая тема</span>
-                <span class="desc">{{ themeLabel }}</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.theme === 'light'"
-                aria-label="Светлая тема"
-                @update:model-value="toggleTheme"
-              >
-                <template #off>
-                  <Moon :size="14" />
-                </template>
-                <template #on>
-                  <Sun :size="14" />
-                </template>
-              </AppSwitch>
+          <div class="stat-row">
+            <div class="stat-copy">
+              <span>Следовать системе</span>
+              <em>Тема повторяет настройки устройства</em>
             </div>
+            <AppSwitch
+              :model-value="settingsStore.themeMode === 'system'"
+              aria-label="Следовать системной теме"
+              @update:model-value="toggleSystemTheme"
+            />
+          </div>
 
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Следовать системе</span>
-                <span class="desc">Тема будет повторять настройки устройства.</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.themeMode === 'system'"
-                aria-label="Следовать системной теме"
-                @update:model-value="toggleSystemTheme"
-              />
+          <div class="stat-row">
+            <div class="stat-copy">
+              <span>Тема по времени</span>
+              <em>{{ scheduleDescription }}</em>
             </div>
+            <AppSwitch
+              :model-value="settingsStore.themeMode === 'schedule'"
+              aria-label="Тема по времени"
+              @update:model-value="toggleScheduleTheme"
+            />
+          </div>
 
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Тема по времени</span>
-                <span class="desc">{{ scheduleDescription }}</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.themeMode === 'schedule'"
-                aria-label="Тема по времени"
-                @update:model-value="toggleScheduleTheme"
-              />
+          <div v-if="settingsStore.themeMode === 'schedule'" class="stat-row stat-row--stack">
+            <div class="stat-copy">
+              <span>Расписание</span>
+              <em>Когда включать светлую и тёмную тему</em>
             </div>
-
-            <div v-if="settingsStore.themeMode === 'schedule'" class="setting-row">
-              <div class="setting-info">
-                <span class="label">Расписание</span>
-                <span class="desc">Когда включать светлую и темную тему.</span>
-              </div>
-              <div class="time-range">
-                <label>
-                  <span>Светлая</span>
-                  <AppTimePicker
-                    :model-value="settingsStore.lightThemeFrom"
-                    label="Время включения светлой темы"
-                    @update:model-value="setLightThemeFrom"
-                  />
-                </label>
-                <label>
-                  <span>Темная</span>
-                  <AppTimePicker
-                    :model-value="settingsStore.darkThemeFrom"
-                    label="Время включения темной темы"
-                    @update:model-value="setDarkThemeFrom"
-                  />
-                </label>
-              </div>
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Акцент</span>
-                <span class="desc">{{ accentLabel }}</span>
-              </div>
-              <div class="accent-controls">
-                <AppColorPicker
-                  :model-value="settingsStore.accentColor"
-                  :options="accentOptions"
-                  label="Акцент интерфейса"
-                  @update:model-value="setPresetAccent"
+            <div class="time-range">
+              <label>
+                <span>Светлая</span>
+                <AppTimePicker
+                  :model-value="settingsStore.lightThemeFrom"
+                  label="Время включения светлой темы"
+                  @update:model-value="setLightThemeFrom"
                 />
-                <AppCustomColorPicker
-                  :model-value="settingsStore.accentColor"
-                  @update:model-value="setAccentColor"
+              </label>
+              <label>
+                <span>Тёмная</span>
+                <AppTimePicker
+                  :model-value="settingsStore.darkThemeFrom"
+                  label="Время включения тёмной темы"
+                  @update:model-value="setDarkThemeFrom"
                 />
-              </div>
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Сбросить оформление</span>
-                <span class="desc">Вернуть темную тему и базовый белый акцент.</span>
-              </div>
-              <AppButton class="action-btn" type="button" variant="secondary" @click="resetAppearance">
-                <RotateCcw :size="16" />
-                Сбросить
-              </AppButton>
-            </div>
-          </div>
-        </section>
-
-        <section v-if="activeTab === 'focus'" class="settings-group">
-          <div class="group-header">
-            <div>
-              <Gauge :size="22" />
-              <h3>Рабочий режим</h3>
+              </label>
             </div>
           </div>
 
-          <div class="group-body">
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Верхняя статистика</span>
-                <span class="desc">Показывать уровень, лигу, активность и счетчики задач.</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.showTopStats"
-                @update:model-value="toggleTopStats"
-              />
+          <div class="stat-row stat-row--stack">
+            <div class="stat-copy">
+              <span>Акцент</span>
+              <em>{{ accentLabel }}</em>
             </div>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Статистика на странице настроек</span>
-                <span class="desc">Показывать верхнюю статистику и внутри настроек.</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.showSettingsStats"
-                @update:model-value="toggleSettingsStats"
+            <div class="accent-controls">
+              <AppColorPicker
+                :model-value="settingsStore.accentColor"
+                :options="accentOptions"
+                label="Акцент интерфейса"
+                @update:model-value="setPresetAccent"
               />
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Подтверждать опасные действия</span>
-                <span class="desc">Перед сбросом данных приложение спросит подтверждение.</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.confirmDangerActions"
-                @update:model-value="toggleDangerConfirm"
+              <AppCustomColorPicker
+                :model-value="settingsStore.accentColor"
+                @update:model-value="setAccentColor"
               />
             </div>
           </div>
-        </section>
+        </div>
 
-        <section v-if="activeTab === 'board'" class="settings-group">
-          <div class="group-header">
-            <div>
-              <LayoutGrid :size="22" />
-              <h3>Доска</h3>
+        <div class="tile-foot">
+          <AppButton type="button" variant="secondary" @click="resetAppearance">
+            <RotateCcw :size="16" />
+            Сбросить оформление
+          </AppButton>
+        </div>
+      </article>
+
+      <!-- Work mode -->
+      <article class="tile tile--focus">
+        <header class="tile-head">
+          <h2>Рабочий режим</h2>
+          <span class="tile-head__aside">поведение</span>
+        </header>
+
+        <div class="stat-rows">
+          <div class="stat-row">
+            <div class="stat-copy">
+              <span>Верхняя статистика</span>
+              <em>Уровень, лига и счётчики задач</em>
             </div>
+            <AppSwitch
+              :model-value="settingsStore.showTopStats"
+              aria-label="Верхняя статистика"
+              @update:model-value="toggleTopStats"
+            />
           </div>
 
-          <div class="group-body">
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Показывать типы узлов</span>
-                <span class="desc">Подписи помогают отличать ветки от этапов на сложных схемах.</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.boardShowNodeTypes"
-                @update:model-value="toggleBoardShowNodeTypes"
-              />
+          <div class="stat-row">
+            <div class="stat-copy">
+              <span>Статистика в настройках</span>
+              <em>Показывать верхнюю статистику здесь</em>
             </div>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Защищать связи от случайного удаления</span>
-                <span class="desc">Перед разрывом линии между элементами появится подтверждение.</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.boardConfirmEdgeDelete"
-                @update:model-value="toggleBoardConfirmEdgeDelete"
-              />
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Защищать ветки от удаления</span>
-                <span class="desc">Полезно, если в ветке есть этапы и связанные задачи.</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.boardConfirmBranchDelete"
-                @update:model-value="toggleBoardConfirmBranchDelete"
-              />
-            </div>
-
-            <div class="mode-summary">
-              <LayoutGrid :size="18" />
-              <div>
-                <strong>Автораскладка остается умной</strong>
-                <span>Доска сохраняет созданные связи, защищает важные действия и оставляет схему читаемой.</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section v-if="activeTab === 'tags'" class="settings-group">
-          <div class="group-header">
-            <div>
-              <Tags :size="22" />
-              <h3>Теги</h3>
-            </div>
+            <AppSwitch
+              :model-value="settingsStore.showSettingsStats"
+              aria-label="Статистика на странице настроек"
+              @update:model-value="toggleSettingsStats"
+            />
           </div>
 
-          <div class="group-body">
-            <div class="data-note">
-              <Tags :size="16" />
-              <span>Общие теги доступны задачам и привычкам. Изменение тега применяется везде.</span>
+          <div class="stat-row">
+            <div class="stat-copy">
+              <span>Подтверждать опасные действия</span>
+              <em>Спрашивать перед сбросом данных</em>
             </div>
-            <TagManager />
+            <AppSwitch
+              :model-value="settingsStore.confirmDangerActions"
+              aria-label="Подтверждать опасные действия"
+              @update:model-value="toggleDangerConfirm"
+            />
           </div>
-        </section>
+        </div>
+      </article>
 
-        <section v-if="activeTab === 'data'" class="settings-group">
-          <div class="group-header">
-            <div>
-              <Database :size="22" />
-              <h3>Данные</h3>
+      <!-- Board -->
+      <article class="tile tile--board">
+        <header class="tile-head">
+          <h2>Доска</h2>
+          <span class="tile-head__aside">связи</span>
+        </header>
+
+        <div class="stat-rows">
+          <div class="stat-row">
+            <div class="stat-copy">
+              <span>Типы узлов</span>
+              <em>Подписи веток и этапов</em>
             </div>
-            <span>{{ settingsStore.autoBackup ? 'Авто-бэкап включен' : 'Авто-бэкап отключен' }}</span>
+            <AppSwitch
+              :model-value="settingsStore.boardShowNodeTypes"
+              aria-label="Показывать типы узлов"
+              @update:model-value="toggleBoardShowNodeTypes"
+            />
           </div>
-          <div class="group-body">
-            <div class="data-note">
-              <Database :size="16" />
-              <span>Данные хранятся локально на этом устройстве.</span>
-            </div>
 
-            <div class="setting-row">
-              <div class="setting-info">
-                <span class="label">Авто-бэкап при выходе</span>
-                <span class="desc">Сохраняет профиль, авторизацию и прогресс.</span>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.autoBackup"
-                @update:model-value="toggleAutoBackup"
-              />
+          <div class="stat-row">
+            <div class="stat-copy">
+              <span>Защита связей</span>
+              <em>Подтверждение перед удалением линии</em>
             </div>
+            <AppSwitch
+              :model-value="settingsStore.boardConfirmEdgeDelete"
+              aria-label="Защищать связи от случайного удаления"
+              @update:model-value="toggleBoardConfirmEdgeDelete"
+            />
+          </div>
 
-            <div class="backup-info">
-              <Clock :size="14" />
-              <span>
+          <div class="stat-row">
+            <div class="stat-copy">
+              <span>Защита веток</span>
+              <em>Подтверждение перед удалением ветки</em>
+            </div>
+            <AppSwitch
+              :model-value="settingsStore.boardConfirmBranchDelete"
+              aria-label="Защищать ветки от удаления"
+              @update:model-value="toggleBoardConfirmBranchDelete"
+            />
+          </div>
+        </div>
+
+        <p class="tile-note">
+          Автораскладка сохраняет связи и оставляет схему читаемой.
+        </p>
+      </article>
+
+      <!-- Tags -->
+      <article class="tile tile--tags">
+        <header class="tile-head">
+          <h2>Теги</h2>
+          <span class="tile-head__aside">общие</span>
+        </header>
+        <p class="tile-lead">Общие теги для задач и привычек. Изменение применяется везде.</p>
+        <TagManager />
+      </article>
+
+      <!-- Data -->
+      <article class="tile tile--data">
+        <header class="tile-head">
+          <h2>Данные</h2>
+          <span class="tile-head__aside">
+            {{ settingsStore.autoBackup ? 'авто-бэкап' : 'без бэкапа' }}
+          </span>
+        </header>
+
+        <div class="stat-rows">
+          <div class="stat-row">
+            <div class="stat-copy">
+              <span>Авто-бэкап при выходе</span>
+              <em>Сохраняет профиль, авторизацию и прогресс</em>
+            </div>
+            <AppSwitch
+              :model-value="settingsStore.autoBackup"
+              aria-label="Авто-бэкап при выходе"
+              @update:model-value="toggleAutoBackup"
+            />
+          </div>
+
+          <div class="stat-row">
+            <div class="stat-copy">
+              <span>Последний бэкап</span>
+              <em>
                 {{
                   settingsStore.lastBackupDate
-                    ? `Последний бэкап: ${lastBackupText}`
-                    : 'Резервная копия еще не создавалась'
+                    ? lastBackupText
+                    : 'Резервная копия ещё не создавалась'
                 }}
-              </span>
+              </em>
             </div>
-
-            <div class="action-group">
-              <AppButton class="action-btn" type="button" variant="secondary" :disabled="accessStore.isDemo" @click="createBackup">
-                <Download :size="16" />
-                Создать бэкап
-              </AppButton>
-              <AppButton class="action-btn" type="button" variant="secondary" :disabled="accessStore.isDemo" @click="exportData">
-                <FileJson :size="16" />
-                Экспорт JSON
-              </AppButton>
-              <AppButton class="action-btn" type="button" variant="secondary" :disabled="accessStore.isDemo" @click="importData">
-                <Upload :size="16" />
-                Импорт JSON
-              </AppButton>
-              <AppButton class="action-btn" type="button" variant="secondary" :disabled="accessStore.isDemo" @click="restoreAutoBackup">
-                <RotateCcw :size="16" />
-                Восстановить
-              </AppButton>
-            </div>
-
-            <div class="danger-zone">
-              <div class="setting-info">
-                <span class="label">Сброс данных</span>
-                <span class="desc">
-                  Удаляет профиль, задачи, прогресс и настройки. Перед сбросом потребуется
-                  подтверждение.
-                </span>
-              </div>
-              <AppButton class="action-btn" type="button" variant="danger" @click="resetAllData">
-                <Trash2 :size="16" />
-                Сбросить все
-              </AppButton>
-            </div>
+            <Clock :size="16" class="stat-icon" aria-hidden="true" />
           </div>
-        </section>
-      </div>
+        </div>
+
+        <div class="action-grid">
+          <AppButton
+            type="button"
+            variant="secondary"
+            :disabled="accessStore.isDemo"
+            @click="createBackup"
+          >
+            <Download :size="16" />
+            Создать бэкап
+          </AppButton>
+          <AppButton
+            type="button"
+            variant="secondary"
+            :disabled="accessStore.isDemo"
+            @click="exportData"
+          >
+            <FileJson :size="16" />
+            Экспорт JSON
+          </AppButton>
+          <AppButton
+            type="button"
+            variant="secondary"
+            :disabled="accessStore.isDemo"
+            @click="importData"
+          >
+            <Upload :size="16" />
+            Импорт JSON
+          </AppButton>
+          <AppButton
+            type="button"
+            variant="secondary"
+            :disabled="accessStore.isDemo"
+            @click="restoreAutoBackup"
+          >
+            <RotateCcw :size="16" />
+            Восстановить
+          </AppButton>
+        </div>
+
+        <div class="danger-row">
+          <div class="stat-copy">
+            <span>Сброс данных</span>
+            <em>Удаляет профиль, задачи, прогресс и настройки</em>
+          </div>
+          <AppButton type="button" variant="danger" @click="resetAllData">
+            <Trash2 :size="16" />
+            Сбросить всё
+          </AppButton>
+        </div>
+      </article>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import {
   Clock,
-  Database,
   Download,
   FileJson,
-  Gauge,
-  LayoutGrid,
   Moon,
-  Palette,
   RotateCcw,
   Sun,
-  Tags,
   Trash2,
   Upload,
 } from 'lucide-vue-next'
@@ -381,21 +356,10 @@ import {
   saveAutoBackup,
 } from '~/utils/backup'
 
-type SettingsTab = 'appearance' | 'focus' | 'board' | 'tags' | 'data'
-
 const settingsStore = useSettingsStore()
 const accessStore = useAccessStore()
 const { confirm } = useConfirm()
 const { success, warning, error: notifyError } = useNotification()
-const activeTab = ref<SettingsTab>('appearance')
-
-const tabs = [
-  { key: 'appearance' as const, label: 'Оформление', icon: Palette },
-  { key: 'focus' as const, label: 'Режим', icon: Gauge },
-  { key: 'board' as const, label: 'Доска', icon: LayoutGrid },
-  { key: 'tags' as const, label: 'Теги', icon: Tags },
-  { key: 'data' as const, label: 'Данные', icon: Database },
-]
 
 const accentOptions = computed(() =>
   ACCENT_COLORS.map((color, index) => ({
@@ -413,11 +377,11 @@ const adaptiveAccentColor = computed(() =>
 )
 
 const themeLabel = computed(() =>
-  settingsStore.theme === 'dark' ? 'Сейчас включена темная тема.' : 'Сейчас включена светлая тема.'
+  settingsStore.theme === 'dark' ? 'Сейчас тёмная тема' : 'Сейчас светлая тема'
 )
 
-const scheduleDescription = computed(() =>
-  `Светлая с ${settingsStore.lightThemeFrom}, темная с ${settingsStore.darkThemeFrom}.`
+const scheduleDescription = computed(
+  () => `Светлая с ${settingsStore.lightThemeFrom}, тёмная с ${settingsStore.darkThemeFrom}`
 )
 
 const accentLabel = computed(() => {
@@ -456,17 +420,11 @@ function toggleScheduleTheme(checked: boolean) {
 }
 
 function setLightThemeFrom(value: string) {
-  settingsStore.setThemeSchedule(
-    value,
-    settingsStore.darkThemeFrom
-  )
+  settingsStore.setThemeSchedule(value, settingsStore.darkThemeFrom)
 }
 
 function setDarkThemeFrom(value: string) {
-  settingsStore.setThemeSchedule(
-    settingsStore.lightThemeFrom,
-    value
-  )
+  settingsStore.setThemeSchedule(settingsStore.lightThemeFrom, value)
 }
 
 function setAccentColor(color: string) {
@@ -604,430 +562,249 @@ async function resetAllData() {
 </script>
 
 <style scoped lang="scss">
-.settings-page {
-  display: grid;
+.settings {
   width: 100%;
-  min-width: 0;
   max-width: 100%;
-  gap: 14px;
-  margin: 0;
-  padding-bottom: 24px;
-  box-sizing: border-box;
-
-  @include mobile {
-    padding-bottom: 112px;
-  }
+  min-width: 0;
 }
 
-.settings-head {
-  @include surface-panel;
+.settings-bento {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas:
+    'appearance appearance appearance'
+    'focus      board      tags'
+    'data       data       data';
+  gap: var(--space-3);
   width: 100%;
+  align-items: stretch;
+}
+
+.tile {
+  @include surface-panel;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
   min-width: 0;
-  max-width: 100%;
-  align-items: center;
-  gap: 18px;
-  padding: 16px;
+  min-height: 0;
+  padding: var(--space-4);
   border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--radius-lg);
+}
+
+.tile--appearance {
+  grid-area: appearance;
+}
+
+.tile--focus {
+  grid-area: focus;
+}
+
+.tile--board {
+  grid-area: board;
+}
+
+.tile--tags {
+  grid-area: tags;
+}
+
+.tile--data {
+  grid-area: data;
+}
+
+.tile-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex: 0 0 auto;
 
   h2 {
-    margin: 0 0 6px;
-    color: var(--text);
-    font-size: 1.35rem;
-    font-weight: 700;
-  }
-
-  p {
     margin: 0;
-    color: var(--dim);
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-
-  @include mobile {
-    grid-template-columns: 1fr;
-    gap: 14px;
-    padding: 14px;
-    text-align: left;
+    color: var(--color-text-primary);
+    font-size: var(--text-md);
+    font-weight: var(--weight-bold);
+    line-height: 1.25;
   }
 }
 
-.settings-title {
-  min-width: 0;
+.tile-head__aside {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
 }
 
-.settings-layout {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-.settings-nav {
-  @include surface-panel;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  width: fit-content;
-  max-width: 100%;
-  padding: 5px;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-pill);
-
-  @include mobile {
-    justify-self: stretch;
-    width: 100%;
-    min-width: 0;
-    padding: 6px;
-    border-radius: var(--border-radius-pill);
-  }
-}
-
-.nav-option {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: auto;
-  min-height: 44px;
-  padding: 0 14px;
-  border: none;
-  border-radius: var(--border-radius-pill);
-  background: transparent;
-  color: var(--dim);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.92rem;
-  font-weight: 600;
-  transition:
-    background var(--transition-standard),
-    color var(--transition-standard);
-
-  &:hover:not(.active) {
-    background: transparent;
-    color: var(--text);
-  }
-
-  &.active,
-  &.active:focus-visible,
-  &.active:hover {
-    background: var(--accent);
-    color: var(--bg);
-  }
-
-  @include mobile {
-    flex: 1 1 0;
-    justify-content: center;
-    min-width: 44px;
-    height: 44px;
-    min-height: 44px;
-    padding: 0;
-    border-radius: var(--border-radius-pill);
-  }
-}
-
-.nav-label {
-  @include mobile {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    white-space: nowrap;
-    clip-path: inset(50%);
-  }
-}
-
-.settings-content {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
+.tile-lead {
   margin: 0;
-  box-sizing: border-box;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.45;
 }
 
-.settings-group {
-  @include surface-panel;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
-  box-sizing: border-box;
+.stat-rows {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
-.group-header {
+.stat-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  min-height: 68px;
-  padding: 16px 18px;
-  color: var(--text);
+  gap: var(--space-3);
+  min-height: 48px;
+  padding-block: var(--space-2);
+  border-bottom: var(--ui-border);
 
-  > div {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
+  &:last-child {
+    border-bottom: none;
   }
 
-  h3 {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
+  &--stack {
+    flex-direction: column;
+    align-items: stretch;
   }
+}
+
+.stat-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
 
   span {
-    color: var(--dim);
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-align: right;
+    color: var(--color-text-primary);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    line-height: 1.3;
   }
 
-  svg {
-    opacity: 0.7;
-  }
-}
-
-.group-body {
-  display: grid;
-  padding: 0 16px 10px;
-}
-
-.setting-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(180px, auto);
-  align-items: center;
-  gap: var(--panel-gap);
-  min-height: 64px;
-  padding: 14px 0;
-
-  + .setting-row,
-  + .backup-info,
-  + .action-group,
-  + .danger-zone,
-  + .mode-summary {
-    border-top: var(--ui-border);
-  }
-
-  @include mobile {
-    grid-template-columns: minmax(0, 1fr) auto;
-    min-width: 0;
-    max-width: 100%;
-    gap: 12px;
-    min-height: 0;
-    align-items: center;
-    text-align: left;
+  em {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-style: normal;
+    line-height: 1.35;
   }
 }
 
-.setting-row:has(.time-range),
-.setting-row:has(.accent-controls),
-.setting-row:has(.action-btn) {
-  @include mobile {
-    grid-template-columns: 1fr;
-  }
+.stat-icon {
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
 }
 
-.setting-info {
-  min-width: 0;
-
-  .label {
-    display: block;
-    color: var(--text);
-    font-size: 0.92rem;
-    font-weight: 600;
-  }
-
-  .desc {
-    display: block;
-    margin-top: 4px;
-    color: var(--dim);
-    font-size: 0.82rem;
-    line-height: 1.45;
-  }
-}
-
-.time-range,
-.accent-controls {
+.tile-foot {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  min-width: 0;
-  max-width: 100%;
-  min-height: var(--control-height-md);
-
-  @include mobile {
-    justify-content: flex-start;
-    width: 100%;
-  }
+  gap: var(--space-2);
+  flex: 0 0 auto;
+  padding-top: var(--space-3);
+  border-top: var(--ui-border);
 }
 
-.background-preview {
-  width: 86px;
-  height: 48px;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-md);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
+.tile-note {
+  margin: 0;
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: var(--ui-border);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.45;
 }
 
-.time-range label {
+.time-range {
   display: grid;
-  min-width: 0;
-  gap: 4px;
-  color: var(--dim);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
 
-@media (pointer: coarse), (max-width: 767px) {
-  .time-range {
+  label {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
+    gap: var(--space-2);
+    min-width: 0;
 
-  .time-range label {
-    width: 100%;
-  }
-
-  .time-range :deep(.app-time-picker) {
-    width: 100%;
-  }
-
-  @media (max-width: 380px) {
-    .time-range {
-      grid-template-columns: 1fr;
+    > span {
+      color: var(--color-text-muted);
+      font-size: var(--text-xs);
+      font-weight: var(--weight-medium);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
   }
 }
 
-.backup-info,
-.data-note,
-.mode-summary {
+.accent-controls {
   display: flex;
-  min-width: 0;
-  max-width: 100%;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding: 12px 0;
-  color: var(--dim);
-  font-size: 0.85rem;
+  gap: var(--space-2);
+}
 
-  svg {
-    flex-shrink: 0;
-    color: var(--text);
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+
+  :deep(.app-button) {
+    width: 100%;
   }
 }
 
-.mode-summary {
-  align-items: flex-start;
-  margin-top: 0;
-
-  strong,
-  span {
-    display: block;
-  }
-
-  strong {
-    margin-bottom: 4px;
-    color: var(--text);
-    font-size: 0.9rem;
-  }
-
-  span {
-    line-height: 1.45;
-  }
-}
-
-.data-note + .setting-row,
-.backup-info + .action-group {
+.danger-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
   border-top: var(--ui-border);
 }
 
-.action-group {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  min-width: 0;
-  max-width: 100%;
-  gap: 10px;
-  padding-top: 14px;
+@media (max-width: 1100px) {
+  .settings-bento {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'appearance appearance'
+      'focus      board'
+      'tags       tags'
+      'data       data';
+  }
 
-  @include mobile {
-    grid-template-columns: 1fr;
+  .action-grid {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
-.danger-zone {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 16px;
-  padding-top: 18px;
-
-  @include mobile {
+@media (max-width: 767px) {
+  .settings-bento {
     grid-template-columns: 1fr;
-    min-width: 0;
+    grid-template-areas:
+      'appearance'
+      'focus'
+      'board'
+      'tags'
+      'data';
+    gap: var(--space-3);
   }
-}
 
-.action-btn {
-  min-height: 42px;
+  .tile {
+    padding: var(--space-3);
+  }
 
-  @include mobile {
+  .time-range,
+  .action-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .danger-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .danger-row :deep(.app-button),
+  .tile-foot :deep(.app-button),
+  .action-grid :deep(.app-button) {
     width: 100%;
     min-height: 44px;
-  }
-}
-
-:global(::view-transition-old(root)),
-:global(::view-transition-new(root)) {
-  animation-duration: 520ms;
-  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
-  mix-blend-mode: normal;
-}
-
-:global(::view-transition-old(root)) {
-  animation-name: theme-fade-out;
-}
-
-:global(::view-transition-new(root)) {
-  animation-name: theme-corner-reveal;
-}
-
-@keyframes theme-corner-reveal {
-  from {
-    clip-path: circle(0 at var(--theme-transition-x, 100%) var(--theme-transition-y, 0));
-  }
-
-  to {
-    clip-path: circle(150vmax at var(--theme-transition-x, 100%) var(--theme-transition-y, 0));
-  }
-}
-
-@keyframes theme-fade-out {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :global(::view-transition-old(root)),
-  :global(::view-transition-new(root)) {
-    animation: none;
   }
 }
 </style>

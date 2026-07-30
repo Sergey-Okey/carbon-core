@@ -121,14 +121,19 @@ export const useSettingsStore = defineStore(
     function applyAccentColor(color: string) {
       if (import.meta.client) {
         const finalColor = resolveAccentColor(color, isLight())
+        // Keep both tokens in sync: some UI uses --accent, some --color-accent.
         document.documentElement.style.setProperty('--accent', finalColor)
-        const r = parseInt(finalColor.slice(1, 3), 16)
-        const g = parseInt(finalColor.slice(3, 5), 16)
-        const b = parseInt(finalColor.slice(5, 7), 16)
-        document.documentElement.style.setProperty(
-          '--accent-rgb',
-          `${r}, ${g}, ${b}`
-        )
+        document.documentElement.style.setProperty('--color-accent', finalColor)
+        const hex = finalColor.replace('#', '')
+        const r = parseInt(hex.slice(0, 2), 16)
+        const g = parseInt(hex.slice(2, 4), 16)
+        const b = parseInt(hex.slice(4, 6), 16)
+        if ([r, g, b].every((n) => Number.isFinite(n))) {
+          document.documentElement.style.setProperty(
+            '--accent-rgb',
+            `${r}, ${g}, ${b}`
+          )
+        }
       }
     }
 

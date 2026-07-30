@@ -299,11 +299,10 @@ onBeforeUnmount(() => {
 
 .select-menu {
   @include glass;
+  @include nest-shell(var(--radius-md), var(--space-1));
   position: fixed;
-  padding: var(--space-1);
   overflow-y: auto;
   border: var(--ui-border);
-  border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
 
   &.top {
@@ -312,6 +311,7 @@ onBeforeUnmount(() => {
 }
 
 .select-option {
+  @include nest-item;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -320,7 +320,6 @@ onBeforeUnmount(() => {
   min-height: var(--control-height-sm);
   padding-inline: var(--space-2);
   border: none;
-  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--color-text-primary);
   font: inherit;

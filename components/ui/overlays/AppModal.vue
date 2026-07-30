@@ -147,7 +147,7 @@ function handleBackdrop() {
   min-width: 0;
 
   h3 {
-    margin: var(--space-1) 0 0;
+    margin: 0;
     color: var(--color-text-primary);
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
@@ -158,6 +158,7 @@ function handleBackdrop() {
 
 .modal-kicker {
   display: block;
+  margin-bottom: var(--space-1);
   color: var(--color-text-secondary);
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);
@@ -172,6 +173,7 @@ function handleBackdrop() {
   font-size: var(--text-sm);
   line-height: var(--leading-normal);
   overflow-y: auto;
+  scrollbar-gutter: stable;
 
   &.allow-overflow {
     overflow: visible;

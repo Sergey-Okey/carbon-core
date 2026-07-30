@@ -1,1051 +1,522 @@
 <template>
-  <section class="analytics-page" aria-label="Аналитика" data-tour="analytics-page">
-    <header class="analytics-head">
-      <div>
-        <span class="eyebrow">Обзор</span>
-        <h3>Аналитика</h3>
-      </div>
-      <div class="head-meta">
-        <span>{{ todayLabel }}</span>
-        <strong>{{ totalCompletionRate }}%</strong>
-      </div>
-    </header>
+  <section class="analytics" aria-label="Аналитика" data-tour="analytics-page">
+    <div class="analytics-grid" :class="{ 'is-reordering': Boolean(dragWidgetId) }">
+      <AnalyticsWidgetShell
+        title="Активность"
+        subtitle="Столбцы выполнений по дням"
+        :icon="Activity"
+        :span="8"
+        enter="fade-up"
+        :style="tileStyle('activity')"
+        :dragging="isDragging('activity')"
+        :drop-target="isDrop('activity')"
+        drag-label="Перетащить виджет активности"
+        v-bind="dragHandlers('activity')"
+      >
+        <template #aside>
+          <span class="trend" :class="activityTrend.dir">{{ activityTrend.label }}</span>
+        </template>
+        <AnalyticsLineChart
+          v-model="rangeDays"
+          :series="activitySeries"
+          :empty="!hasActivityData"
+        />
+      </AnalyticsWidgetShell>
 
-    <div class="analytics-grid">
-      <article class="metric-cell metric-cell--progress">
-        <div class="cell-title">
-          <span>Общий прогресс</span>
-          <strong>{{ userStore.levelProgressPercent.toFixed(0) }}%</strong>
-        </div>
-        <div class="radial-wrap" aria-label="Прогресс уровня">
-          <svg viewBox="0 0 160 160" class="radial-chart">
-            <g>
-              <line
-                v-for="tick in radialTicks"
-                :key="tick.index"
-                x1="80"
-                y1="20"
-                x2="80"
-                y2="34"
-                :class="{ active: tick.active }"
-                :transform="`rotate(${tick.angle} 80 80)`"
-              />
-            </g>
-          </svg>
-          <div class="radial-value">
-            <strong>{{ userStore.level }}</strong>
-            <span>уровень</span>
-          </div>
-        </div>
-      </article>
+      <AnalyticsWidgetShell
+        title="Продуктивные часы"
+        subtitle="Когда вы выполняете больше всего"
+        :icon="Clock"
+        :span="4"
+        enter="slide-left"
+        :style="tileStyle('hours')"
+        :dragging="isDragging('hours')"
+        :drop-target="isDrop('hours')"
+        drag-label="Перетащить виджет часов"
+        v-bind="dragHandlers('hours')"
+      >
+        <AnalyticsHourBarChart :items="hourBarStats" :empty="!hourBarStats.length" />
+      </AnalyticsWidgetShell>
 
-      <article class="metric-cell metric-cell--wide">
-        <div class="cell-title">
-          <span>Пульс выполнения</span>
-          <strong>{{ completedThisWeek }} задач</strong>
-        </div>
-        <div class="volume-bars" aria-label="Выполненные задачи за 14 дней">
-          <span
-            v-for="day in activitySeries"
-            :key="day.date"
-            :class="{ active: day.count > 0 }"
-            :style="{ '--bar-level': `${Math.max(day.ratio * 100, day.count > 0 ? 14 : 4)}%` }"
-            :title="`${day.label}: ${day.count}`"
+      <AnalyticsWidgetShell
+        title="Прогресс"
+        subtitle="Сводка по направлениям"
+        :icon="Target"
+        :span="4"
+        enter="scale-pop"
+        :style="tileStyle('focus')"
+        :dragging="isDragging('focus')"
+        :drop-target="isDrop('focus')"
+        drag-label="Перетащить виджет прогресса"
+        v-bind="dragHandlers('focus')"
+      >
+        <AnalyticsNestedArcs
+          :key="progressArcsKey"
+          :arcs="nestedArcs"
+          :score="progressScore"
+          :empty="!nestedArcs.length"
+          empty-hint="Закройте задачи и этапы — дуги появятся здесь"
+        />
+      </AnalyticsWidgetShell>
+
+      <AnalyticsWidgetShell
+        title="Категории"
+        subtitle="Структура задач"
+        :icon="LayoutGrid"
+        :aside="`${analyticsTasks.length}`"
+        :span="4"
+        enter="spin-soft"
+        :style="tileStyle('categories')"
+        :dragging="isDragging('categories')"
+        :drop-target="isDrop('categories')"
+        drag-label="Перетащить виджет категорий"
+        v-bind="dragHandlers('categories')"
+      >
+        <AnalyticsCategoryChart
+          :items="categoryItems"
+          :empty="!analyticsTasks.length"
+          empty-title="Нет задач"
+          empty-hint="Добавьте задачи — появится структура категорий"
+        />
+      </AnalyticsWidgetShell>
+
+      <AnalyticsWidgetShell
+        title="Баланс"
+        subtitle="Радар метрик фокуса"
+        :icon="Radar"
+        :span="4"
+        enter="expand-blur"
+        :style="tileStyle('radar')"
+        :dragging="isDragging('radar')"
+        :drop-target="isDrop('radar')"
+        drag-label="Перетащить радар"
+        v-bind="dragHandlers('radar')"
+      >
+        <AnalyticsRadarChart
+          :items="radarItems"
+          :empty="focusScore === 0 && !analyticsTasks.length"
+        />
+      </AnalyticsWidgetShell>
+
+      <div
+        class="analytics-stack"
+        :class="{
+          'is-dragging': isDragging('habits'),
+          'is-drop-target': isDrop('habits'),
+        }"
+        :style="tileStyle('habits')"
+        @dragover.prevent="onTileDragOver('habits')"
+        @dragenter.prevent="onTileDragEnter('habits')"
+        @dragleave="onTileDragLeave('habits', $event)"
+        @drop.prevent="onTileDrop('habits')"
+      >
+        <AnalyticsWidgetShell
+          title="Привычки"
+          :subtitle="habitsSubtitle"
+          :icon="Flame"
+          :span="1"
+          fluid
+          enter="bounce-in"
+          :dragging="false"
+          :drop-target="false"
+          drag-label="Перетащить блок привычек"
+          v-bind="dragHandlers('habits')"
+        >
+          <AnalyticsHeroProgress
+            :value="activeHabitsToday"
+            unit="сегодня"
+            :progress="habitsProgress"
+            :metrics="habitMetrics"
+            :empty="!habitsCount"
+            empty-title="Нет привычек"
+            empty-hint="Создайте привычки — прогресс появится здесь"
           />
-        </div>
-        <div class="axis-row">
-          <span>{{ activitySeries[0]?.label }}</span>
-          <span>{{ activitySeries[activitySeries.length - 1]?.label }}</span>
-        </div>
-      </article>
+        </AnalyticsWidgetShell>
 
-      <article class="metric-cell metric-cell--resources">
-        <div class="cell-title">
-          <span>Ритм дня</span>
-          <strong>{{ topProductiveHourLabel }}</strong>
-        </div>
-        <div class="resource-lines">
-          <div>
-            <span>Лучший час</span>
-            <strong>{{ topProductiveHourLabel }}</strong>
-          </div>
-          <div>
-            <span>Активных дней</span>
-            <strong>{{ productiveDays }}</strong>
-          </div>
-          <div>
-            <span>Завершений</span>
-            <strong>{{ completionsLast14 }}</strong>
-          </div>
-        </div>
-      </article>
-
-      <article class="metric-cell metric-cell--speed">
-        <div class="cell-title">
-          <span>Скорость</span>
-          <strong>{{ dailyAverage }}</strong>
-        </div>
-        <p class="big-number">{{ dailyAverage }}</p>
-        <span class="muted">задач в день за последние 14 дней</span>
-      </article>
-
-      <article class="metric-cell metric-cell--trajectory">
-        <div class="cell-title">
-          <span>Продуктивные часы</span>
-          <strong>{{ topProductiveHourLabel }}</strong>
-        </div>
-        <svg class="line-chart" viewBox="0 0 520 160" preserveAspectRatio="none" aria-label="Распределение продуктивности по часам">
-          <polyline class="line-grid" points="0,40 520,40" />
-          <polyline class="line-grid" points="0,80 520,80" />
-          <polyline class="line-grid" points="0,120 520,120" />
-          <polyline class="line-fill" :points="productiveAreaPoints" />
-          <polyline class="line-path" :points="productiveLinePoints" />
-          <circle
-            v-for="point in productivePoints"
-            :key="point.key"
-            :cx="point.x"
-            :cy="point.y"
-            r="3"
+        <AnalyticsWidgetShell
+          title="Голограмма"
+          subtitle="Волновой пульс из активности"
+          :icon="Sparkles"
+          :span="1"
+          fluid
+          enter="expand-blur"
+          :draggable="false"
+        >
+          <AnalyticsHologram
+            :series="activitySeries"
+            :metrics="hologramMetrics"
+            :empty="!hasActivityData && focusScore === 0"
           />
-        </svg>
-      </article>
+        </AnalyticsWidgetShell>
+      </div>
 
-      <article class="metric-cell metric-cell--types">
-        <div class="cell-title">
-          <span>Структура задач</span>
-          <strong>{{ analyticsTasks.length }}</strong>
-        </div>
-        <div class="task-types">
-          <div v-for="item in taskTypeStats" :key="item.key" class="type-row">
-            <span>{{ item.label }}</span>
-            <div class="type-track">
-              <i :style="{ width: `${item.percent}%` }" />
-            </div>
-            <strong>{{ item.count }}</strong>
-          </div>
-        </div>
-      </article>
+      <AnalyticsWidgetShell
+        title="Тепловая карта"
+        subtitle="Активность за 30 дней"
+        :icon="CalendarDays"
+        :span="4"
+        enter="wipe-up"
+        :style="tileStyle('heatmap')"
+        :dragging="isDragging('heatmap')"
+        :drop-target="isDrop('heatmap')"
+        drag-label="Перетащить тепловую карту"
+        v-bind="dragHandlers('heatmap')"
+      >
+        <AnalyticsHeatmap :days="heatmapDays" :empty="!heatmapDays.length" />
+      </AnalyticsWidgetShell>
 
-      <article class="metric-cell metric-cell--status">
-        <div class="cell-title">
-          <span>Состояние</span>
-          <strong>{{ activeTasks }}</strong>
-        </div>
-        <div class="status-stack">
-          <span :style="{ '--size': `${completionShare.open}%` }">Активные {{ activeTasks }}</span>
-          <span :style="{ '--size': `${completionShare.done}%` }">Готовые {{ completedTasks }}</span>
-          <span :style="{ '--size': `${completionShare.habits}%` }">Привычки {{ habitsCount }}</span>
-        </div>
-      </article>
-
-      <article class="metric-cell metric-cell--board">
-        <div class="cell-title">
-          <span>Карта веток</span>
-          <strong>{{ branchesStore.branches.length }}</strong>
-        </div>
-        <div class="branch-map">
-          <div v-for="branch in branchStats" :key="branch.id" class="branch-row">
-            <span class="branch-name">{{ branch.name }}</span>
-            <div class="branch-track">
-              <i :style="{ width: `${branch.progress}%`, '--marker': branch.color }" />
-            </div>
-            <strong>{{ branch.done }}/{{ branch.total }}</strong>
-          </div>
-        </div>
-      </article>
-
-      <article class="metric-cell metric-cell--tags">
-        <div class="cell-title">
-          <span>Активность по тегам</span>
-          <strong>{{ tagStats.length }}</strong>
-        </div>
-        <div class="insight-list">
-          <div v-for="tag in tagStats" :key="tag.id">
-            <span><i :style="{ background: tag.color }" />{{ tag.name }}</span>
-            <strong>{{ tag.done }}/{{ tag.total }}</strong>
-          </div>
-          <span v-if="!tagStats.length" class="muted">Добавьте теги к задачам</span>
-        </div>
-      </article>
-
-      <article class="metric-cell metric-cell--habits">
-        <div class="cell-title">
-          <span>Активность привычек</span>
-          <strong>{{ activeHabitsToday }}/{{ habitsCount }}</strong>
-        </div>
-        <div class="insight-list">
-          <div v-for="habit in habitStats" :key="habit.id">
-            <span>{{ habit.title }}</span>
-            <strong :class="{ active: habit.activeToday }">{{ habit.label }}</strong>
-          </div>
-          <span v-if="!habitStats.length" class="muted">Привычек пока нет</span>
-        </div>
-      </article>
-
-      <article class="metric-cell metric-cell--focus">
-        <div class="cell-title">
-          <span>Фокус</span>
-          <strong>{{ focusLabel }}</strong>
-        </div>
-        <div class="focus-list">
-          <span>Следующая задача: {{ nextTaskTitle }}</span>
-          <span>Самая сильная ветка: {{ strongestBranch }}</span>
-          <span>Незавершенных этапов: {{ pendingMilestones }}</span>
-        </div>
-      </article>
+      <AnalyticsWidgetShell
+        title="Теги"
+        subtitle="Какие теги преобладают"
+        :icon="Tags"
+        :span="4"
+        enter="slide-right"
+        :style="tileStyle('tags')"
+        :dragging="isDragging('tags')"
+        :drop-target="isDrop('tags')"
+        drag-label="Перетащить гистограмму тегов"
+        v-bind="dragHandlers('tags')"
+      >
+        <AnalyticsTagChart
+          :items="tagStats"
+          :empty="!tagStats.length"
+          empty-title="Нет тегов"
+          empty-hint="Добавьте теги к задачам — здесь появится гистограмма"
+        />
+      </AnalyticsWidgetShell>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useBranchesStore } from '~/stores/branches.store'
-import { useTasksStore } from '~/stores/tasks.store'
-import { useUserStore } from '~/stores/user.store'
-import { useTagsStore } from '~/stores/tags.store'
-import type { TaskType } from '~/types/task.types'
+import {
+  Activity,
+  CalendarDays,
+  Clock,
+  Crown,
+  Flame,
+  LayoutGrid,
+  Radar,
+  Sparkles,
+  Tags,
+  Target,
+  Zap,
+} from 'lucide-vue-next'
+import AnalyticsCategoryChart from '~/components/analytics/widgets/AnalyticsCategoryChart.vue'
+import AnalyticsHeatmap from '~/components/analytics/widgets/AnalyticsHeatmap.vue'
+import AnalyticsHeroProgress from '~/components/analytics/widgets/AnalyticsHeroProgress.vue'
+import AnalyticsHologram from '~/components/analytics/widgets/AnalyticsHologram.vue'
+import AnalyticsHourBarChart from '~/components/analytics/widgets/AnalyticsHourBarChart.vue'
+import AnalyticsLineChart from '~/components/analytics/widgets/AnalyticsLineChart.vue'
+import AnalyticsNestedArcs from '~/components/analytics/widgets/AnalyticsNestedArcs.vue'
+import AnalyticsRadarChart from '~/components/analytics/widgets/AnalyticsRadarChart.vue'
+import AnalyticsTagChart from '~/components/analytics/widgets/AnalyticsTagChart.vue'
+import AnalyticsWidgetShell from '~/components/analytics/AnalyticsWidgetShell.vue'
+import { useAnalyticsMetrics } from '~/composables/useAnalyticsMetrics'
+import {
+  type AnalyticsWidgetId,
+  useUIStore,
+} from '~/stores/ui.store'
 
-const tasksStore = useTasksStore()
-const userStore = useUserStore()
-const branchesStore = useBranchesStore()
-const tagsStore = useTagsStore()
-
-const taskTypeLabels: Record<TaskType, string> = {
-  HABIT: 'Привычки',
-  TASK_DAY: 'День',
-  TASK_WEEK: 'Неделя',
-  TASK_MONTH: 'Месяц',
-  TASK_YEAR: 'Год',
-  PURCHASE: 'Покупки',
-}
-
-const todayLabel = computed(() =>
-  new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'short', year: 'numeric' })
-)
-const analyticsTasks = computed(() => tasksStore.tasks.filter((task) => task.type !== 'PURCHASE'))
-const analyticsTaskTypes: TaskType[] = ['HABIT', 'TASK_DAY', 'TASK_WEEK', 'TASK_MONTH', 'TASK_YEAR']
-
-const activeTasks = computed(() =>
-  analyticsTasks.value.filter((task) => !task.done && task.type !== 'HABIT').length
-)
-const completedTasks = computed(() => analyticsTasks.value.filter((task) => task.done).length)
-const habitsCount = computed(() => analyticsTasks.value.filter((task) => task.type === 'HABIT').length)
-
-const totalCompletionRate = computed(() => {
-  const actionable = analyticsTasks.value.filter((task) => task.type !== 'HABIT')
-  if (!actionable.length) return 0
-  return Math.round((actionable.filter((task) => task.done).length / actionable.length) * 100)
+const uiStore = useUIStore()
+const rangeDays = computed({
+  get: () => uiStore.analyticsRangeDays,
+  set: (value: 7 | 14 | 30) => uiStore.setAnalyticsRangeDays(value),
 })
 
-const activitySeries = computed(() => {
-  const days = createDateRange(14)
-  const max = Math.max(...tasksStore.completedTasksHistory.map((item) => item.count), 1)
+const {
+  activitySeries,
+  heatmapDays,
+  periodAverage,
+  activityTrend,
+  hasActivityData,
+  currentStreak,
+  longestStreak,
+  hourBarStats,
+  taskTypeStats,
+  habitsCount,
+  activeHabitsToday,
+  focusMetrics,
+  focusScore,
+  branchesProgressScore,
+  topBranchStats,
+  tagStats,
+  analyticsTasks,
+} = useAnalyticsMetrics(rangeDays)
 
-  return days.map((date) => {
-    const item = tasksStore.completedTasksHistory.find((history) => history.date === date.key)
-    const count = item?.count ?? 0
-    return {
-      date: date.key,
-      label: date.label,
-      count,
-      ratio: count / max,
-    }
-  })
-})
+const dragWidgetId = ref<AnalyticsWidgetId | null>(null)
+const dropTargetId = ref<AnalyticsWidgetId | null>(null)
 
-const completedThisWeek = computed(() =>
-  activitySeries.value.slice(-7).reduce((sum, day) => sum + day.count, 0)
-)
+const WIDGET_HEIGHT = 500
 
-const dailyAverage = computed(() => {
-  const total = activitySeries.value.reduce((sum, day) => sum + day.count, 0)
-  return (total / activitySeries.value.length).toFixed(1)
-})
-
-const completionEvents = computed(() =>
-  analyticsTasks.value
-    .flatMap((task) => {
-      const events: number[] = []
-      if (task.done && task.completedAt) events.push(task.completedAt)
-      if (task.type === 'HABIT' && task.lastCompletedAt) events.push(task.lastCompletedAt)
-      return events
-    })
-    .filter((timestamp) => timestamp >= Date.now() - 14 * 24 * 60 * 60 * 1000)
-)
-
-const productiveDays = computed(() => {
-  const days = new Set(completionEvents.value.map((timestamp) => getLocalDateKey(new Date(timestamp))))
-  return days.size
-})
-
-const completionsLast14 = computed(() => completionEvents.value.length)
-
-const productiveHourSeries = computed(() => {
-  const hours = Array.from({ length: 24 }, (_, hour) => ({
-    key: `${hour}`,
-    label: `${String(hour).padStart(2, '0')}:00`,
-    value: 0,
-  }))
-
-  completionEvents.value.forEach((timestamp) => {
-    hours[new Date(timestamp).getHours()].value += 1
-  })
-
-  return hours
-})
-
-const topProductiveHourLabel = computed(() => {
-  const top = productiveHourSeries.value.reduce((best, item) =>
-    item.value > best.value ? item : best
-  )
-  return top.value > 0 ? top.label : 'нет данных'
-})
-
-const productivePoints = computed(() => {
-  const values = productiveHourSeries.value.map((item) => item.value)
-  const max = Math.max(...values, 1)
-  const step = 520 / Math.max(productiveHourSeries.value.length - 1, 1)
-
-  return productiveHourSeries.value.map((item, index) => ({
-    key: item.key,
-    x: Math.round(index * step),
-    y: Math.round(142 - (item.value / max) * 124),
-  }))
-})
-
-const productiveLinePoints = computed(() =>
-  productivePoints.value.map((point) => `${point.x},${point.y}`).join(' ')
-)
-const productiveAreaPoints = computed(() => {
-  if (!productivePoints.value.length) return ''
-  return `0,150 ${productiveLinePoints.value} 520,150`
-})
-
-const radialTicks = computed(() => {
-  const active = Math.round((userStore.levelProgressPercent / 100) * 40)
-  return Array.from({ length: 40 }, (_, index) => ({
-    index,
-    angle: index * 9,
-    active: index < active,
-  }))
-})
-
-const taskTypeStats = computed(() => {
-  const total = Math.max(analyticsTasks.value.length, 1)
-  return analyticsTaskTypes.map((type) => {
-    const count = analyticsTasks.value.filter((task) => task.type === type).length
-    return {
-      key: type,
-      label: taskTypeLabels[type],
-      count,
-      percent: Math.round((count / total) * 100),
-    }
-  })
-})
-
-const completionShare = computed(() => {
-  const total = Math.max(analyticsTasks.value.length, 1)
-  return {
-    open: Math.max(8, Math.round((activeTasks.value / total) * 100)),
-    done: Math.max(8, Math.round((completedTasks.value / total) * 100)),
-    habits: Math.max(8, Math.round((habitsCount.value / total) * 100)),
-  }
-})
-
-const branchStats = computed(() =>
-  branchesStore.branches.map((branch) => {
-    const milestones = branch.milestones ?? []
-    const total = milestones.length
-    const done = milestones.filter((milestone) => milestone.status === 'completed').length
-    return {
-      id: branch.id,
-      name: branch.displayName,
-      total,
-      done,
-      progress: total ? Math.round((done / total) * 100) : 0,
-      color: branch.markerColor || 'var(--accent)',
-    }
-  })
-)
-
-const strongestBranch = computed(() => {
-  const [first] = [...branchStats.value].sort((a, b) => b.progress - a.progress)
-  return first?.name || 'нет данных'
-})
-
-const pendingMilestones = computed(() =>
-  branchesStore.branches.reduce(
-    (sum, branch) =>
-      sum + branch.milestones.filter((milestone) => milestone.status !== 'completed').length,
-    0
-  )
-)
-
-const nextTaskTitle = computed(() => {
-  const task = analyticsTasks.value.find((item) => !item.done && item.type !== 'HABIT')
-  return task?.title || 'нет активных задач'
-})
-
-const focusLabel = computed(() => {
-  if (activeTasks.value > 0) return 'в работе'
-  if (habitsCount.value > 0) return 'привычки'
-  return 'спокойно'
-})
-
-const tagStats = computed(() =>
-  tagsStore.tags
-    .map((tag) => {
-      const tasks = analyticsTasks.value.filter((task) => task.tagIds.includes(tag.id))
-      return {
-        id: tag.id,
-        name: tag.name,
-        color: tag.color || 'var(--accent)',
-        total: tasks.length,
-        done: tasks.filter((task) => task.done || (task.type === 'HABIT' && isToday(task.lastCompletedAt))).length,
-      }
-    })
-    .filter((tag) => tag.total > 0)
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 8)
-)
-
-const habitStats = computed(() =>
-  analyticsTasks.value
-    .filter((task) => task.type === 'HABIT')
-    .map((habit) => ({
-      id: habit.id,
-      title: habit.title,
-      activeToday: isToday(habit.lastCompletedAt),
-      label: isToday(habit.lastCompletedAt) ? 'сегодня' : 'ожидает',
+const nestedArcs = computed(() => {
+  const branches = topBranchStats.value.slice(0, 4)
+  if (branches.length) {
+    return branches.map((branch) => ({
+      key: branch.id,
+      label: branch.name,
+      percent: branch.progress,
+      done: branch.done,
+      total: Math.max(branch.total, 1),
+      color: branch.color,
     }))
-    .slice(0, 8)
+  }
+  return focusMetrics.value.slice(0, 4).map((metric) => ({
+    key: metric.key,
+    label: metric.label,
+    percent: metric.value,
+    done: metric.value,
+    total: 100,
+    color: 'var(--accent)',
+  }))
+})
+
+const progressScore = computed(() => {
+  if (topBranchStats.value.length) return branchesProgressScore.value
+  return focusScore.value
+})
+
+const progressArcsKey = computed(() =>
+  nestedArcs.value.map((arc) => arc.key).join('|')
 )
-const activeHabitsToday = computed(() => habitStats.value.filter((habit) => habit.activeToday).length)
 
-function isToday(timestamp?: number) {
-  return !!timestamp && getLocalDateKey(new Date(timestamp)) === getLocalDateKey(new Date())
+const categoryItems = computed(() =>
+  taskTypeStats.value
+    .filter((item) => item.count > 0)
+    .map((item) => ({
+      key: item.key,
+      label: item.label,
+      value: item.count,
+    }))
+)
+
+const radarItems = computed(() =>
+  focusMetrics.value.map((metric) => ({
+    key: metric.key,
+    label: metric.label,
+    value: metric.value,
+  }))
+)
+
+const habitsProgress = computed(() =>
+  habitsCount.value
+    ? Math.round((activeHabitsToday.value / habitsCount.value) * 100)
+    : 0
+)
+
+const habitsSubtitle = computed(
+  () => `${activeHabitsToday.value} из ${habitsCount.value} сегодня`
+)
+
+const habitMetrics = computed(() => [
+  {
+    key: 'avg',
+    label: '/день',
+    value: periodAverage.value,
+    icon: Zap,
+  },
+  {
+    key: 'streak',
+    label: 'стрик',
+    value: currentStreak.value,
+    icon: Flame,
+  },
+  {
+    key: 'best',
+    label: 'рекорд',
+    value: longestStreak.value,
+    icon: Crown,
+  },
+])
+
+const hologramMetrics = computed(() =>
+  focusMetrics.value.slice(0, 4).map((metric) => ({
+    key: metric.key,
+    label: metric.label,
+    value: metric.value,
+  }))
+)
+
+function widgetOrderIndex(id: AnalyticsWidgetId) {
+  const index = uiStore.analyticsWidgetOrder.indexOf(id)
+  return index === -1 ? 99 : index
 }
 
-function createDateRange(daysCount: number) {
-  const today = new Date()
-  return Array.from({ length: daysCount }, (_, index) => {
-    const date = new Date(today)
-    date.setDate(today.getDate() - (daysCount - 1 - index))
-    return {
-      key: getLocalDateKey(date),
-      label: date.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' }),
-    }
-  })
+function tileStyle(id: AnalyticsWidgetId) {
+  return {
+    order: widgetOrderIndex(id),
+    '--tile-h': `${WIDGET_HEIGHT}px`,
+    '--enter-delay': `${widgetOrderIndex(id) * 55}ms`,
+  }
 }
 
-function getLocalDateKey(date: Date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+function isDragging(id: AnalyticsWidgetId) {
+  return dragWidgetId.value === id
+}
+
+function isDrop(id: AnalyticsWidgetId) {
+  return dropTargetId.value === id && dragWidgetId.value !== id
+}
+
+function dragHandlers(id: AnalyticsWidgetId) {
+  return {
+    onDragstart: (event: DragEvent) => onTileDragStart(id, event),
+    onDragend: onTileDragEnd,
+    onDragover: () => onTileDragOver(id),
+    onDragenter: () => onTileDragEnter(id),
+    onDragleave: (event: DragEvent) => onTileDragLeave(id, event),
+    onDrop: () => onTileDrop(id),
+  }
+}
+
+function onTileDragStart(id: AnalyticsWidgetId, event: DragEvent) {
+  dragWidgetId.value = id
+  dropTargetId.value = null
+  if (!event.dataTransfer) return
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('text/plain', id)
+  const tile =
+    (event.currentTarget as HTMLElement | null)?.closest('.analytics-stack') ||
+    (event.currentTarget as HTMLElement | null)?.closest('.widget-shell')
+  if (tile instanceof HTMLElement) {
+    const rect = tile.getBoundingClientRect()
+    event.dataTransfer.setDragImage(tile, Math.min(36, rect.width / 4), 24)
+  }
+}
+
+function onTileDragOver(id: AnalyticsWidgetId) {
+  if (!dragWidgetId.value || dragWidgetId.value === id) return
+  dropTargetId.value = id
+}
+
+function onTileDragEnter(id: AnalyticsWidgetId) {
+  if (!dragWidgetId.value || dragWidgetId.value === id) return
+  dropTargetId.value = id
+}
+
+function onTileDragLeave(id: AnalyticsWidgetId, event: DragEvent) {
+  const related = event.relatedTarget as Node | null
+  const current = event.currentTarget as HTMLElement | null
+  if (current && related && current.contains(related)) return
+  if (dropTargetId.value === id) dropTargetId.value = null
+}
+
+function onTileDrop(id: AnalyticsWidgetId) {
+  if (dragWidgetId.value) {
+    uiStore.swapAnalyticsWidgets(dragWidgetId.value, id)
+  }
+  dragWidgetId.value = null
+  dropTargetId.value = null
+}
+
+function onTileDragEnd() {
+  dragWidgetId.value = null
+  dropTargetId.value = null
 }
 </script>
 
 <style scoped lang="scss">
-.analytics-page {
+.analytics {
   display: grid;
+  gap: var(--space-4);
   width: 100%;
+  max-width: 100%;
   min-width: 0;
-  gap: 14px;
-}
-
-.analytics-head,
-.metric-cell {
-  @include surface-panel;
-  border: var(--ui-border);
-}
-
-.analytics-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-width: 0;
-  padding: 16px 18px;
-  border-radius: var(--border-radius-lg);
-  animation: analytics-cell-in 520ms ease both;
-
-  h3 {
-    margin: 4px 0 0;
-    color: var(--text);
-    font-size: 1.28rem;
-    font-weight: 700;
-  }
-
-  @include mobile {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
-
-.eyebrow,
-.cell-title span,
-.muted,
-.axis-row,
-.focus-list,
-.resource-lines span,
-.type-row span,
-.branch-name {
-  color: var(--dim);
-}
-
-.eyebrow {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-.head-meta {
-  display: grid;
-  justify-items: end;
-  gap: 3px;
-  color: var(--dim);
-  font-size: 0.8rem;
-
-  strong {
-    color: var(--text);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.2rem;
-    font-variant-numeric: tabular-nums;
-  }
-
-  @include mobile {
-    justify-items: start;
-  }
 }
 
 .analytics-grid {
   display: grid;
-  grid-template-areas:
-    "progress pulse pulse"
-    "speed trajectory trajectory"
-    "resources types status"
-    "board board focus"
-    "tags habits focus";
-  grid-template-columns: minmax(220px, 0.82fr) minmax(320px, 1.28fr) minmax(240px, 0.92fr);
-  gap: 0;
-  overflow: hidden;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
-
-  @media (max-width: 1180px) {
-    grid-template-areas:
-      "progress pulse"
-      "speed trajectory"
-      "resources trajectory"
-      "types status"
-      "board board"
-      "tags habits"
-      "focus focus";
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @include mobile {
-    grid-template-areas:
-      "progress"
-      "pulse"
-      "speed"
-      "trajectory"
-      "resources"
-      "types"
-      "status"
-      "board"
-      "tags"
-      "habits"
-      "focus";
-    grid-template-columns: 1fr;
-  }
-}
-
-.metric-cell {
-  position: relative;
-  display: grid;
-  align-content: start;
-  min-width: 0;
-  min-height: 210px;
-  gap: 18px;
-  padding: 20px 22px;
-  border-width: 0 1px 1px 0;
-  border-radius: 0;
-  box-sizing: border-box;
-  isolation: isolate;
-  overflow: hidden;
-  animation: analytics-cell-in 620ms ease both;
-
-  &:nth-last-child(1) {
-    border-bottom-width: 0;
-  }
-
-  @for $i from 1 through 11 {
-    &:nth-child(#{$i}) {
-      animation-delay: #{($i - 1) * 70}ms;
-
-      &::after {
-        animation-delay: #{160 + (($i - 1) * 70)}ms;
-      }
-    }
-  }
-
-  @include mobile {
-    min-height: 0;
-    padding: 18px;
-    border-width: 0 0 1px;
-  }
-}
-
-.metric-cell--progress {
-  grid-area: progress;
-}
-
-.metric-cell--wide {
-  grid-area: pulse;
-}
-
-.metric-cell--resources {
-  grid-area: resources;
-}
-
-.metric-cell--speed {
-  grid-area: speed;
-}
-
-.metric-cell--trajectory {
-  grid-area: trajectory;
-}
-
-.metric-cell--types {
-  grid-area: types;
-}
-
-.metric-cell--status {
-  grid-area: status;
-}
-
-.metric-cell--board {
-  grid-area: board;
-}
-
-.metric-cell--tags {
-  grid-area: tags;
-}
-
-.metric-cell--habits {
-  grid-area: habits;
-}
-
-.metric-cell--focus {
-  grid-area: focus;
-}
-
-.cell-title {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  min-width: 0;
-
-  span {
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  strong {
-    color: var(--text);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 700;
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-  }
-}
-
-.radial-wrap {
-  position: relative;
-  display: grid;
-  place-items: center;
-  min-height: clamp(132px, 18vw, 170px);
-
-  @include mobile {
-    min-height: 214px;
-  }
-}
-
-.radial-chart {
-  width: clamp(142px, 16vw, 168px);
-  height: clamp(142px, 16vw, 168px);
-
-  line {
-    stroke: color-mix(in srgb, var(--accent) 18%, transparent);
-    stroke-dasharray: 16;
-    stroke-dashoffset: 16;
-    stroke-linecap: round;
-    stroke-width: 3;
-    opacity: 0;
-    animation: analytics-tick-in 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
-
-    &.active {
-      stroke: var(--accent);
-    }
-  }
-
-  @for $i from 1 through 40 {
-    line:nth-child(#{$i}) {
-      animation-delay: #{160 + ($i * 24) - ($i * $i * 0.28)}ms;
-    }
-  }
-
-  @include mobile {
-    width: 188px;
-    height: 188px;
-  }
-}
-
-.radial-value {
-  position: absolute;
-  display: grid;
-  justify-items: center;
-  color: var(--text);
-  z-index: 1;
-  opacity: 0;
-  transform: scale(0.96);
-  animation: analytics-value-in 420ms cubic-bezier(0.16, 1, 0.3, 1) 760ms both;
-
-  strong {
-    color: var(--accent);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.65rem;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-  }
-
-  span {
-    color: var(--dim);
-    font-size: 0.74rem;
-  }
-}
-
-.volume-bars {
-  display: grid;
-  grid-template-columns: repeat(14, minmax(5px, 1fr));
-  align-items: end;
-  gap: 5px;
-  min-height: clamp(92px, 13vw, 132px);
-
-  span {
-    height: var(--bar-level);
-    min-height: 5px;
-    border-radius: var(--border-radius-pill);
-    background: color-mix(in srgb, var(--accent) 14%, transparent);
-    transform: scaleY(0.2);
-    transform-origin: bottom;
-    animation: analytics-bar-in 700ms ease both;
-
-    &.active {
-      background: var(--accent);
-    }
-  }
-
-  @for $i from 1 through 14 {
-    span:nth-child(#{$i}) {
-      animation-delay: #{170 + ($i * 38) - ($i * $i * 1.05)}ms;
-    }
-  }
-}
-
-.axis-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.74rem;
-}
-
-.resource-lines,
-.focus-list,
-.insight-list {
-  display: grid;
-  gap: 12px;
-}
-
-.insight-list div {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 10px;
-  border-bottom: var(--ui-border);
-  color: var(--text);
-  font-size: 0.84rem;
-
-  span {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  i {
-    width: 8px;
-    height: 8px;
-    flex: 0 0 auto;
-    border-radius: 50%;
-  }
-
-  strong {
-    color: var(--dim);
-    white-space: nowrap;
-
-    &.active {
-      color: var(--accent);
-    }
-  }
-}
-
-.resource-lines div {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  padding-bottom: 10px;
-  border-bottom: var(--ui-border);
-
-  strong {
-    color: var(--text);
-  }
-}
-
-.big-number {
-  margin: 0;
-  color: var(--text);
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(2.4rem, 8vw, 4.2rem);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  line-height: 0.95;
-}
-
-.muted {
-  font-size: 0.82rem;
-}
-
-.line-chart {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  gap: var(--space-4);
   width: 100%;
-  height: clamp(150px, 16vw, 190px);
-  min-height: 150px;
-  overflow: visible;
+  align-items: start;
 
-  .line-grid {
-    fill: none;
-    stroke: color-mix(in srgb, var(--accent) 10%, transparent);
-    stroke-width: 1;
+  &.is-reordering :deep(.widget-shell:not(.is-dragging):not(.is-drop-target)),
+  &.is-reordering .analytics-stack:not(.is-dragging):not(.is-drop-target) {
+    opacity: 0.72;
   }
 
-  .line-fill {
-    fill: color-mix(in srgb, var(--accent) 8%, transparent);
-    stroke: none;
-  }
-
-  .line-path {
-    fill: none;
-    stroke: var(--accent);
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: 2;
-    stroke-dasharray: 720;
-    stroke-dashoffset: 720;
-    animation: analytics-line-in 950ms ease 260ms both;
-  }
-
-  circle {
-    fill: var(--accent);
-    opacity: 0;
-    animation: analytics-dot-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  @for $i from 1 through 24 {
-    circle:nth-of-type(#{$i}) {
-      animation-delay: #{520 + ($i * 26) - ($i * $i * 0.48)}ms;
-    }
+  :deep(.widget-shell[class*='enter-']) {
+    animation-delay: var(--enter-delay, 0ms);
   }
 }
 
-.task-types,
-.branch-map {
-  display: grid;
-  gap: 11px;
-}
-
-.type-row,
-.branch-row {
-  display: grid;
-  grid-template-columns: minmax(72px, 0.8fr) minmax(90px, 1fr) auto;
-  align-items: center;
-  gap: 10px;
+.analytics-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-sizing: border-box;
+  grid-column: span 4;
+  height: var(--tile-h, 500px);
   min-width: 0;
-  color: var(--text);
-  font-size: 0.82rem;
+  transition:
+    outline-color var(--transition-standard),
+    opacity var(--transition-standard);
 
-  @include mobile {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 7px 10px;
+  &.is-dragging {
+    opacity: 0.45;
+  }
+
+  &.is-drop-target {
+    outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    outline-offset: 2px;
+    border-radius: var(--radius-lg);
   }
 }
 
-.type-track,
-.branch-track {
-  @include mobile {
-    grid-column: 1 / -1;
-    order: 3;
+.trend {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+
+  &.up {
+    color: var(--accent);
+  }
+
+  &.down {
+    color: var(--color-error);
+  }
+
+  &.flat {
+    color: var(--color-text-secondary);
   }
 }
 
-.type-track,
-.branch-track {
-  height: 7px;
-  overflow: hidden;
-  border-radius: var(--border-radius-pill);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
+@media (max-width: 1100px) {
+  .analytics-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
 
-  i {
-    display: block;
-    height: 100%;
-    min-width: 3px;
-    border-radius: inherit;
-    background: var(--accent);
+  .analytics-stack {
+    grid-column: span 3;
+    height: 380px;
   }
 }
 
-.branch-track i {
-  background: var(--marker);
-}
+@media (max-width: 767px) {
+  .analytics {
+    gap: var(--space-3);
+  }
 
-.status-stack {
-  display: grid;
-  gap: 8px;
+  .analytics-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
 
-  span {
-    display: flex;
-    align-items: center;
-    min-height: 34px;
-    width: var(--size);
-    min-width: 128px;
-    max-width: 100%;
-    box-sizing: border-box;
-    padding: 0 12px;
-    border-radius: var(--border-radius-pill);
-    background: color-mix(in srgb, var(--accent) 10%, transparent);
-    color: var(--text);
-    font-size: 0.8rem;
-    font-weight: 700;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .analytics-stack {
+    grid-column: span 1;
+    height: auto;
+    min-height: 0;
+    gap: var(--space-3);
   }
 }
 
-.focus-list {
-  span {
-    padding-bottom: 12px;
-    border-bottom: var(--ui-border);
-    color: var(--text);
-    font-size: 0.88rem;
-    line-height: 1.35;
-  }
-}
-
-@keyframes analytics-cell-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes analytics-tick-in {
-  from {
-    opacity: 0;
-    stroke-dashoffset: 16;
-  }
-
-  to {
-    opacity: 1;
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes analytics-value-in {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes analytics-bar-in {
-  from {
-    transform: scaleY(0.15);
-  }
-
-  to {
-    transform: scaleY(1);
-  }
-}
-
-@keyframes analytics-line-in {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes analytics-dot-in {
-  to {
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .analytics-head,
-  .metric-cell,
-  .metric-cell::after,
-  .radial-chart line,
-  .radial-value,
-  .volume-bars span,
-  .line-path,
-  .line-chart circle {
-    animation: none;
-  }
-
-  .analytics-head,
-  .metric-cell,
-  .radial-chart line,
-  .radial-value,
-  .line-chart circle {
-    opacity: 1;
-    transform: none;
-  }
-
-  .radial-chart line,
-  .line-path {
-    stroke-dashoffset: 0;
-  }
-
-  .volume-bars span {
-    transform: none;
+@media (max-width: 420px) {
+  .analytics,
+  .analytics-grid {
+    gap: var(--space-2);
   }
 }
 </style>

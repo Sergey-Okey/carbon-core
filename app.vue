@@ -31,6 +31,7 @@ import { saveAutoBackup } from '~/utils/backup'
 import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
 import { useSyncStatus } from '~/composables/useSyncStatus'
 import { browserLog } from '~/utils/browserLog'
+import { seedDemoWorkspaceIfNeeded } from '~/utils/demoSeed'
 
 useHead({
   meta: [
@@ -137,6 +138,7 @@ onMounted(async () => {
   if (accessStore.isDemo) {
     syncStatus.setState('local')
     browserLog.info('sync', 'Sync disabled in demo mode')
+    await seedDemoWorkspaceIfNeeded()
   } else
     try {
       syncStatus.setState('syncing')

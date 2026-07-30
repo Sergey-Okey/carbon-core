@@ -7,8 +7,6 @@ export interface Milestone {
   icon?: string
   markerColor?: string
   backgroundColor?: string
-  requiredXP: number
-  currentXP: number
   status: 'pending' | 'active' | 'completed'
   taskIds: string[]
   sourceTaskIds?: string[]
@@ -27,7 +25,6 @@ export interface Branch {
   directTaskIds?: string[]
   milestones: Milestone[]
   order: number
-  totalXP?: number
   position?: { x: number; y: number }
 }
 

@@ -23,8 +23,9 @@ const props = withDefaults(
     /**
      * boot — полный цикл при входе на сайт (хаос → сфера → hold)
      * adaptive — под скорость загрузки страницы (без полного цикла)
+     * loop — собранная сфера, непрерывное вращение (голограмма)
      */
-    mode?: 'boot' | 'adaptive'
+    mode?: 'boot' | 'adaptive' | 'loop'
     cycle?: number
     label?: string
   }>(),
@@ -134,6 +135,7 @@ function buildParticles() {
 
 function currentForm(): number {
   if (reducedMotion) return 1
+  if (props.mode === 'loop') return 1
   if (finishing) {
     const t = Math.min(1, (time - finishStartedAt) / Math.max(0.08, finishDuration))
     return finishFrom + (1 - finishFrom) * easeInOut(t)
@@ -196,7 +198,7 @@ function draw(ts: number) {
   lastTs = ts
   if (!reducedMotion) {
     time += dt
-    angle += 0.35 * dt
+    angle += (props.mode === 'loop' ? 0.55 : 0.35) * dt
   }
 
   form = currentForm()

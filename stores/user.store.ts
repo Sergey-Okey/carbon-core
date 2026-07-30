@@ -9,12 +9,8 @@ import { accessAwareStorage } from '~/utils/accessStorage'
 export const useUserStore = defineStore(
   'user',
   () => {
-    const totalXP = ref<number>(0)
-    const coins = ref<number>(100)
     const leaguePoints = ref<number>(0)
     const completedTasksCount = ref<number>(0)
-    const xpHistory = ref<{ date: string; xp: number }[]>([])
-    const coinsHistory = ref<{ date: string; coins: number }[]>([])
 
     const profile = ref({
       name: '',
@@ -31,7 +27,6 @@ export const useUserStore = defineStore(
       calculateTasksForNextLevel(level.value, league.value)
     )
     const currentProgress = computed(() => {
-      // Сколько задач выполнено на текущем уровне
       const tasksInCurrentLevel =
         completedTasksCount.value % tasksForNextLevel.value
       return tasksInCurrentLevel
@@ -49,47 +44,17 @@ export const useUserStore = defineStore(
       return 'Платина'
     })
 
-    function addXP(amount: number) {
-      totalXP.value += amount
-      leaguePoints.value += amount * 0.5
-
-      // Записать в историю
-      const today = new Date().toISOString().split('T')[0]
-      const existing = xpHistory.value.find((h) => h.date === today)
-      if (existing) {
-        existing.xp += amount
-      } else {
-        xpHistory.value.push({ date: today, xp: amount })
-      }
-      // Ограничить историю последними 30 днями
-      xpHistory.value = xpHistory.value.slice(-30)
+    function addLeaguePoints(amount: number) {
+      if (!amount) return
+      leaguePoints.value = Math.max(0, leaguePoints.value + amount)
     }
 
     function incrementCompletedTasks(amount: number = 1) {
       completedTasksCount.value += amount
     }
 
-    function getMilestoneBonus(requiredXP: number): number {
-      // Бонус за завершение узла - возвращается как дополнительный XP
-      return Math.floor(requiredXP * 0.5)
-    }
-
-    function addCoins(amount: number) {
-      coins.value += amount
-
-      // Записать в историю
-      const today = new Date().toISOString().split('T')[0]
-      const existing = coinsHistory.value.find((h) => h.date === today)
-      if (existing) {
-        existing.coins += amount
-      } else {
-        coinsHistory.value.push({ date: today, coins: amount })
-      }
-      coinsHistory.value = coinsHistory.value.slice(-30)
-    }
-
-    function addGold(amount: number) {
-      addCoins(amount)
+    function decrementCompletedTasks(amount: number = 1) {
+      completedTasksCount.value = Math.max(0, completedTasksCount.value - amount)
     }
 
     function reduceLeaguePoints(amount: number) {
@@ -120,12 +85,8 @@ export const useUserStore = defineStore(
     }
 
     return {
-      totalXP,
-      coins,
       leaguePoints,
       completedTasksCount,
-      xpHistory,
-      coinsHistory,
       profile,
       displayName,
       level,
@@ -133,11 +94,9 @@ export const useUserStore = defineStore(
       tasksForNextLevel,
       levelProgressPercent,
       league,
-      addXP,
-      addCoins,
-      addGold,
+      addLeaguePoints,
       incrementCompletedTasks,
-      getMilestoneBonus,
+      decrementCompletedTasks,
       reduceLeaguePoints,
       updateProfile,
       setProfileFromAuth,

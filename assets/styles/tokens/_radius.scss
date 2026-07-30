@@ -9,4 +9,14 @@
   --radius-lg: var(--border-radius-lg);
   --radius-xl: var(--border-radius-lg);
   --radius-full: var(--border-radius-pill);
+
+  /*
+   * Nested radius for padded shells (segmented, menus, pickers).
+   * Set --nest-radius and --nest-pad on the parent; children use --radius-nested.
+   * Formula: inner = max(0, outer − pad) so corners stay concentric.
+   */
+  --nest-radius: var(--radius-md);
+  --nest-pad: var(--space-1);
+  --radius-nested: max(0px, calc(var(--nest-radius) - var(--nest-pad)));
 }
+

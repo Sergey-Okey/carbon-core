@@ -360,6 +360,7 @@ import {
 } from '~/stores/access.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { resetDemoData } from '~/utils/accessStorage'
+import { seedDemoWorkspaceIfNeeded } from '~/utils/demoSeed'
 import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
 
 const props = defineProps<{ mode: 'login' | 'register' }>()
@@ -543,7 +544,9 @@ async function waitForSubscription(email: string) {
 function startDemo() {
   resetDemoData()
   accessStore.startDemo()
-  router.push('/')
+  void seedDemoWorkspaceIfNeeded().finally(() => {
+    router.push('/')
+  })
 }
 
 function scheduleAuthFormScroll() {
@@ -1006,7 +1009,7 @@ async function submit() {
 
 .form-header,
 .subscription-header {
-  margin-bottom: var(--space-6);
+  margin-bottom: 24px;
   text-align: left;
 
   .panel-badge {
@@ -1246,13 +1249,13 @@ async function submit() {
   }
 
   strong {
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     color: var(--text);
   }
 
   span {
-    font-size: 0.8rem;
+    font-size: var(--text-xs);
     color: var(--dim);
     line-height: 1.4;
   }
@@ -1287,10 +1290,10 @@ async function submit() {
 
 .subscription-check {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   width: min(100%, 480px);
   max-width: 480px;
-  margin: 14px auto 0;
+  margin: var(--space-3) auto 0;
 
   :deep(.app-button) {
     width: 100%;

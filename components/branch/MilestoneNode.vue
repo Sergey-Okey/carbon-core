@@ -27,21 +27,25 @@
           </button>
         </div>
       </div>
-      <h4>{{ data.milestone.name }}</h4>
-      <div class="progress-dashes" v-if="indicatorTasks > 0">
-        <span
-          v-for="i in indicatorTasks"
-          :key="i"
-          class="dash"
-          :class="{ filled: i <= completedIndicatorTasks }"
-        ></span>
+      <div class="node-title-row">
+        <h4>{{ data.milestone.name }}</h4>
+        <button class="expand-btn nodrag" @click.stop="togglePinned">
+          <ChevronDown :size="16" :class="{ rotated: isExpanded }" />
+        </button>
       </div>
-      <div class="task-counter">
-        {{ completedIndicatorTasks }} / {{ indicatorTasks }} задач
+      <div class="node-foot">
+        <div class="progress-dashes" v-if="indicatorTasks > 0">
+          <span
+            v-for="i in indicatorTasks"
+            :key="i"
+            class="dash"
+            :class="{ filled: i <= completedIndicatorTasks }"
+          ></span>
+        </div>
+        <div class="task-counter">
+          {{ completedIndicatorTasks }} / {{ indicatorTasks }} задач
+        </div>
       </div>
-      <button class="expand-btn nodrag" @click.stop="togglePinned">
-        <ChevronDown :size="16" :class="{ rotated: isExpanded }" />
-      </button>
     </div>
 
     <Transition name="expand">
@@ -316,16 +320,26 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
 <style scoped lang="scss">
 .milestone-node {
+  /* GlassCard owns the padding declaration; drive it from one token. */
+  --node-pad: var(--space-3);
+  --panel-padding: var(--node-pad);
+  display: flex;
+  flex-direction: column;
   width: 220px;
   min-height: 120px;
-  padding: 12px;
+  box-sizing: border-box;
   position: relative;
   overflow: visible;
   transition: border-color var(--transition-standard);
 
   .node-main {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
   }
 
   &.selected {
@@ -340,27 +354,33 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 8px;
+    gap: var(--space-2);
+    margin: 0;
+    min-height: 22px;
+    flex: 0 0 auto;
   }
 
   .node-icon {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    flex: 0 0 34px;
-    border-radius: var(--border-radius-pill);
+    justify-content: flex-start;
+    width: auto;
+    height: auto;
+    flex: 0 0 auto;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
     color: var(--node-marker-color);
     background: transparent;
     border: none;
+    line-height: 0;
   }
 
   .node-icon :deep(svg) {
     width: 18px;
     height: 18px;
     stroke-width: 2.2;
+    display: block;
   }
 
   .header-actions {
@@ -425,17 +445,37 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     opacity: 1;
   }
 
+  .node-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
   h4 {
+    flex: 1 1 auto;
+    min-width: 0;
     font-size: 0.95rem;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin: 0;
     color: var(--text);
     word-break: break-word;
   }
+
+  .node-foot {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-top: auto;
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
   .progress-dashes {
     display: flex;
-    gap: 4px;
-    margin-bottom: 8px;
+    gap: var(--space-1);
+    margin: 0;
     width: 100%;
   }
   .dash {
@@ -452,18 +492,19 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   .task-counter {
     font-size: 0.8rem;
     color: var(--dim);
-    margin-bottom: 4px;
+    margin: 0;
   }
 
   .expand-btn {
-    position: absolute;
-    top: 45px;           /* фиксированный отступ от верхнего края – не съезжает при раскрытии */
-    right: 13px;
+    position: static;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex: 0 0 auto;
     width: 20px;
     height: 20px;
+    margin: 0;
+    padding: 0;
     border-radius: var(--border-radius-pill);
     background: transparent;
     border: none;
@@ -496,7 +537,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     width: 100%;
     box-sizing: border-box;
     max-height: 260px;
-    padding: 12px;
+    padding: var(--node-pad);
     overflow-y: auto;
     border-radius: var(--border-radius-md);
     font-size: 0.85rem;

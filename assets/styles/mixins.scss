@@ -41,14 +41,44 @@
   color: var(--color-text-primary);
 }
 
+/**
+ * Padded shell whose children should use `border-radius: var(--radius-nested)`.
+ * Keeps inner corners concentric with the outer radius.
+ */
+@mixin nest-shell(
+  $radius: var(--radius-md),
+  $pad: var(--space-1)
+) {
+  --nest-radius: #{$radius};
+  --nest-pad: #{$pad};
+  padding: var(--nest-pad);
+  border-radius: var(--nest-radius);
+}
+
+@mixin nest-item {
+  border-radius: var(--radius-nested);
+}
+
 @mixin desktop {
   @media (min-width: 768px) {
     @content;
   }
 }
 
+@mixin tablet {
+  @media (min-width: 768px) and (max-width: 1100px) {
+    @content;
+  }
+}
+
 @mixin mobile {
   @media (max-width: 767px) {
+    @content;
+  }
+}
+
+@mixin narrow {
+  @media (max-width: 420px) {
     @content;
   }
 }

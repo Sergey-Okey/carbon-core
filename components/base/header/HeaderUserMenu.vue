@@ -3,10 +3,11 @@
     <button
       class="profile-btn"
       type="button"
-      aria-label="Открыть профиль"
+      aria-label="Открыть меню профиля"
       data-tooltip="Профиль"
       data-tooltip-position="bottom"
       :aria-expanded="open"
+      aria-haspopup="dialog"
       @click="emit('toggle')"
     >
       <div v-if="avatar" class="avatar-small">
@@ -21,22 +22,11 @@
           v-if="open"
           ref="panelRef"
           class="profile-panel"
+          role="dialog"
+          aria-label="Меню профиля"
           @click.stop
         >
-          <header class="profile-panel-header">
-            <div class="account-preview">
-              <div class="account-avatar">
-                <img v-if="avatar" :src="avatar" alt="" />
-                <UserCircle v-else :size="28" />
-              </div>
-              <div>
-                <h3>{{ name }}</h3>
-                <span>{{ email }}</span>
-              </div>
-            </div>
-          </header>
-
-          <div class="account-modal-actions">
+          <div class="panel-actions">
             <AppButton type="button" variant="ghost" @click="emit('open-profile')">
               <UserCircle :size="16" />
               Профиль
@@ -59,8 +49,6 @@ import AppButton from '~/components/ui/primitives/AppButton.vue'
 
 defineProps<{
   open: boolean
-  name: string
-  email: string
   avatar?: string
 }>()
 
@@ -86,8 +74,10 @@ defineExpose({ panelRef })
   justify-content: center;
   width: var(--control-icon-size);
   height: var(--control-icon-size);
+  padding: 0;
+  overflow: hidden;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   background: transparent;
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -114,15 +104,16 @@ defineExpose({ panelRef })
 }
 
 .avatar-small {
-  width: 28px;
-  height: 28px;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
-  border-radius: var(--radius-full);
+  border-radius: inherit;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
   }
 }
 
@@ -132,7 +123,8 @@ defineExpose({ panelRef })
   inset-block-start: calc(72px + env(safe-area-inset-top, 0px));
   inset-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
   z-index: var(--z-dropdown);
-  inline-size: min(320px, calc(100dvw - var(--space-6) - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+  inline-size: min(220px, calc(100dvw - var(--space-6) - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+  padding: var(--space-2);
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--radius-lg);
@@ -141,64 +133,14 @@ defineExpose({ panelRef })
   box-shadow: var(--shadow-md);
 }
 
-.profile-panel-header {
-  padding: var(--space-3);
-  border-bottom: var(--ui-border);
-}
-
-.account-preview {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-width: 0;
-}
-
-.account-avatar {
-  display: grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  flex: 0 0 auto;
-  overflow: hidden;
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-  color: var(--color-text-primary);
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
-.account-preview h3,
-.account-preview span {
-  display: block;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.account-preview h3 {
-  color: var(--color-text-primary);
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-}
-
-.account-preview span {
-  margin-top: var(--space-1);
-  color: var(--color-text-secondary);
-  font-size: var(--text-sm);
-}
-
-.account-modal-actions {
+.panel-actions {
   display: grid;
   gap: var(--space-1);
-  padding: var(--space-2);
+  width: 100%;
 
   :deep(.app-button) {
     justify-content: flex-start;
+    width: 100%;
   }
 }
 

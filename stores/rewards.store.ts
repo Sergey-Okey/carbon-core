@@ -20,18 +20,16 @@ export const useRewardsStore = defineStore(
             id: uuidv4(),
             title: 'Новая одежда',
             description: 'Обнови гардероб',
-            price: 3000,
             purchased: false,
             completed: false,
-            effect: { leaguePoints: 200, xp: 500 },
+            effect: { leaguePoints: 450 },
           },
           {
             id: uuidv4(),
             title: 'Книга по инвестициям',
-            price: 1500,
             purchased: false,
             completed: false,
-            effect: { xp: 300, coins: 200 },
+            effect: { leaguePoints: 150 },
           },
         ]
         localStorage.setItem(DEMO_KEY, 'true')
@@ -39,12 +37,9 @@ export const useRewardsStore = defineStore(
     }
 
     function purchaseReward(id: string) {
-      const userStore = useUserStore()
       const reward = rewards.value.find((r) => r.id === id)
       if (!reward || reward.purchased) return
-      if (userStore.coins < reward.price) return
 
-      userStore.addCoins(-reward.price)
       reward.purchased = true
       reward.purchasedAt = Date.now()
     }
@@ -57,11 +52,8 @@ export const useRewardsStore = defineStore(
       reward.completed = true
       reward.completedAt = Date.now()
 
-      if (reward.effect) {
-        if (reward.effect.xp) userStore.addXP(reward.effect.xp)
-        if (reward.effect.coins) userStore.addCoins(reward.effect.coins)
-        if (reward.effect.leaguePoints)
-          userStore.leaguePoints += reward.effect.leaguePoints
+      if (reward.effect?.leaguePoints) {
+        userStore.addLeaguePoints(reward.effect.leaguePoints)
       }
     }
 
