@@ -30,12 +30,12 @@
       <AppFormField label="Теги">
         <div class="tags-cloud">
           <template v-for="tag in form.tags" :key="tag.id">
-            <div class="tag-wrapper" :style="{ '--tag-color': tag.color || 'var(--accent)' }">
+            <div class="tag-wrapper" :style="{ '--tag-color': tag.color || 'var(--color-accent)' }">
               <button
                 type="button"
                 class="tag-btn active"
                 aria-pressed="true"
-                :style="{ '--tag-color': tag.color || 'var(--accent)' }"
+                :style="{ '--tag-color': tag.color || 'var(--color-accent)' }"
               >
                 <span class="tag-dot" />
                 <span class="tag-name">{{ tag.name }}</span>
@@ -72,7 +72,7 @@
                   <button
                     type="button"
                     class="tag-btn"
-                    :style="{ '--tag-color': tag.color || 'var(--accent)' }"
+                    :style="{ '--tag-color': tag.color || 'var(--color-accent)' }"
                     @click="selectExistingTag(tag)"
                   >
                     <span class="tag-dot" />
@@ -298,12 +298,12 @@ function handleSubmit() {
 const showAddTagModal = ref(false)
 const newTagName = ref('')
 const newTagBranchId = ref<BranchId | ''>('')
-const newTagColor = ref('var(--success)')
+const newTagColor = ref('var(--color-success)')
 
 function openAddTagModal() {
   newTagName.value = ''
   newTagBranchId.value = ''
-  newTagColor.value = 'var(--success)'
+  newTagColor.value = 'var(--color-success)'
   showAddTagModal.value = true
 }
 
@@ -389,17 +389,20 @@ function getTodayDateString() {
 .modal-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
+  min-width: 0;
+  width: 100%;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: var(--space-4);
+  align-items: start;
 
-  @media (max-width: 500px) {
+  @include mobile {
     grid-template-columns: 1fr;
-    gap: 0;
+    gap: var(--space-4);
   }
 }
 
@@ -407,72 +410,75 @@ function getTodayDateString() {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   min-height: var(--control-height-md);
   margin: 0;
-  color: var(--text);
-  font-size: 0.95rem;
-  line-height: 1.3;
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-tight);
 }
 
 .tag-color-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .available-tags {
   display: grid;
-  gap: 8px;
-  margin-top: 2px;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
 }
 
 .available-tags__label {
-  color: var(--dim);
-  font-size: 0.78rem;
-  line-height: 1.35;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.helper-text {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
 }
 
 .tags-cloud {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 
   .tag-wrapper {
     display: inline-flex;
     align-items: center;
-    border-radius: var(--border-radius-pill);
-    background: color-mix(in srgb, var(--tag-color, var(--accent)) 10%, transparent);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--tag-color, var(--color-accent)) 10%, transparent);
   }
 
   .tag-btn {
     position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
     min-height: var(--control-height-md);
-    padding: 7px 10px;
+    padding: var(--space-2) var(--space-3);
     border: none;
-    border-radius: var(--border-radius-pill);
-    color: var(--text);
+    border-radius: var(--radius-full);
+    color: var(--color-text-primary);
     background: transparent;
-    font-size: 0.85rem;
-    font-weight: 500;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
     transition:
       background var(--transition-standard),
       color var(--transition-standard);
     cursor: pointer;
 
     &:hover {
-      background: color-mix(in srgb, var(--tag-color, var(--accent)) 8%, transparent);
-      color: var(--text);
+      background: color-mix(in srgb, var(--tag-color, var(--color-accent)) 8%, transparent);
     }
 
     &.active {
-      padding-right: 4px;
-      background: transparent;
-      color: var(--text);
+      padding-inline-end: var(--space-1);
     }
   }
 
@@ -480,8 +486,8 @@ function getTodayDateString() {
     flex: 0 0 auto;
     width: 12px;
     height: 12px;
-    border-radius: var(--border-radius-pill);
-    background: var(--tag-color, var(--accent));
+    border-radius: var(--radius-full);
+    background: var(--tag-color, var(--color-accent));
   }
 
   .tag-delete {
@@ -489,33 +495,32 @@ function getTodayDateString() {
     place-items: center;
     width: 28px;
     height: 28px;
-    margin-right: 3px;
+    margin-inline-end: var(--space-1);
     padding: 0;
-    border-radius: var(--border-radius-pill);
+    border-radius: var(--radius-full);
     background: transparent;
     border: none;
-    color: var(--dim);
+    color: var(--color-text-muted);
     cursor: pointer;
     transition:
       background var(--transition-standard),
       color var(--transition-standard);
 
     &:hover {
-      background: color-mix(in srgb, var(--error) 10%, transparent);
-      color: var(--error);
+      background: color-mix(in srgb, var(--color-error) 10%, transparent);
+      color: var(--color-error);
     }
   }
 
   .add-tag-btn {
     background: transparent;
-    border: none;
-    color: var(--dim);
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    border: var(--ui-border);
+    border-style: dashed;
+    color: var(--color-text-muted);
 
     &:hover {
-      background: color-mix(in srgb, var(--accent) 7%, transparent);
+      background: color-mix(in srgb, var(--color-accent) 7%, transparent);
+      color: var(--color-text-primary);
     }
   }
 }
@@ -523,53 +528,16 @@ function getTodayDateString() {
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: var(--space-2);
   width: 100%;
-}
 
-@media (max-width: 640px) {
-  .modal-form {
-    gap: 14px;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .modal-actions {
+  @include mobile {
     flex-direction: column-reverse;
-    gap: 8px;
-  }
+    gap: var(--space-2);
 
-  .available-tags {
-    gap: 6px;
-  }
-
-  .tags-cloud {
-    gap: 6px;
-
-    .tag-btn {
+    :deep(.app-button) {
+      width: 100%;
       min-height: 44px;
-      padding: 6px 12px;
-      font-size: 0.8rem;
-    }
-
-    .tag-delete {
-      width: 44px;
-      height: 44px;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .tags-cloud {
-    gap: 4px;
-
-    .tag-btn {
-      min-height: 44px;
-      padding: 4px 8px;
-      font-size: 0.75rem;
     }
   }
 }

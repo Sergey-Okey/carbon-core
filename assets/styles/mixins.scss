@@ -59,6 +59,23 @@
   border-radius: var(--radius-nested);
 }
 
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+@mixin text-clamp($lines: 2) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $lines;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  word-break: normal;
+  min-width: 0;
+}
+
 @mixin desktop {
   @media (min-width: 768px) {
     @content;
@@ -81,4 +98,21 @@
   @media (max-width: 420px) {
     @content;
   }
+}
+
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+@mixin text-clamp($lines: 2) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $lines;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  word-break: normal;
+  min-width: 0;
 }

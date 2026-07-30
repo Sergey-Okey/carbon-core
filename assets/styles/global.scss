@@ -310,3 +310,16 @@ html[data-background-mode='image'][data-background-intensity='contrast']
   .layout::before {
   background: color-mix(in srgb, var(--bg) 26%, transparent);
 }
+
+/* Text overflow utilities — use across UI */
+.text-ellipsis {
+  @include text-ellipsis;
+}
+
+.text-clamp-2 {
+  @include text-clamp(2);
+}
+
+.text-clamp-3 {
+  @include text-clamp(3);
+}

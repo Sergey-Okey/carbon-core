@@ -73,6 +73,11 @@ const { notifications, removeNotification } = useNotification()
     border-color var(--transition-standard);
   touch-action: pan-y;
 
+  @include mobile {
+    align-self: center;
+    margin-inline: auto;
+  }
+
   .indicator {
     width: 5px;
     height: 5px;

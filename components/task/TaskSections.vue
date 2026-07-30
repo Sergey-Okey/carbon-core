@@ -107,11 +107,11 @@ const emit = defineEmits<{
 <style scoped lang="scss">
 .task-sections {
   display: grid;
-  gap: 24px;
-  padding-bottom: 24px;
+  gap: var(--space-6);
+  padding-bottom: var(--space-6);
 
   @include mobile {
-    gap: 16px;
+    gap: var(--space-4);
     /* Bottom nav clearance lives on layout `.main` — do not double it here. */
     padding-bottom: 0;
   }
@@ -120,11 +120,11 @@ const emit = defineEmits<{
 .task-section-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  gap: 20px;
+  gap: var(--space-5);
 
   @include mobile {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: var(--space-4);
   }
 }
 </style>

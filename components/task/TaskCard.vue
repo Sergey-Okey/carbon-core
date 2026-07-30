@@ -2,118 +2,145 @@
   <GlassCard
     class="task-card"
     variant="surface"
+    no-padding
     :class="[task.type, { completed: isVisuallyCompleted, 'habit-checked': isHabitDoneToday, overdue: isOverdue }]"
   >
-    <div class="task-header">
-      <div class="title-row">
-        <h4>{{ task.title }}</h4>
-        <button
-          v-if="isHabitDoneToday"
-          type="button"
-          class="habit-done-icon"
-          aria-label="Сегодня выполнена"
-          data-tooltip="Сегодня выполнена"
-        >
-          <Check :size="14" />
-        </button>
-      </div>
-      <span class="task-type" :class="task.type" :aria-label="typeTitle" :data-tooltip="typeTitle">{{ typeLabel }}</span>
-    </div>
-
-    <p v-if="task.description?.trim()" class="task-desc">{{ task.description.trim() }}</p>
-    <p v-else class="task-desc task-desc--empty">Нет описания</p>
-
-    <div class="task-bottom">
-      <div class="task-info">
-        <span
-          v-for="branch in linkedBranches"
-          :key="branch.id"
-          class="branch-link"
-          :data-tooltip="branch.displayName"
-        >
-          {{ branch.displayName }}
-        </span>
-        <div v-if="task.type !== 'HABIT' && (task.targetTime || task.targetDate)" class="due-date">
-          <Calendar :size="14" />
-          {{ scheduleValue }}
+    <div class="task-card__body">
+      <div class="task-header">
+        <div class="title-row">
+          <h4>{{ task.title }}</h4>
         </div>
-
-        <div class="tags-wrapper" v-if="taskTags.length">
+        <div class="task-status">
           <button
-            v-if="hasTagOverflow"
+            v-if="isHabitDoneToday"
             type="button"
-            class="scroll-btn scroll-left"
-            :disabled="!canScrollBack"
-            @click="scrollTags(-1)"
+            class="habit-done-icon"
+            aria-label="Сегодня выполнена"
+            data-tooltip="Сегодня выполнена"
           >
-            <ChevronLeft :size="14" />
+            <Check :size="14" />
           </button>
+          <span
+            v-if="task.type !== 'HABIT'"
+            class="task-type"
+            :class="task.type"
+            :aria-label="typeTitle"
+            :data-tooltip="typeTitle"
+          >{{ typeLabel }}</span>
+        </div>
+      </div>
 
-          <div
-            ref="tagsElement"
-            class="tags"
-            :class="{
-              'is-overflowing': hasTagOverflow,
-              'can-scroll-back': canScrollBack,
-              'can-scroll-forward': canScrollForward,
-            }"
-            @scroll="updateTagShadows"
+      <p
+        class="task-desc"
+        :class="{
+          'task-desc--empty': task.type !== 'HABIT' && !task.description?.trim(),
+          'task-desc--placeholder': !task.description?.trim(),
+        }"
+      >
+        {{ task.description?.trim() || 'Нет описания' }}
+      </p>
+
+      <div class="task-bottom">
+        <div
+          v-if="
+            task.type === 'HABIT' ||
+            linkedBranches.length ||
+            taskTags.length ||
+            (task.type !== 'HABIT' && !!(task.targetTime || task.targetDate))
+          "
+          class="task-info"
+        >
+          <span
+            v-for="branch in linkedBranches"
+            :key="branch.id"
+            class="branch-link"
+            :data-tooltip="branch.displayName"
           >
-            <span
-              v-for="tag in taskTags"
-              :key="tag.id"
-              class="tag"
-              :aria-label="tag.name" :data-tooltip="tag.name"
-              :style="{ '--tag-color': tag.color || 'var(--accent)' }"
-            >
-              <span class="tag-dot" />
-              <span class="tag-name">{{ tag.name }}</span>
-            </span>
+            {{ branch.displayName }}
+          </span>
+          <div v-if="task.type !== 'HABIT' && (task.targetTime || task.targetDate)" class="due-date">
+            <Calendar :size="14" />
+            {{ scheduleValue }}
           </div>
 
-          <button
-            v-if="hasTagOverflow"
-            type="button"
-            class="scroll-btn scroll-right"
-            :disabled="!canScrollForward"
-            @click="scrollTags(1)"
-          >
-            <ChevronRight :size="14" />
-          </button>
-        </div>
-        <p v-else class="no-tags">Нет тегов</p>
-      </div>
+          <div class="tags-wrapper" v-if="taskTags.length">
+            <button
+              v-if="hasTagOverflow"
+              type="button"
+              class="scroll-btn scroll-left"
+              :disabled="!canScrollBack"
+              @click="scrollTags(-1)"
+            >
+              <ChevronLeft :size="14" />
+            </button>
 
-      <div class="actions">
-        <button
-          v-if="restoreMode"
-          class="restore-btn"
-          :aria-label="restoreButtonTitle"
-          :data-tooltip="restoreButtonTitle"
-          @click.stop="emit('restore', task.id)"
-        >
-          <RotateCcw :size="16" />
-        </button>
-        <template v-else>
+            <div
+              ref="tagsElement"
+              class="tags"
+              :class="{
+                'is-overflowing': hasTagOverflow,
+                'can-scroll-back': canScrollBack,
+                'can-scroll-forward': canScrollForward,
+              }"
+              @scroll="updateTagShadows"
+            >
+              <span
+                v-for="tag in taskTags"
+                :key="tag.id"
+                class="tag"
+                :aria-label="tag.name"
+                :data-tooltip="tag.name"
+                :style="{ '--tag-color': tag.color || 'var(--color-accent)' }"
+              >
+                <span class="tag-dot" />
+                <span class="tag-name">{{ tag.name }}</span>
+              </span>
+            </div>
+
+            <button
+              v-if="hasTagOverflow"
+              type="button"
+              class="scroll-btn scroll-right"
+              :disabled="!canScrollForward"
+              @click="scrollTags(1)"
+            >
+              <ChevronRight :size="14" />
+            </button>
+          </div>
+          <p v-else-if="task.type === 'HABIT'" class="meta-placeholder">Нет тегов</p>
+        </div>
+
+        <div class="actions">
           <button
-            class="complete-btn"
-            :class="{ done: isCompleted }"
-            @click="handleToggle"
-            :disabled="disableToggle || isCompleted"
-            :aria-label="completeButtonTitle"
-            :data-tooltip="completeButtonTitle"
-            :data-tour="completeTourTarget"
+            v-if="restoreMode"
+            class="restore-btn"
+            :aria-label="restoreButtonTitle"
+            :data-tooltip="restoreButtonTitle"
+            @click.stop="emit('restore', task.id)"
           >
-            <CheckCircle v-if="isCompleted" :size="18" />
-            <Circle v-else :size="18" />
+            <RotateCcw :size="16" />
           </button>
-          <button class="edit-btn" aria-label="Редактировать" data-tooltip="Редактировать" @click.stop="emit('edit', task)">
-            <Edit :size="16" />
-          </button>
-          <button class="delete-btn" aria-label="Удалить" data-tooltip="Удалить" @click.stop="handleDelete">
-            <Trash2 :size="16" />
-          </button>
-        </template>
+          <template v-else>
+            <button
+              class="complete-btn"
+              :class="{ done: isCompleted }"
+              @click="handleToggle"
+              :disabled="disableToggle || isCompleted"
+              :aria-label="completeButtonTitle"
+              :data-tooltip="completeButtonTitle"
+              :data-tour="completeTourTarget"
+            >
+              <CheckCircle v-if="isCompleted" :size="18" />
+              <Circle v-else :size="18" />
+            </button>
+            <button class="edit-btn" aria-label="Редактировать" data-tooltip="Редактировать" @click.stop="emit('edit', task)">
+              <Edit :size="16" />
+            </button>
+            <button class="delete-btn" aria-label="Удалить" data-tooltip="Удалить" @click.stop="handleDelete">
+              <Trash2 :size="16" />
+            </button>
+          </template>
+        </div>
       </div>
     </div>
   </GlassCard>
@@ -286,395 +313,545 @@ async function handleDelete() {
 
 <style scoped lang="scss">
 .task-card {
+  /* Match AnalyticsWidgetShell card pad scale */
+  --card-pad: var(--space-5);
+  --card-gap: var(--space-3);
+
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 132px;
+  box-sizing: border-box;
+  min-height: 0;
   height: 100%;
-  padding: 0.85rem;
-  background: transparent;
   border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard);
 
   &:hover {
-    border-color: var(--ui-border-color);
+    border-color: color-mix(in srgb, var(--color-accent) 28%, var(--ui-border-color));
   }
 
   &.habit-checked {
-    border-color: var(--ui-border-color);
+    border-color: color-mix(in srgb, var(--color-success) 28%, var(--ui-border-color));
   }
 
   &.overdue {
     border-color: color-mix(in srgb, var(--color-error) 28%, var(--ui-border-color));
     background: color-mix(in srgb, var(--color-error) 5%, var(--color-surface-1));
   }
+}
 
-  &.HABIT {
-    min-height: 116px;
+.task-card__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--card-gap);
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: var(--card-pad);
+}
 
-    .task-bottom {
-      gap: 8px;
-    }
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+}
+
+.task-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.habit-done-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--space-5);
+  height: var(--space-5);
+  margin-top: 0;
+  border-radius: var(--radius-full);
+  border: none;
+  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  color: var(--color-success);
+  cursor: pointer;
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard);
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-success) 25%, transparent);
   }
+}
 
-  .task-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 7px;
-    margin-bottom: 7px;
-  }
+h4 {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
+  @include text-clamp(2);
+}
 
-  .title-row {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    min-width: 0;
-    flex-wrap: wrap;
-  }
+.task-desc {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  overflow-wrap: break-word;
+  word-break: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  min-width: 0;
+}
 
-  .habit-done-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: none;
-    background: color-mix(in srgb, var(--success) 15%, transparent);
-    color: var(--success);
-    cursor: pointer;
-    transition:
-      background var(--transition-standard),
-      color var(--transition-standard);
-    &:hover {
-      background: color-mix(in srgb, var(--success) 25%, transparent);
-    }
-  }
+.task-desc--empty {
+  display: none;
+}
 
-  h4 {
-    margin: 0;
-    color: var(--text);
-    font-size: 0.9rem;
-    font-weight: 600;
-    line-height: 1.3;
-    word-break: break-word;
-  }
+.task-desc--placeholder {
+  opacity: 0.72;
+  font-style: italic;
+}
 
-  .task-desc {
-    display: -webkit-box;
-    margin: 0 0 7px;
-    overflow: hidden;
-    color: var(--dim);
-    font-size: 0.76rem;
-    line-height: 1.35;
-    word-break: break-word;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-  }
+.meta-placeholder {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-style: italic;
+  opacity: 0.72;
+}
 
-  .task-desc--empty {
-    display: none;
-  }
+.task-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: auto;
+  flex: 0 0 auto;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
 
-  .task-bottom {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 9px;
-    margin-top: auto;
-    flex-wrap: nowrap;
-  }
+.task-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  min-width: 0;
+  flex: 1 1 auto;
+}
 
-  .task-info {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    flex-wrap: wrap;
-    min-width: 0;
-    flex: 1;
-  }
+.due-date {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
 
-  .due-date {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: var(--dim);
-    font-size: 0.75rem;
-    background: color-mix(in srgb, var(--accent) 6%, transparent);
-    padding: 2px 6px;
-    border-radius: var(--border-radius-pill);
-    white-space: nowrap;
-  }
+.branch-link {
+  display: inline-block;
+  max-width: 104px;
+  padding: 2px var(--space-2);
+  overflow: hidden;
+  border: var(--ui-border);
+  border-radius: var(--radius-full);
+  color: var(--color-text-primary);
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  .branch-link {
-    display: inline-block;
-    max-width: 104px;
-    padding: 2px 6px;
-    overflow: hidden;
-    border: var(--ui-border);
-    border-radius: var(--border-radius-pill);
-    color: var(--text);
-    font-size: 0.7rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+.tags-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
 
-  .tags-wrapper {
-    position: relative;
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-  }
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard),
+    opacity var(--transition-standard);
+  z-index: 2;
 
-  .scroll-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 24px;
-    height: 24px;
-    border-radius: var(--border-radius-pill);
-    border: none;
+  &:hover:not(:disabled) {
     background: var(--color-surface-2);
-    color: var(--dim);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition:
-      background var(--transition-standard),
-      color var(--transition-standard),
-      opacity var(--transition-standard);
-    z-index: 2;
-
-    &:hover:not(:disabled) {
-      background: var(--color-surface-2);
-      color: var(--text);
-    }
-    &:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-    }
+    color: var(--color-text-primary);
   }
 
-  .scroll-left {
-    left: 0;
-  }
-  .scroll-right {
-    right: 0;
-  }
-
-  .tags {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 5px;
-    flex: 1;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 4px 0;
-    scroll-behavior: smooth;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-
-  .tag {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 2px 6px;
-    background: transparent;
-    border: none;
-    border-radius: var(--border-radius-pill);
-    font-size: 0.7rem;
-    color: var(--text);
-    white-space: nowrap;
-    transition:
-      background var(--transition-standard),
-      color var(--transition-standard);
-
-    &:hover {
-      background: color-mix(in srgb, var(--tag-color, var(--accent)) 8%, transparent);
-    }
-  }
-
-  .tag-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--tag-color, var(--accent));
-  }
-
-  .tag-name {
-    max-width: 100px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .no-tags {
-    color: var(--dim);
-    font-size: 0.75rem;
-    margin-top: 2px;
-  }
-
-  .task-type {
-    flex-shrink: 0;
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 20px;
-    background: color-mix(in srgb, var(--dim) 15%, transparent);
-    color: var(--dim);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: default;
-    white-space: nowrap;
-  }
-
-  .actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-shrink: 0;
-  }
-
-  .actions button {
-    width: var(--control-icon-size);
-    height: var(--control-icon-size);
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    color: var(--dim);
-    cursor: pointer;
-    transition:
-      background 0.16s ease,
-      color 0.16s ease,
-      opacity 0.16s ease,
-      transform 0.16s ease;
-
-    &:hover:not(:disabled) {
-      background: var(--color-surface-2);
-      color: var(--text);
-      transform: translateY(-1px);
-    }
-
-    &:active:not(:disabled) {
-      background: color-mix(in srgb, var(--accent) 12%, transparent);
-    }
-  }
-
-  .complete-btn.done {
-    color: var(--success);
-    &:hover {
-      background: color-mix(in srgb, var(--success) 15%, transparent);
-      color: var(--success);
-    }
-  }
-
-  .edit-btn:hover {
-    color: var(--text);
-  }
-  .delete-btn:hover {
-    color: var(--error);
-  }
-
-  .restore-btn:hover {
-    color: var(--success);
-  }
-
-  .complete-btn:disabled {
-    opacity: 0.5;
+  &:disabled {
+    opacity: 0.3;
     cursor: not-allowed;
   }
 }
 
-@media (max-width: 560px) {
+.scroll-left {
+  left: 0;
+}
+
+.scroll-right {
+  right: 0;
+}
+
+.tags {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-1);
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: var(--space-1) 0;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tag {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard);
+
+  &:hover {
+    background: color-mix(in srgb, var(--tag-color, var(--color-accent)) 8%, transparent);
+  }
+}
+
+.tag-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--tag-color, var(--color-accent));
+}
+
+.tag-name {
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-type {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--space-5);
+  height: var(--space-5);
+  margin: 0;
+  padding: 0;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-text-muted) 14%, transparent);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  margin: 0;
+  margin-inline-end: calc((var(--control-icon-size) - 16px) / -2);
+  padding: 0;
+}
+
+.actions button {
+  width: var(--control-icon-size);
+  height: var(--control-icon-size);
+  margin: 0;
+  padding: 0;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard);
+
+  &:hover:not(:disabled) {
+    background: var(--color-surface-2);
+    color: var(--color-text-primary);
+  }
+
+  &:active:not(:disabled) {
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  }
+}
+
+.complete-btn.done {
+  color: var(--color-success);
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-success) 15%, transparent);
+    color: var(--color-success);
+  }
+}
+
+.edit-btn:hover {
+  color: var(--color-text-primary);
+}
+
+.delete-btn:hover {
+  color: var(--color-error);
+}
+
+.restore-btn:hover {
+  color: var(--color-success);
+}
+
+.complete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@include mobile {
   .task-card {
-    padding: 10px;
-    min-height: auto;
+    --card-pad: var(--space-4);
+    --card-gap: var(--space-3);
+    min-height: 0;
+  }
+
+  .task-header {
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .title-row {
+    gap: var(--space-1);
+  }
+
+  h4 {
+    font-size: var(--text-sm);
+  }
+
+  /* Same composition as desktop: meta left, actions right */
+  .task-bottom {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    width: 100%;
+  }
+
+  .task-info {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .tags-wrapper {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .actions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    gap: var(--space-1);
+    margin-inline-end: calc((40px - 16px) / -2);
+  }
+
+  .actions button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .scroll-btn {
+    width: 22px;
+    height: 22px;
+  }
+
+  .branch-link {
+    max-width: 88px;
+  }
+
+  .task-card.HABIT {
+    --habit-rule: 1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+    height: auto;
+    align-self: start;
+
+    .task-card__body {
+      flex: 0 0 auto;
+      height: auto;
+      align-items: stretch;
+      text-align: start;
+      gap: 0;
+    }
 
     .task-header {
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-bottom: 10px;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-2);
+      width: 100%;
+      padding-bottom: var(--space-3);
+      margin-bottom: var(--space-3);
+      border-bottom: var(--habit-rule);
     }
 
     .title-row {
-      flex: 1;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: flex-start;
+      width: auto;
+      min-width: 0;
     }
 
     h4 {
-      font-size: 0.86rem;
+      flex: 1 1 auto;
+      width: auto;
+      text-align: start;
     }
 
-    .task-type {
-      align-self: center;
-      margin-left: auto;
+    .task-status {
+      align-self: flex-start;
     }
 
     .task-desc {
-      font-size: 0.72rem;
-      margin-bottom: 8px;
+      width: 100%;
+      text-align: start;
+      padding-bottom: var(--space-3);
+      margin-bottom: var(--space-3);
+      border-bottom: var(--habit-rule);
+      -webkit-line-clamp: 3;
+    }
+
+    .task-desc--empty,
+    .task-desc--placeholder {
+      display: -webkit-box;
     }
 
     .task-bottom {
       flex-direction: row;
-      flex-wrap: wrap;
       align-items: center;
-      gap: 7px;
+      justify-content: space-between;
+      gap: var(--space-2);
+      width: 100%;
+      margin-top: 0;
     }
 
     .task-info {
-      flex: 1;
-      gap: 7px;
-    }
-
-    .due-date {
-      font-size: 0.7rem;
-      padding: 1px 6px;
+      flex: 1 1 auto;
+      justify-content: flex-start;
+      width: auto;
+      min-width: 0;
+      padding-bottom: 0;
+      margin-bottom: 0;
+      border-bottom: none;
     }
 
     .tags-wrapper {
-      min-width: 0;
-    }
-
-    .tag {
-      padding: 1px 6px;
-      font-size: 0.65rem;
-      .tag-name {
-        max-width: 80px;
-      }
-    }
-
-    .actions {
-      margin-left: auto;
-    }
-
-    .actions button {
-      width: 44px;
-      height: 44px;
-    }
-
-    .scroll-btn {
-      width: 20px;
-      height: 20px;
+      flex: 0 1 auto;
+      justify-content: flex-start;
+      max-width: 100%;
     }
 
     .tags {
-      padding: 2px 0;
+      justify-content: flex-start;
     }
+
+    .meta-placeholder {
+      @include text-ellipsis;
+    }
+
+    .actions {
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-end;
+      width: auto;
+      margin-inline-end: calc((40px - 16px) / -2);
+      padding-top: 0;
+    }
+  }
+}
+
+@include narrow {
+  .task-card {
+    --card-pad: var(--space-3);
+    --card-gap: var(--space-2);
+  }
+
+  .task-header {
+    gap: var(--space-2);
+  }
+
+  .tag-name {
+    max-width: 72px;
   }
 }
 </style>

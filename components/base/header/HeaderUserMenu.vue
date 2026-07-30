@@ -159,10 +159,21 @@ defineExpose({ panelRef })
 
 @media (max-width: 640px) {
   .profile-panel {
-    inset-block-start: calc(70px + env(safe-area-inset-top, 0px));
-    inset-inline-start: max(var(--space-3), env(safe-area-inset-left, 0px));
-    inset-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
-    inline-size: auto;
+    inset-block-start: auto;
+    inset-block-end: 0;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    inline-size: 100%;
+    max-inline-size: none;
+    padding: var(--space-3);
+    padding-block-end: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+    border-bottom: none;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .profile-panel-enter-from,
+  .profile-panel-leave-to {
+    transform: translateY(12px);
   }
 }
 </style>

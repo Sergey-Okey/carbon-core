@@ -558,10 +558,16 @@ onBeforeUnmount(() => {
 
 @media (max-width: 640px) {
   .focus-widget-panel {
-    inset-block-start: calc(70px + env(safe-area-inset-top, 0px));
-    inset-inline-start: max(var(--space-3), env(safe-area-inset-left, 0px));
-    inset-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
-    width: auto;
+    inset-block-start: auto;
+    inset-block-end: 0;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    width: 100%;
+    max-width: none;
+    padding: var(--space-4);
+    padding-block-end: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+    border-bottom: none;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
 }
 </style>

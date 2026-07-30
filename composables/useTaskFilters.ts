@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useTagsStore } from '~/stores/tags.store'
 import { useTasksStore } from '~/stores/tasks.store'
 import type { AppSelectOption } from '~/types/ui.types'
@@ -17,6 +17,12 @@ export function useTaskFilters() {
   const isTasksEmpty = computed(() => tasksStore.tasks.length === 0)
   const showActiveSections = computed(() => taskView.value !== 'completed')
   const showCompletedSection = computed(() => taskView.value !== 'active')
+  const hasActiveFilters = computed(
+    () =>
+      taskSearch.value.trim() !== '' ||
+      selectedTagId.value !== 'all' ||
+      taskView.value !== 'active'
+  )
   const tagOptions = computed<AppSelectOption[]>(() => {
     const options = new Map<string, AppSelectOption>()
 
@@ -34,6 +40,15 @@ export function useTaskFilters() {
     })
 
     return [{ label: 'Все теги', value: 'all' }, ...options.values()]
+  })
+
+  watch(tagOptions, (options) => {
+    if (
+      selectedTagId.value !== 'all' &&
+      !options.some((option) => option.value === selectedTagId.value)
+    ) {
+      selectedTagId.value = 'all'
+    }
   })
 
   const visibleHabits = computed(() =>
@@ -89,6 +104,12 @@ export function useTaskFilters() {
     return `${tag.branchId}:${tag.name.trim().toLowerCase()}`
   }
 
+  function clearFilters() {
+    taskSearch.value = ''
+    selectedTagId.value = 'all'
+    taskView.value = 'active'
+  }
+
   return {
     taskSearch,
     selectedTagId,
@@ -97,6 +118,8 @@ export function useTaskFilters() {
     isTasksEmpty,
     showActiveSections,
     showCompletedSection,
+    hasActiveFilters,
+    clearFilters,
     visibleHabits,
     visibleDayTasks,
     visibleWeekTasks,

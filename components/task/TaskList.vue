@@ -268,15 +268,15 @@ function handleSave(taskData: TaskFormData) {
 
 <style scoped lang="scss">
 .task-list {
-  padding: 4px 0 0;
+  padding: var(--space-1) 0 0;
 
   .list-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 10px;
+    gap: var(--space-3);
     min-height: 44px;
-    margin-bottom: 16px;
+    margin-bottom: var(--space-4);
   }
 
   .title-group {
@@ -286,22 +286,23 @@ function handleSave(taskData: TaskFormData) {
   .title-wrapper {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
   }
 
   h3 {
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: var(--text);
+    margin: 0;
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-lg);
+    color: var(--color-text-primary);
     letter-spacing: -0.01em;
   }
 
   .list-hint {
     display: block;
-    margin-top: 3px;
-    color: var(--dim);
-    font-size: 0.78rem;
-    line-height: 1.3;
+    margin-top: var(--space-1);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-tight);
   }
 
   .info-badge {
@@ -311,48 +312,48 @@ function handleSave(taskData: TaskFormData) {
     justify-content: center;
     width: 22px;
     height: 22px;
-    border-radius: var(--border-radius-pill);
-    color: var(--dim);
+    border-radius: var(--radius-full);
+    color: var(--color-text-muted);
     cursor: help;
     transition:
       background var(--transition-standard),
       color var(--transition-standard);
 
     &:hover {
-      background: color-mix(in srgb, var(--accent) 8%, transparent);
-      color: var(--text);
+      background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+      color: var(--color-text-primary);
     }
-
   }
 
   .add-btn {
     width: 34px;
     height: 34px;
     min-height: 34px;
-    border-radius: var(--border-radius-pill);
+    border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text);
+    color: var(--color-text-primary);
     cursor: pointer;
     border: var(--ui-border);
     border-style: dashed;
     background: transparent;
+    flex-shrink: 0;
     transition:
       background var(--transition-standard),
       color var(--transition-standard);
 
     &:hover {
-      background: color-mix(in srgb, var(--accent) 8%, transparent);
-      color: var(--text);
+      background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+      color: var(--color-text-primary);
     }
 
     &:active {
-      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      background: color-mix(in srgb, var(--color-accent) 12%, transparent);
     }
 
     &.limited {
-      color: var(--text);
+      color: var(--color-text-muted);
       border: var(--ui-border);
       border-style: dashed;
     }
@@ -375,14 +376,14 @@ function handleSave(taskData: TaskFormData) {
   .tasks {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: var(--space-3);
   }
 
   &.task-list--habits {
     .tasks {
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 8px;
+      gap: var(--space-2);
     }
   }
 
@@ -402,7 +403,6 @@ function handleSave(taskData: TaskFormData) {
     }
   }
 
-  /* Анимации списка */
   .task-list-enter-active,
   .task-list-leave-active {
     transition:
@@ -424,91 +424,39 @@ function handleSave(taskData: TaskFormData) {
     transition: transform var(--transition-standard);
   }
 
-  /* Адаптивность */
-  @media (max-width: 768px) {
+  @include mobile {
     .list-header {
-      gap: 12px;
-      margin-bottom: 16px;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
     }
 
     h3 {
-      font-size: 1rem;
-    }
-
-    .add-btn {
-      width: 44px;
-      height: 44px;
-      min-height: 44px;
+      font-size: var(--text-md);
     }
 
     .tasks {
-      gap: 8px;
+      gap: var(--space-2);
     }
 
     &.task-list--habits .tasks {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .tooltip {
-      max-width: 200px;
-      white-space: normal;
-      font-size: 0.7rem;
-      padding: 4px 8px;
+      align-content: start;
+      align-items: start;
     }
   }
 
-  @media (max-width: 480px) {
+  @include narrow {
     .list-header {
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .title-wrapper {
-      gap: 6px;
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
     }
 
     h3 {
-      font-size: 0.95rem;
-    }
-
-    .info-badge {
-      width: 16px;
-      height: 16px;
-      min-width: 16px;
-    }
-
-    .add-btn {
-      width: 44px;
-      height: 44px;
-      min-height: 44px;
-    }
-
-    .tasks {
-      gap: 8px;
+      font-size: var(--text-sm);
     }
 
     &.task-list--habits .tasks {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  @media (max-width: 375px) {
-    h3 {
-      font-size: 0.9rem;
-    }
-
-    .tooltip {
-      display: none;
-    }
-
-    &.task-list--habits .tasks {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  @media (max-width: 340px) {
-    &.task-list--habits .tasks {
-      grid-template-columns: 1fr;
     }
   }
 }
@@ -517,15 +465,15 @@ function handleSave(taskData: TaskFormData) {
   @include glass;
   position: fixed;
   display: grid;
-  gap: 3px;
+  gap: var(--space-1);
   width: min(280px, calc(100vw - 24px));
-  padding: 10px 12px;
+  padding: var(--space-2) var(--space-3);
   border: var(--ui-border);
-  border-radius: var(--border-radius-md);
-  color: var(--text);
-  font-size: 0.72rem;
-  font-weight: 600;
-  line-height: 1.18;
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
   text-align: left;
   white-space: normal;
   pointer-events: none;
@@ -537,19 +485,10 @@ function handleSave(taskData: TaskFormData) {
   }
 
   .tooltip-title {
-    color: var(--text);
-    font-size: 0.7rem;
-    font-weight: 700;
+    color: var(--color-text-primary);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
     line-height: 1.1;
-  }
-}
-
-@media (max-width: 480px) {
-  .task-rule-tooltip {
-    width: calc(100vw - 24px);
-    padding: 11px 12px;
-    font-size: 0.76rem;
-    line-height: 1.3;
   }
 }
 </style>

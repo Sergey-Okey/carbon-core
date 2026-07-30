@@ -409,15 +409,25 @@ onBeforeUnmount(() => {
 
 @media (max-width: 640px) {
   .notification-panel {
-    inset-block-start: calc(70px + env(safe-area-inset-top, 0px));
-    inset-inline-start: max(var(--space-3), env(safe-area-inset-left, 0px));
-    inset-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
-    inline-size: auto;
-    max-block-size: calc(100dvh - 86px - env(safe-area-inset-bottom, 0px));
+    inset-block-start: auto;
+    inset-block-end: 0;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    inline-size: 100%;
+    max-inline-size: none;
+    max-block-size: min(78dvh, calc(100dvh - 72px));
+    padding-block-end: env(safe-area-inset-bottom, 0px);
+    border-bottom: none;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
 
   .history-list {
     max-block-size: none;
+  }
+
+  .notification-panel-enter-from,
+  .notification-panel-leave-to {
+    transform: translateY(12px);
   }
 }
 </style>

@@ -2,39 +2,18 @@
   <section class="settings" aria-label="Настройки">
     <div class="settings-bento">
       <!-- Appearance -->
-      <article class="tile tile--appearance">
-        <header class="tile-head">
+      <article class="card card--appearance">
+        <header class="card-head">
           <h2>Оформление</h2>
-          <span class="tile-head__aside">{{ accentLabel }}</span>
+          <span class="card-head__aside">{{ accentLabel }}</span>
         </header>
 
-        <div class="stat-rows">
-          <div class="stat-row">
-            <div class="stat-copy">
-              <span>Звуки действий</span>
-              <em>Сигналы при задачах, предупреждениях и фокусе</em>
-            </div>
-            <AppSwitch
-              :model-value="settingsStore.soundEnabled"
-              aria-label="Звуки действий"
-              @update:model-value="toggleSounds"
-            />
-          </div>
-
-          <div class="stat-row">
-            <div class="stat-copy">
-              <span>Вибрация</span>
-              <em>Тактильный отклик на поддерживаемых устройствах</em>
-            </div>
-            <AppSwitch
-              :model-value="settingsStore.hapticsEnabled"
-              aria-label="Вибрация"
-              @update:model-value="toggleHaptics"
-            />
-          </div>
-
-          <div class="stat-row">
-            <div class="stat-copy">
+        <div class="rows">
+          <div class="row">
+            <span class="row-icon" aria-hidden="true">
+              <component :is="settingsStore.theme === 'light' ? Sun : Moon" :size="18" />
+            </span>
+            <div class="row-copy">
               <span>Светлая тема</span>
               <em>{{ themeLabel }}</em>
             </div>
@@ -52,8 +31,11 @@
             </AppSwitch>
           </div>
 
-          <div class="stat-row">
-            <div class="stat-copy">
+          <div class="row">
+            <span class="row-icon" aria-hidden="true">
+              <Monitor :size="18" />
+            </span>
+            <div class="row-copy">
               <span>Следовать системе</span>
               <em>Тема повторяет настройки устройства</em>
             </div>
@@ -64,8 +46,11 @@
             />
           </div>
 
-          <div class="stat-row">
-            <div class="stat-copy">
+          <div class="row">
+            <span class="row-icon" aria-hidden="true">
+              <Clock :size="18" />
+            </span>
+            <div class="row-copy">
               <span>Тема по времени</span>
               <em>{{ scheduleDescription }}</em>
             </div>
@@ -76,10 +61,15 @@
             />
           </div>
 
-          <div v-if="settingsStore.themeMode === 'schedule'" class="stat-row stat-row--stack">
-            <div class="stat-copy">
-              <span>Расписание</span>
-              <em>Когда включать светлую и тёмную тему</em>
+          <div v-if="settingsStore.themeMode === 'schedule'" class="row row--stack">
+            <div class="row-main">
+              <span class="row-icon" aria-hidden="true">
+                <Clock :size="18" />
+              </span>
+              <div class="row-copy">
+                <span>Расписание</span>
+                <em>Когда включать светлую и тёмную тему</em>
+              </div>
             </div>
             <div class="time-range">
               <label>
@@ -101,10 +91,15 @@
             </div>
           </div>
 
-          <div class="stat-row stat-row--stack">
-            <div class="stat-copy">
-              <span>Акцент</span>
-              <em>{{ accentLabel }}</em>
+          <div class="row row--stack">
+            <div class="row-main">
+              <span class="row-icon" aria-hidden="true">
+                <Palette :size="18" />
+              </span>
+              <div class="row-copy">
+                <span>Акцент</span>
+                <em>{{ accentLabel }}</em>
+              </div>
             </div>
             <div class="accent-controls">
               <AppColorPicker
@@ -121,7 +116,7 @@
           </div>
         </div>
 
-        <div class="tile-foot">
+        <div class="card-foot">
           <AppButton type="button" variant="secondary" @click="resetAppearance">
             <RotateCcw :size="16" />
             Сбросить оформление
@@ -129,124 +124,125 @@
         </div>
       </article>
 
-      <!-- Work mode -->
-      <article class="tile tile--focus">
-        <header class="tile-head">
-          <h2>Рабочий режим</h2>
-          <span class="tile-head__aside">поведение</span>
-        </header>
+      <!-- Feedback + Interface (one column matching appearance height) -->
+      <div class="settings-side">
+        <article class="card card--feedback">
+          <header class="card-head">
+            <h2>Отклик</h2>
+          </header>
 
-        <div class="stat-rows">
-          <div class="stat-row">
-            <div class="stat-copy">
-              <span>Верхняя статистика</span>
-              <em>Уровень, лига и счётчики задач</em>
+          <div class="rows">
+            <div class="row">
+              <span class="row-icon" aria-hidden="true">
+                <Volume2 :size="18" />
+              </span>
+              <div class="row-copy">
+                <span>Звуки действий</span>
+                <em>Сигналы при задачах, предупреждениях и фокусе</em>
+              </div>
+              <AppSwitch
+                :model-value="settingsStore.soundEnabled"
+                aria-label="Звуки действий"
+                @update:model-value="toggleSounds"
+              />
             </div>
-            <AppSwitch
-              :model-value="settingsStore.showTopStats"
-              aria-label="Верхняя статистика"
-              @update:model-value="toggleTopStats"
-            />
-          </div>
 
-          <div class="stat-row">
-            <div class="stat-copy">
-              <span>Статистика в настройках</span>
-              <em>Показывать верхнюю статистику здесь</em>
+            <div class="row">
+              <span class="row-icon" aria-hidden="true">
+                <Vibrate :size="18" />
+              </span>
+              <div class="row-copy">
+                <span>Вибрация</span>
+                <em>Тактильный отклик на поддерживаемых устройствах</em>
+              </div>
+              <AppSwitch
+                :model-value="settingsStore.hapticsEnabled"
+                aria-label="Вибрация"
+                @update:model-value="toggleHaptics"
+              />
             </div>
-            <AppSwitch
-              :model-value="settingsStore.showSettingsStats"
-              aria-label="Статистика на странице настроек"
-              @update:model-value="toggleSettingsStats"
-            />
           </div>
+        </article>
 
-          <div class="stat-row">
-            <div class="stat-copy">
-              <span>Подтверждать опасные действия</span>
-              <em>Спрашивать перед сбросом данных</em>
+        <article class="card card--interface">
+          <header class="card-head">
+            <h2>Интерфейс</h2>
+          </header>
+
+          <div class="rows">
+            <div class="row">
+              <span class="row-icon" aria-hidden="true">
+                <BarChart3 :size="18" />
+              </span>
+              <div class="row-copy">
+                <span>Верхняя статистика</span>
+                <em>Уровень, лига и счётчики задач</em>
+              </div>
+              <AppSwitch
+                :model-value="settingsStore.showTopStats"
+                aria-label="Верхняя статистика"
+                @update:model-value="toggleTopStats"
+              />
             </div>
-            <AppSwitch
-              :model-value="settingsStore.confirmDangerActions"
-              aria-label="Подтверждать опасные действия"
-              @update:model-value="toggleDangerConfirm"
-            />
-          </div>
-        </div>
-      </article>
 
-      <!-- Board -->
-      <article class="tile tile--board">
-        <header class="tile-head">
-          <h2>Доска</h2>
-          <span class="tile-head__aside">связи</span>
-        </header>
-
-        <div class="stat-rows">
-          <div class="stat-row">
-            <div class="stat-copy">
-              <span>Типы узлов</span>
-              <em>Подписи веток и этапов</em>
+            <div class="row">
+              <span class="row-icon" aria-hidden="true">
+                <LayoutDashboard :size="18" />
+              </span>
+              <div class="row-copy">
+                <span>Статистика в настройках</span>
+                <em>Показывать верхнюю статистику здесь</em>
+              </div>
+              <AppSwitch
+                :model-value="settingsStore.showSettingsStats"
+                aria-label="Статистика на странице настроек"
+                @update:model-value="toggleSettingsStats"
+              />
             </div>
-            <AppSwitch
-              :model-value="settingsStore.boardShowNodeTypes"
-              aria-label="Показывать типы узлов"
-              @update:model-value="toggleBoardShowNodeTypes"
-            />
-          </div>
 
-          <div class="stat-row">
-            <div class="stat-copy">
-              <span>Защита связей</span>
-              <em>Подтверждение перед удалением линии</em>
+            <div class="row">
+              <span class="row-icon" aria-hidden="true">
+                <ShieldAlert :size="18" />
+              </span>
+              <div class="row-copy">
+                <span>Подтверждать опасные действия</span>
+                <em>Спрашивать перед сбросом данных</em>
+              </div>
+              <AppSwitch
+                :model-value="settingsStore.confirmDangerActions"
+                aria-label="Подтверждать опасные действия"
+                @update:model-value="toggleDangerConfirm"
+              />
             </div>
-            <AppSwitch
-              :model-value="settingsStore.boardConfirmEdgeDelete"
-              aria-label="Защищать связи от случайного удаления"
-              @update:model-value="toggleBoardConfirmEdgeDelete"
-            />
           </div>
-
-          <div class="stat-row">
-            <div class="stat-copy">
-              <span>Защита веток</span>
-              <em>Подтверждение перед удалением ветки</em>
-            </div>
-            <AppSwitch
-              :model-value="settingsStore.boardConfirmBranchDelete"
-              aria-label="Защищать ветки от удаления"
-              @update:model-value="toggleBoardConfirmBranchDelete"
-            />
-          </div>
-        </div>
-
-        <p class="tile-note">
-          Автораскладка сохраняет связи и оставляет схему читаемой.
-        </p>
-      </article>
+        </article>
+      </div>
 
       <!-- Tags -->
-      <article class="tile tile--tags">
-        <header class="tile-head">
+      <article class="card card--tags">
+        <header class="card-head">
           <h2>Теги</h2>
-          <span class="tile-head__aside">общие</span>
+          <span class="card-head__aside">общие</span>
         </header>
-        <p class="tile-lead">Общие теги для задач и привычек. Изменение применяется везде.</p>
+        <p class="card-lead">Общие теги для задач и привычек. Изменение применяется везде.</p>
         <TagManager />
       </article>
 
       <!-- Data -->
-      <article class="tile tile--data">
-        <header class="tile-head">
+      <article class="card card--data">
+        <header class="card-head">
           <h2>Данные</h2>
-          <span class="tile-head__aside">
+          <span class="card-head__aside">
             {{ settingsStore.autoBackup ? 'авто-бэкап' : 'без бэкапа' }}
           </span>
         </header>
 
-        <div class="stat-rows">
-          <div class="stat-row">
-            <div class="stat-copy">
+        <div class="rows">
+          <div class="row">
+            <span class="row-icon" aria-hidden="true">
+              <HardDrive :size="18" />
+            </span>
+            <div class="row-copy">
               <span>Авто-бэкап при выходе</span>
               <em>Сохраняет профиль, авторизацию и прогресс</em>
             </div>
@@ -257,8 +253,11 @@
             />
           </div>
 
-          <div class="stat-row">
-            <div class="stat-copy">
+          <div class="row">
+            <span class="row-icon" aria-hidden="true">
+              <Clock :size="18" />
+            </span>
+            <div class="row-copy">
               <span>Последний бэкап</span>
               <em>
                 {{
@@ -268,7 +267,6 @@
                 }}
               </em>
             </div>
-            <Clock :size="16" class="stat-icon" aria-hidden="true" />
           </div>
         </div>
 
@@ -312,9 +310,14 @@
         </div>
 
         <div class="danger-row">
-          <div class="stat-copy">
-            <span>Сброс данных</span>
-            <em>Удаляет профиль, задачи, прогресс и настройки</em>
+          <div class="danger-main">
+            <span class="row-icon row-icon--danger" aria-hidden="true">
+              <Trash2 :size="18" />
+            </span>
+            <div class="row-copy">
+              <span>Сброс данных</span>
+              <em>Удаляет профиль, задачи, прогресс и настройки</em>
+            </div>
           </div>
           <AppButton type="button" variant="danger" @click="resetAllData">
             <Trash2 :size="16" />
@@ -329,14 +332,22 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import {
+  BarChart3,
   Clock,
   Download,
   FileJson,
+  HardDrive,
+  LayoutDashboard,
+  Monitor,
   Moon,
+  Palette,
   RotateCcw,
+  ShieldAlert,
   Sun,
   Trash2,
   Upload,
+  Vibrate,
+  Volume2,
 } from 'lucide-vue-next'
 import AppButton from '~/components/ui/primitives/AppButton.vue'
 import AppColorPicker from '~/components/ui/forms/AppColorPicker.vue'
@@ -459,18 +470,6 @@ function toggleAutoBackup(checked: boolean) {
   settingsStore.setAutoBackup(checked)
 }
 
-function toggleBoardConfirmEdgeDelete(checked: boolean) {
-  settingsStore.setBoardConfirmEdgeDelete(checked)
-}
-
-function toggleBoardConfirmBranchDelete(checked: boolean) {
-  settingsStore.setBoardConfirmBranchDelete(checked)
-}
-
-function toggleBoardShowNodeTypes(checked: boolean) {
-  settingsStore.setBoardShowNodeTypes(checked)
-}
-
 function resetAppearance() {
   settingsStore.setTheme('dark')
   settingsStore.setAccentColor(ACCENT_COLORS[0].value)
@@ -570,49 +569,55 @@ async function resetAllData() {
 
 .settings-bento {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   grid-template-areas:
-    'appearance appearance appearance'
-    'focus      board      tags'
-    'data       data       data';
-  gap: var(--space-3);
+    'appearance appearance appearance appearance appearance appearance appearance appearance side side side side'
+    'tags tags tags tags tags tags data data data data data data';
+  gap: var(--space-4);
   width: 100%;
-  align-items: stretch;
+  align-items: start;
 }
 
-.tile {
-  @include surface-panel;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
+.settings-side {
+  grid-area: side;
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: var(--space-4);
   min-width: 0;
   min-height: 0;
-  padding: var(--space-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-sizing: border-box;
+  min-width: 0;
+  height: auto;
+  padding: var(--space-5);
+  background: var(--color-surface-1);
   border: var(--ui-border);
   border-radius: var(--radius-lg);
 }
 
-.tile--appearance {
+.card--appearance {
   grid-area: appearance;
 }
 
-.tile--focus {
-  grid-area: focus;
+.card--feedback,
+.card--interface {
+  min-height: 0;
 }
 
-.tile--board {
-  grid-area: board;
-}
-
-.tile--tags {
+.card--tags {
   grid-area: tags;
 }
 
-.tile--data {
+.card--data {
   grid-area: data;
 }
 
-.tile-head {
+.card-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -628,7 +633,7 @@ async function resetAllData() {
   }
 }
 
-.tile-head__aside {
+.card-head__aside {
   color: var(--color-text-muted);
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);
@@ -636,27 +641,37 @@ async function resetAllData() {
   text-transform: lowercase;
 }
 
-.tile-lead {
+.card-lead {
   margin: 0;
   color: var(--color-text-secondary);
   font-size: var(--text-sm);
   line-height: 1.45;
 }
 
-.stat-rows {
+.card-foot {
   display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: var(--ui-border);
 }
 
-.stat-row {
+.rows {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  min-height: 0;
+  margin: 0 calc(var(--space-5) * -1);
+}
+
+.row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-3);
-  min-height: 48px;
-  padding-block: var(--space-2);
+  min-height: 52px;
+  padding: var(--space-3) var(--space-5);
   border-bottom: var(--ui-border);
 
   &:last-child {
@@ -666,13 +681,40 @@ async function resetAllData() {
   &--stack {
     flex-direction: column;
     align-items: stretch;
+    gap: var(--space-3);
   }
 }
 
-.stat-copy {
+.row-main,
+.danger-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  flex: 1;
+}
+
+.row-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-2);
+  border-radius: var(--radius-sm);
+
+  &--danger {
+    color: var(--color-danger, var(--color-text-secondary));
+  }
+}
+
+.row-copy {
   display: grid;
   gap: 2px;
   min-width: 0;
+  flex: 1;
 
   span {
     color: var(--color-text-primary);
@@ -689,34 +731,11 @@ async function resetAllData() {
   }
 }
 
-.stat-icon {
-  flex: 0 0 auto;
-  color: var(--color-text-muted);
-}
-
-.tile-foot {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  flex: 0 0 auto;
-  padding-top: var(--space-3);
-  border-top: var(--ui-border);
-}
-
-.tile-note {
-  margin: 0;
-  margin-top: auto;
-  padding-top: var(--space-3);
-  border-top: var(--ui-border);
-  color: var(--color-text-secondary);
-  font-size: var(--text-sm);
-  line-height: 1.45;
-}
-
 .time-range {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
+  width: 100%;
 
   label {
     display: grid;
@@ -737,7 +756,8 @@ async function resetAllData() {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
+  width: 100%;
 }
 
 .action-grid {
@@ -747,6 +767,7 @@ async function resetAllData() {
 
   :deep(.app-button) {
     width: 100%;
+    min-height: 44px;
   }
 }
 
@@ -755,7 +776,7 @@ async function resetAllData() {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  padding-top: var(--space-3);
+  padding-top: var(--space-4);
   border-top: var(--ui-border);
 }
 
@@ -764,9 +785,15 @@ async function resetAllData() {
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
       'appearance appearance'
-      'focus      board'
-      'tags       tags'
-      'data       data';
+      'side       side'
+      'tags       data';
+    gap: var(--space-3);
+  }
+
+  .settings-side {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    align-items: start;
   }
 
   .action-grid {
@@ -779,15 +806,28 @@ async function resetAllData() {
     grid-template-columns: 1fr;
     grid-template-areas:
       'appearance'
-      'focus'
-      'board'
+      'side'
       'tags'
       'data';
     gap: var(--space-3);
   }
 
-  .tile {
-    padding: var(--space-3);
+  .settings-side {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .card {
+    padding: var(--space-4);
+  }
+
+  .rows {
+    margin: 0 calc(var(--space-4) * -1);
+  }
+
+  .row {
+    min-height: 44px;
+    padding: var(--space-3) var(--space-4);
   }
 
   .time-range,
@@ -801,7 +841,7 @@ async function resetAllData() {
   }
 
   .danger-row :deep(.app-button),
-  .tile-foot :deep(.app-button),
+  .card-foot :deep(.app-button),
   .action-grid :deep(.app-button) {
     width: 100%;
     min-height: 44px;

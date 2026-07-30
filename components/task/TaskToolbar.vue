@@ -16,53 +16,76 @@
       </span>
     </button>
 
-    <div class="search-field">
-      <label for="task-search">Поиск</label>
-      <div class="control-wrapper">
-        <Search :size="16" class="control-icon" />
-        <AppInput
-          id="task-search"
-          v-model="searchModel"
-          type="search"
-          placeholder="Название или описание"
+    <div class="toolbar-body">
+      <div class="search-field">
+        <label for="task-search">Поиск</label>
+        <div class="control-wrapper">
+          <Search :size="16" class="control-icon" />
+          <AppInput
+            id="task-search"
+            v-model="searchModel"
+            type="search"
+            placeholder="Название или описание"
+          />
+          <button
+            v-if="searchModel.trim()"
+            type="button"
+            class="search-clear"
+            aria-label="Очистить поиск"
+            @click="searchModel = ''"
+          >
+            <X :size="14" />
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-field">
+        <label for="task-tag">Тег</label>
+        <AppSelect
+          id="task-tag"
+          v-model="tagModel"
+          :options="tagOptions"
+          placeholder="Выберите тег"
+        >
+          <template #icon>
+            <Tags :size="16" />
+          </template>
+        </AppSelect>
+      </div>
+
+      <div class="view-switch" aria-label="Режим задач">
+        <div class="view-switch__head">
+          <span class="control-label">Режим</span>
+          <button
+            v-if="hasActiveFilters"
+            type="button"
+            class="clear-filters"
+            @click="clearFilters"
+          >
+            Сбросить
+          </button>
+        </div>
+        <AppSegmentedControl
+          v-model="viewModel"
+          :options="viewOptions"
+          label="Режим задач"
         />
       </div>
-    </div>
-
-    <div class="filter-field">
-      <label for="task-tag">Тег</label>
-      <AppSelect
-        id="task-tag"
-        v-model="tagModel"
-        :options="tagOptions"
-        placeholder="Выберите тег"
-      >
-        <template #icon>
-          <Tags :size="16" />
-        </template>
-      </AppSelect>
-    </div>
-
-    <div class="view-switch" aria-label="Режим задач">
-      <span class="control-label">Режим</span>
-      <AppSegmentedControl
-        v-model="viewModel"
-        :options="viewOptions"
-        label="Режим задач"
-      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { ChevronDown, ChevronUp, Search, Tags } from 'lucide-vue-next'
+import { computed, onMounted, ref, watch } from 'vue'
+import { ChevronDown, ChevronUp, Search, Tags, X } from 'lucide-vue-next'
 import AppInput from '~/components/ui/primitives/AppInput.vue'
 import AppSelect from '~/components/ui/forms/AppSelect.vue'
 import AppSegmentedControl from '~/components/ui/navigation/AppSegmentedControl.vue'
 import type { AppSelectOption } from '~/types/ui.types'
 
 type TaskView = 'active' | 'all' | 'completed'
+
+const COLLAPSE_STORAGE_KEY = 'cof-tasks-toolbar-collapsed'
 
 const isCollapsed = ref(false)
 
@@ -95,11 +118,18 @@ const activeViewLabel = computed(() => {
   return option?.label ?? ''
 })
 
+const hasActiveFilters = computed(
+  () =>
+    props.search.trim() !== '' ||
+    props.selectedTagId !== 'all' ||
+    props.view !== 'active'
+)
+
 const collapsedSummary = computed(() => {
   const parts: string[] = []
 
   if (props.search.trim()) {
-    parts.unshift('Поиск: ' + props.search.trim())
+    parts.push('Поиск: ' + props.search.trim())
   }
 
   if (props.selectedTagId !== 'all' && activeTagLabel.value) {
@@ -110,12 +140,12 @@ const collapsedSummary = computed(() => {
     parts.push(activeViewLabel.value)
   }
 
-  return parts.join(' | ')
+  return parts.join(' · ')
 })
 
 const searchModel = computed({
   get: () => props.search,
-  set: (value: string) => emit('update:search', value.trim()),
+  set: (value: string) => emit('update:search', value),
 })
 
 const tagModel = computed({
@@ -127,23 +157,64 @@ const viewModel = computed({
   get: () => props.view,
   set: (value: string) => emit('update:view', value as TaskView),
 })
+
+function clearFilters() {
+  emit('update:search', '')
+  emit('update:selectedTagId', 'all')
+  emit('update:view', 'active')
+}
+
+onMounted(() => {
+  if (!import.meta.client) return
+  const saved = localStorage.getItem(COLLAPSE_STORAGE_KEY)
+  if (saved !== null) {
+    isCollapsed.value = saved === 'true'
+    return
+  }
+  isCollapsed.value = window.matchMedia('(max-width: 767px)').matches
+})
+
+watch(isCollapsed, (value) => {
+  if (import.meta.client) {
+    localStorage.setItem(COLLAPSE_STORAGE_KEY, String(value))
+  }
+})
 </script>
 
 <style scoped lang="scss">
 .tasks-toolbar {
   @include surface-panel;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+
+  @include mobile {
+    gap: var(--space-3);
+    padding: var(--space-3);
+
+    &.collapsed {
+      gap: 0;
+      min-height: 52px;
+      padding: var(--space-2);
+
+      .toolbar-body {
+        display: none;
+      }
+    }
+  }
+}
+
+.toolbar-body {
   display: grid;
   grid-template-columns: minmax(220px, 1.25fr) minmax(180px, 0.85fr) minmax(292px, auto);
   gap: var(--panel-gap);
   align-items: end;
-  padding: var(--panel-padding);
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
 
   @include mobile {
     grid-template-columns: 1fr;
-    gap: 14px;
-    padding: 14px;
+    gap: var(--space-3);
   }
 }
 
@@ -154,12 +225,42 @@ const viewModel = computed({
 label,
 .control-label {
   display: block;
-  margin-bottom: 6px;
-  color: var(--dim);
-  font-size: 0.75rem;
-  font-weight: 500;
+  margin-bottom: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+.view-switch__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: calc(var(--text-xs) * var(--leading-tight, 1.2) + var(--space-2));
+  margin-bottom: var(--space-2);
+
+  .control-label {
+    margin-bottom: 0;
+  }
+}
+
+.clear-filters {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-accent);
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: opacity var(--transition-standard);
+
+  &:hover {
+    opacity: 0.8;
+  }
 }
 
 .control-wrapper {
@@ -169,58 +270,63 @@ label,
 
   :deep(.app-input) {
     padding-inline-start: 34px;
-    font-size: 0.9rem;
+    padding-inline-end: 36px;
+    font-size: var(--text-sm);
   }
 }
 
 .control-icon {
   position: absolute;
-  inset-inline-start: 12px;
+  inset-inline-start: var(--space-3);
   z-index: 1;
-  color: var(--dim);
+  color: var(--color-text-muted);
   pointer-events: none;
 }
 
-@media (max-width: 768px) {
-  .tasks-toolbar {
-    position: relative;
-    gap: 10px;
-    padding: 10px;
+.search-clear {
+  position: absolute;
+  inset-inline-end: var(--space-2);
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
 
-    &.collapsed {
-      gap: 0;
-      min-height: 52px;
-      padding: 8px;
-
-      .search-field,
-      .filter-field,
-      .view-switch {
-        display: none;
-      }
-    }
+  &:hover {
+    color: var(--color-text-primary);
+    background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
   }
+}
 
+@include mobile {
   .toolbar-toggle {
     display: flex;
     align-items: center;
     justify-content: space-between;
     min-height: 36px;
-    gap: 12px;
-    padding: 8px 10px 8px 12px;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
     border: none;
-    border-radius: calc(var(--border-radius-lg) - 6px);
-    background: color-mix(in srgb, var(--color-surface-1) 92%, transparent);
-    color: var(--text);
+    border-radius: var(--radius-nested, var(--radius-md));
+    background: color-mix(in srgb, var(--color-surface-2) 92%, transparent);
+    color: var(--color-text-primary);
     font: inherit;
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     cursor: pointer;
     transition:
       background var(--transition-standard),
       color var(--transition-standard);
 
     svg {
-      color: var(--dim);
+      color: var(--color-text-muted);
     }
   }
 
@@ -234,8 +340,8 @@ label,
     text-align: left;
 
     strong {
-      font-size: 0.84rem;
-      line-height: 1.15;
+      font-size: var(--text-sm);
+      line-height: var(--leading-tight);
     }
   }
 
@@ -244,14 +350,12 @@ label,
   }
 
   .toolbar-toggle__summary {
+    @include text-ellipsis;
     max-width: 100%;
-    color: var(--dim);
-    font-size: 0.7rem;
-    font-weight: 500;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-tight);
   }
 
   .toolbar-toggle__icon {
@@ -260,12 +364,12 @@ label,
     width: 28px;
     height: 28px;
     flex-shrink: 0;
-    border-radius: var(--border-radius-pill);
+    border-radius: var(--radius-full);
   }
 
   @media (hover: hover) and (pointer: fine) {
     .toolbar-toggle:hover {
-      background: color-mix(in srgb, var(--accent) 8%, transparent);
+      background: color-mix(in srgb, var(--color-accent) 8%, transparent);
     }
   }
 
@@ -278,16 +382,6 @@ label,
 
     :deep(.segment-option) {
       min-height: var(--control-height-sm);
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .tasks-toolbar {
-    padding: 12px;
-
-    &.collapsed {
-      padding: 8px;
     }
   }
 }

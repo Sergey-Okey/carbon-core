@@ -1,91 +1,131 @@
 <template>
   <section class="focus-page" aria-label="Фокус" data-tour="focus-page">
-    <header class="focus-head">
-      <div>
-        <span class="eyebrow">Таймер</span>
-        <h3>Фокус</h3>
-      </div>
-      <div class="focus-mode">
-        <Timer :size="18" />
-        <span>{{ activePreset.label }}</span>
-      </div>
-    </header>
-
-    <div class="focus-shell">
-      <article class="timer-card">
-        <div class="timer-stage" :class="{ running: isRunning }">
-          <svg viewBox="0 0 220 220" class="timer-ring" aria-label="Таймер фокуса">
-            <g class="ring-ticks">
-              <line
-                v-for="tick in ringTicks"
-                :key="tick.index"
-                x1="110"
-                y1="15"
-                x2="110"
-                y2="29"
-                :class="{ active: tick.active }"
-                :style="{ '--tick-delay': `${tick.delay}ms` }"
-                :transform="`rotate(${tick.angle} 110 110)`"
-              />
-            </g>
-          </svg>
-
-          <div class="timer-center">
-            <div class="timer-center__icon">
-              <Target :size="24" />
-            </div>
-            <strong>{{ formattedTime }}</strong>
-            <span>{{ isRunning ? 'идет сессия' : 'готов к старту' }}</span>
-          </div>
-        </div>
-
-        <div class="timer-actions">
-          <AppButton type="button" variant="primary" data-tour="focus-start" @click="toggleTimer">
-            <Pause v-if="isRunning" :size="16" />
-            <Play v-else :size="16" />
-            {{ isRunning ? 'Пауза' : 'Старт' }}
-          </AppButton>
-          <AppButton type="button" variant="secondary" @click="resetTimer">
-            <RotateCcw :size="16" />
-            Сброс
-          </AppButton>
+    <div class="focus-kpi" aria-label="Сводка фокуса">
+      <article class="focus-metric enter-fade-up" style="--enter-delay: 0ms">
+        <header class="focus-metric__head">
+          <span class="focus-metric__label">Сегодня</span>
+          <span class="focus-metric__icon" aria-hidden="true">
+            <Flame :size="16" />
+          </span>
+        </header>
+        <div class="focus-metric__value">
+          <strong>{{ completedSessions }}</strong>
+          <span>{{ sessionLabel }}</span>
         </div>
       </article>
 
-      <aside class="focus-side">
-        <div class="focus-panel">
-          <div class="panel-title">
-            <span>Режим</span>
-            <strong>{{ activePreset.minutes }} мин</strong>
+      <article class="focus-metric enter-fade-up" style="--enter-delay: 60ms">
+        <header class="focus-metric__head">
+          <span class="focus-metric__label">Режим</span>
+          <span class="focus-metric__icon" aria-hidden="true">
+            <component :is="activePreset.icon" :size="16" />
+          </span>
+        </header>
+        <div class="focus-metric__value">
+          <strong>{{ activePreset.label }}</strong>
+          <span>{{ activePreset.minutes }} мин</span>
+        </div>
+      </article>
+
+      <article class="focus-metric enter-fade-up" style="--enter-delay: 120ms">
+        <header class="focus-metric__head">
+          <span class="focus-metric__label">Прогресс</span>
+          <span class="focus-metric__icon" aria-hidden="true">
+            <Target :size="16" />
+          </span>
+        </header>
+        <div class="focus-metric__value">
+          <strong>{{ progressPercent }}%</strong>
+          <span>{{ isRunning ? 'идёт' : 'ожидание' }}</span>
+        </div>
+      </article>
+    </div>
+
+    <div class="focus-grid">
+      <AnalyticsWidgetShell
+        title="Сессия"
+        :subtitle="sessionSubtitle"
+        :icon="Target"
+        :span="8"
+        enter="fade-up"
+        :draggable="false"
+      >
+        <template #aside>
+          <span class="focus-aside">{{ activePreset.minutes }} мин</span>
+        </template>
+
+        <div class="timer-body">
+          <div class="timer-stage" :class="{ running: isRunning }">
+            <svg viewBox="0 0 220 220" class="timer-ring" aria-label="Таймер фокуса">
+              <g class="ring-ticks">
+                <line
+                  v-for="tick in ringTicks"
+                  :key="tick.index"
+                  x1="110"
+                  y1="15"
+                  x2="110"
+                  y2="29"
+                  :class="{ active: tick.active }"
+                  :style="{ '--tick-delay': `${tick.delay}ms` }"
+                  :transform="`rotate(${tick.angle} 110 110)`"
+                />
+              </g>
+            </svg>
+
+            <div class="timer-center">
+              <div class="timer-center__icon">
+                <Target :size="24" />
+              </div>
+              <strong>{{ formattedTime }}</strong>
+              <span>{{ isRunning ? 'идёт сессия' : 'готов к старту' }}</span>
+            </div>
           </div>
-          <div class="preset-grid" data-tour="focus-presets">
+
+          <div class="timer-actions">
+            <AppButton type="button" variant="primary" data-tour="focus-start" @click="toggleTimer">
+              <Pause v-if="isRunning" :size="16" />
+              <Play v-else :size="16" />
+              {{ isRunning ? 'Пауза' : 'Старт' }}
+            </AppButton>
+            <AppButton type="button" variant="secondary" @click="resetTimer">
+              <RotateCcw :size="16" />
+              Сброс
+            </AppButton>
+          </div>
+        </div>
+      </AnalyticsWidgetShell>
+
+      <AnalyticsWidgetShell
+        title="Режим"
+        :subtitle="`${activePreset.minutes} мин`"
+        :icon="Timer"
+        :span="4"
+        enter="slide-left"
+        :draggable="false"
+      >
+        <div class="mode-body">
+          <div class="preset-seg" data-tour="focus-presets" role="radiogroup" aria-label="Пресеты фокуса">
             <button
               v-for="preset in presets"
               :key="preset.key"
               type="button"
+              class="preset-chip"
+              role="radio"
+              :aria-checked="activePreset.key === preset.key"
               :class="{ active: activePreset.key === preset.key }"
               @click="setPreset(preset.key)"
             >
-              <component :is="preset.icon" :size="16" />
-              <span>{{ preset.label }}</span>
+              <component :is="preset.icon" :size="14" aria-hidden="true" />
+              <span class="preset-chip__label">{{ preset.label }}</span>
+              <em>{{ preset.minutes }}</em>
             </button>
           </div>
-        </div>
 
-        <Transition name="focus-stat">
-          <div v-if="!isRunning" class="focus-panel focus-panel--counter">
-            <div class="panel-title">
-              <span>Сегодня</span>
-              <strong>{{ completedSessions }}</strong>
-            </div>
-            <div class="session-counter" aria-label="Фокус-сессии сегодня">
-              <strong>{{ completedSessions }}</strong>
-              <span>{{ sessionLabel }}</span>
-            </div>
-            <p>Счетчик сохраняется для текущего дня и возвращается после паузы или завершения.</p>
-          </div>
-        </Transition>
-      </aside>
+          <p class="mode-tip">
+            Выберите длительность, затем стартуйте сессию. Счётчик дня сохраняется автоматически.
+          </p>
+        </div>
+      </AnalyticsWidgetShell>
     </div>
   </section>
 </template>
@@ -94,12 +134,14 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
   Coffee,
+  Flame,
   Pause,
   Play,
   RotateCcw,
   Target,
   Timer,
 } from 'lucide-vue-next'
+import AnalyticsWidgetShell from '~/components/analytics/AnalyticsWidgetShell.vue'
 import AppButton from '~/components/ui/primitives/AppButton.vue'
 import { useNotification } from '~/composables/useNotification'
 import { useGuidedTourStore } from '~/stores/guidedTour.store'
@@ -132,6 +174,10 @@ const activePreset = computed(() =>
   presets.find((preset) => preset.key === activePresetKey.value) ?? presets[0]
 )
 
+const sessionSubtitle = computed(() =>
+  isRunning.value ? `${activePreset.value.label} · идёт` : `${activePreset.value.label} · готов`
+)
+
 const todayKey = computed(() => {
   const date = new Date()
   const year = date.getFullYear()
@@ -145,6 +191,7 @@ const progress = computed(() => {
   if (!totalSeconds.value) return 0
   return 1 - remainingSeconds.value / totalSeconds.value
 })
+const progressPercent = computed(() => Math.round(progress.value * 100))
 const ringTicks = computed(() => {
   const active = Math.round(progress.value * 56)
   return Array.from({ length: 56 }, (_, index) => ({
@@ -314,123 +361,134 @@ onBeforeUnmount(() => {
 <style scoped lang="scss">
 .focus-page {
   display: grid;
-  gap: 14px;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.focus-kpi {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
   width: 100%;
   min-width: 0;
 }
 
-.focus-head,
-.timer-card,
-.focus-panel {
+.focus-metric {
   @include surface-panel;
-  border: var(--ui-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-sizing: border-box;
+  min-width: 0;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+
+  &.enter-fade-up {
+    animation: focus-fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--enter-delay, 0ms);
+  }
 }
 
-.focus-head {
+.focus-metric__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 16px 18px;
-  border-radius: var(--border-radius-lg);
-
-  h3 {
-    margin: 4px 0 0;
-    overflow: hidden;
-    color: var(--text);
-    font-size: 1.28rem;
-    font-weight: 700;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-
-    @include mobile {
-      font-size: 1.08rem;
-    }
-  }
-
-  @include mobile {
-    align-items: center;
-    flex-direction: row;
-    padding: 14px;
-  }
-}
-
-.focus-head > div:first-child {
+  gap: var(--space-3);
   min-width: 0;
 }
 
-.eyebrow {
-  color: var(--dim);
-  font-size: 0.72rem;
-  font-weight: 700;
+.focus-metric__label {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.02em;
   text-transform: uppercase;
+}
 
-  @include mobile {
-    display: block;
+.focus-metric__icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--color-accent);
+}
+
+.focus-metric__value {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  min-width: 0;
+  margin-top: auto;
+
+  strong {
     overflow: hidden;
+    color: var(--color-text-primary);
+    font-family: 'Space Grotesk', var(--font-sans);
+    font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.04em;
+    line-height: 1;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
+  span {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+  }
 }
 
-.focus-mode {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 36px;
-  padding: 0 12px;
-  border-radius: var(--border-radius-pill);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  color: var(--text);
-  font-size: 0.86rem;
-  font-weight: 700;
+.focus-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  gap: var(--space-4);
+  width: 100%;
+  align-items: stretch;
+
+  :deep(.widget-shell[class*='enter-']) {
+    animation-delay: var(--enter-delay, 0ms);
+  }
+
+  :deep(.widget-shell.span-8),
+  :deep(.widget-shell.span-4) {
+    --tile-h: 520px;
+    min-height: 520px;
+  }
+}
+
+.focus-aside {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
   white-space: nowrap;
-
-  @include mobile {
-    flex: 0 0 auto;
-    min-height: 44px;
-    padding: 0 10px;
-    font-size: 0.82rem;
-  }
 }
 
-.focus-shell {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
-  gap: 14px;
-
-  @include mobile {
-    grid-template-columns: 1fr;
-  }
-}
-
-.timer-card {
-  display: grid;
-  gap: 22px;
-  justify-items: center;
-  min-height: 520px;
-  padding: 28px;
-  border-radius: var(--border-radius-lg);
-
-  @include mobile {
-    min-height: 0;
-    padding: 22px 16px;
-  }
+.timer-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  min-height: 0;
+  width: 100%;
 }
 
 .timer-stage {
   position: relative;
   display: grid;
   place-items: center;
-  width: clamp(260px, 58vw, 420px);
-  max-width: 100%;
+  width: min(100%, 360px);
   aspect-ratio: 1;
   flex: 0 0 auto;
   margin-inline: auto;
-
-  @include mobile {
-    width: clamp(238px, 78vw, 340px);
-  }
 }
 
 .timer-ring {
@@ -444,7 +502,7 @@ onBeforeUnmount(() => {
 }
 
 .ring-ticks line {
-  stroke: color-mix(in srgb, var(--accent) 18%, transparent);
+  stroke: color-mix(in srgb, var(--color-accent) 18%, transparent);
   stroke-dasharray: 14;
   stroke-dashoffset: 14;
   stroke-linecap: round;
@@ -456,21 +514,17 @@ onBeforeUnmount(() => {
     opacity var(--transition-standard);
 
   &.active {
-    stroke: var(--accent);
+    stroke: var(--color-accent);
     opacity: 1;
   }
-}
-
-.timer-stage.running .ring-ticks line.active {
-  stroke: var(--accent);
 }
 
 .timer-center {
   position: absolute;
   inset: 0;
-  width: min(74%, 300px);
+  width: min(74%, 280px);
   margin: auto;
-  color: var(--text);
+  color: var(--color-text-primary);
   opacity: 0;
   transform: scale(0.97);
   animation: focus-value-in 460ms cubic-bezier(0.16, 1, 0.3, 1) 520ms both;
@@ -484,10 +538,10 @@ onBeforeUnmount(() => {
   }
 
   .timer-center__icon {
-    top: calc(50% - 70px);
+    top: calc(50% - 64px);
     display: grid;
     place-items: center;
-    color: var(--accent);
+    color: var(--color-accent);
   }
 
   strong {
@@ -495,9 +549,9 @@ onBeforeUnmount(() => {
     width: auto;
     min-width: 5.25ch;
     max-width: 100%;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(3.1rem, 10vw, 5.8rem);
-    font-weight: 700;
+    font-family: 'Space Grotesk', var(--font-sans);
+    font-size: clamp(2.8rem, 8vw, 4.8rem);
+    font-weight: var(--weight-bold);
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.055em;
     line-height: 0.82;
@@ -508,35 +562,18 @@ onBeforeUnmount(() => {
 
   span {
     position: absolute;
-    top: calc(50% + 44px);
+    top: calc(50% + 40px);
     left: 50%;
     transform: translateX(-50%);
     max-width: 100%;
     overflow: hidden;
-    color: var(--dim);
-    font-size: 0.86rem;
-    font-weight: 700;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     line-height: 1;
     text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  @include mobile {
-    width: min(76%, 260px);
-
-    .timer-center__icon {
-      top: calc(50% - 58px);
-    }
-
-    strong {
-      font-size: clamp(2.9rem, 15vw, 4.7rem);
-    }
-
-    span {
-      top: calc(50% + 36px);
-      font-size: 0.78rem;
-    }
   }
 }
 
@@ -544,126 +581,101 @@ onBeforeUnmount(() => {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
-
-  @include mobile {
-    width: 100%;
-
-    :deep(.app-button) {
-      flex: 1 1 140px;
-      min-height: 44px;
-    }
-  }
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 360px;
 }
 
-.focus-side {
-  display: grid;
-  gap: 14px;
-  align-content: start;
-}
-
-.focus-panel {
-  display: grid;
-  gap: 14px;
-  padding: 18px;
-  border-radius: var(--border-radius-lg);
-}
-
-.panel-title {
+.mode-body {
   display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+}
+
+.preset-seg {
+  @include nest-shell(var(--radius-md), var(--space-1));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  border: var(--ui-border);
+  background: var(--color-surface-1);
+  box-shadow: var(--shadow-xs);
+}
+
+.preset-chip {
+  @include nest-item;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-
-  span {
-    color: var(--dim);
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  strong {
-    color: var(--accent);
-    font-size: 0.92rem;
-  }
-}
-
-.preset-grid {
-  display: grid;
-  gap: 8px;
-
-  button {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-height: 44px;
-    padding: 0 12px;
-    border: none;
-    border-radius: var(--border-radius-pill);
-    background: transparent;
-    color: var(--dim);
-    cursor: pointer;
-    font: inherit;
-    font-weight: 700;
-    transition:
-      background var(--transition-standard),
-      color var(--transition-standard);
-
-    &:hover {
-      background: color-mix(in srgb, var(--accent) 7%, transparent);
-      color: var(--text);
-    }
-
-    &.active {
-      background: var(--accent);
-      color: var(--bg);
-    }
-  }
-}
-
-.focus-panel--counter {
-  overflow: hidden;
-}
-
-.session-counter {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  color: var(--text);
-
-  strong {
-    color: var(--accent);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(2.4rem, 7vw, 4.1rem);
-    font-variant-numeric: tabular-nums;
-    line-height: 0.92;
-  }
-
-  span {
-    color: var(--dim);
-    font-size: 0.9rem;
-    font-weight: 700;
-  }
-}
-
-.focus-panel p {
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--control-height-md);
   margin: 0;
-  color: var(--dim);
-  font-size: 0.84rem;
-  line-height: 1.45;
-}
-
-.focus-stat-enter-active,
-.focus-stat-leave-active {
+  padding: 0 var(--space-3);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  text-align: left;
   transition:
-    opacity var(--transition-standard),
-    transform var(--transition-standard);
+    background var(--transition-standard),
+    color var(--transition-standard);
+
+  em {
+    font-style: normal;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--weight-semibold);
+  }
+
+  &:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+    outline-offset: 1px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(.active) {
+      background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+      color: var(--color-text-primary);
+    }
+  }
+
+  &.active {
+    background: var(--color-accent);
+    color: var(--color-bg);
+
+    em {
+      color: inherit;
+      opacity: 0.85;
+    }
+  }
 }
 
-.focus-stat-enter-from,
-.focus-stat-leave-to {
-  opacity: 0;
-  transform: translateY(8px);
+.mode-tip {
+  margin: 0;
+  margin-top: auto;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+@keyframes focus-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes focus-tick-in {
@@ -686,12 +698,136 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .focus-metric.enter-fade-up,
   .ring-ticks line,
   .timer-center {
     animation: none;
     opacity: 1;
     transform: none;
     stroke-dashoffset: 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  .focus-kpi,
+  .focus-grid {
+    gap: var(--space-3);
+  }
+
+  .focus-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+
+    :deep(.widget-shell.span-8),
+    :deep(.widget-shell.span-4) {
+      grid-column: span 6;
+      --tile-h: auto;
+      min-height: 420px;
+      height: auto;
+    }
+  }
+}
+
+@include mobile {
+  .focus-page {
+    gap: var(--space-3);
+  }
+
+  .focus-kpi {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .focus-metric {
+    gap: var(--space-2);
+    padding: var(--space-3);
+  }
+
+  .focus-metric__value {
+    strong {
+      font-size: clamp(1.25rem, 5.5vw, 1.75rem);
+    }
+
+    span {
+      font-size: var(--text-xs);
+    }
+  }
+
+  .focus-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+
+    :deep(.widget-shell.span-8),
+    :deep(.widget-shell.span-4) {
+      grid-column: span 1;
+      --tile-h: auto;
+      min-height: 0;
+      height: auto;
+    }
+
+    /* Timer first, presets below — DOM order already matches */
+    :deep(.widget-shell.span-8) {
+      order: 0;
+    }
+
+    :deep(.widget-shell.span-4) {
+      order: 1;
+    }
+  }
+
+  .timer-stage {
+    width: min(100%, 300px);
+  }
+
+  .timer-center {
+    width: min(76%, 240px);
+
+    .timer-center__icon {
+      top: calc(50% - 54px);
+    }
+
+    strong {
+      font-size: clamp(2.6rem, 14vw, 3.8rem);
+    }
+
+    span {
+      top: calc(50% + 34px);
+      font-size: var(--text-xs);
+    }
+  }
+
+  .timer-actions {
+    max-width: none;
+
+    :deep(.app-button) {
+      flex: 1 1 140px;
+      min-height: 44px;
+    }
+  }
+
+  .timer-body {
+    gap: var(--space-4);
+  }
+
+  .preset-chip {
+    min-height: var(--space-11);
+  }
+}
+
+@include narrow {
+  .focus-page,
+  .focus-kpi,
+  .focus-grid {
+    gap: var(--space-2);
+  }
+
+  .focus-kpi {
+    grid-template-columns: 1fr;
+  }
+
+  .focus-metric__value {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--space-2);
   }
 }
 </style>

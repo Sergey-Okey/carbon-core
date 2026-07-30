@@ -18,8 +18,112 @@
     >
       <ChevronUp :size="16" />
     </button>
+
+    <template v-if="!isCollapsed">
+      <div class="stat-item">
+        <div class="stat-item__header">
+          <Zap :size="18" />
+          <span>Ур. {{ userStore.level }}</span>
+        </div>
+        <div class="stat-item__body">
+          <div class="dot-track">
+            <div
+              v-for="i in 20"
+              :key="'lvl-' + i"
+              class="dot"
+              :class="{ 'dot--active': i <= filledLevelDots }"
+            />
+          </div>
+          <span class="stat-item__progress">
+            {{ currentLevelProgress }}/{{ tasksNeededForNextLevel }}
+          </span>
+        </div>
+      </div>
+
+      <div class="stat-item">
+        <div class="stat-item__header">
+          <component :is="leagueIcon" :size="18" :class="leagueClass" />
+          <span>{{ userStore.league }}</span>
+        </div>
+        <div class="stat-item__body">
+          <div class="dot-track">
+            <div
+              v-for="i in 20"
+              :key="'lg-' + i"
+              class="dot"
+              :class="{ 'dot--active': i <= filledLeagueDots }"
+            />
+          </div>
+          <span class="stat-item__progress">{{ leagueProgressPercent }}%</span>
+        </div>
+      </div>
+
+      <div class="stat-item stat-item--chart">
+        <div class="chart-summary">
+          <span>Активность</span>
+        </div>
+        <div class="mini-chart">
+          <div class="activity-days">
+            <button
+              v-for="day in weeklyChart"
+              :key="day.date"
+              type="button"
+              class="activity-day"
+              :class="{ active: day.isToday, empty: day.count === 0 }"
+              :title="`${day.label}: ${formatTaskCount(day.count)}`"
+              :aria-label="`${day.label}: ${formatTaskCount(day.count)}`"
+            >
+              <span class="activity-track">
+                <span
+                  class="activity-fill"
+                  :style="{ height: `${day.height}%` }"
+                />
+              </span>
+              <span class="activity-label">{{ day.shortLabel }}</span>
+              <span class="activity-tooltip">{{ formatTaskCount(day.count) }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-item stat-item--tasks">
+        <div class="stat-item__body">
+          <div class="task-counters">
+            <div
+              class="task-counter"
+              :class="{ 'task-counter--done': completed.day === 3 }"
+            >
+              <span class="task-counter__label">Д</span>
+              <span class="task-counter__value">{{ completed.day }}/3</span>
+            </div>
+            <div
+              class="task-counter"
+              :class="{ 'task-counter--done': completed.week === 3 }"
+            >
+              <span class="task-counter__label">Н</span>
+              <span class="task-counter__value">{{ completed.week }}/3</span>
+            </div>
+            <div
+              class="task-counter"
+              :class="{ 'task-counter--done': completed.month === 3 }"
+            >
+              <span class="task-counter__label">М</span>
+              <span class="task-counter__value">{{ completed.month }}/3</span>
+            </div>
+            <div
+              class="task-counter"
+              :class="{ 'task-counter--done': completed.year === 3 }"
+            >
+              <span class="task-counter__label">Г</span>
+              <span class="task-counter__value">{{ completed.year }}/3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
     <button
-      v-if="isCollapsed"
+      v-else
       type="button"
       class="stats-collapsed-toggle"
       aria-label="Развернуть статистику"
@@ -39,106 +143,6 @@
         <ChevronDown :size="16" />
       </span>
     </button>
-    <div v-if="!isCollapsed" class="stat-item">
-      <div class="stat-item__header">
-        <Zap :size="18" />
-        <span>Ур. {{ userStore.level }}</span>
-      </div>
-      <div class="stat-item__body">
-        <div class="dot-track">
-          <div
-            v-for="i in 20"
-            :key="'lvl-' + i"
-            class="dot"
-            :class="{ 'dot--active': i <= filledLevelDots }"
-          />
-        </div>
-        <span class="stat-item__progress">
-          {{ currentLevelProgress }}/{{ tasksNeededForNextLevel }}
-        </span>
-      </div>
-    </div>
-
-    <div v-if="!isCollapsed" class="stat-item">
-      <div class="stat-item__header">
-        <component :is="leagueIcon" :size="18" :class="leagueClass" />
-        <span>{{ userStore.league }}</span>
-      </div>
-      <div class="stat-item__body">
-        <div class="dot-track">
-          <div
-            v-for="i in 20"
-            :key="'lg-' + i"
-            class="dot"
-            :class="{ 'dot--active': i <= filledLeagueDots }"
-          />
-        </div>
-        <span class="stat-item__progress">{{ leagueProgressPercent }}%</span>
-      </div>
-    </div>
-
-    <div v-if="!isCollapsed" class="stat-item stat-item--chart">
-      <div class="chart-summary">
-        <span>Активность</span>
-      </div>
-      <div class="mini-chart">
-        <div class="activity-days">
-          <button
-            v-for="day in weeklyChart"
-            :key="day.date"
-            type="button"
-            class="activity-day"
-            :class="{ active: day.isToday, empty: day.count === 0 }"
-            :title="`${day.label}: ${formatTaskCount(day.count)}`"
-            :aria-label="`${day.label}: ${formatTaskCount(day.count)}`"
-          >
-            <span class="activity-track">
-              <span
-                class="activity-fill"
-                :style="{ height: `${day.height}%` }"
-              />
-            </span>
-            <span class="activity-label">{{ day.shortLabel }}</span>
-            <span class="activity-tooltip">{{ formatTaskCount(day.count) }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div v-if="!isCollapsed" class="stat-item stat-item--tasks">
-      <div class="stat-item__body">
-        <div class="task-counters">
-          <div
-            class="task-counter"
-            :class="{ 'task-counter--done': completed.day === 3 }"
-          >
-            <span class="task-counter__label">Д</span>
-            <span class="task-counter__value">{{ completed.day }}/3</span>
-          </div>
-          <div
-            class="task-counter"
-            :class="{ 'task-counter--done': completed.week === 3 }"
-          >
-            <span class="task-counter__label">Н</span>
-            <span class="task-counter__value">{{ completed.week }}/3</span>
-          </div>
-          <div
-            class="task-counter"
-            :class="{ 'task-counter--done': completed.month === 3 }"
-          >
-            <span class="task-counter__label">М</span>
-            <span class="task-counter__value">{{ completed.month }}/3</span>
-          </div>
-          <div
-            class="task-counter"
-            :class="{ 'task-counter--done': completed.year === 3 }"
-          >
-            <span class="task-counter__label">Г</span>
-            <span class="task-counter__value">{{ completed.year }}/3</span>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -304,6 +308,7 @@ function formatTaskCount(count: number) {
   if (count > 1 && count < 5) return `${count} задачи закрыто`
   return `${count} задач закрыто`
 }
+
 function toggleCollapsed() {
   isCollapsed.value = !isCollapsed.value
   if (import.meta.client) {
@@ -319,26 +324,30 @@ onMounted(() => {
 <style scoped lang="scss">
 .stats-bar {
   position: relative;
+  @include surface-panel;
   display: grid;
   align-items: center;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  @include surface-panel;
-  border-radius: var(--border-radius-lg);
-  padding: 12px 42px 12px 18px;
-  border: var(--ui-border);
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-3) calc(var(--space-3) + var(--control-icon-size) + var(--space-2))
+    var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
 
   @include mobile {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    padding: 12px;
+    padding: var(--space-3);
   }
 
   &.is-collapsed {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     min-height: 52px;
-    padding: 8px;
+    padding: var(--space-2);
+  }
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -354,16 +363,19 @@ onMounted(() => {
 
 .stats-collapse-button {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 2;
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: var(--control-icon-size);
+  height: var(--control-icon-size);
+  margin: 0;
+  padding: 0;
   border: none;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--radius-md);
   background: transparent;
-  color: var(--dim);
+  color: var(--color-text-muted);
   cursor: pointer;
   transition:
     background var(--transition-standard),
@@ -372,83 +384,65 @@ onMounted(() => {
   &:hover,
   &:focus-visible {
     outline: none;
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
-    color: var(--text);
-  }
-
-  .is-collapsed & {
-    top: 50%;
-    transform: translateY(-50%);
-  }
-
-  @include mobile {
-    z-index: 2;
-    top: 8px;
-    right: 8px;
-
-    .is-collapsed & {
-      top: 50%;
-    }
+    background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+    color: var(--color-text-primary);
   }
 }
 
 .stats-collapsed-toggle {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   width: 100%;
   min-width: 0;
   min-height: 36px;
-  padding: 8px 10px 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border: none;
-  border-radius: calc(var(--border-radius-lg) - 6px);
-  background: color-mix(in srgb, var(--color-surface-1) 90%, transparent);
-  color: var(--text);
+  border-radius: var(--radius-nested, var(--radius-md));
+  background: color-mix(in srgb, var(--color-surface-2) 92%, transparent);
+  color: var(--color-text-primary);
   cursor: pointer;
   transition:
     background var(--transition-standard),
-    color var(--transition-standard),
-    border-color var(--transition-standard);
+    color var(--transition-standard);
 
   &:hover,
   &:focus-visible {
     outline: none;
-    background: color-mix(in srgb, var(--accent) 8%, var(--color-surface-1));
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface-2));
   }
 }
 
 .stats-collapsed-row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-3);
   min-width: 0;
   overflow: hidden;
-  color: var(--dim);
-  font-size: 0.82rem;
-  font-weight: 600;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
   white-space: nowrap;
   flex: 1;
 
   span {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-1);
     min-width: 0;
   }
 
   span:first-child {
-    color: var(--text);
+    color: var(--color-text-primary);
   }
 
   span:not(:first-child) {
-    overflow: hidden;
-    text-overflow: ellipsis;
+    @include text-ellipsis;
   }
 
   @include mobile {
-    gap: 10px;
-    padding-right: 34px;
-    font-size: 0.78rem;
+    gap: var(--space-2);
+    font-size: var(--text-xs);
 
     span:nth-child(n + 4) {
       display: none;
@@ -459,22 +453,21 @@ onMounted(() => {
 .stats-collapsed-chevron {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: var(--control-icon-size);
+  height: var(--control-icon-size);
   flex-shrink: 0;
-  border-radius: var(--border-radius-md);
-  color: var(--dim);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: var(--space-2);
   justify-content: flex-end;
   align-items: flex-start;
   min-width: 0;
   height: 100%;
-  padding-inline: 2px;
   animation: stats-item-in 240ms ease-out both;
 
   @for $i from 1 through 4 {
@@ -488,16 +481,14 @@ onMounted(() => {
     align-items: stretch;
   }
 
-  &--tasks {
-    @include mobile {
-      margin-left: 0;
-    }
-  }
-
   &--chart {
     @include mobile {
       grid-column: 1 / -1;
       align-items: stretch;
+    }
+
+    @media (max-width: 520px) {
+      grid-column: auto;
     }
   }
 }
@@ -505,21 +496,28 @@ onMounted(() => {
 .stat-item__header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-weight: 500;
-  font-size: 0.86rem;
-  color: var(--text);
+  gap: var(--space-2);
+  min-width: 0;
+  font-weight: var(--weight-medium);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+
+  span {
+    @include text-ellipsis;
+  }
 
   svg {
-    color: var(--dim);
+    flex-shrink: 0;
+    color: var(--color-text-muted);
   }
 }
 
 .stat-item__body {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   width: 100%;
+  min-width: 0;
 
   @include mobile {
     justify-content: center;
@@ -537,7 +535,7 @@ onMounted(() => {
 .dot {
   width: min(100%, 5px);
   aspect-ratio: 1;
-  border-radius: var(--border-radius-pill);
+  border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--ui-border-color) 82%, transparent);
   opacity: 0;
   transform: scale(0.35);
@@ -546,7 +544,7 @@ onMounted(() => {
   justify-self: center;
 
   &--active {
-    background: var(--accent);
+    background: var(--color-accent);
   }
 
   @for $i from 1 through 20 {
@@ -559,10 +557,9 @@ onMounted(() => {
 .stat-item__progress {
   min-width: max-content;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.76rem;
-  font-weight: 500;
-  color: var(--dim);
-  margin-left: 4px;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
   opacity: 0;
   animation: stats-value-in 220ms cubic-bezier(0.16, 1, 0.3, 1) 260ms both;
@@ -571,13 +568,12 @@ onMounted(() => {
 .task-counters {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
+  gap: var(--space-2);
   width: 100%;
   min-width: 0;
 
   @include mobile {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    justify-content: stretch;
   }
 }
 
@@ -585,43 +581,43 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--space-1);
   min-width: 0;
-  min-height: 27px;
-  padding: 3px 6px;
-  border-radius: var(--border-radius-pill);
+  min-height: 28px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
   background: var(--color-surface-2);
   border: var(--ui-border);
-  font-size: 0.8rem;
-  color: var(--text);
+  font-size: var(--text-xs);
+  color: var(--color-text-primary);
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard),
     color var(--transition-standard);
 
   &--done {
-    background: var(--accent);
-    border-color: var(--ui-border-color);
-    color: var(--bg);
+    background: var(--color-accent);
+    border-color: transparent;
+    color: var(--color-bg);
   }
 }
 
 .task-counter__label {
   min-width: 0;
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
 }
 
 .task-counter__value {
   min-width: 0;
   font-family: 'Space Grotesk', sans-serif;
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   font-variant-numeric: tabular-nums;
 }
 
 .mini-chart {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
   width: 100%;
   min-height: 52px;
   animation: chart-fade-in 260ms ease-out both;
@@ -634,16 +630,10 @@ onMounted(() => {
 .chart-summary {
   display: flex;
   align-items: baseline;
-  gap: 6px;
-  color: var(--dim);
-  font-size: 0.7rem;
-  font-weight: 500;
-
-  strong {
-    color: var(--text);
-    font-size: 0.78rem;
-    font-weight: 600;
-  }
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
 
   @include mobile {
     justify-content: center;
@@ -654,7 +644,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   align-items: end;
-  gap: 4px;
+  gap: var(--space-1);
   width: 100%;
   min-height: 44px;
 }
@@ -669,7 +659,7 @@ onMounted(() => {
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--dim);
+  color: var(--color-text-muted);
   cursor: default;
   font: inherit;
 
@@ -678,12 +668,11 @@ onMounted(() => {
     outline: none;
 
     .activity-track {
-      background: color-mix(in srgb, var(--accent) 10%, transparent);
+      background: color-mix(in srgb, var(--color-accent) 10%, transparent);
     }
 
     .activity-fill {
       opacity: 1;
-      background: color-mix(in srgb, var(--accent) 10%, transparent);
     }
 
     .activity-tooltip {
@@ -693,13 +682,13 @@ onMounted(() => {
     }
   }
 
-  .active {
-    color: var(--text);
+  &.active {
+    color: var(--color-text-primary);
   }
 }
 
 .activity-day.active .activity-label {
-  color: var(--text);
+  color: var(--color-text-primary);
 }
 
 .activity-track {
@@ -711,7 +700,7 @@ onMounted(() => {
   max-width: 10px;
   height: 30px;
   overflow: hidden;
-  border-radius: var(--border-radius-pill);
+  border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--ui-border-color) 38%, transparent);
 }
 
@@ -719,12 +708,12 @@ onMounted(() => {
   width: 100%;
   min-height: 2px;
   border-radius: inherit;
-  background: var(--accent);
+  background: var(--color-accent);
   opacity: 0.74;
   transform-origin: bottom;
   transition:
     height var(--transition-standard),
-    opacity var(--transition-standard),
+    opacity var(--transition-standard);
 }
 
 .activity-day.empty .activity-fill {
@@ -733,9 +722,9 @@ onMounted(() => {
 
 .activity-label {
   font-size: 0.62rem;
-  font-weight: 700;
+  font-weight: var(--weight-bold, 700);
   line-height: 1;
-  color: var(--dim);
+  color: var(--color-text-muted);
 }
 
 .activity-tooltip {
@@ -746,30 +735,20 @@ onMounted(() => {
   z-index: 20;
   width: max-content;
   max-width: 150px;
-  padding: 7px 10px;
+  padding: var(--space-2) var(--space-3);
   border: var(--ui-border);
-  border-radius: var(--border-radius-pill);
-  color: var(--text);
-  font-size: 0.72rem;
-  font-weight: 600;
+  border-radius: var(--radius-full);
+  color: var(--color-text-primary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
   line-height: 1.18;
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 0);
   transition:
     opacity var(--transition-standard),
-        visibility var(--transition-standard);
+    visibility var(--transition-standard);
   visibility: hidden;
-}
-
-@media (max-width: 520px) {
-  .stats-bar {
-    grid-template-columns: 1fr;
-  }
-
-  .stat-item--chart {
-    grid-column: auto;
-  }
 }
 
 .league-bronze {
@@ -783,16 +762,6 @@ onMounted(() => {
 }
 .league-platinum {
   color: var(--platinum);
-}
-
-@keyframes chart-line-in {
-  from {
-    stroke-dashoffset: 180;
-  }
-
-  to {
-    stroke-dashoffset: 0;
-  }
 }
 
 @keyframes chart-fade-in {
