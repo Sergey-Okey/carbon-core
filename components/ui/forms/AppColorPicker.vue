@@ -4,17 +4,19 @@
       v-for="option in options"
       :key="option.value"
       type="button"
-      class="color-option"
-      :class="{ active: option.value === modelValue }"
-      :style="{ '--picker-color': option.color || option.value }"
+      class="swatch"
+      :class="{
+        active: option.value === modelValue,
+        light: isLightColor(option.color || option.value),
+      }"
+      :style="{ '--swatch': option.color || option.value }"
       role="radio"
       :aria-label="option.label"
       :aria-checked="option.value === modelValue"
+      :title="option.label"
       @click="emit('update:modelValue', option.value)"
     >
-      <span class="color-dot">
-        <Check v-if="option.value === modelValue" :size="12" />
-      </span>
+      <Check v-if="option.value === modelValue" class="swatch-check" :size="14" :stroke-width="2.6" />
     </button>
   </div>
 </template>
@@ -49,6 +51,16 @@ withDefaults(
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
 }>()
+
+function isLightColor(color: string) {
+  const match = color.trim().match(/^#([0-9a-f]{6})$/i)
+  if (!match) return false
+  const value = match[1]
+  const r = parseInt(value.slice(0, 2), 16) / 255
+  const g = parseInt(value.slice(2, 4), 16) / 255
+  const b = parseInt(value.slice(4, 6), 16) / 255
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.62
+}
 </script>
 
 <style scoped lang="scss">
@@ -56,80 +68,72 @@ const emit = defineEmits<{
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
   width: fit-content;
   max-width: 100%;
-  padding: var(--space-1);
-  border: var(--ui-border);
-  border-radius: var(--radius-full);
-  background: var(--color-surface-1);
-  box-shadow: var(--shadow-xs);
 }
 
-.color-option {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--control-icon-size);
-  height: var(--control-icon-size);
+.swatch {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin: 0;
   padding: 0;
   border: none;
-  border-radius: var(--radius-full);
-  background: transparent;
+  border-radius: 12px;
+  background: var(--swatch);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  color: #fff;
   cursor: pointer;
   transition:
-    background var(--transition-standard),
-    opacity var(--transition-standard);
-
-  .color-dot {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--space-5);
-    height: var(--space-5);
-    border-radius: var(--radius-full);
-    background: var(--picker-color);
-    color: var(--color-bg);
-    transition:
-      outline-color var(--transition-standard),
-      outline-offset var(--transition-standard),
-      transform var(--transition-standard);
-  }
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow var(--transition-standard),
+    filter var(--transition-standard);
 
   &:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
-    outline-offset: 1px;
+    outline: 2px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+    outline-offset: 3px;
   }
 
   @media (hover: hover) and (pointer: fine) {
     &:hover {
-      background: color-mix(in srgb, var(--picker-color) 10%, transparent);
+      transform: translateY(-1px) scale(1.04);
+      filter: saturate(1.08);
     }
   }
 
-  &.active,
-  &.active:hover {
-    background: color-mix(in srgb, var(--picker-color) 14%, transparent);
+  &.active {
+    transform: scale(1.06);
+    box-shadow:
+      0 0 0 2px var(--color-surface-1),
+      0 0 0 4px var(--swatch);
+  }
 
-    .color-dot {
-      outline: 2px solid color-mix(in srgb, var(--picker-color) 64%, var(--color-text-primary) 36%);
-      outline-offset: 3px;
-    }
+  &.light {
+    color: #1a1a1a;
   }
 }
 
-@media (max-width: 767px) {
+.swatch-check {
+  filter: none;
+}
+
+.swatch.light .swatch-check {
+  filter: none;
+}
+
+@include mobile {
   .color-picker {
     width: 100%;
-    justify-content: space-between;
-    border-radius: var(--radius-lg);
+    gap: var(--space-2);
   }
 
-  .color-option {
-    width: var(--space-11);
-    min-width: var(--space-11);
-    height: var(--space-11);
-    min-height: var(--space-11);
+  .swatch {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
   }
 }
 </style>

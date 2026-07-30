@@ -21,10 +21,6 @@
 </template>
 
 <script setup lang="ts">
-import { useConfirm } from '~/composables/useConfirm'
-import AppButton from '~/components/ui/primitives/AppButton.vue'
-import AppModal from '~/components/ui/overlays/AppModal.vue'
-
 const confirmState = useConfirm()
 </script>
 

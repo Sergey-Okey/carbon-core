@@ -110,6 +110,7 @@
               />
               <AppCustomColorPicker
                 :model-value="settingsStore.accentColor"
+                :active="isCustomAccent"
                 @update:model-value="setAccentColor"
               />
             </div>
@@ -325,7 +326,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import {
   BarChart3,
   Clock,
@@ -344,17 +344,8 @@ import {
   Vibrate,
   Volume2,
 } from 'lucide-vue-next'
-import AppButton from '~/components/ui/primitives/AppButton.vue'
-import AppColorPicker from '~/components/ui/forms/AppColorPicker.vue'
-import AppCustomColorPicker from '~/components/ui/forms/AppCustomColorPicker.vue'
-import AppSwitch from '~/components/ui/primitives/AppSwitch.vue'
-import AppTimePicker from '~/components/ui/forms/AppTimePicker.vue'
-import { useConfirm } from '~/composables/useConfirm'
-import TagManager from '~/components/settings/TagManager.vue'
-import { useNotification } from '~/composables/useNotification'
-import { useAccessStore } from '~/stores/access.store'
 import { ACCESS_STORAGE_KEY } from '~/utils/accessStorage'
-import { ACCENT_COLORS, useSettingsStore } from '~/stores/settings.store'
+import { ACCENT_COLORS } from '~/stores/settings.store'
 import {
   buildBackupPayload,
   readAutoBackup,
@@ -395,6 +386,10 @@ const accentLabel = computed(() => {
   if (found === ACCENT_COLORS[0]) return adaptiveAccentName.value
   return found?.name ?? 'Пользовательский'
 })
+
+const isCustomAccent = computed(
+  () => !ACCENT_COLORS.some((color) => color.value === settingsStore.accentColor)
+)
 
 const lastBackupText = computed(() => {
   if (!settingsStore.lastBackupDate) return ''
@@ -570,7 +565,7 @@ async function resetAllData() {
     'tags tags tags tags tags tags data data data data data data';
   gap: var(--space-4);
   width: 100%;
-  align-items: stretch;
+  align-items: start;
 }
 
 .card {
@@ -579,7 +574,7 @@ async function resetAllData() {
   gap: var(--space-5);
   box-sizing: border-box;
   min-width: 0;
-  height: 100%;
+  height: auto;
   padding: var(--space-6);
   background: var(--color-surface-1);
   border: var(--ui-border);
@@ -637,7 +632,7 @@ async function resetAllData() {
   flex-wrap: wrap;
   gap: var(--space-2);
   flex: 0 0 auto;
-  margin-top: auto;
+  margin-top: 0;
   padding-top: var(--space-4);
   border-top: var(--ui-border);
 
@@ -783,7 +778,7 @@ async function resetAllData() {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  margin-top: auto;
+  margin-top: 0;
   padding-top: var(--space-4);
   border-top: var(--ui-border);
 

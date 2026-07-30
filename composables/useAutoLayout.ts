@@ -24,9 +24,16 @@ function snap(value: number, grid: number) {
 }
 
 function getNodeSize(node: Node) {
-  if (node.type === 'branch-node') return { width: 240, height: 138 }
-  if (node.type === 'milestone-node') return { width: 220, height: 120 }
-  return { width: 220, height: 120 }
+  const measured = node.dimensions
+  if (measured?.width && measured?.height) {
+    return {
+      width: Math.max(measured.width, 180),
+      height: Math.max(measured.height, 100),
+    }
+  }
+  if (node.type === 'branch-node') return { width: 240, height: 148 }
+  if (node.type === 'milestone-node') return { width: 220, height: 136 }
+  return { width: 220, height: 136 }
 }
 
 function handleSide(handle?: string | null): HandleSide | null {

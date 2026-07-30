@@ -158,35 +158,35 @@ defineEmits<{
   }
 
   &.enter-fade-up {
-    animation: widget-fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: widget-fade-up var(--transition-emphasized) both;
   }
 
   &.enter-slide-left {
-    animation: widget-slide-left 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: widget-slide-left var(--duration-emphasized) var(--ease-emphasized) both;
   }
 
   &.enter-scale-pop {
-    animation: widget-scale-pop 0.55s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+    animation: widget-scale-pop var(--transition-emphasized) both;
   }
 
   &.enter-spin-soft {
-    animation: widget-spin-soft 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: widget-spin-soft 650ms var(--ease-emphasized) both;
   }
 
   &.enter-expand-blur {
-    animation: widget-expand-blur 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: widget-expand-blur 700ms var(--ease-emphasized) both;
   }
 
   &.enter-bounce-in {
-    animation: widget-bounce-in 0.7s cubic-bezier(0.34, 1.45, 0.64, 1) both;
+    animation: widget-bounce-in 700ms cubic-bezier(0.34, 1.45, 0.64, 1) both;
   }
 
   &.enter-wipe-up {
-    animation: widget-wipe-up 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: widget-wipe-up 650ms var(--ease-emphasized) both;
   }
 
   &.enter-slide-right {
-    animation: widget-slide-right 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: widget-slide-right var(--duration-emphasized) var(--ease-emphasized) both;
   }
 }
 

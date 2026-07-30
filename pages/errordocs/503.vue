@@ -11,8 +11,6 @@
 </template>
 
 <script setup lang="ts">
-import ErrorDocPage from '~/components/error/ErrorDocPage.vue'
-
 useSeoMeta({
   title: '503 — Сервис недоступен',
   description: 'Сервис временно недоступен. Попробуйте позже.',

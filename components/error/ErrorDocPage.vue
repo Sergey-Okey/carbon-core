@@ -30,7 +30,6 @@
 
 <script setup lang="ts">
 import { Home, RefreshCw } from 'lucide-vue-next'
-import AppButton from '~/components/ui/primitives/AppButton.vue'
 
 const props = withDefaults(
   defineProps<{

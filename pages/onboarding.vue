@@ -538,7 +538,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, type ComponentPublicInstance } from 'vue'
 import {
   ChevronRight,
   ArrowRight,
@@ -557,10 +556,6 @@ import {
   Mail,
   Send,
 } from 'lucide-vue-next'
-import { useOnboardingStore } from '~/stores/onboarding.store'
-import { useAuthStore } from '~/stores/auth.store'
-import AppBadge from '~/components/ui/primitives/AppBadge.vue'
-import ThemeToggleButton from '~/components/ui/primitives/ThemeToggleButton.vue'
 
 definePageMeta({
   layout: false,

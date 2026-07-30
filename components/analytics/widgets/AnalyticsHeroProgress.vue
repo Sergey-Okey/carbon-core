@@ -46,8 +46,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, type Component } from 'vue'
-
 export type HeroMetric = {
   key: string
   label: string

@@ -11,8 +11,6 @@
 </template>
 
 <script setup lang="ts">
-import ErrorDocPage from '~/components/error/ErrorDocPage.vue'
-
 useSeoMeta({
   title: '429 — Слишком много запросов',
   description: 'Превышен лимит запросов. Попробуйте позже.',

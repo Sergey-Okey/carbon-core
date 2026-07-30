@@ -11,8 +11,6 @@
 </template>
 
 <script setup lang="ts">
-import ErrorDocPage from '~/components/error/ErrorDocPage.vue'
-
 useSeoMeta({
   title: '403 — Доступ ограничен',
   description: 'У текущего профиля нет доступа к этому разделу.',

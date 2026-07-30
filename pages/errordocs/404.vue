@@ -11,8 +11,6 @@
 </template>
 
 <script setup lang="ts">
-import ErrorDocPage from '~/components/error/ErrorDocPage.vue'
-
 useSeoMeta({
   title: '404 — Страница не найдена',
   description: 'Запрошенная страница не существует или была перемещена.',

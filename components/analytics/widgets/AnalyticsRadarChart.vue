@@ -70,8 +70,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-
 export type RadarItem = {
   key: string
   label: string

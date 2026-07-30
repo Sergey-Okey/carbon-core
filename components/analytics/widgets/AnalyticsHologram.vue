@@ -29,7 +29,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { ActivityDayPoint } from '~/composables/useAnalyticsMetrics'
 
 export type HologramMetric = {

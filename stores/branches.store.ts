@@ -701,6 +701,13 @@ export const useBranchesStore = defineStore(
     ) {
       const lastBranch = branches.value.at(-1)
       const lastPosition = lastBranch?.position || { x: 100, y: 100 }
+      let nextY = lastPosition.y + 220
+      if (lastBranch) {
+        const networkBottom = lastBranch.milestones.reduce((maxY, milestone) => {
+          return Math.max(maxY, (milestone.position?.y ?? lastPosition.y) + 160)
+        }, lastPosition.y + 160)
+        nextY = networkBottom + 120
+      }
       const newBranch: Branch = {
         id: uuidv4(),
         displayName,
@@ -711,7 +718,7 @@ export const useBranchesStore = defineStore(
           directTaskIds: [...taskIds],
           milestones: [],
         order: branches.value.length,
-        position: { x: lastPosition.x, y: lastPosition.y + 180 },
+        position: { x: lastPosition.x, y: nextY },
       }
       branches.value.push(newBranch)
       normalizeBoard()
@@ -754,6 +761,8 @@ export const useBranchesStore = defineStore(
         ? branches.value.find((item) => item.id === branchId)
         : branches.value[0]
       const basePosition = branch?.position || { x: 100, y: 100 }
+      const lastMilestone = branch?.milestones.at(-1)
+      const anchor = lastMilestone?.position || basePosition
       const milestone: Milestone = {
         id: uuidv4(),
         name,
@@ -763,8 +772,8 @@ export const useBranchesStore = defineStore(
         status: 'pending',
         taskIds: [],
         position: position || {
-          x: basePosition.x + 320 + (branch?.milestones.length || 0) * 260,
-          y: basePosition.y,
+          x: anchor.x + 300,
+          y: anchor.y,
         },
       }
       branch?.milestones.push(milestone)
@@ -800,6 +809,11 @@ export const useBranchesStore = defineStore(
         sourceKind === 'branch' ? getBranch(sourceId) : sourceLocation?.branch
       if (!branch) return null
 
+      const sourcePosition =
+        sourceKind === 'branch'
+          ? branch.position || { x: 100, y: 100 }
+          : sourceLocation?.milestone.position || branch.position || { x: 100, y: 100 }
+
       const milestone: Milestone = {
         id: uuidv4(),
         name: data.name || 'Новый этап',
@@ -809,8 +823,8 @@ export const useBranchesStore = defineStore(
         status: data.status || 'pending',
         taskIds: data.taskIds || [],
         position: data.position || {
-          x: (branch.position?.x || 100) + 320 + branch.milestones.length * 260,
-          y: branch.position?.y || 100,
+          x: sourcePosition.x + 300,
+          y: sourcePosition.y,
         },
       }
 

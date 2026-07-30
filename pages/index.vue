@@ -69,24 +69,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { useSettingsStore } from '~/stores/settings.store'
-import { useTasksStore } from '~/stores/tasks.store'
-import { useUIStore } from '~/stores/ui.store'
-import { useNotification } from '~/composables/useNotification'
-import { useTaskFilters } from '~/composables/useTaskFilters'
-import { useTaskActions } from '~/composables/useTaskActions'
-import AnalyticsPanel from '~/components/analytics/AnalyticsPanel.vue'
-import BranchFlow from '~/components/branch/BranchFlow.vue'
-import StatsOverview from '~/components/dashboard/StatsOverview.vue'
-import FocusPanel from '~/components/focus/FocusPanel.vue'
-import TaskForm from '~/components/task/TaskForm.vue'
-import TaskSections from '~/components/task/TaskSections.vue'
-import TaskToolbar from '~/components/task/TaskToolbar.vue'
-import EmptyState from '~/components/ui/feedback/EmptyState.vue'
-import SettingsPanel from '~/components/settings/SettingsPanel.vue'
-import GuidedTourOverlay from '~/components/guided/GuidedTourOverlay.vue'
-import { useGuidedTourStore } from '~/stores/guidedTour.store'
 import type { Task, TaskType } from '~/types/task.types'
 
 useSeoMeta({

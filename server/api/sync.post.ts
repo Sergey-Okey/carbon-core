@@ -1,5 +1,6 @@
 import { createError, readBody } from 'h3'
-import { parseSyncPayload, writeSyncState } from '../utils/syncStorage'
+import { parseSyncPayload } from '../utils/syncPayload'
+import { writeSyncState } from '../utils/syncStorage'
 import { isAuthDatabaseConfigured } from '../utils/authStorage'
 import { readOAuthSession } from '../utils/oauth'
 

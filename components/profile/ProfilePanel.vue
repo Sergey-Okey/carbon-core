@@ -270,7 +270,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, ref, watch, type Component } from 'vue'
 import {
   Award,
   CalendarDays,
@@ -291,14 +290,6 @@ import {
   UserCircle2,
   Zap,
 } from 'lucide-vue-next'
-import AppButton from '~/components/ui/primitives/AppButton.vue'
-import AppInput from '~/components/ui/primitives/AppInput.vue'
-import { useConfirm } from '~/composables/useConfirm'
-import { useNotification } from '~/composables/useNotification'
-import { useAccessStore } from '~/stores/access.store'
-import { useAuthStore } from '~/stores/auth.store'
-import { useTasksStore } from '~/stores/tasks.store'
-import { useUserStore } from '~/stores/user.store'
 import { accessAwareStorage } from '~/utils/accessStorage'
 
 const MAX_AVATAR_DIMENSION = 320

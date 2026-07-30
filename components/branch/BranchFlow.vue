@@ -105,7 +105,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, watch, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import {
   VueFlow,
   ConnectionMode,
@@ -116,20 +115,8 @@ import {
   type NodeMouseEvent,
 } from '@vue-flow/core'
 import { Background, BackgroundVariant } from '@vue-flow/background'
-import { useBranchesStore } from '~/stores/branches.store'
-import { useSettingsStore } from '~/stores/settings.store'
-import { useGuidedTourStore } from '~/stores/guidedTour.store'
-import { useTasksStore } from '~/stores/tasks.store'
-import { useUIStore } from '~/stores/ui.store'
-import { useAutoLayout } from '~/composables/useAutoLayout'
-import { useConfirm } from '~/composables/useConfirm'
-import { useNotification } from '~/composables/useNotification'
 import BranchNode from './BranchNode.vue'
 import MilestoneNode from './MilestoneNode.vue'
-import NodeEditorModal from './NodeEditorModal.vue'
-import BranchModal from './BranchModal.vue'
-import BranchMobileView from './BranchMobileView.vue'
-import BoardControls from './BoardControls.vue'
 import type { Milestone, Branch, BranchNodeData } from '~/types/branch.types'
 import { exportBoardImage } from '~/utils/exportBoardImage'
 
@@ -582,9 +569,9 @@ function alignLayoutSmart() {
   if (branchesStore.branches.length === 0) return
 
   const density = {
-    compact: { nodeSep: 32, rankSep: 56, componentGap: 56 },
-    normal: { nodeSep: 40, rankSep: 72, componentGap: 72 },
-    wide: { nodeSep: 56, rankSep: 96, componentGap: 104 },
+    compact: { nodeSep: 48, rankSep: 88, componentGap: 88 },
+    normal: { nodeSep: 64, rankSep: 112, componentGap: 112 },
+    wide: { nodeSep: 80, rankSep: 140, componentGap: 140 },
   }[settingsStore.boardLayoutDensity]
 
   isAutoLayoutAnimating.value = true
@@ -627,7 +614,6 @@ function alignLayoutSmart() {
   nextTick(() => {
     window.setTimeout(() => {
       isAutoLayoutAnimating.value = false
-      void fitBoardView()
     }, 460)
   })
   success('Доска выровнена по связям')
@@ -892,12 +878,21 @@ function onPaneClick() {
   setNodesSelected([])
 }
 
-function onNodeDragStop({ node }: { node: Node }) {
-  if (node.type === 'branch-node') {
-    branchesStore.updateBranchPosition(node.id, node.position)
-  }
-  if (node.type === 'milestone-node') {
-    branchesStore.updateMilestone(node.id, { position: node.position })
+function onNodeDragStop({
+  node,
+  nodes: draggedNodes,
+}: {
+  node: Node
+  nodes?: Node[]
+}) {
+  const moved = draggedNodes?.length ? draggedNodes : [node]
+  for (const item of moved) {
+    if (item.type === 'branch-node') {
+      branchesStore.updateBranchPosition(item.id, item.position)
+    }
+    if (item.type === 'milestone-node') {
+      branchesStore.updateMilestone(item.id, { position: item.position })
+    }
   }
   branchesStore.refreshEdgePortsFromPositions()
   syncNodesAndEdges()
@@ -956,13 +951,7 @@ onMounted(() => {
     syncNodesAndEdges()
     if (!isMobile.value) {
       requestAnimationFrame(() => {
-        flowRenderKey.value += 1
-        requestAnimationFrame(() => {
-          syncNodesAndEdges()
-          setTimeout(() => {
-            void fitBoardView()
-          }, 80)
-        })
+        void fitBoardView()
       })
     }
     saveToHistory()

@@ -76,11 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
 import { ChevronDown, ChevronUp, Search, Tags, X } from 'lucide-vue-next'
-import AppInput from '~/components/ui/primitives/AppInput.vue'
-import AppSelect from '~/components/ui/forms/AppSelect.vue'
-import AppSegmentedControl from '~/components/ui/navigation/AppSegmentedControl.vue'
 import type { AppSelectOption } from '~/types/ui.types'
 
 type TaskView = 'active' | 'all' | 'completed'

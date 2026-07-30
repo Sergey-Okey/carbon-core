@@ -519,9 +519,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import PublicInfoPage from '~/components/base/PublicInfoPage.vue'
-
 definePageMeta({ layout: false })
 useSeoMeta({
   title: 'Условия использования, оферта и возврат | Core of Life',

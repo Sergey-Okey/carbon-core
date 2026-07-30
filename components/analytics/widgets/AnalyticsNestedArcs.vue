@@ -60,8 +60,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
-
 export type NestedArcItem = {
   key: string
   label: string

@@ -20,8 +20,6 @@
 </template>
 
 <script setup lang="ts">
-import DotSphereLoader from '~/components/ui/feedback/DotSphereLoader.vue'
-
 type LoaderExpose = { finish: () => Promise<void> }
 
 const visible = ref(false)
@@ -29,14 +27,21 @@ const loaderRef = ref<LoaderExpose | null>(null)
 let hideTimer = 0
 let showTimer = 0
 let closing = false
+let bootstrapped = false
+let launchDone = false
 const SHOW_DELAY = 100
+
+function markLaunchDone() {
+  launchDone = true
+}
 
 onMounted(() => {
   const nuxtApp = useNuxtApp()
-  let bootstrapped = false
+  window.addEventListener('cof:launch-complete', markLaunchDone)
+  window.setTimeout(markLaunchDone, 6000)
 
   nuxtApp.hook('page:start', () => {
-    if (!bootstrapped) return
+    if (!bootstrapped || !launchDone) return
     closing = false
     if (hideTimer) {
       window.clearTimeout(hideTimer)
@@ -65,9 +70,7 @@ onMounted(() => {
     try {
       await nextTick()
       await loaderRef.value?.finish()
-    } catch {
-      // ignore
-    }
+    } catch {}
 
     hideTimer = window.setTimeout(() => {
       visible.value = false
@@ -85,6 +88,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  window.removeEventListener('cof:launch-complete', markLaunchDone)
   if (showTimer) window.clearTimeout(showTimer)
   if (hideTimer) window.clearTimeout(hideTimer)
 })
@@ -103,7 +107,7 @@ onUnmounted(() => {
 
 .page-load-enter-active,
 .page-load-leave-active {
-  transition: opacity 220ms ease;
+  transition: opacity var(--transition-emphasized);
 }
 
 .page-load-enter-from,

@@ -1,8 +1,6 @@
 import { getDatabase } from './database'
-import { isValidUserId, parseSyncPayload, type SyncPayload } from './syncPayload'
+import { parseSyncPayload, type SyncPayload } from './syncPayload'
 
-export { isValidUserId, parseSyncPayload }
-export type { SyncPayload }
 export type StoredSyncState = Omit<SyncPayload, 'userId'>
 
 async function ensureSyncTable(sql: NonNullable<ReturnType<typeof getDatabase>>) {

@@ -122,7 +122,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
   Coffee,
   Flame,
@@ -132,11 +131,6 @@ import {
   Target,
   Timer,
 } from 'lucide-vue-next'
-import AnalyticsWidgetShell from '~/components/analytics/AnalyticsWidgetShell.vue'
-import AppButton from '~/components/ui/primitives/AppButton.vue'
-import { useNotification } from '~/composables/useNotification'
-import { useGuidedTourStore } from '~/stores/guidedTour.store'
-import { useFeedback } from '~/composables/useFeedback'
 import { accessAwareStorage } from '~/utils/accessStorage'
 import {
   FOCUS_STATE_KEY,
@@ -439,7 +433,7 @@ onBeforeUnmount(() => {
   stroke-linecap: round;
   stroke-width: 2.8;
   opacity: 0.7;
-  animation: focus-tick-in 520ms cubic-bezier(0.16, 1, 0.3, 1) var(--tick-delay) both;
+  animation: focus-tick-in var(--duration-emphasized) var(--ease-emphasized) var(--tick-delay) both;
   transition:
     stroke var(--transition-standard),
     opacity var(--transition-standard);
@@ -458,7 +452,7 @@ onBeforeUnmount(() => {
   color: var(--color-text-primary);
   opacity: 0;
   transform: scale(0.97);
-  animation: focus-value-in 460ms cubic-bezier(0.16, 1, 0.3, 1) 520ms both;
+  animation: focus-value-in var(--duration-emphasized) var(--ease-emphasized) var(--duration-emphasized) both;
   pointer-events: none;
 
   .timer-center__icon,

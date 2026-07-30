@@ -86,8 +86,6 @@
 
 <script setup lang="ts">
 import { X } from 'lucide-vue-next'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useGuidedTourStore } from '~/stores/guidedTour.store'
 
 const tour = useGuidedTourStore()
 const cardRef = ref<HTMLElement | null>(null)

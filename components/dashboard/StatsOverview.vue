@@ -147,10 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
 import { Award, ChevronDown, ChevronUp, Crown, Gem, Medal, Zap } from 'lucide-vue-next'
-import { useUserStore } from '~/stores/user.store'
-import { useTasksStore } from '~/stores/tasks.store'
 import type { Task } from '~/types/task.types'
 
 const userStore = useUserStore()

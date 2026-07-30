@@ -21,7 +21,6 @@
 </template>
 
 <script setup lang="ts">
-import DotSphereLoader from '~/components/ui/feedback/DotSphereLoader.vue'
 import {
   BOOT_CYCLE_SEC,
   BOOT_ORDERED_END,
@@ -37,13 +36,18 @@ function onOrdered() {
     fallbackTimer = 0
   }
   visible.value = false
+  if (import.meta.client) {
+    window.dispatchEvent(new CustomEvent('cof:launch-complete'))
+  }
 }
 
 onMounted(() => {
-  // Safety: hide even if ordered event missed
   fallbackTimer = window.setTimeout(() => {
     visible.value = false
     fallbackTimer = 0
+    if (import.meta.client) {
+      window.dispatchEvent(new CustomEvent('cof:launch-complete'))
+    }
   }, fallbackMs)
 })
 
@@ -63,7 +67,7 @@ onUnmounted(() => {
 }
 
 .launch-leave-active {
-  transition: opacity 420ms ease;
+  transition: opacity var(--transition-emphasized);
 }
 
 .launch-leave-to {

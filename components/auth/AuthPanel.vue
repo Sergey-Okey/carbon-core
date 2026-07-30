@@ -346,19 +346,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 import { ArrowLeft, ArrowUpRight, Check, Play } from 'lucide-vue-next'
-import AppBadge from '~/components/ui/primitives/AppBadge.vue'
-import AppButton from '~/components/ui/primitives/AppButton.vue'
-import AppCheckbox from '~/components/ui/primitives/AppCheckbox.vue'
-import AppFormField from '~/components/ui/forms/AppFormField.vue'
-import AppInput from '~/components/ui/primitives/AppInput.vue'
 import {
   SUBSCRIPTION_PAYMENT_URL,
   SUBSCRIPTION_PRICE,
   useAccessStore,
 } from '~/stores/access.store'
-import { useAuthStore } from '~/stores/auth.store'
 import { resetDemoData } from '~/utils/accessStorage'
 import { seedDemoWorkspaceIfNeeded } from '~/utils/demoSeed'
 import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'

@@ -165,7 +165,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
 import {
   TrendingUp,
@@ -198,9 +197,6 @@ import {
   Trophy,
   WalletCards,
 } from 'lucide-vue-next'
-import GlassCard from '~/components/base/GlassCard.vue'
-import { useTasksStore } from '~/stores/tasks.store'
-import { useBranchesStore } from '~/stores/branches.store'
 import type { BranchNodeData } from '~/types/branch.types'
 
 const props = defineProps<{

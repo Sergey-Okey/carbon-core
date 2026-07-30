@@ -1,8 +1,13 @@
 <template>
   <div class="custom-color-picker">
-    <button type="button" class="color-trigger" @click="open">
-      <span class="color-preview" :style="{ '--custom-color': modelValue }" />
-      <span>{{ label }}</span>
+    <button type="button" class="color-trigger" :class="{ active: isCustomActive }" @click="open">
+      <span class="color-preview" :style="{ '--custom-color': modelValue }">
+        <Pipette :size="14" :stroke-width="2.4" />
+      </span>
+      <span class="color-trigger__copy">
+        <strong>{{ label }}</strong>
+        <em>{{ modelValue }}</em>
+      </span>
     </button>
 
     <AppModal
@@ -23,12 +28,14 @@
             @pointerdown="pickFromPalette"
             @pointermove="pickFromPalette"
           >
-            <span class="palette-core" />
+            <span class="palette-core" :style="{ '--custom-color': safeDraftColor }" />
             <span class="palette-cursor" :style="paletteCursorStyle" />
           </button>
 
           <div class="color-preview-panel">
-            <span class="color-large-preview" :style="{ '--custom-color': draftColor }" />
+            <div class="color-large-preview" :style="{ '--custom-color': draftColor }">
+              <span>{{ safeDraftColor }}</span>
+            </div>
             <AppButton type="button" variant="secondary" @click="resetToCurrentColor">
               Текущий
             </AppButton>
@@ -82,21 +89,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import AppButton from '~/components/ui/primitives/AppButton.vue'
-import AppFormField from '~/components/ui/forms/AppFormField.vue'
-import AppInput from '~/components/ui/primitives/AppInput.vue'
-import AppModal from '~/components/ui/overlays/AppModal.vue'
+import { Pipette } from 'lucide-vue-next'
 
 const props = withDefaults(
   defineProps<{
     modelValue: string
     label?: string
     swatches?: string[]
+    active?: boolean
   }>(),
   {
     label: 'Свой',
-    swatches: () => ['#d6d6d6', '#7aa2ff', '#74d6a0', '#e5b45a', '#b49cff', '#ff8a7a', '#6fd8d2'],
+    swatches: () => ['#2b2b2b', '#2563EB', '#16A34A', '#EA580C', '#7C3AED', '#DC2626', '#0D9488'],
+    active: false,
   }
 )
 
@@ -110,6 +115,7 @@ const brightness = ref(100)
 const paletteRef = ref<HTMLButtonElement | null>(null)
 const isValidColor = computed(() => /^#[0-9a-fA-F]{6}$/.test(draftColor.value))
 const safeDraftColor = computed(() => (isValidColor.value ? draftColor.value : '#d6d6d6'))
+const isCustomActive = computed(() => props.active)
 const paletteCursorStyle = computed(() => {
   const hsv = hexToHsv(safeDraftColor.value)
   const angle = (hsv.h - 90) * (Math.PI / 180)
@@ -242,94 +248,128 @@ function apply() {
 </script>
 
 <style scoped lang="scss">
+.custom-color-picker {
+  display: inline-flex;
+  min-width: 0;
+}
+
 .color-trigger {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   width: max-content;
   max-width: 100%;
-  min-height: var(--control-height-md);
-  padding: var(--space-1) var(--space-2);
+  min-height: 44px;
+  margin: 0;
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
   border: var(--ui-border);
-  border-radius: var(--radius-full);
+  border-radius: 14px;
   background: var(--color-surface-1);
   color: var(--color-text-primary);
   cursor: pointer;
   font: inherit;
-  font-size: 0.82rem;
-  font-weight: 600;
-  line-height: 1.1;
-  white-space: nowrap;
   box-sizing: border-box;
   transition:
     background var(--transition-standard),
-    color var(--transition-standard),
-    border-color var(--transition-standard);
+    border-color var(--transition-standard),
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
 
-  &:hover {
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      transform: translateY(-1px);
+      background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface-1));
+    }
+  }
+
+  &.active {
+    border-color: color-mix(in srgb, var(--color-accent) 45%, var(--ui-border-color));
   }
 }
 
-.color-preview,
-.color-large-preview,
-.color-swatches button {
-  background: var(--custom-color);
+.color-trigger__copy {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  text-align: left;
+
+  strong {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    line-height: 1.15;
+  }
+
+  em {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-style: normal;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+  }
 }
 
 .color-preview {
-  width: 20px;
-  height: 20px;
-  border-radius: var(--border-radius-pill);
-  outline: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
-  outline-offset: 2px;
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: var(--custom-color);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text-primary) 12%, transparent);
 }
 
 .color-modal {
   display: grid;
-  gap: 14px;
+  gap: var(--space-4);
   min-width: 0;
 }
 
 .palette-row {
   display: grid;
-  grid-template-columns: auto minmax(112px, 1fr);
+  grid-template-columns: auto minmax(120px, 1fr);
   align-items: stretch;
-  gap: 16px;
+  gap: var(--space-4);
   min-width: 0;
 }
 
 .palette-wheel {
   position: relative;
   display: inline-flex;
-  width: 132px;
-  height: 132px;
-  border: var(--ui-border);
+  width: 148px;
+  height: 148px;
+  border: none;
   border-radius: 50%;
   cursor: crosshair;
-  background: color-mix(in srgb, var(--custom-color) 72%, var(--surface));
-  box-shadow: inset 0 0 0 8px color-mix(in srgb, var(--bg) 20%, transparent);
+  background:
+    radial-gradient(circle closest-side, #fff 0%, transparent 68%),
+    conic-gradient(from -90deg, #ff0040, #ffbf00, #80ff00, #00ffbf, #0040ff, #bf00ff, #ff0040);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--color-text-primary) 10%, transparent),
+    0 10px 24px color-mix(in srgb, var(--color-text-primary) 8%, transparent);
   overflow: hidden;
   touch-action: none;
 }
 
 .palette-core {
   position: absolute;
-  inset: 43px;
+  inset: 46px;
   border-radius: 50%;
   background: var(--custom-color);
-  outline: 5px solid color-mix(in srgb, var(--bg) 48%, transparent);
+  box-shadow:
+    0 0 0 6px var(--color-surface-1),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-text-primary) 10%, transparent);
   pointer-events: none;
 }
 
 .palette-cursor {
   position: absolute;
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--text-inverse);
-  border-radius: 50%;
-  outline: 1px solid var(--text);
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-radius: var(--radius-full);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #000 35%, transparent),
+    0 2px 6px color-mix(in srgb, #000 25%, transparent);
   pointer-events: none;
   transform: translate(-50%, -50%);
 }
@@ -337,58 +377,104 @@ function apply() {
 .color-preview-panel {
   display: grid;
   grid-template-rows: 1fr auto;
-  gap: 10px;
+  gap: var(--space-3);
   min-width: 0;
 
   :deep(.app-button) {
     width: 100%;
+    min-height: 44px;
   }
 }
 
 .color-large-preview {
-  min-height: 74px;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  min-height: 96px;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--custom-color);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+
+  span {
+    padding: 4px 8px;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-bg) 72%, transparent);
+    color: var(--color-text-primary);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    backdrop-filter: blur(8px);
+  }
 }
 
 .brightness-control {
   display: grid;
-  gap: 8px;
-  color: var(--dim);
-  font-size: 0.78rem;
-  font-weight: 600;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
 
   input {
     width: 100%;
-    accent-color: var(--custom-color);
+    height: 10px;
+    appearance: none;
+    border-radius: var(--radius-full);
+    background: linear-gradient(
+      90deg,
+      #000 0%,
+      var(--custom-color) 100%
+    );
     cursor: pointer;
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #fff;
+      border-radius: var(--radius-full);
+      background: var(--custom-color);
+      box-shadow: 0 1px 4px color-mix(in srgb, #000 28%, transparent);
+    }
+
+    &::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #fff;
+      border-radius: var(--radius-full);
+      background: var(--custom-color);
+      box-shadow: 0 1px 4px color-mix(in srgb, #000 28%, transparent);
+    }
   }
 }
 
 .color-swatches {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 7px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-2);
 }
 
 .color-swatches button {
   aspect-ratio: 1;
   border: none;
-  border-radius: var(--border-radius-pill);
+  border-radius: 12px;
   background: var(--custom-color);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text-primary) 10%, transparent);
   cursor: pointer;
   transition:
-    outline-color var(--transition-standard),
-    outline-offset var(--transition-standard),
-    opacity var(--transition-standard);
+    transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow var(--transition-standard);
 
-  &:hover {
-    opacity: 0.84;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      transform: translateY(-1px) scale(1.04);
+    }
   }
 
   &.active {
-    outline: 2px solid color-mix(in srgb, var(--custom-color) 62%, var(--text) 38%);
-    outline-offset: 3px;
+    box-shadow:
+      0 0 0 2px var(--color-surface-1),
+      0 0 0 4px var(--custom-color);
   }
 }
 
@@ -396,18 +482,19 @@ function apply() {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 10px;
+  gap: var(--space-2);
   width: 100%;
 
   :deep(.app-button) {
     min-width: 112px;
+    min-height: 44px;
   }
 }
 
 @include mobile {
   .color-trigger {
     width: 100%;
-    min-height: 44px;
+    min-height: 48px;
   }
 
   .palette-row {
@@ -416,8 +503,8 @@ function apply() {
 
   .palette-wheel {
     justify-self: center;
-    width: 124px;
-    height: 124px;
+    width: 156px;
+    height: 156px;
   }
 
   .modal-actions {

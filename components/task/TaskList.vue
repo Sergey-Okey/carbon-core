@@ -76,13 +76,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useTasksStore } from '~/stores/tasks.store'
-import { useNotification } from '~/composables/useNotification'
-import { useTaskActions } from '~/composables/useTaskActions'
-import TaskCard from './TaskCard.vue'
-import TaskForm from './TaskForm.vue'
-import EmptyState from '~/components/ui/feedback/EmptyState.vue'
 import { Plus, Info } from 'lucide-vue-next'
 import type { Task, TaskFormData, TaskType } from '~/types/task.types'
 

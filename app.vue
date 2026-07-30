@@ -10,26 +10,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 import { useDebounceFn } from '@vueuse/core'
 import { SpeedInsights } from '@vercel/speed-insights/vue'
-import CustomCursor from '~/components/base/CustomCursor.vue'
-import AppLaunchScreen from '~/components/base/AppLaunchScreen.vue'
-import PageLoadingOverlay from '~/components/base/PageLoadingOverlay.vue'
-import ConfirmDialog from '~/components/ui/feedback/ConfirmDialog.vue'
-import { useAuthStore } from '~/stores/auth.store'
-import { useAccessStore } from '~/stores/access.store'
-import { useBranchesStore } from '~/stores/branches.store'
-import { useRewardsStore } from '~/stores/rewards.store'
-import { useSettingsStore } from '~/stores/settings.store'
-import { useTagsStore } from '~/stores/tags.store'
-import { useTasksStore } from '~/stores/tasks.store'
-import { useUIStore } from '~/stores/ui.store'
-import { useUserStore } from '~/stores/user.store'
 import { saveAutoBackup } from '~/utils/backup'
 import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
-import { useSyncStatus } from '~/composables/useSyncStatus'
 import { browserLog } from '~/utils/browserLog'
 import { seedDemoWorkspaceIfNeeded } from '~/utils/demoSeed'
 

@@ -16,15 +16,17 @@
         <button
           v-if="showFocusWidget"
           class="focus-widget"
+          :class="{ running: focusWidget.isRunning }"
           type="button"
-          aria-label="Открыть мини-таймер фокуса"
+          :aria-label="`Таймер фокуса: ${focusWidget.label}, ${focusWidgetTime}`"
+          :aria-expanded="isFocusWidgetPanelOpen"
+          aria-haspopup="dialog"
           data-tooltip="Таймер фокуса"
           data-tooltip-position="bottom"
           @click="toggleFocusWidgetPanel"
         >
-          <Timer :size="16" />
+          <Target class="focus-widget__icon" :size="18" aria-hidden="true" />
           <span class="focus-widget__time">{{ focusWidgetTime }}</span>
-          <span class="focus-widget__label">{{ focusWidget.label }}</span>
         </button>
       </template>
 
@@ -59,28 +61,46 @@
           @click.stop
         >
           <div class="sheet-handle" aria-hidden="true" />
+
           <div class="focus-widget-panel__head">
             <span>{{ focusWidget.label }}</span>
-            <strong>{{ focusWidgetTime }}</strong>
+            <em>{{ focusWidget.isRunning ? 'Сессия идёт' : 'Пауза' }}</em>
           </div>
-          <div class="focus-widget-panel__ring" :class="{ 'is-running': focusWidget.isRunning }">
-            <div class="focus-widget-panel__core">
-              <Timer :size="20" />
-              <strong>{{ focusWidgetTime }}</strong>
-              <span>{{ focusWidget.isRunning ? 'Сессия идёт' : 'Пауза' }}</span>
+
+          <div class="focus-widget-panel__timer">
+            <strong>{{ focusWidgetTime }}</strong>
+            <div
+              class="focus-widget-panel__ribs"
+              role="progressbar"
+              :aria-valuenow="Math.round(focusProgress * 100)"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              :aria-label="`Прогресс сессии ${Math.round(focusProgress * 100)}%`"
+            >
+              <span
+                v-for="index in FOCUS_RIB_COUNT"
+                :key="index"
+                class="focus-widget-panel__rib"
+                :class="{ filled: index <= focusRibsFilled }"
+              />
             </div>
           </div>
+
           <div class="focus-widget-panel__actions">
             <AppButton type="button" variant="primary" @click="toggleFocusTimer">
-              <Timer :size="16" />
+              <Pause v-if="focusWidget.isRunning" :size="16" />
+              <Play v-else :size="16" />
               {{ focusWidget.isRunning ? 'Пауза' : 'Старт' }}
             </AppButton>
             <AppButton type="button" variant="secondary" @click="resetFocusTimer">
+              <RotateCcw :size="16" />
               Сброс
             </AppButton>
           </div>
+
           <button class="focus-widget-panel__link" type="button" @click="openFocus">
             Открыть страницу фокуса
+            <ExternalLink :size="14" />
           </button>
         </section>
       </Transition>
@@ -89,19 +109,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { Timer } from 'lucide-vue-next'
-import AppButton from '~/components/ui/primitives/AppButton.vue'
-import HeaderBrand from '~/components/base/header/HeaderBrand.vue'
-import HeaderQuickActions from '~/components/base/header/HeaderQuickActions.vue'
-import HeaderUserMenu from '~/components/base/header/HeaderUserMenu.vue'
-import NotificationCenter from '~/components/base/header/NotificationCenter.vue'
-import { useNotification } from '~/composables/useNotification'
-import { useAuthStore } from '~/stores/auth.store'
-import { useUserStore } from '~/stores/user.store'
-import { useUIStore, type NavSection } from '~/stores/ui.store'
-import { useGuidedTourStore } from '~/stores/guidedTour.store'
-import { useAccessStore } from '~/stores/access.store'
+import { ExternalLink, Pause, Play, RotateCcw, Target } from 'lucide-vue-next'
+import type { NavSection } from '~/stores/ui.store'
 import {
   emitFocusTimerAction,
   emitFocusTimerUpdate,
@@ -111,6 +120,8 @@ import {
   type FocusPresetKey,
   type FocusTimerSnapshot,
 } from '~/utils/focusTimer'
+
+const FOCUS_RIB_COUNT = 25
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
@@ -170,6 +181,12 @@ const focusWidgetTime = computed(() => {
   const seconds = focusWidget.value.remainingSeconds % 60
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 })
+const focusProgress = computed(() => {
+  const total = focusPresetSeconds.value
+  if (!total) return 0
+  return Math.min(1, Math.max(0, 1 - focusWidget.value.remainingSeconds / total))
+})
+const focusRibsFilled = computed(() => Math.round(focusProgress.value * FOCUS_RIB_COUNT))
 function openProfile() {
   isProfileModalOpen.value = false
   navigateTo('/profile')
@@ -414,24 +431,23 @@ onBeforeUnmount(() => {
 .focus-widget {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 36px;
-  padding-inline: 10px 12px;
+  gap: var(--space-2);
+  min-height: var(--space-9);
+  padding: var(--space-1) var(--space-3);
   border: var(--ui-border);
-  border-radius: var(--border-radius-pill);
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--text);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface-1));
+  color: var(--color-text-primary);
   cursor: pointer;
   transition:
     background var(--transition-standard),
-    color var(--transition-standard),
-    transform var(--transition-standard),
-    box-shadow var(--transition-standard);
+    border-color var(--transition-standard),
+    transform var(--transition-standard);
 
   @media (hover: hover) and (pointer: fine) {
     &:hover {
-      background: color-mix(in srgb, var(--accent) 18%, transparent);
-      box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
+      background: color-mix(in srgb, var(--color-accent) 18%, var(--color-surface-1));
+      border-color: color-mix(in srgb, var(--color-accent) 28%, var(--ui-border-color));
     }
   }
 
@@ -439,33 +455,27 @@ onBeforeUnmount(() => {
     transform: translateY(1px);
   }
 
-  svg {
-    flex: 0 0 auto;
+  &.running {
+    border-color: color-mix(in srgb, var(--color-accent) 36%, var(--ui-border-color));
   }
 
   @include mobile {
-    min-height: 32px;
-    padding-inline: 8px 10px;
+    min-height: var(--space-8);
+    padding: var(--space-1) var(--space-2);
   }
+}
+
+.focus-widget__icon {
+  flex: 0 0 auto;
+  color: var(--color-accent);
 }
 
 .focus-widget__time {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-family: 'Space Grotesk', var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
   font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-.focus-widget__label {
-  color: var(--dim);
-  font-size: 0.75rem;
-  font-weight: 700;
-  white-space: nowrap;
-
-  @include mobile {
-    display: none;
-  }
+  line-height: var(--leading-none, 1);
 }
 
 .focus-widget-panel {
@@ -475,8 +485,8 @@ onBeforeUnmount(() => {
   inset-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
   z-index: var(--z-dropdown);
   display: grid;
-  gap: var(--space-3);
-  width: min(320px, calc(100dvw - var(--space-6)));
+  gap: var(--space-4);
+  width: min(300px, calc(100dvw - var(--space-6)));
   padding: var(--space-4);
   border: var(--ui-border);
   border-radius: var(--radius-lg);
@@ -494,60 +504,54 @@ onBeforeUnmount(() => {
 
 .focus-widget-panel__head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: var(--space-3);
 
   span {
-    color: var(--color-text-muted);
-    font-size: var(--text-xs);
-    font-weight: var(--weight-bold);
-    text-transform: uppercase;
+    color: var(--color-text-primary);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
   }
 
-  strong {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: var(--text-md);
-    font-weight: var(--weight-bold);
+  em {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-style: normal;
+    font-weight: var(--weight-medium);
   }
 }
 
-.focus-widget-panel__ring {
+.focus-widget-panel__timer {
   display: grid;
-  place-items: center;
-  min-height: 188px;
-  border-radius: var(--radius-lg);
-  background:
-    radial-gradient(circle at center, color-mix(in srgb, var(--color-accent) 8%, transparent) 0%, transparent 62%),
-    color-mix(in srgb, var(--color-surface-1) 72%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-accent) 10%, transparent);
+  gap: var(--space-3);
 
-  &.is-running {
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 12%, transparent);
+  strong {
+    font-family: 'Space Grotesk', var(--font-sans);
+    font-size: clamp(2rem, 6vw, 2.6rem);
+    font-weight: var(--weight-bold);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.04em;
+    line-height: 1;
   }
 }
 
-.focus-widget-panel__core {
-  display: grid;
-  justify-items: center;
-  gap: var(--space-2);
+.focus-widget-panel__ribs {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  height: 28px;
+}
 
-  svg {
-    color: var(--color-accent);
-  }
+.focus-widget-panel__rib {
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-text-muted) 28%, transparent);
+  transition: background 180ms linear;
 
-  strong {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(2.4rem, 7vw, 3.6rem);
-    font-weight: var(--weight-bold);
-    line-height: 0.9;
-    letter-spacing: -0.05em;
-  }
-
-  span {
-    color: var(--color-text-muted);
-    font-size: var(--text-xs);
-    font-weight: var(--weight-bold);
+  &.filled {
+    background: var(--color-text-primary);
   }
 }
 
@@ -558,7 +562,7 @@ onBeforeUnmount(() => {
 
   :deep(.app-button) {
     width: 100%;
-    min-height: 44px;
+    min-height: var(--space-11);
   }
 }
 
@@ -566,7 +570,10 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 36px;
+  gap: var(--space-2);
+  min-height: var(--space-9);
+  margin: 0;
+  padding: 0;
   border: none;
   background: transparent;
   color: var(--color-text-muted);
@@ -586,14 +593,14 @@ onBeforeUnmount(() => {
 .sheet-backdrop-enter-active,
 .sheet-backdrop-leave-active {
   transition:
-    opacity var(--transition-standard),
-    transform var(--transition-standard);
+    opacity var(--transition-emphasized),
+    transform var(--transition-emphasized);
 }
 
 .profile-panel-enter-from,
 .profile-panel-leave-to {
   opacity: 0;
-  transform: translateY(calc(var(--space-1) * -1 - 2px));
+  transform: translateY(-18px);
 }
 
 .sheet-backdrop-enter-from,
@@ -616,34 +623,22 @@ onBeforeUnmount(() => {
   }
 
   .sheet-handle {
-    display: block;
-    width: 40px;
-    height: 4px;
-    margin: 0 auto;
-    border-radius: var(--radius-full);
-    background: color-mix(in srgb, var(--color-text-muted) 35%, transparent);
+    display: none;
   }
 
   .focus-widget-panel {
-    inset-block-start: auto;
-    inset-block-end: 0;
+    inset-block-start: calc(
+      env(safe-area-inset-top, 0px) + var(--space-2) + var(--space-11) + var(--space-2) + 1px
+    );
+    inset-block-end: auto;
     inset-inline-start: 0;
     inset-inline-end: 0;
     z-index: var(--z-modal);
     width: 100%;
     max-width: none;
     padding: var(--space-4);
-    padding-block-end: calc(
-      var(--space-4) + env(safe-area-inset-bottom, 0px) + var(--space-3) + var(--space-11) +
-        var(--space-2) + var(--space-2)
-    );
-    border-bottom: none;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  }
-
-  .profile-panel-enter-from,
-  .profile-panel-leave-to {
-    transform: translateY(16px);
+    border-top: none;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   }
 }
 </style>

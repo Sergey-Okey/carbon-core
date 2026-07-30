@@ -83,7 +83,6 @@
 </template>
 
 <script setup lang="ts">
-import TaskList from '~/components/task/TaskList.vue'
 import type { Task, TaskType } from '~/types/task.types'
 
 defineProps<{

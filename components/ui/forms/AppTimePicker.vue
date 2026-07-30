@@ -73,7 +73,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ChevronDown, Clock3 } from 'lucide-vue-next'
 
 const props = withDefaults(

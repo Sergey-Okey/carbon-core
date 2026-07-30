@@ -12,9 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { Moon, Sun } from 'lucide-vue-next'
-import { useSettingsStore } from '~/stores/settings.store'
 
 const settingsStore = useSettingsStore()
 

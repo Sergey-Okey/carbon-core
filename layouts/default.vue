@@ -12,12 +12,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import TheHeader from '~/components/base/TheHeader.vue'
-import TheNavbar from '~/components/base/TheNavbar.vue'
-import ToastContainer from '~/components/base/ToastContainer.vue'
-import { useUIStore } from '~/stores/ui.store'
-
 const route = useRoute()
 const uiStore = useUIStore()
 const isBoardLayout = computed(
@@ -113,9 +107,9 @@ const isBoardLayout = computed(
 
     :deep(.nav-island) {
       inset-block-start: auto;
-      inset-inline-start: 50%;
-      inset-block-end: calc(env(safe-area-inset-bottom, 0px) + var(--space-3));
-      transform: translateX(-50%);
+      inset-inline: 0;
+      inset-block-end: 0;
+      transform: none;
     }
   }
 }

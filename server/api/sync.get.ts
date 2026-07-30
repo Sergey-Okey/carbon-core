@@ -1,5 +1,6 @@
 import { createError, getQuery } from 'h3'
-import { isValidUserId, readSyncState } from '../utils/syncStorage'
+import { isValidUserId } from '../utils/syncPayload'
+import { readSyncState } from '../utils/syncStorage'
 import { isAuthDatabaseConfigured } from '../utils/authStorage'
 import { readOAuthSession } from '../utils/oauth'
 

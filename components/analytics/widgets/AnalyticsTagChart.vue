@@ -46,8 +46,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-
 export type TagChartItem = {
   id: string
   name: string

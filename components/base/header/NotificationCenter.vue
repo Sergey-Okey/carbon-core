@@ -100,10 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Bell, BellOff, Trash2 } from 'lucide-vue-next'
-import AppButton from '~/components/ui/primitives/AppButton.vue'
-import EmptyState from '~/components/ui/feedback/EmptyState.vue'
 import {
   useNotification,
   type NotificationCategory,
@@ -437,14 +434,14 @@ onBeforeUnmount(() => {
 .sheet-backdrop-enter-active,
 .sheet-backdrop-leave-active {
   transition:
-    opacity var(--transition-standard),
-    transform var(--transition-standard);
+    opacity var(--transition-emphasized),
+    transform var(--transition-emphasized);
 }
 
 .notification-panel-enter-from,
 .notification-panel-leave-to {
   opacity: 0;
-  transform: translateY(calc(var(--space-1) * -1 - 2px));
+  transform: translateY(-18px);
 }
 
 .sheet-backdrop-enter-from,
@@ -467,44 +464,32 @@ onBeforeUnmount(() => {
   }
 
   .sheet-handle {
-    display: block;
-    width: 40px;
-    height: 4px;
-    margin: var(--space-2) auto var(--space-1);
-    border-radius: var(--radius-full);
-    background: color-mix(in srgb, var(--color-text-muted) 35%, transparent);
+    display: none;
   }
 
   .notification-panel {
-    inset-block-start: auto;
-    inset-block-end: 0;
+    inset-block-start: calc(
+      env(safe-area-inset-top, 0px) + var(--space-2) + var(--space-11) + var(--space-2) + 1px
+    );
+    inset-block-end: auto;
     inset-inline-start: 0;
     inset-inline-end: 0;
     z-index: var(--z-modal);
     inline-size: 100%;
     max-inline-size: none;
-    max-block-size: min(78dvh, calc(100dvh - 72px - env(safe-area-inset-top, 0px)));
-    padding-block-end: calc(
-      var(--space-3) + env(safe-area-inset-bottom, 0px) + var(--space-3) + var(--space-11) +
-        var(--space-2) + var(--space-2)
+    max-block-size: min(
+      78dvh,
+      calc(100dvh - env(safe-area-inset-top, 0px) - var(--space-11) - var(--space-8) - 72px)
     );
-    border-bottom: none;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    grid-template-rows: auto auto minmax(0, 1fr);
+    padding-block-end: var(--space-4);
+    border-top: none;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    grid-template-rows: auto minmax(0, 1fr);
   }
 
   .history-list {
     max-block-size: none;
     min-block-size: 0;
-  }
-
-  .panel-header {
-    padding-block-start: var(--space-2);
-  }
-
-  .notification-panel-enter-from,
-  .notification-panel-leave-to {
-    transform: translateY(16px);
   }
 }
 </style>

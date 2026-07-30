@@ -67,7 +67,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { Check, ChevronDown } from 'lucide-vue-next'
 import type { AppSelectOption } from '~/types/ui.types'
 

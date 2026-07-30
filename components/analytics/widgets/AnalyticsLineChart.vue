@@ -93,7 +93,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import type { ActivityDayPoint, AnalyticsRangeDays } from '~/composables/useAnalyticsMetrics'
 
 const props = defineProps<{

@@ -16,9 +16,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import AppSpinner from '~/components/ui/primitives/AppSpinner.vue'
-
 const props = withDefaults(
   defineProps<{
     type?: 'button' | 'submit' | 'reset'

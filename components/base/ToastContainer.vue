@@ -25,8 +25,6 @@
 </template>
 
 <script setup lang="ts">
-import { useNotification } from '~/composables/useNotification'
-
 const { notifications, removeNotification } = useNotification()
 </script>
 
@@ -134,14 +132,14 @@ const { notifications, removeNotification } = useNotification()
 .toast-enter-active,
 .toast-leave-active {
   transition:
-    opacity var(--duration-normal) var(--ease-standard),
-    transform var(--duration-normal) var(--ease-standard);
+    opacity var(--transition-emphasized),
+    transform var(--transition-emphasized);
 }
 .toast-enter-from {
   opacity: 0;
   transform: translateX(18px);
   @include mobile {
-    transform: translateY(-10px);
+    transform: translateY(-18px);
     align-self: center;
   }
 }
@@ -149,7 +147,7 @@ const { notifications, removeNotification } = useNotification()
   opacity: 0;
   transform: translateX(18px);
   @include mobile {
-    transform: translateY(-10px);
+    transform: translateY(-18px);
   }
 }
 </style>

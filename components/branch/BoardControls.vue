@@ -76,7 +76,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { Panel } from '@vue-flow/core'
 import {
   Maximize,
@@ -89,7 +88,7 @@ import {
   LayoutGrid,
   ImageDown,
 } from 'lucide-vue-next'
-import AppSearch, { type AppSearchResult } from '~/components/ui/forms/AppSearch.vue'
+import type { AppSearchResult } from '~/components/ui/forms/AppSearch.vue'
 
 const props = defineProps<{
   canUndo?: boolean

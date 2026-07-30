@@ -82,7 +82,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
 import { Search, X } from 'lucide-vue-next'
 
 export type AppSearchResult = {

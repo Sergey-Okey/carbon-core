@@ -11,8 +11,6 @@
 </template>
 
 <script setup lang="ts">
-import ErrorDocPage from '~/components/error/ErrorDocPage.vue'
-
 useSeoMeta({
   title: '500 — Внутренняя ошибка',
   description: 'На сервере произошла внутренняя ошибка.',

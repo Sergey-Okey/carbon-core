@@ -5,13 +5,23 @@ import { accessAwareStorage } from '~/utils/accessStorage'
 
 export const ACCENT_COLORS = [
   { name: 'Графит', value: '#2b2b2b' },
-  { name: 'Сапфир', value: '#7aa2ff' },
-  { name: 'Мята', value: '#74d6a0' },
-  { name: 'Янтарь', value: '#e5b45a' },
-  { name: 'Лаванда', value: '#b49cff' },
-  { name: 'Коралл', value: '#ff8a7a' },
-  { name: 'Бирюза', value: '#6fd8d2' },
+  { name: 'Синий', value: '#2563EB' },
+  { name: 'Зелёный', value: '#16A34A' },
+  { name: 'Оранжевый', value: '#EA580C' },
+  { name: 'Фиолетовый', value: '#7C3AED' },
+  { name: 'Красный', value: '#DC2626' },
+  { name: 'Бирюзовый', value: '#0D9488' },
 ]
+
+/** Map legacy pastel accents to denser replacements. */
+const LEGACY_ACCENT_MAP: Record<string, string> = {
+  '#7aa2ff': '#2563EB',
+  '#74d6a0': '#16A34A',
+  '#e5b45a': '#EA580C',
+  '#b49cff': '#7C3AED',
+  '#ff8a7a': '#DC2626',
+  '#6fd8d2': '#0D9488',
+}
 
 function resolveAccentColor(color: string, light = false): string {
   if (isGraphiteAccent(color)) {
@@ -24,6 +34,12 @@ function resolveAccentColor(color: string, light = false): string {
 function isGraphiteAccent(color: string): boolean {
   const normalized = color.toLowerCase()
   return normalized === '#2b2b2b' || normalized === '#d6d6d6' || normalized === '#ffffff'
+}
+
+function normalizeAccentColor(color: string): string {
+  const normalized = color.toLowerCase()
+  if (isGraphiteAccent(normalized)) return ACCENT_COLORS[0].value
+  return LEGACY_ACCENT_MAP[normalized] ?? color
 }
 
 export const useSettingsStore = defineStore(
@@ -138,8 +154,9 @@ export const useSettingsStore = defineStore(
     }
 
     function setAccentColor(color: string) {
-      accentColor.value = color
-      applyAccentColor(color)
+      const next = normalizeAccentColor(color)
+      accentColor.value = next
+      applyAccentColor(next)
     }
 
     function applyAnimations(enabled: boolean) {
@@ -254,9 +271,7 @@ export const useSettingsStore = defineStore(
         if (typeof saved.lightThemeFrom === 'string') lightThemeFrom.value = saved.lightThemeFrom
         if (typeof saved.darkThemeFrom === 'string') darkThemeFrom.value = saved.darkThemeFrom
         if (typeof saved.accentColor === 'string') {
-          accentColor.value = isGraphiteAccent(saved.accentColor)
-            ? ACCENT_COLORS[0].value
-            : saved.accentColor
+          accentColor.value = normalizeAccentColor(saved.accentColor)
         }
         if (saved.uiDensity === 'comfortable' || saved.uiDensity === 'compact') uiDensity.value = saved.uiDensity
         if (['default', 'glass', 'image'].includes(saved.appBackgroundMode)) appBackgroundMode.value = saved.appBackgroundMode

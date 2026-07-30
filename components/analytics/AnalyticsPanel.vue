@@ -189,7 +189,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import {
   Activity,
   CalendarDays,
@@ -203,21 +202,7 @@ import {
   Target,
   Zap,
 } from 'lucide-vue-next'
-import AnalyticsCategoryChart from '~/components/analytics/widgets/AnalyticsCategoryChart.vue'
-import AnalyticsHeatmap from '~/components/analytics/widgets/AnalyticsHeatmap.vue'
-import AnalyticsHeroProgress from '~/components/analytics/widgets/AnalyticsHeroProgress.vue'
-import AnalyticsHologram from '~/components/analytics/widgets/AnalyticsHologram.vue'
-import AnalyticsHourBarChart from '~/components/analytics/widgets/AnalyticsHourBarChart.vue'
-import AnalyticsLineChart from '~/components/analytics/widgets/AnalyticsLineChart.vue'
-import AnalyticsNestedArcs from '~/components/analytics/widgets/AnalyticsNestedArcs.vue'
-import AnalyticsRadarChart from '~/components/analytics/widgets/AnalyticsRadarChart.vue'
-import AnalyticsTagChart from '~/components/analytics/widgets/AnalyticsTagChart.vue'
-import AnalyticsWidgetShell from '~/components/analytics/AnalyticsWidgetShell.vue'
-import { useAnalyticsMetrics } from '~/composables/useAnalyticsMetrics'
-import {
-  type AnalyticsWidgetId,
-  useUIStore,
-} from '~/stores/ui.store'
+import type { AnalyticsWidgetId } from '~/stores/ui.store'
 
 const uiStore = useUIStore()
 const rangeDays = computed({

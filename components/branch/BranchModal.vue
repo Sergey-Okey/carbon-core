@@ -115,7 +115,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
 import {
   Award,
   Bell,
@@ -144,15 +143,7 @@ import {
   WalletCards,
   Plus,
 } from 'lucide-vue-next'
-import AppButton from '~/components/ui/primitives/AppButton.vue'
-import AppCustomColorPicker from '~/components/ui/forms/AppCustomColorPicker.vue'
-import AppFormField from '~/components/ui/forms/AppFormField.vue'
-import AppInput from '~/components/ui/primitives/AppInput.vue'
-import AppModal from '~/components/ui/overlays/AppModal.vue'
 import type { Branch } from '~/types/branch.types'
-import { useTasksStore } from '~/stores/tasks.store'
-import { useBranchesStore } from '~/stores/branches.store'
-import TaskForm from '~/components/task/TaskForm.vue'
 import type { TaskFormData } from '~/types/task.types'
 
 const props = defineProps<{ branch?: Branch | null }>()

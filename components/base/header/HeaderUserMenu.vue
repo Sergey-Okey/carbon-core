@@ -58,9 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, ref, watch } from 'vue'
 import { LogOut, UserCircle } from 'lucide-vue-next'
-import AppButton from '~/components/ui/primitives/AppButton.vue'
 
 const props = defineProps<{
   open: boolean
@@ -197,14 +195,14 @@ defineExpose({ panelRef })
 .sheet-backdrop-enter-active,
 .sheet-backdrop-leave-active {
   transition:
-    opacity var(--transition-standard),
-    transform var(--transition-standard);
+    opacity var(--transition-emphasized),
+    transform var(--transition-emphasized);
 }
 
 .profile-panel-enter-from,
 .profile-panel-leave-to {
   opacity: 0;
-  transform: translateY(calc(var(--space-1) * -1 - 2px));
+  transform: translateY(-18px);
 }
 
 .sheet-backdrop-enter-from,
@@ -227,17 +225,12 @@ defineExpose({ panelRef })
   }
 
   .sheet-handle {
-    display: block;
-    width: 40px;
-    height: 4px;
-    margin: var(--space-2) auto var(--space-1);
-    border-radius: var(--radius-full);
-    background: color-mix(in srgb, var(--color-text-muted) 35%, transparent);
+    display: none;
   }
 
   .panel-head {
     display: block;
-    padding: var(--space-2) var(--space-3) var(--space-3);
+    padding: var(--space-4);
     border-bottom: var(--ui-border);
 
     h3 {
@@ -250,30 +243,23 @@ defineExpose({ panelRef })
   }
 
   .profile-panel {
-    inset-block-start: auto;
-    inset-block-end: 0;
+    inset-block-start: calc(
+      env(safe-area-inset-top, 0px) + var(--space-2) + var(--space-11) + var(--space-2) + 1px
+    );
+    inset-block-end: auto;
     inset-inline-start: 0;
     inset-inline-end: 0;
     z-index: var(--z-modal);
     inline-size: 100%;
     max-inline-size: none;
     padding: 0;
-    padding-block-end: calc(
-      var(--space-3) + env(safe-area-inset-bottom, 0px) + var(--space-3) + var(--space-11) +
-        var(--space-2) + var(--space-2)
-    );
-    border-bottom: none;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-top: none;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   }
 
   .panel-actions {
     gap: var(--space-2);
-    padding: var(--space-3);
-  }
-
-  .profile-panel-enter-from,
-  .profile-panel-leave-to {
-    transform: translateY(16px);
+    padding: var(--space-4);
   }
 }
 </style>

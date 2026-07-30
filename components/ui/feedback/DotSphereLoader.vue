@@ -11,7 +11,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { BOOT_CYCLE_SEC } from '~/utils/dotSphereLoader'
 
 const props = withDefaults(

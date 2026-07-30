@@ -66,16 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import { Check, Pencil, Plus, Tags, Trash2, X } from 'lucide-vue-next'
-import AppButton from '~/components/ui/primitives/AppButton.vue'
-import AppCustomColorPicker from '~/components/ui/forms/AppCustomColorPicker.vue'
-import AppInput from '~/components/ui/primitives/AppInput.vue'
-import EmptyState from '~/components/ui/feedback/EmptyState.vue'
-import { useConfirm } from '~/composables/useConfirm'
-import { useNotification } from '~/composables/useNotification'
-import { useTagsStore } from '~/stores/tags.store'
-import { useTasksStore } from '~/stores/tasks.store'
 import type { Tag } from '~/types/tag.types'
 
 const tagsStore = useTagsStore()

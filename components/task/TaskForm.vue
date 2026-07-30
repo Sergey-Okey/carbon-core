@@ -147,21 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch, ref, computed } from 'vue'
 import { X, Plus } from 'lucide-vue-next'
-import { useBranchesStore } from '~/stores/branches.store'
-import { useTagsStore } from '~/stores/tags.store'
-import { useNotification } from '~/composables/useNotification'
-import AppButton from '~/components/ui/primitives/AppButton.vue'
-import AppColorPicker from '~/components/ui/forms/AppColorPicker.vue'
-import AppCustomColorPicker from '~/components/ui/forms/AppCustomColorPicker.vue'
-import AppDatePicker from '~/components/ui/forms/AppDatePicker.vue'
-import AppFormField from '~/components/ui/forms/AppFormField.vue'
-import AppInput from '~/components/ui/primitives/AppInput.vue'
-import AppModal from '~/components/ui/overlays/AppModal.vue'
-import AppSelect from '~/components/ui/forms/AppSelect.vue'
-import AppSwitch from '~/components/ui/primitives/AppSwitch.vue'
-import AppTimePicker from '~/components/ui/forms/AppTimePicker.vue'
 import type { AppSelectOption } from '~/types/ui.types'
 import type { BranchId } from '~/types/branch.types'
 import type { Task, TaskFormData, TaskTag, TaskType } from '~/types/task.types'

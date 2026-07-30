@@ -51,9 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { X } from 'lucide-vue-next'
-import AppButton from '~/components/ui/primitives/AppButton.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -195,7 +193,7 @@ function handleBackdrop() {
 
 .modal-fade-enter-active,
 .modal-fade-leave-active {
-  transition: opacity var(--transition-standard);
+  transition: opacity var(--transition-emphasized);
 }
 
 .modal-fade-enter-from,
@@ -206,14 +204,14 @@ function handleBackdrop() {
 .modal-panel-enter-active,
 .modal-panel-leave-active {
   transition:
-    opacity var(--transition-standard),
-    transform var(--transition-standard);
+    opacity var(--transition-emphasized),
+    transform var(--transition-emphasized);
 }
 
 .modal-panel-enter-from,
 .modal-panel-leave-to {
   opacity: 0;
-  transform: translateY(var(--space-2));
+  transform: translateY(18px);
 }
 
 @media (max-width: 640px) {

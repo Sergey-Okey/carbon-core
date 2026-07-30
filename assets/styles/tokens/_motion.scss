@@ -1,8 +1,11 @@
 :root {
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
   --duration-fast: 150ms;
   --duration-normal: 300ms;
   --duration-slow: 450ms;
+  --duration-emphasized: 550ms;
 
   --transition-standard: var(--duration-normal) var(--ease-standard);
+  --transition-emphasized: var(--duration-emphasized) var(--ease-emphasized);
 }

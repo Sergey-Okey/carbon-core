@@ -13,7 +13,6 @@ import {
   weightedBranchesScore,
 } from '~/utils/analyticsMath'
 
-export type { TrendDir } from '~/utils/analyticsMath'
 export type AnalyticsRangeDays = 7 | 14 | 30
 
 export type ActivityDayPoint = {

@@ -25,7 +25,6 @@
   </PublicInfoPage>
 </template>
 <script setup lang="ts">
-import PublicInfoPage from '~/components/base/PublicInfoPage.vue'
 definePageMeta({ layout: false })
 useSeoMeta({
   title: 'Поддержка',

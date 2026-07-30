@@ -27,7 +27,6 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
 import {
   BarChart2,
   CheckSquare,
@@ -35,8 +34,7 @@ import {
   Settings,
   Timer,
 } from 'lucide-vue-next'
-import { useUIStore, type NavSection } from '~/stores/ui.store'
-import { useGuidedTourStore } from '~/stores/guidedTour.store'
+import type { NavSection } from '~/stores/ui.store'
 
 const uiStore = useUIStore()
 const guidedTour = useGuidedTourStore()
@@ -104,14 +102,18 @@ async function handleNavClick(section: NavSection) {
 
   @include mobile {
     position: fixed;
-    inset-inline-start: 50%;
-    inset-block-end: calc(env(safe-area-inset-bottom, 0px) + var(--space-3));
-    inline-size: auto;
-    max-inline-size: calc(100dvw - var(--space-6) - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    inset-inline: 0;
+    inset-block-end: 0;
+    inline-size: 100%;
+    max-inline-size: none;
     padding-block: var(--space-2);
-    padding-inline: var(--space-3);
-    transform: translateX(-50%);
-    border-radius: var(--radius-full);
+    padding-block-end: calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+    padding-inline: max(var(--space-3), env(safe-area-inset-left, 0px))
+      max(var(--space-3), env(safe-area-inset-right, 0px));
+    transform: none;
+    border-bottom: none;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    animation: nav-fade-up var(--transition-emphasized) both;
   }
 }
 
@@ -181,8 +183,28 @@ async function handleNavClick(section: NavSection) {
 
 @media (horizontal-viewport-segments: 2) and (max-width: 767px) {
   .nav-island {
-    inset-inline-start: calc(env(viewport-segment-left 0 0) + (env(viewport-segment-width 0 0) / 2));
-    max-inline-size: calc(env(viewport-segment-width 0 0) - var(--space-6));
+    inset-inline-start: env(viewport-segment-left 0 0);
+    inset-inline-end: auto;
+    inline-size: env(viewport-segment-width 0 0);
+    max-inline-size: none;
+  }
+}
+
+@keyframes nav-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-island {
+    animation: none;
   }
 }
 

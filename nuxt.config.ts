@@ -7,8 +7,7 @@ export default defineNuxtConfig({
   devServer: { host: '0.0.0.0', port: 3000 },
   experimental: { appManifest: false, viteEnvironmentApi: true },
   components: [
-    { path: '~/components/ui', pathPrefix: false },
-    { path: '~/components', ignore: ['**/ui/**'] },
+    { path: '~/components', pathPrefix: false },
   ],
   modules: [
     '@pinia/nuxt',
