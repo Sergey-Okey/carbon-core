@@ -173,7 +173,6 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
   display: flex;
   flex-direction: column;
   gap: clamp(16px, 2vw, 24px);
-  padding-block-end: 80px;
 
   &:not(.is-board) {
     inline-size: min(100%, 1600px);
@@ -181,13 +180,11 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
   }
 
   @include desktop {
-    padding-block-end: 0;
     min-block-size: 100%;
   }
 
   @include mobile {
     gap: var(--space-3);
-    padding-block-end: calc(96px + env(safe-area-inset-bottom, 0px));
   }
 
   @include tablet {
@@ -198,16 +195,16 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
     gap: 0;
     block-size: 100%;
     min-block-size: 0;
-    padding-block-end: 0;
     overflow: hidden;
     width: 100%;
     height: 100dvh;
 
     @include mobile {
-      block-size: auto;
+      flex: 1;
+      block-size: 100%;
+      height: 100%;
       min-block-size: 0;
-      overflow: visible;
-      padding-block-end: 84px;
+      overflow: hidden;
     }
   }
 }
@@ -226,6 +223,10 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
     min-block-size: 0;
   }
 
+  @include mobile {
+    min-block-size: 0;
+  }
+
   &.is-board {
     flex: 1;
     min-block-size: 0;
@@ -233,9 +234,11 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
     overflow: hidden;
 
     @include mobile {
-      flex: 0 0 auto;
-      block-size: auto;
-      overflow: visible;
+      flex: 1;
+      block-size: 100%;
+      height: 100%;
+      min-block-size: 0;
+      overflow: hidden;
     }
   }
 }

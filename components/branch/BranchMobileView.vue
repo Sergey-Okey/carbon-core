@@ -20,15 +20,16 @@ import { MonitorUp } from 'lucide-vue-next'
 <style scoped lang="scss">
 .branch-mobile-stub {
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
   width: 100%;
   min-height: 100%;
+  box-sizing: border-box;
   padding: calc(88px + env(safe-area-inset-top, 0px))
     max(20px, env(safe-area-inset-right, 0px))
-    calc(96px + env(safe-area-inset-bottom, 0px))
+    calc(72px + env(safe-area-inset-bottom, 0px))
     max(20px, env(safe-area-inset-left, 0px));
-  box-sizing: border-box;
 }
 
 .stub-card {

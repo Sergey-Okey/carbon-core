@@ -104,23 +104,17 @@ const isBoardLayout = computed(
     }
 
     .main {
-      overflow-x: hidden;
-      overflow-y: auto;
-      scrollbar-width: none;
-      scrollbar-color: transparent transparent;
-      -ms-overflow-style: none;
-      -webkit-overflow-scrolling: touch;
-
-      &::-webkit-scrollbar {
-        width: 0;
-        height: 0;
-        display: none;
-      }
+      /* Fill the shell and center the stub — no leftover flex gap under short content. */
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow: hidden;
     }
 
     :deep(.nav-island) {
       inset-block-start: auto;
       inset-inline-start: 50%;
+      inset-block-end: calc(env(safe-area-inset-bottom, 0px) + var(--space-3));
       transform: translateX(-50%);
     }
   }
@@ -155,6 +149,11 @@ const isBoardLayout = computed(
   }
 
   @include mobile {
+    /*
+     * Block layout so short pages (settings, etc.) don't leave a flex
+     * leftover gap under content above the nav clearance padding.
+     */
+    display: block;
     /* Fixed header height + same gap as profile/widget stacks (space-3). */
     padding-block-start: calc(
       env(safe-area-inset-top, 0px) + var(--space-2) + var(--space-11) + var(--space-2) + 1px +
@@ -162,7 +161,7 @@ const isBoardLayout = computed(
     );
     padding-inline-start: max(var(--space-3), env(safe-area-inset-left, 0px));
     padding-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
-    padding-block-end: calc(96px + env(safe-area-inset-bottom, 0px));
+    padding-block-end: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
   &::-webkit-scrollbar {

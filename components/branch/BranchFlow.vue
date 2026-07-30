@@ -1012,12 +1012,15 @@ watch(
   min-height: 100%;
 
   @include mobile {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
     width: 100%;
-    height: auto;
+    height: 100%;
     min-height: 0;
     margin: 0;
-    border-radius: var(--border-radius-lg);
-    overflow: visible;
+    border-radius: 0;
+    overflow: hidden;
   }
 }
 

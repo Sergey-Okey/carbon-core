@@ -12,4 +12,10 @@
 
 <script setup lang="ts">
 import ErrorDocPage from '~/components/error/ErrorDocPage.vue'
+
+useSeoMeta({
+  title: '401 — Нужен вход',
+  description: 'Для доступа к этой странице требуется авторизация.',
+  robots: 'noindex, nofollow',
+})
 </script>
