@@ -1,46 +1,5 @@
 <template>
   <section class="focus-page" aria-label="Фокус" data-tour="focus-page">
-    <div class="focus-kpi" aria-label="Сводка фокуса">
-      <article class="focus-metric enter-fade-up" style="--enter-delay: 0ms">
-        <header class="focus-metric__head">
-          <span class="focus-metric__label">Сегодня</span>
-          <span class="focus-metric__icon" aria-hidden="true">
-            <Flame :size="16" />
-          </span>
-        </header>
-        <div class="focus-metric__value">
-          <strong>{{ completedSessions }}</strong>
-          <span>{{ sessionLabel }}</span>
-        </div>
-      </article>
-
-      <article class="focus-metric enter-fade-up" style="--enter-delay: 60ms">
-        <header class="focus-metric__head">
-          <span class="focus-metric__label">Режим</span>
-          <span class="focus-metric__icon" aria-hidden="true">
-            <component :is="activePreset.icon" :size="16" />
-          </span>
-        </header>
-        <div class="focus-metric__value">
-          <strong>{{ activePreset.label }}</strong>
-          <span>{{ activePreset.minutes }} мин</span>
-        </div>
-      </article>
-
-      <article class="focus-metric enter-fade-up" style="--enter-delay: 120ms">
-        <header class="focus-metric__head">
-          <span class="focus-metric__label">Прогресс</span>
-          <span class="focus-metric__icon" aria-hidden="true">
-            <Target :size="16" />
-          </span>
-        </header>
-        <div class="focus-metric__value">
-          <strong>{{ progressPercent }}%</strong>
-          <span>{{ isRunning ? 'идёт' : 'ожидание' }}</span>
-        </div>
-      </article>
-    </div>
-
     <div class="focus-grid">
       <AnalyticsWidgetShell
         title="Сессия"
@@ -95,37 +54,69 @@
         </div>
       </AnalyticsWidgetShell>
 
-      <AnalyticsWidgetShell
-        title="Режим"
-        :subtitle="`${activePreset.minutes} мин`"
-        :icon="Timer"
-        :span="4"
-        enter="slide-left"
-        :draggable="false"
-      >
-        <div class="mode-body">
-          <div class="preset-seg" data-tour="focus-presets" role="radiogroup" aria-label="Пресеты фокуса">
-            <button
-              v-for="preset in presets"
-              :key="preset.key"
-              type="button"
-              class="preset-chip"
-              role="radio"
-              :aria-checked="activePreset.key === preset.key"
-              :class="{ active: activePreset.key === preset.key }"
-              @click="setPreset(preset.key)"
-            >
-              <component :is="preset.icon" :size="14" aria-hidden="true" />
-              <span class="preset-chip__label">{{ preset.label }}</span>
-              <em>{{ preset.minutes }}</em>
-            </button>
+      <div class="focus-side">
+        <AnalyticsWidgetShell
+          title="Режим"
+          :subtitle="`${activePreset.minutes} мин`"
+          :icon="Timer"
+          enter="slide-left"
+          :draggable="false"
+          fluid
+        >
+          <div class="mode-body">
+            <div class="preset-seg" data-tour="focus-presets" role="radiogroup" aria-label="Пресеты фокуса">
+              <button
+                v-for="preset in presets"
+                :key="preset.key"
+                type="button"
+                class="preset-chip"
+                role="radio"
+                :aria-checked="activePreset.key === preset.key"
+                :class="{ active: activePreset.key === preset.key }"
+                @click="setPreset(preset.key)"
+              >
+                <span class="preset-chip__icon" aria-hidden="true">
+                  <component :is="preset.icon" :size="20" />
+                </span>
+                <span class="preset-chip__copy">
+                  <span class="preset-chip__label">{{ preset.label }}</span>
+                  <em>{{ preset.minutes }} мин</em>
+                </span>
+                <strong class="preset-chip__value">{{ preset.minutes }}</strong>
+              </button>
+            </div>
           </div>
+        </AnalyticsWidgetShell>
 
-          <p class="mode-tip">
-            Выберите длительность, затем стартуйте сессию. Счётчик дня сохраняется автоматически.
-          </p>
-        </div>
-      </AnalyticsWidgetShell>
+        <AnalyticsWidgetShell
+          title="Сегодня"
+          :subtitle="sessionStatusLabel"
+          :icon="Flame"
+          enter="bounce-in"
+          :draggable="false"
+          fluid
+        >
+          <div class="today-body">
+            <div class="today-stat">
+              <strong>{{ completedSessions }}</strong>
+              <span>{{ sessionLabel }}</span>
+            </div>
+
+            <div class="today-progress" aria-label="Прогресс текущей сессии">
+              <div class="today-progress__meta">
+                <span>Сессия</span>
+                <span>{{ progressPercent }}%</span>
+              </div>
+              <div class="today-progress__track" role="progressbar" :aria-valuenow="progressPercent" aria-valuemin="0" aria-valuemax="100">
+                <span class="today-progress__fill" :style="{ width: `${progressPercent}%` }" />
+              </div>
+              <p class="today-tip">
+                Выберите длительность, затем стартуйте. Счётчик дня сохраняется сам.
+              </p>
+            </div>
+          </div>
+        </AnalyticsWidgetShell>
+      </div>
     </div>
   </section>
 </template>
@@ -192,6 +183,15 @@ const progress = computed(() => {
   return 1 - remainingSeconds.value / totalSeconds.value
 })
 const progressPercent = computed(() => Math.round(progress.value * 100))
+const sessionLabel = computed(() => {
+  const count = completedSessions.value
+  if (count % 10 === 1 && count % 100 !== 11) return 'сессия'
+  if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return 'сессии'
+  return 'сессий'
+})
+const sessionStatusLabel = computed(() =>
+  isRunning.value ? 'сессия идёт' : 'ожидание старта'
+)
 const ringTicks = computed(() => {
   const active = Math.round(progress.value * 56)
   return Array.from({ length: 56 }, (_, index) => ({
@@ -205,12 +205,6 @@ const formattedTime = computed(() => {
   const minutes = Math.floor(remainingSeconds.value / 60)
   const seconds = remainingSeconds.value % 60
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-})
-const sessionLabel = computed(() => {
-  const count = completedSessions.value
-  if (count % 10 === 1 && count % 100 !== 11) return 'сессия'
-  if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return 'сессии'
-  return 'сессий'
 })
 
 function emitTimerState() {
@@ -367,83 +361,6 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 
-.focus-kpi {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-4);
-  width: 100%;
-  min-width: 0;
-}
-
-.focus-metric {
-  @include surface-panel;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  box-sizing: border-box;
-  min-width: 0;
-  padding: var(--space-5);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xs);
-
-  &.enter-fade-up {
-    animation: focus-fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
-    animation-delay: var(--enter-delay, 0ms);
-  }
-}
-
-.focus-metric__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  min-width: 0;
-}
-
-.focus-metric__label {
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-.focus-metric__icon {
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  color: var(--color-accent);
-}
-
-.focus-metric__value {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: var(--space-1);
-  min-width: 0;
-  margin-top: auto;
-
-  strong {
-    overflow: hidden;
-    color: var(--color-text-primary);
-    font-family: 'Space Grotesk', var(--font-sans);
-    font-size: clamp(1.75rem, 3.2vw, 2.5rem);
-    font-variant-numeric: tabular-nums;
-    font-weight: var(--weight-bold);
-    letter-spacing: -0.04em;
-    line-height: 1;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  span {
-    color: var(--color-text-muted);
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
-  }
-}
-
 .focus-grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -456,10 +373,24 @@ onBeforeUnmount(() => {
     animation-delay: var(--enter-delay, 0ms);
   }
 
-  :deep(.widget-shell.span-8),
-  :deep(.widget-shell.span-4) {
-    --tile-h: 520px;
-    min-height: 520px;
+  :deep(.widget-shell.span-8) {
+    --tile-h: 560px;
+    min-height: 560px;
+  }
+}
+
+.focus-side {
+  display: grid;
+  grid-column: span 4;
+  grid-template-rows: 1.15fr 0.85fr;
+  gap: var(--space-4);
+  min-width: 0;
+  min-height: 560px;
+  height: 100%;
+
+  :deep(.widget-shell.is-fluid) {
+    height: 100%;
+    min-height: 0;
   }
 }
 
@@ -590,16 +521,18 @@ onBeforeUnmount(() => {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: var(--space-4);
   min-height: 0;
+  width: 100%;
 }
 
 .preset-seg {
   @include nest-shell(var(--radius-md), var(--space-1));
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: var(--space-1);
   width: 100%;
+  min-height: 0;
   border: var(--ui-border);
   background: var(--color-surface-1);
   box-shadow: var(--shadow-xs);
@@ -610,30 +543,21 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
+  flex: 1 1 0;
   width: 100%;
-  min-height: var(--control-height-md);
+  min-height: 64px;
   margin: 0;
-  padding: 0 var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
   cursor: pointer;
   font: inherit;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
   text-align: left;
   transition:
     background var(--transition-standard),
     color var(--transition-standard);
-
-  em {
-    font-style: normal;
-    color: var(--color-text-muted);
-    font-size: var(--text-xs);
-    font-variant-numeric: tabular-nums;
-    font-weight: var(--weight-semibold);
-  }
 
   &:focus-visible {
     outline: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
@@ -651,31 +575,130 @@ onBeforeUnmount(() => {
     background: var(--color-accent);
     color: var(--color-bg);
 
-    em {
+    .preset-chip__icon,
+    .preset-chip__copy em,
+    .preset-chip__value {
       color: inherit;
+    }
+
+    .preset-chip__copy em {
       opacity: 0.85;
     }
   }
 }
 
-.mode-tip {
-  margin: 0;
+.preset-chip__icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+  color: var(--color-accent);
+}
+
+.preset-chip.active .preset-chip__icon {
+  background: color-mix(in srgb, var(--color-bg) 18%, transparent);
+}
+
+.preset-chip__copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.preset-chip__label {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: 1.2;
+}
+
+.preset-chip__copy em {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-style: normal;
+  font-weight: var(--weight-medium);
+}
+
+.preset-chip__value {
+  font-family: 'Space Grotesk', var(--font-sans);
+  font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--color-text-primary);
+}
+
+.today-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 0;
+  width: 100%;
+}
+
+.today-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+
+  strong {
+    color: var(--color-text-primary);
+    font-family: 'Space Grotesk', var(--font-sans);
+    font-size: clamp(2.4rem, 4vw, 3.2rem);
+    font-weight: var(--weight-bold);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+  }
+
+  span {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+  }
+}
+
+.today-progress {
+  display: grid;
+  gap: var(--space-2);
   margin-top: auto;
+}
+
+.today-progress__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+.today-progress__track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+}
+
+.today-progress__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  transition: width var(--transition-standard);
+}
+
+.today-tip {
+  margin: 0;
   color: var(--color-text-muted);
   font-size: var(--text-xs);
   line-height: var(--leading-normal);
-}
-
-@keyframes focus-fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 @keyframes focus-tick-in {
@@ -698,7 +721,6 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .focus-metric.enter-fade-up,
   .ring-ticks line,
   .timer-center {
     animation: none;
@@ -709,21 +731,23 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 1100px) {
-  .focus-kpi,
   .focus-grid {
     gap: var(--space-3);
-  }
-
-  .focus-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
 
-    :deep(.widget-shell.span-8),
-    :deep(.widget-shell.span-4) {
+    :deep(.widget-shell.span-8) {
       grid-column: span 6;
       --tile-h: auto;
       min-height: 420px;
       height: auto;
     }
+  }
+
+  .focus-side {
+    grid-column: span 6;
+    grid-template-rows: auto auto;
+    min-height: 0;
+    height: auto;
   }
 }
 
@@ -732,46 +756,34 @@ onBeforeUnmount(() => {
     gap: var(--space-3);
   }
 
-  .focus-kpi {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-2);
-  }
-
-  .focus-metric {
-    gap: var(--space-2);
-    padding: var(--space-3);
-  }
-
-  .focus-metric__value {
-    strong {
-      font-size: clamp(1.25rem, 5.5vw, 1.75rem);
-    }
-
-    span {
-      font-size: var(--text-xs);
-    }
-  }
-
   .focus-grid {
     grid-template-columns: 1fr;
     gap: var(--space-3);
 
-    :deep(.widget-shell.span-8),
-    :deep(.widget-shell.span-4) {
+    :deep(.widget-shell.span-8) {
       grid-column: span 1;
       --tile-h: auto;
       min-height: 0;
       height: auto;
     }
+  }
 
-    /* Timer first, presets below — DOM order already matches */
-    :deep(.widget-shell.span-8) {
-      order: 0;
-    }
+  .focus-side {
+    grid-column: span 1;
+    grid-template-rows: auto auto;
+    gap: var(--space-3);
+    min-height: 0;
+    height: auto;
+    order: 1;
+  }
 
-    :deep(.widget-shell.span-4) {
-      order: 1;
-    }
+  .focus-grid :deep(.widget-shell.span-8) {
+    order: 0;
+  }
+
+  .preset-chip {
+    min-height: 56px;
+    flex: 0 0 auto;
   }
 
   .timer-stage {
@@ -807,26 +819,12 @@ onBeforeUnmount(() => {
   .timer-body {
     gap: var(--space-4);
   }
-
-  .preset-chip {
-    min-height: var(--space-11);
-  }
 }
 
 @include narrow {
   .focus-page,
-  .focus-kpi,
-  .focus-grid {
-    gap: var(--space-2);
-  }
-
-  .focus-kpi {
-    grid-template-columns: 1fr;
-  }
-
-  .focus-metric__value {
-    flex-direction: row;
-    align-items: baseline;
+  .focus-grid,
+  .focus-side {
     gap: var(--space-2);
   }
 }

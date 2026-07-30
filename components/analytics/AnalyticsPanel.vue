@@ -423,6 +423,8 @@ function onTileDragEnd() {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .analytics-grid {

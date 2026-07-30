@@ -11,7 +11,7 @@
         <div class="rows">
           <div class="row">
             <span class="row-icon" aria-hidden="true">
-              <component :is="settingsStore.theme === 'light' ? Sun : Moon" :size="18" />
+              <component :is="settingsStore.theme === 'light' ? Sun : Moon" :size="20" />
             </span>
             <div class="row-copy">
               <span>Светлая тема</span>
@@ -33,7 +33,7 @@
 
           <div class="row">
             <span class="row-icon" aria-hidden="true">
-              <Monitor :size="18" />
+              <Monitor :size="20" />
             </span>
             <div class="row-copy">
               <span>Следовать системе</span>
@@ -48,7 +48,7 @@
 
           <div class="row">
             <span class="row-icon" aria-hidden="true">
-              <Clock :size="18" />
+              <Clock :size="20" />
             </span>
             <div class="row-copy">
               <span>Тема по времени</span>
@@ -64,7 +64,7 @@
           <div v-if="settingsStore.themeMode === 'schedule'" class="row row--stack">
             <div class="row-main">
               <span class="row-icon" aria-hidden="true">
-                <Clock :size="18" />
+                <Clock :size="20" />
               </span>
               <div class="row-copy">
                 <span>Расписание</span>
@@ -94,7 +94,7 @@
           <div class="row row--stack">
             <div class="row-main">
               <span class="row-icon" aria-hidden="true">
-                <Palette :size="18" />
+                <Palette :size="20" />
               </span>
               <div class="row-copy">
                 <span>Акцент</span>
@@ -124,99 +124,94 @@
         </div>
       </article>
 
-      <!-- Feedback + Interface (one column matching appearance height) -->
-      <div class="settings-side">
-        <article class="card card--feedback">
-          <header class="card-head">
-            <h2>Отклик</h2>
-          </header>
+      <!-- Behavior: feedback + interface -->
+      <article class="card card--prefs">
+        <header class="card-head">
+          <h2>Поведение</h2>
+          <span class="card-head__aside">отклик и интерфейс</span>
+        </header>
 
-          <div class="rows">
-            <div class="row">
-              <span class="row-icon" aria-hidden="true">
-                <Volume2 :size="18" />
-              </span>
-              <div class="row-copy">
-                <span>Звуки действий</span>
-                <em>Сигналы при задачах, предупреждениях и фокусе</em>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.soundEnabled"
-                aria-label="Звуки действий"
-                @update:model-value="toggleSounds"
-              />
-            </div>
+        <div class="rows">
+          <p class="group-label">Отклик</p>
 
-            <div class="row">
-              <span class="row-icon" aria-hidden="true">
-                <Vibrate :size="18" />
-              </span>
-              <div class="row-copy">
-                <span>Вибрация</span>
-                <em>Тактильный отклик на поддерживаемых устройствах</em>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.hapticsEnabled"
-                aria-label="Вибрация"
-                @update:model-value="toggleHaptics"
-              />
+          <div class="row">
+            <span class="row-icon" aria-hidden="true">
+              <Volume2 :size="20" />
+            </span>
+            <div class="row-copy">
+              <span>Звуки действий</span>
+              <em>Сигналы при задачах, предупреждениях и фокусе</em>
             </div>
+            <AppSwitch
+              :model-value="settingsStore.soundEnabled"
+              aria-label="Звуки действий"
+              @update:model-value="toggleSounds"
+            />
           </div>
-        </article>
 
-        <article class="card card--interface">
-          <header class="card-head">
-            <h2>Интерфейс</h2>
-          </header>
-
-          <div class="rows">
-            <div class="row">
-              <span class="row-icon" aria-hidden="true">
-                <BarChart3 :size="18" />
-              </span>
-              <div class="row-copy">
-                <span>Верхняя статистика</span>
-                <em>Уровень, лига и счётчики задач</em>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.showTopStats"
-                aria-label="Верхняя статистика"
-                @update:model-value="toggleTopStats"
-              />
+          <div class="row">
+            <span class="row-icon" aria-hidden="true">
+              <Vibrate :size="20" />
+            </span>
+            <div class="row-copy">
+              <span>Вибрация</span>
+              <em>Тактильный отклик на поддерживаемых устройствах</em>
             </div>
-
-            <div class="row">
-              <span class="row-icon" aria-hidden="true">
-                <LayoutDashboard :size="18" />
-              </span>
-              <div class="row-copy">
-                <span>Статистика в настройках</span>
-                <em>Показывать верхнюю статистику здесь</em>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.showSettingsStats"
-                aria-label="Статистика на странице настроек"
-                @update:model-value="toggleSettingsStats"
-              />
-            </div>
-
-            <div class="row">
-              <span class="row-icon" aria-hidden="true">
-                <ShieldAlert :size="18" />
-              </span>
-              <div class="row-copy">
-                <span>Подтверждать опасные действия</span>
-                <em>Спрашивать перед сбросом данных</em>
-              </div>
-              <AppSwitch
-                :model-value="settingsStore.confirmDangerActions"
-                aria-label="Подтверждать опасные действия"
-                @update:model-value="toggleDangerConfirm"
-              />
-            </div>
+            <AppSwitch
+              :model-value="settingsStore.hapticsEnabled"
+              aria-label="Вибрация"
+              @update:model-value="toggleHaptics"
+            />
           </div>
-        </article>
-      </div>
+
+          <p class="group-label">Интерфейс</p>
+
+          <div class="row">
+            <span class="row-icon" aria-hidden="true">
+              <BarChart3 :size="20" />
+            </span>
+            <div class="row-copy">
+              <span>Верхняя статистика</span>
+              <em>Уровень, лига и счётчики задач</em>
+            </div>
+            <AppSwitch
+              :model-value="settingsStore.showTopStats"
+              aria-label="Верхняя статистика"
+              @update:model-value="toggleTopStats"
+            />
+          </div>
+
+          <div class="row">
+            <span class="row-icon" aria-hidden="true">
+              <LayoutDashboard :size="20" />
+            </span>
+            <div class="row-copy">
+              <span>Статистика в настройках</span>
+              <em>Показывать верхнюю статистику здесь</em>
+            </div>
+            <AppSwitch
+              :model-value="settingsStore.showSettingsStats"
+              aria-label="Статистика на странице настроек"
+              @update:model-value="toggleSettingsStats"
+            />
+          </div>
+
+          <div class="row">
+            <span class="row-icon" aria-hidden="true">
+              <ShieldAlert :size="20" />
+            </span>
+            <div class="row-copy">
+              <span>Подтверждать опасные действия</span>
+              <em>Спрашивать перед сбросом данных</em>
+            </div>
+            <AppSwitch
+              :model-value="settingsStore.confirmDangerActions"
+              aria-label="Подтверждать опасные действия"
+              @update:model-value="toggleDangerConfirm"
+            />
+          </div>
+        </div>
+      </article>
 
       <!-- Tags -->
       <article class="card card--tags">
@@ -571,30 +566,21 @@ async function resetAllData() {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   grid-template-areas:
-    'appearance appearance appearance appearance appearance appearance appearance appearance side side side side'
+    'appearance appearance appearance appearance appearance appearance appearance prefs prefs prefs prefs prefs'
     'tags tags tags tags tags tags data data data data data data';
   gap: var(--space-4);
   width: 100%;
-  align-items: start;
-}
-
-.settings-side {
-  grid-area: side;
-  display: grid;
-  grid-template-rows: auto auto;
-  gap: var(--space-4);
-  min-width: 0;
-  min-height: 0;
+  align-items: stretch;
 }
 
 .card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
   box-sizing: border-box;
   min-width: 0;
-  height: auto;
-  padding: var(--space-5);
+  height: 100%;
+  padding: var(--space-6);
   background: var(--color-surface-1);
   border: var(--ui-border);
   border-radius: var(--radius-lg);
@@ -604,9 +590,8 @@ async function resetAllData() {
   grid-area: appearance;
 }
 
-.card--feedback,
-.card--interface {
-  min-height: 0;
+.card--prefs {
+  grid-area: prefs;
 }
 
 .card--tags {
@@ -627,18 +612,17 @@ async function resetAllData() {
   h2 {
     margin: 0;
     color: var(--color-text-primary);
-    font-size: var(--text-md);
+    font-size: clamp(1.15rem, 1.5vw, 1.35rem);
     font-weight: var(--weight-bold);
-    line-height: 1.25;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
   }
 }
 
 .card-head__aside {
   color: var(--color-text-muted);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-weight: var(--weight-medium);
-  letter-spacing: 0.02em;
-  text-transform: lowercase;
 }
 
 .card-lead {
@@ -654,24 +638,40 @@ async function resetAllData() {
   gap: var(--space-2);
   flex: 0 0 auto;
   margin-top: auto;
-  padding-top: var(--space-3);
+  padding-top: var(--space-4);
   border-top: var(--ui-border);
+
+  :deep(.app-button) {
+    min-height: 44px;
+  }
+}
+
+.group-label {
+  margin: 0;
+  padding: var(--space-3) var(--space-6) var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .rows {
   display: flex;
   flex-direction: column;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-width: 0;
   min-height: 0;
-  margin: 0 calc(var(--space-5) * -1);
+  margin: 0 calc(var(--space-6) * -1);
 }
 
 .row {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  min-height: 52px;
-  padding: var(--space-3) var(--space-5);
+  gap: var(--space-4);
+  min-width: 0;
+  min-height: 64px;
+  padding: var(--space-4) var(--space-6);
   border-bottom: var(--ui-border);
 
   &:last-child {
@@ -689,7 +689,7 @@ async function resetAllData() {
 .danger-main {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-4);
   min-width: 0;
   flex: 1;
 }
@@ -699,11 +699,11 @@ async function resetAllData() {
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   color: var(--color-text-secondary);
   background: var(--color-surface-2);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
 
   &--danger {
     color: var(--color-danger, var(--color-text-secondary));
@@ -712,22 +712,29 @@ async function resetAllData() {
 
 .row-copy {
   display: grid;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
-  flex: 1;
+  flex: 1 1 auto;
 
   span {
+    overflow: hidden;
     color: var(--color-text-primary);
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
-    line-height: 1.3;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   em {
+    display: -webkit-box;
+    overflow: hidden;
     color: var(--color-text-muted);
-    font-size: var(--text-xs);
+    font-size: var(--text-sm);
     font-style: normal;
     line-height: 1.35;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 }
 
@@ -762,12 +769,12 @@ async function resetAllData() {
 
 .action-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-2);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
 
   :deep(.app-button) {
     width: 100%;
-    min-height: 44px;
+    min-height: 48px;
   }
 }
 
@@ -775,59 +782,60 @@ async function resetAllData() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-4);
+  margin-top: auto;
   padding-top: var(--space-4);
   border-top: var(--ui-border);
+
+  :deep(.app-button) {
+    flex-shrink: 0;
+    min-height: 44px;
+  }
 }
 
 @media (max-width: 1100px) {
   .settings-bento {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-      'appearance appearance'
-      'side       side'
-      'tags       data';
-    gap: var(--space-3);
-  }
-
-  .settings-side {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto;
-    align-items: start;
-  }
-
-  .action-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 767px) {
-  .settings-bento {
     grid-template-columns: 1fr;
     grid-template-areas:
       'appearance'
-      'side'
+      'prefs'
       'tags'
       'data';
     gap: var(--space-3);
   }
 
-  .settings-side {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
-  }
-
   .card {
-    padding: var(--space-4);
+    height: auto;
+  }
+}
+
+@include mobile {
+  .card {
+    gap: var(--space-4);
+    padding: var(--space-5);
   }
 
   .rows {
-    margin: 0 calc(var(--space-4) * -1);
+    margin: 0 calc(var(--space-5) * -1);
+  }
+
+  .group-label {
+    padding-inline: var(--space-5);
   }
 
   .row {
-    min-height: 44px;
-    padding: var(--space-3) var(--space-4);
+    min-height: 56px;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-5);
+  }
+
+  .row-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .row-copy span {
+    font-size: var(--text-sm);
   }
 
   .time-range,

@@ -32,10 +32,7 @@
 
       <p
         class="task-desc"
-        :class="{
-          'task-desc--empty': task.type !== 'HABIT' && !task.description?.trim(),
-          'task-desc--placeholder': !task.description?.trim(),
-        }"
+        :class="{ 'task-desc--placeholder': !task.description?.trim() }"
       >
         {{ task.description?.trim() || 'Нет описания' }}
       </p>
@@ -429,10 +426,6 @@ h4 {
   min-width: 0;
 }
 
-.task-desc--empty {
-  display: none;
-}
-
 .task-desc--placeholder {
   opacity: 0.72;
   font-style: italic;
@@ -791,7 +784,6 @@ h4 {
       -webkit-line-clamp: 3;
     }
 
-    .task-desc--empty,
     .task-desc--placeholder {
       display: -webkit-box;
     }

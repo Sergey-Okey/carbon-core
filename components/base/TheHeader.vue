@@ -39,13 +39,26 @@
       />
     </HeaderQuickActions>
     <Teleport to="body">
+      <Transition name="sheet-backdrop">
+        <button
+          v-if="isFocusWidgetPanelOpen && showFocusWidget"
+          type="button"
+          class="sheet-backdrop"
+          aria-label="Закрыть таймер фокуса"
+          @click="closeFocusWidgetPanel"
+        />
+      </Transition>
       <Transition name="profile-panel">
         <section
           v-if="isFocusWidgetPanelOpen && showFocusWidget"
           ref="focusWidgetPanel"
           class="focus-widget-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Мини-таймер фокуса"
           @click.stop
         >
+          <div class="sheet-handle" aria-hidden="true" />
           <div class="focus-widget-panel__head">
             <span>{{ focusWidget.label }}</span>
             <strong>{{ focusWidgetTime }}</strong>
@@ -205,6 +218,9 @@ function logout() {
 }
 
 function handleDocumentClick(event: MouseEvent) {
+  if (import.meta.client && window.matchMedia('(max-width: 767px)').matches) {
+    return
+  }
   const target = event.target as Node
   const profilePanelEl = userMenu.value?.panelRef ?? null
   if (
@@ -456,35 +472,43 @@ onBeforeUnmount(() => {
   @include glass;
   position: fixed;
   inset-block-start: calc(72px + env(safe-area-inset-top, 0px));
-  inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
+  inset-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
   z-index: var(--z-dropdown);
   display: grid;
-  gap: 14px;
-  width: min(320px, calc(100dvw - 24px));
-  padding: 14px;
+  gap: var(--space-3);
+  width: min(320px, calc(100dvw - var(--space-6)));
+  padding: var(--space-4);
   border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  color: var(--text);
+  color: var(--color-text-primary);
+}
+
+.sheet-backdrop {
+  display: none;
+}
+
+.sheet-handle {
+  display: none;
 }
 
 .focus-widget-panel__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--space-3);
 
   span {
-    color: var(--dim);
-    font-size: 0.78rem;
-    font-weight: 700;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
     text-transform: uppercase;
   }
 
   strong {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 700;
+    font-size: var(--text-md);
+    font-weight: var(--weight-bold);
   }
 }
 
@@ -492,48 +516,49 @@ onBeforeUnmount(() => {
   display: grid;
   place-items: center;
   min-height: 188px;
-  border-radius: 24px;
+  border-radius: var(--radius-lg);
   background:
-    radial-gradient(circle at center, color-mix(in srgb, var(--accent) 8%, transparent) 0%, transparent 62%),
-    color-mix(in srgb, var(--surface) 72%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent) 10%, transparent);
+    radial-gradient(circle at center, color-mix(in srgb, var(--color-accent) 8%, transparent) 0%, transparent 62%),
+    color-mix(in srgb, var(--color-surface-1) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 10%, transparent);
 
   &.is-running {
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 12%, transparent);
   }
 }
 
 .focus-widget-panel__core {
   display: grid;
   justify-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 
   svg {
-    color: var(--accent);
+    color: var(--color-accent);
   }
 
   strong {
     font-family: 'Space Grotesk', sans-serif;
     font-size: clamp(2.4rem, 7vw, 3.6rem);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     line-height: 0.9;
     letter-spacing: -0.05em;
   }
 
   span {
-    color: var(--dim);
-    font-size: 0.8rem;
-    font-weight: 700;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
   }
 }
 
 .focus-widget-panel__actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: var(--space-2);
 
   :deep(.app-button) {
     width: 100%;
+    min-height: 44px;
   }
 }
 
@@ -544,30 +569,81 @@ onBeforeUnmount(() => {
   min-height: 36px;
   border: none;
   background: transparent;
-  color: var(--dim);
+  color: var(--color-text-muted);
   font: inherit;
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
   cursor: pointer;
   transition: color var(--transition-standard);
 
   &:hover {
-    color: var(--text);
+    color: var(--color-text-primary);
   }
 }
 
-@media (max-width: 640px) {
+.profile-panel-enter-active,
+.profile-panel-leave-active,
+.sheet-backdrop-enter-active,
+.sheet-backdrop-leave-active {
+  transition:
+    opacity var(--transition-standard),
+    transform var(--transition-standard);
+}
+
+.profile-panel-enter-from,
+.profile-panel-leave-to {
+  opacity: 0;
+  transform: translateY(calc(var(--space-1) * -1 - 2px));
+}
+
+.sheet-backdrop-enter-from,
+.sheet-backdrop-leave-to {
+  opacity: 0;
+}
+
+@include mobile {
+  .sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-modal) - 1);
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: color-mix(in srgb, var(--color-bg) 48%, transparent);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sheet-handle {
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin: 0 auto;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-text-muted) 35%, transparent);
+  }
+
   .focus-widget-panel {
     inset-block-start: auto;
     inset-block-end: 0;
     inset-inline-start: 0;
     inset-inline-end: 0;
+    z-index: var(--z-modal);
     width: 100%;
     max-width: none;
     padding: var(--space-4);
-    padding-block-end: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+    padding-block-end: calc(
+      var(--space-4) + env(safe-area-inset-bottom, 0px) + var(--space-3) + var(--space-11) +
+        var(--space-2) + var(--space-2)
+    );
     border-bottom: none;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .profile-panel-enter-from,
+  .profile-panel-leave-to {
+    transform: translateY(16px);
   }
 }
 </style>

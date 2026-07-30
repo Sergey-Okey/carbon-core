@@ -17,16 +17,29 @@
     </AppButton>
 
     <Teleport to="body">
+      <Transition name="sheet-backdrop">
+        <button
+          v-if="isOpen"
+          type="button"
+          class="sheet-backdrop"
+          aria-label="Закрыть уведомления"
+          @click="closePanel"
+        />
+      </Transition>
+
       <Transition name="notification-panel">
         <section
           v-if="isOpen"
           ref="panel"
           class="notification-panel"
           role="dialog"
+          aria-modal="true"
           aria-label="Уведомления"
           @click.stop
           @keydown.esc.prevent="closePanel"
         >
+          <div class="sheet-handle" aria-hidden="true" />
+
           <header class="panel-header">
             <div class="panel-heading">
               <h3>Уведомления</h3>
@@ -87,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Bell, BellOff, Trash2 } from 'lucide-vue-next'
 import AppButton from '~/components/ui/primitives/AppButton.vue'
 import EmptyState from '~/components/ui/feedback/EmptyState.vue'
@@ -185,11 +198,21 @@ function pluralMin(n: number) {
   return 'минут'
 }
 
+function isMobileViewport() {
+  return import.meta.client && window.matchMedia('(max-width: 767px)').matches
+}
+
+function syncBodyLock(locked: boolean) {
+  if (!import.meta.client) return
+  document.body.style.overflow = locked && isMobileViewport() ? 'hidden' : ''
+}
+
 function togglePanel() {
   isOpen.value = !isOpen.value
   if (isOpen.value) {
     markAllRead()
     window.dispatchEvent(new CustomEvent('cof:close-profile-panel'))
+    window.dispatchEvent(new CustomEvent('cof:close-focus-widget-panel'))
   }
 }
 
@@ -198,6 +221,7 @@ function closePanel() {
 }
 
 function handleDocumentClick(event: MouseEvent) {
+  if (!isOpen.value || isMobileViewport()) return
   const target = event.target as Node
   if (!root.value?.contains(target) && !panel.value?.contains(target)) {
     closePanel()
@@ -208,6 +232,10 @@ function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape' && isOpen.value) closePanel()
 }
 
+watch(isOpen, (open) => {
+  syncBodyLock(open)
+})
+
 onMounted(() => {
   document.addEventListener('click', handleDocumentClick)
   document.addEventListener('keydown', handleKeydown)
@@ -215,6 +243,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  syncBodyLock(false)
   document.removeEventListener('click', handleDocumentClick)
   document.removeEventListener('keydown', handleKeydown)
   window.removeEventListener('cof:close-notifications', closePanel)
@@ -248,6 +277,14 @@ onBeforeUnmount(() => {
   font-size: 0.64rem;
   font-weight: var(--weight-bold);
   line-height: 1;
+}
+
+.sheet-backdrop {
+  display: none;
+}
+
+.sheet-handle {
+  display: none;
 }
 
 .notification-panel {
@@ -304,6 +341,7 @@ onBeforeUnmount(() => {
   align-content: start;
   max-block-size: 360px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .history-item {
@@ -378,7 +416,7 @@ onBeforeUnmount(() => {
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   line-height: 1.4;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .history-time {
@@ -395,7 +433,9 @@ onBeforeUnmount(() => {
 }
 
 .notification-panel-enter-active,
-.notification-panel-leave-active {
+.notification-panel-leave-active,
+.sheet-backdrop-enter-active,
+.sheet-backdrop-leave-active {
   transition:
     opacity var(--transition-standard),
     transform var(--transition-standard);
@@ -407,27 +447,64 @@ onBeforeUnmount(() => {
   transform: translateY(calc(var(--space-1) * -1 - 2px));
 }
 
-@media (max-width: 640px) {
+.sheet-backdrop-enter-from,
+.sheet-backdrop-leave-to {
+  opacity: 0;
+}
+
+@include mobile {
+  .sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-modal) - 1);
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: color-mix(in srgb, var(--color-bg) 48%, transparent);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sheet-handle {
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin: var(--space-2) auto var(--space-1);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-text-muted) 35%, transparent);
+  }
+
   .notification-panel {
     inset-block-start: auto;
     inset-block-end: 0;
     inset-inline-start: 0;
     inset-inline-end: 0;
+    z-index: var(--z-modal);
     inline-size: 100%;
     max-inline-size: none;
-    max-block-size: min(78dvh, calc(100dvh - 72px));
-    padding-block-end: env(safe-area-inset-bottom, 0px);
+    max-block-size: min(78dvh, calc(100dvh - 72px - env(safe-area-inset-top, 0px)));
+    padding-block-end: calc(
+      var(--space-3) + env(safe-area-inset-bottom, 0px) + var(--space-3) + var(--space-11) +
+        var(--space-2) + var(--space-2)
+    );
     border-bottom: none;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    grid-template-rows: auto auto minmax(0, 1fr);
   }
 
   .history-list {
     max-block-size: none;
+    min-block-size: 0;
+  }
+
+  .panel-header {
+    padding-block-start: var(--space-2);
   }
 
   .notification-panel-enter-from,
   .notification-panel-leave-to {
-    transform: translateY(12px);
+    transform: translateY(16px);
   }
 }
 </style>
