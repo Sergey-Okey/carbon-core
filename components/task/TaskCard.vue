@@ -304,7 +304,7 @@ async function handleDelete() {
 
 <style scoped lang="scss">
 .task-card {
-  /* Match AnalyticsWidgetShell card pad scale */
+
   --card-pad: var(--space-5);
   --card-gap: var(--space-3);
 
@@ -683,7 +683,6 @@ h4 {
     font-size: var(--text-sm);
   }
 
-  /* Same composition as desktop: meta left, actions right */
   .task-bottom {
     flex-direction: row;
     flex-wrap: nowrap;

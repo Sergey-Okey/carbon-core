@@ -155,7 +155,6 @@ export function useAnalyticsMetrics(rangeDays?: Ref<AnalyticsRangeDays>) {
         .sort((a, b) => b.at - a.at)
     }
 
-    // Fallback for older saves without completionLog
     return analyticsTasks.value
       .flatMap((task) => {
         const events: { at: number; title: string; type: TaskType; taskId: string }[] = []

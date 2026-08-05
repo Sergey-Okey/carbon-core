@@ -147,7 +147,6 @@ export const useBranchesStore = defineStore(
       },
     ])
 
-    // Vue Flow consumes edge collections as snapshots; deep proxying every edge is unnecessary.
     const edges = shallowRef<Edge[]>([
       {
         id: 'edge-cof-m1',
@@ -326,7 +325,6 @@ export const useBranchesStore = defineStore(
     function normalizeEdgePorts(edge: Edge, forceFromPositions = false): Edge {
       let next = { ...edge }
 
-      // Started/stored from a target port → reverse direction
       if (isTargetHandle(next.sourceHandle)) {
         next = {
           ...next,
@@ -337,7 +335,6 @@ export const useBranchesStore = defineStore(
         }
       }
 
-      // Stacked source handle used as target → remap to target port on same side
       if (isSourceHandle(next.targetHandle)) {
         const side = portSideFromHandle(next.targetHandle) || 'left'
         next = {
@@ -433,7 +430,7 @@ export const useBranchesStore = defineStore(
     }
 
     function wouldCreateCycle(sourceId: string, targetId: string) {
-      // Adding source → target closes a loop if target can already reach source.
+
       if (sourceId === targetId) return true
       return collectReachableNodeIds(targetId).has(sourceId)
     }
@@ -554,7 +551,6 @@ export const useBranchesStore = defineStore(
         .map((id) => tasksStore.tasks.find((task) => task.id === id))
         .filter(Boolean)
 
-      // Milestones without linked tasks keep board-driven status (demo / manual).
       if (linkedTasks.length === 0) {
         if (milestone.achieved || milestone.status === 'completed') {
           milestone.status = 'completed'
@@ -983,7 +979,6 @@ export const useBranchesStore = defineStore(
         sourceKind === 'branch' ? getBranch(sourceId) : findBranchByMilestone(sourceId)
       if (!sourceBranch) return { ok: false, reason: 'Источник связи не найден' }
 
-      // Strict: no directed cycles — they break readable auto-layout.
       if (wouldCreateCycle(sourceId, targetId)) {
         return { ok: false, reason: 'Нельзя создавать замыкающую связь' }
       }
@@ -999,8 +994,6 @@ export const useBranchesStore = defineStore(
       const targetBranch = findBranchByMilestone(targetId)
       if (!targetBranch) return { ok: false, reason: 'Целевой этап не найден' }
 
-      // Tree rule: a milestone may have only one incoming link.
-      // Multiple parents create diamonds and tangled orthogonal routes.
       if (countIncomingEdges(targetId) > 0) {
         return {
           ok: false,
@@ -1078,10 +1071,10 @@ export const useBranchesStore = defineStore(
               const parsed = JSON.parse(raw) as { edges?: Edge[] }
               if (!Array.isArray(parsed.edges)) return
               const store = ctx.store as ReturnType<typeof useBranchesStore>
-              // shallowRef ignores $patch — restore edges explicitly
+
               store.replaceEdges(parsed.edges)
             } catch {
-              // ignore corrupt persistence payload
+
             }
           },
         }

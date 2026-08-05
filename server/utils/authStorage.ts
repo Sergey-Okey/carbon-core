@@ -1,7 +1,6 @@
 import { createHash, randomBytes, randomInt, scryptSync, timingSafeEqual } from 'node:crypto'
 import type { OAuthProfile } from './oauth'
 import { getDatabase } from './database'
-import { hasActiveSubscription } from './subscriptionStorage'
 
 export type AccountProfile = OAuthProfile & {
   bio: string
@@ -31,6 +30,7 @@ async function ensureUsersTable(sql: NonNullable<ReturnType<typeof getDatabase>>
     )
   `
   await sql`ALTER TABLE cof_users ADD COLUMN IF NOT EXISTS bio TEXT NOT NULL DEFAULT ''`
+  await sql`ALTER TABLE cof_users ADD COLUMN IF NOT EXISTS phone TEXT NOT NULL DEFAULT ''`
   await sql`ALTER TABLE cof_users ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ`
   await sql`ALTER TABLE cof_users ADD COLUMN IF NOT EXISTS terms_version TEXT`
   await sql`ALTER TABLE cof_users ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMPTZ`
@@ -46,8 +46,9 @@ async function ensureEmailVerificationTable(sql: NonNullable<ReturnType<typeof g
   await sql`
     CREATE TABLE IF NOT EXISTS cof_pending_registrations (
       email TEXT PRIMARY KEY,
-      password_hash TEXT NOT NULL,
-      name TEXT NOT NULL,
+      password_hash TEXT NOT NULL DEFAULT '',
+      name TEXT NOT NULL DEFAULT '',
+      phone TEXT NOT NULL DEFAULT '',
       terms_version TEXT NOT NULL,
       code_hash TEXT NOT NULL,
       attempts INTEGER NOT NULL DEFAULT 0,
@@ -55,6 +56,9 @@ async function ensureEmailVerificationTable(sql: NonNullable<ReturnType<typeof g
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `
+  await sql`ALTER TABLE cof_pending_registrations ADD COLUMN IF NOT EXISTS phone TEXT NOT NULL DEFAULT ''`
+  await sql`ALTER TABLE cof_pending_registrations ALTER COLUMN password_hash SET DEFAULT ''`
+  await sql`ALTER TABLE cof_pending_registrations ALTER COLUMN name SET DEFAULT ''`
   await sql`
     CREATE INDEX IF NOT EXISTS cof_pending_registrations_expires_idx
     ON cof_pending_registrations(expires_at)
@@ -78,7 +82,7 @@ async function ensurePasswordResetTable(sql: NonNullable<ReturnType<typeof getDa
   `
 }
 
-export async function createPendingRegistration(email: string, password: string, name: string, termsVersion: string) {
+export async function createPendingRegistration(email: string, termsVersion: string) {
   const sql = getDatabase()
   if (!sql) throw createError({ statusCode: 503, statusMessage: 'Account database is not configured' })
   await ensureEmailVerificationTable(sql)
@@ -91,23 +95,24 @@ export async function createPendingRegistration(email: string, password: string,
   const codeHash = hashToken(`${normalizedEmail}:${code}`)
   await sql`
     INSERT INTO cof_pending_registrations (
-      email, password_hash, name, terms_version, code_hash, attempts, expires_at
+      email, password_hash, name, phone, terms_version, code_hash, attempts, expires_at
     )
     VALUES (
-      ${normalizedEmail}, ${hashPassword(password)}, ${name.trim()}, ${termsVersion},
+      ${normalizedEmail}, '', '', '', ${termsVersion},
       ${codeHash}, 0, NOW() + INTERVAL '15 minutes'
     )
     ON CONFLICT (email)
     DO UPDATE SET
-      password_hash = EXCLUDED.password_hash,
-      name = EXCLUDED.name,
+      password_hash = '',
+      name = '',
+      phone = '',
       terms_version = EXCLUDED.terms_version,
       code_hash = EXCLUDED.code_hash,
       attempts = 0,
       expires_at = EXCLUDED.expires_at,
       created_at = NOW()
   `
-  return { code, email: normalizedEmail, name: name.trim() }
+  return { code, email: normalizedEmail }
 }
 
 export async function loginAccount(email: string, password: string) {
@@ -166,14 +171,14 @@ export async function createEmailVerificationCode(email: string) {
   }
 }
 
-export async function verifyEmailCode(email: string, code: string) {
+export async function verifyEmailCode(email: string, code: string, password: string) {
   const sql = getDatabase()
   if (!sql) throw createError({ statusCode: 503, statusMessage: 'Account database is not configured' })
   await ensureEmailVerificationTable(sql)
 
   const normalizedEmail = email.trim().toLowerCase()
   const rows = await sql`
-    SELECT email, password_hash, name, terms_version, code_hash, attempts, expires_at
+    SELECT email, name, terms_version, code_hash, attempts, expires_at
     FROM cof_pending_registrations
     WHERE email = ${normalizedEmail}
     LIMIT 1
@@ -206,13 +211,13 @@ export async function verifyEmailCode(email: string, code: string) {
   const id = `local:${randomBytes(16).toString('hex')}`
   const verified = await sql`
     INSERT INTO cof_users (
-      id, email, password_hash, name, provider, terms_accepted_at, terms_version, email_verified_at
+      id, email, password_hash, name, phone, provider, terms_accepted_at, terms_version, email_verified_at
     )
     VALUES (
-      ${id}, ${normalizedEmail}, ${String(row.password_hash)}, ${String(row.name)},
-      'local', NOW(), ${String(row.terms_version)}, NOW()
+      ${id}, ${normalizedEmail}, ${hashPassword(password)}, '',
+      '', 'local', NOW(), ${String(row.terms_version)}, NOW()
     )
-    RETURNING id, email, name, avatar, bio, provider, created_at
+    RETURNING id, email, name, avatar, bio, phone, provider, created_at
   `
   await sql`DELETE FROM cof_pending_registrations WHERE email = ${normalizedEmail}`
   return mapAccount(verified[0])
@@ -283,10 +288,6 @@ export async function resetAccountPassword(token: string, password: string) {
 }
 
 export async function upsertOAuthAccount(profile: OAuthProfile, termsVersion = '') {
-  if (!(await hasActiveSubscription(profile.email))) {
-    throw createError({ statusCode: 402, statusMessage: 'Active subscription is required' })
-  }
-
   const sql = getDatabase()
   if (!sql) return { ...profile, bio: '', createdAt: new Date().toISOString() } satisfies AccountProfile
   await ensureUsersTable(sql)

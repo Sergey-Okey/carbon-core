@@ -19,11 +19,7 @@ const props = withDefaults(
     rings?: number
     segments?: number
     color?: string
-    /**
-     * boot — полный цикл при входе на сайт (хаос → сфера → hold)
-     * adaptive — под скорость загрузки страницы (без полного цикла)
-     * loop — собранная сфера, непрерывное вращение (голограмма)
-     */
+    
     mode?: 'boot' | 'adaptive' | 'loop'
     cycle?: number
     label?: string
@@ -74,7 +70,7 @@ let finishStartedAt = 0
 let finishDuration = 0.28
 let finishResolve: (() => void) | null = null
 
-/** Adaptive: time to approach ordered while page is still loading */
+
 const ADAPTIVE_GATHER_SEC = 1.15
 
 function rand(min: number, max: number) {
@@ -85,7 +81,7 @@ function easeInOut(t: number) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
 }
 
-/** Boot timeline: 0 chaos → gather → hold at 1 (no scatter loop) */
+
 function bootForm(localT: number) {
   if (localT < 0.18) return 0
   if (localT < 0.48) return easeInOut((localT - 0.18) / 0.3)
@@ -140,10 +136,10 @@ function currentForm(): number {
     return finishFrom + (1 - finishFrom) * easeInOut(t)
   }
   if (props.mode === 'adaptive') {
-    // Progress toward sphere proportional to load wait time
+
     return easeInOut(Math.min(0.92, time / ADAPTIVE_GATHER_SEC))
   }
-  // boot: one-shot timeline with slight per-particle delay handled in draw
+
   const cycle = Math.max(1.5, props.cycle)
   return bootForm(Math.min(1, time / cycle))
 }
@@ -159,9 +155,7 @@ function maybeEmitOrdered(value: number) {
   }
 }
 
-/**
- * Call when page load finished — доигрывает сборку сферы под скорость загрузки.
- */
+
 function finish(): Promise<void> {
   if (reducedMotion || form >= 0.98) {
     form = 1
@@ -180,7 +174,7 @@ function finish(): Promise<void> {
   finishing = true
   finishFrom = form
   finishStartedAt = time
-  // Faster settle if already mostly gathered; slower if still chaotic
+
   finishDuration = 0.18 + (1 - form) * 0.32
   return new Promise((resolve) => {
     finishResolve = resolve
@@ -221,7 +215,7 @@ function draw(ts: number) {
   const cycle = Math.max(1.5, props.cycle)
 
   for (const p of particles) {
-    // Boot: stagger particles; adaptive/finish: shared form with tiny stagger
+
     let particleForm = form
     if (props.mode === 'boot' && !finishing) {
       const local = Math.min(1, time / cycle + p.delay * 0.35)

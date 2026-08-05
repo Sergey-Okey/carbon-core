@@ -6,7 +6,7 @@ export interface NotificationAction {
   handler: () => void
 }
 
-/** Ephemeral toast (not persisted) */
+
 export interface ToastNotification {
   id: string
   type: NotificationType
@@ -16,7 +16,7 @@ export interface ToastNotification {
   action?: NotificationAction
 }
 
-/** Persistent inbox item (header bell) */
+
 export interface InboxNotification {
   id: string
   type: NotificationType
@@ -39,7 +39,7 @@ export type PushOptions = {
   message: string
   category?: NotificationCategory
   title?: string
-  /** Also show toast (default true) */
+  
   toast?: boolean
   duration?: number
   action?: NotificationAction
@@ -47,9 +47,9 @@ export type PushOptions = {
 }
 
 export type NotifyOptions = {
-  /** Force persist to inbox */
+  
   persist?: boolean
-  /** Skip toast */
+  
   silent?: boolean
   category?: NotificationCategory
   title?: string

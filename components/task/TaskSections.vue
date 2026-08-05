@@ -111,7 +111,7 @@ const emit = defineEmits<{
 
   @include mobile {
     gap: var(--space-4);
-    /* Bottom nav clearance lives on layout `.main` — do not double it here. */
+
     padding-bottom: 0;
   }
 }

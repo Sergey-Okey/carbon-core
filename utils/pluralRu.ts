@@ -1,4 +1,4 @@
-/** Russian plural form picker: one / few / many */
+
 export function pluralRu(count: number, one: string, few: string, many: string): string {
   const n = Math.abs(Math.trunc(count)) % 100
   const n1 = n % 10

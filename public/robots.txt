@@ -1,4 +1,14 @@
 User-agent: *
 Allow: /
+Allow: /onboarding
+Allow: /support
+Allow: /privacy
+Allow: /terms
 
-Sitemap: https://coreoflife.ru/sitemap.xml
+Disallow: /auth
+Disallow: /register
+Disallow: /profile
+Disallow: /api/
+Disallow: /errordocs/
+
+Sitemap: https://cof-board.com/sitemap.xml

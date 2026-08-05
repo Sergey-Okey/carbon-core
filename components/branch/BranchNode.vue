@@ -351,7 +351,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
 <style scoped lang="scss">
 .branch-node {
-  /* GlassCard owns the padding declaration; drive it from one token. */
+
   --node-pad: var(--space-3);
   --panel-padding: var(--node-pad);
   display: flex;
@@ -361,7 +361,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   box-sizing: border-box;
   position: relative;
   overflow: visible;
-  /* 2px + stronger mix — stays readable when the board is zoomed out */
+
   border-width: 2px;
   border-style: dashed;
   border-color: color-mix(in srgb, var(--node-marker-color) 78%, var(--text));
@@ -712,7 +712,6 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     }
   }
 
-  /* Circles aligned with Vue Flow defaults so edges dock to the tip */
   .handle {
     z-index: 10;
     width: 12px !important;
@@ -739,13 +738,11 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     z-index: 11;
   }
 
-  /* While drawing a link, lift the receiving handle above the stacked source */
   .handle.connectionindicator {
     z-index: 12 !important;
     opacity: 1;
   }
 
-  /* Match @vue-flow/core handle-* transforms exactly */
   .handle-top {
     top: 0 !important;
     left: 50% !important;

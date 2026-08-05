@@ -15,7 +15,6 @@ test('runtime secrets stay private and are never exposed publicly', async () => 
     'authSessionSecret',
     'googleClientSecret',
     'yandexClientSecret',
-    'robokassaPassword2',
     'smtpPassword',
     'databaseUrl',
   ]) {
@@ -68,7 +67,7 @@ test('cloud sync requires a session and ignores client-spoofed userId', async ()
   assert.match(syncPost, /payload\.userId = session\.id/)
 })
 
-test('auth and payment endpoints enforce rate limits', async () => {
+test('auth endpoints enforce rate limits', async () => {
   const files = {
     register: await read('server/api/auth/register.post.ts'),
     login: await read('server/api/auth/login.post.ts'),
@@ -76,8 +75,6 @@ test('auth and payment endpoints enforce rate limits', async () => {
     resend: await read('server/api/auth/email-verification/resend.post.ts'),
     resetRequest: await read('server/api/auth/password-reset/request.post.ts'),
     resetConfirm: await read('server/api/auth/password-reset/confirm.post.ts'),
-    subscription: await read('server/api/subscription/status.get.ts'),
-    robokassa: await read('server/api/payments/robokassa/result.ts'),
   }
 
   for (const [name, source] of Object.entries(files)) {
@@ -86,20 +83,13 @@ test('auth and payment endpoints enforce rate limits', async () => {
 
   assert.match(files.register, /enforceRateLimit\(event, 'register', 5,/)
   assert.match(files.login, /enforceRateLimit\(event, 'login', 10,/)
-  assert.match(files.robokassa, /enforceRateLimit\(event, 'robokassa-result', 120,/)
-  assert.match(files.robokassa, /verifyRobokassaSignature/)
 })
 
-test('password hashing and robokassa verification use timing-safe compares', async () => {
+test('password hashing uses timing-safe compares', async () => {
   const authStorage = await read('server/utils/authStorage.ts')
-  const subscription = await read('server/utils/subscriptionStorage.ts')
 
   assert.match(authStorage, /scryptSync/)
   assert.match(authStorage, /timingSafeEqual/)
-  assert.match(subscription, /createHash\(algorithm\)/)
-  assert.match(subscription, /timingSafeEqual/)
-  assert.match(subscription, /startsWith\('shp_'\)/)
-  assert.match(subscription, /password2/)
 })
 
 test('templates avoid v-html of arbitrary markup', async () => {

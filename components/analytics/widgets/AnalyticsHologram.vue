@@ -234,7 +234,7 @@ function draw(ts: number) {
     ctx.globalAlpha = 1
   })
 
-  // Baseline
+
   ctx.beginPath()
   ctx.moveTo(0, midY)
   ctx.lineTo(width, midY)
@@ -293,7 +293,7 @@ onMounted(() => {
   start()
   if (stageRef.value && typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(() => {
-      // redraw on next frame with new size
+
     })
     resizeObserver.observe(stageRef.value)
   }

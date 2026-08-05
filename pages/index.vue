@@ -1,5 +1,8 @@
 <template>
-  <div class="dashboard" :class="{ 'is-board': uiStore.activeNav === 'board' }">
+  <div
+    class="dashboard page-enter-stack"
+    :class="{ 'is-board': uiStore.activeNav === 'board' }"
+  >
     <section
       v-if="
         uiStore.activeNav !== 'board' &&
@@ -17,7 +20,7 @@
     >
       <BranchFlow v-if="uiStore.activeNav === 'board'" />
 
-      <div v-if="uiStore.activeNav === 'tasks'" class="tasks-dashboard">
+      <div v-if="uiStore.activeNav === 'tasks'" class="tasks-dashboard page-enter-stack">
         <TaskToolbar
           v-model:search="taskSearch"
           v-model:selected-tag-id="selectedTagId"
@@ -191,14 +194,6 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
   }
 }
 
-.dashboard-section {
-  animation: page-block-in 380ms ease-out both;
-
-  &:nth-child(2) {
-    animation-delay: 70ms;
-  }
-}
-
 .content-section {
   min-block-size: min(400px, 60dvh);
   @include desktop {
@@ -229,41 +224,10 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
   display: flex;
   flex-direction: column;
   gap: clamp(16px, 2vw, 24px);
-
-  > * {
-    animation: page-block-in 360ms ease-out both;
-  }
-
-  > *:nth-child(2) {
-    animation-delay: 55ms;
-  }
-
-  > *:nth-child(3) {
-    animation-delay: 95ms;
-  }
 }
 
 .tasks-empty-overview {
   margin-block: var(--space-2);
-}
-
-@keyframes page-block-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dashboard-section,
-  .tasks-dashboard > * {
-    animation: none;
-  }
 }
 
 </style>

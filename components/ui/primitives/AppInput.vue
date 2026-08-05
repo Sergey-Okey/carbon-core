@@ -2,6 +2,7 @@
   <component
     :is="multiline ? 'textarea' : 'input'"
     :id="id"
+    ref="inputRef"
     class="app-input"
     :class="[`size-${size}`, { invalid }]"
     :type="multiline ? undefined : type"
@@ -61,14 +62,35 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string | number | undefined): void
 }>()
 
+const inputRef = ref<HTMLInputElement | HTMLTextAreaElement | null>(null)
+
 function handleInput(event: Event) {
   const target = event.target as HTMLInputElement | HTMLTextAreaElement
   if (props.type === 'number') {
     emit('update:modelValue', target.value === '' ? undefined : Number(target.value))
     return
   }
-  emit('update:modelValue', target.value)
+
+  let next = target.value
+  if (props.maxlength != null && props.maxlength !== '') {
+    const max = Number(props.maxlength)
+    if (Number.isFinite(max) && max >= 0 && next.length > max) {
+      next = next.slice(0, max)
+      target.value = next
+    }
+  }
+  emit('update:modelValue', next)
 }
+
+watch(
+  () => props.modelValue,
+  (value) => {
+    const el = inputRef.value
+    if (!el) return
+    const next = value == null ? '' : String(value)
+    if (el.value !== next) el.value = next
+  }
+)
 </script>
 
 <style scoped lang="scss">

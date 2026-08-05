@@ -195,7 +195,7 @@ export const useGuidedTourStore = defineStore('guided-tour', () => {
     }
 
     function handleAction(action: string) {
-      // Paused tours still record the expected action so resuming never repeats completed work.
+
       if (!hasStarted.value || isCompleted.value) return
       const step = currentStep.value
       if (step.action !== action) return

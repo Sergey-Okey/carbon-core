@@ -141,7 +141,7 @@ function onClear() {
   z-index: 10;
 }
 
-/* Transform only on outer shell — never on the frosted surface (Chromium bug). */
+
 .board-controls-shell {
   position: relative;
   pointer-events: auto;

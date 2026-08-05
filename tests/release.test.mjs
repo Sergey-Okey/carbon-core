@@ -61,8 +61,8 @@ test('registration requires explicit legal consent', async () => {
   )
   assert.doesNotMatch(authPanel, /class="auth-mode"/)
   assert.doesNotMatch(authPanel, /class="auth-topbar"/)
-  assert.match(authPanel, /Попробовать демо/)
-  assert.doesNotMatch(authPanel, /Уже оплатил/)
+  assert.match(authPanel, />\s*Демо\s*</)
+  assert.doesNotMatch(authPanel, /Уже оплатил|Robokassa|SUBSCRIPTION_PAYMENT/)
   assert.match(authPanel, /overflow-wrap: normal/)
   assert.match(authPanel, /keepShortWords/)
 })
@@ -117,15 +117,12 @@ test('email registration requires a mailed verification code before session', as
   assert.match(authPanel, /pendingVerification/)
 })
 
-test('robokassa result trusts only signed payment email', async () => {
-  const resultApi = await read('server/api/payments/robokassa/result.ts')
+test('registered accounts get full access without payment gate', async () => {
   const subscriptionStorage = await read('server/utils/subscriptionStorage.ts')
-  const emailLine = resultApi.split(/\r?\n/).find((line) => line.includes('const email =')) || ''
-  const conflictBlock = subscriptionStorage.match(/ON CONFLICT \(invoice_id\)[\s\S]*?updated_at = NOW\(\)/)?.[0] || ''
-
-  assert.match(emailLine, /getParam\(params, 'Shp_email'\)/)
-  assert.doesNotMatch(emailLine, /params\.EMail|params\.Email|params\.email/)
-  assert.doesNotMatch(conflictBlock, /email\s*=\s*EXCLUDED\.email/)
+  const accountPatch = await read('server/api/auth/account.patch.ts')
+  assert.match(subscriptionStorage, /active:\s*true/)
+  assert.doesNotMatch(subscriptionStorage, /verifyRobokassaSignature|recordRobokassaPayment/)
+  assert.doesNotMatch(accountPatch, /hasActiveSubscription|statusCode: 402/)
 })
 
 test('onboarding does not use CSS gradients', async () => {

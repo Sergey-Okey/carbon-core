@@ -18,20 +18,31 @@ export default defineNuxtConfig({
   css: ['~/assets/styles/reset.scss', '~/assets/styles/global.scss'],
   nitro: isVercel ? { preset: 'vercel' } : {},
   runtimeConfig: {
-    databaseUrl: process.env.DATABASE_URL || '',
-    authSessionSecret: process.env.AUTH_SESSION_SECRET || '',
-    googleClientId: process.env.GOOGLE_CLIENT_ID || '',
-    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-    yandexClientId: process.env.YANDEX_CLIENT_ID || '',
-    yandexClientSecret: process.env.YANDEX_CLIENT_SECRET || '',
-    robokassaPassword2: process.env.ROBOKASSA_PASSWORD_2 || '',
-    robokassaHashAlgorithm: process.env.ROBOKASSA_HASH_ALGORITHM || 'md5',
-    subscriptionDays: Number(process.env.SUBSCRIPTION_DAYS || 31),
-    smtpHost: process.env.SMTP_HOST || '',
-    smtpPort: Number(process.env.SMTP_PORT || 465),
-    smtpUser: process.env.SMTP_USER || '',
-    smtpPassword: process.env.SMTP_PASSWORD || '',
-    smtpFrom: process.env.SMTP_FROM || '',
+    databaseUrl: process.env.NUXT_DATABASE_URL || process.env.DATABASE_URL || '',
+    authSessionSecret:
+      process.env.NUXT_AUTH_SESSION_SECRET ||
+      process.env.AUTH_SESSION_SECRET ||
+      '',
+    googleClientId:
+      process.env.NUXT_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || '',
+    googleClientSecret:
+      process.env.NUXT_GOOGLE_CLIENT_SECRET ||
+      process.env.GOOGLE_CLIENT_SECRET ||
+      '',
+    yandexClientId:
+      process.env.NUXT_YANDEX_CLIENT_ID || process.env.YANDEX_CLIENT_ID || '',
+    yandexClientSecret:
+      process.env.NUXT_YANDEX_CLIENT_SECRET ||
+      process.env.YANDEX_CLIENT_SECRET ||
+      '',
+    smtpHost: process.env.NUXT_SMTP_HOST || process.env.SMTP_HOST || '',
+    smtpPort: Number(
+      process.env.NUXT_SMTP_PORT || process.env.SMTP_PORT || 465
+    ),
+    smtpUser: process.env.NUXT_SMTP_USER || process.env.SMTP_USER || '',
+    smtpPassword:
+      process.env.NUXT_SMTP_PASSWORD || process.env.SMTP_PASSWORD || '',
+    smtpFrom: process.env.NUXT_SMTP_FROM || process.env.SMTP_FROM || '',
     public: {
       enableVercelAnalytics: isVercel,
       webAppUrl: process.env.NUXT_PUBLIC_WEB_APP_URL || '',
@@ -89,12 +100,39 @@ export default defineNuxtConfig({
           content:
             'Core of Life помогает управлять задачами, привычками, целями и фокусом.',
         },
+        {
+          name: 'keywords',
+          content:
+            'задачи, привычки, цели, фокус, продуктивность, Core of Life, COF, планировщик',
+        },
+        { name: 'robots', content: 'index, follow' },
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'Core of Life' },
+        { property: 'og:locale', content: 'ru_RU' },
+        { property: 'og:url', content: 'https://cof-board.com' },
+        {
+          property: 'og:title',
+          content: 'Core of Life — задачи, привычки, цели и фокус',
+        },
+        {
+          property: 'og:description',
+          content:
+            'Core of Life помогает управлять задачами, привычками, целями и фокусом.',
+        },
         { name: 'twitter:card', content: 'summary' },
+        {
+          name: 'twitter:title',
+          content: 'Core of Life — задачи, привычки, цели и фокус',
+        },
+        {
+          name: 'twitter:description',
+          content:
+            'Core of Life помогает управлять задачами, привычками, целями и фокусом.',
+        },
         { name: 'theme-color', content: '#121212' },
       ],
       link: [
+        { rel: 'canonical', href: 'https://cof-board.com' },
         { rel: 'icon', type: 'image/x-icon', href: '/app.ico' },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'manifest', href: '/site.webmanifest' },

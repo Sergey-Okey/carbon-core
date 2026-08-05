@@ -103,7 +103,7 @@ const props = withDefaults(
     disabled?: boolean
     clearable?: boolean
     size?: 'sm' | 'md'
-    /** default — form field; compact — toolbar / dense chrome */
+    
     variant?: 'default' | 'compact'
     results?: AppSearchResult[]
     activeId?: string | null

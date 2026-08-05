@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const read = (relativePath) => readFile(join(root, relativePath), 'utf8')
-const SITE = 'https://coreoflife.ru'
+const SITE = 'https://cof-board.com'
 
 const INDEXABLE_PAGES = {
   'pages/onboarding.vue': {
@@ -69,7 +69,7 @@ test('robots.txt allows crawling and points to the production sitemap', async ()
   assert.match(robots, /User-agent:\s*\*/)
   assert.match(robots, /Allow:\s*\//)
   assert.match(robots, new RegExp(`Sitemap:\\s*${escapeRegExp(`${SITE}/sitemap.xml`)}`))
-  assert.doesNotMatch(robots, /Disallow:\s*\//)
+  assert.doesNotMatch(robots, /Disallow:\s*\/\s*$/m)
   assert.doesNotMatch(robots, /localhost|127\.0\.0\.1/)
 })
 
@@ -172,7 +172,7 @@ test('onboarding ships Open Graph tags and SoftwareApplication JSON-LD', async (
 
 test('app shell keeps Yandex verification and Metrika identifiers', async () => {
   const app = await read('app.vue')
-  assert.match(app, /name:\s*'yandex-verification'/)
+  assert.match(app, /name:\s*['"]yandex-verification['"]/)
   assert.match(app, /14510841d1302b8d/)
   assert.match(app, /109905993/)
   assert.match(app, /mc\.yandex\.ru\/metrika/)

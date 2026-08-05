@@ -94,7 +94,7 @@ function weekdayIndex(dateKey: string) {
   return (day + 6) % 7
 }
 
-/** Absolute buckets so days with different counts don't all look the same. */
+
 function levelForCount(count: number) {
   if (count <= 0) return 0
   if (count === 1) return 1

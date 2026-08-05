@@ -32,7 +32,7 @@ export const useTasksStore = defineStore(
     const tasks = ref<Task[]>([])
     const deletedTasks = ref<DeletedTask[]>([])
     const completedTasksHistory = ref<{ date: string; count: number }[]>([])
-    /** Append-only completion events for hour charts / feeds (persisted). */
+
     const completionLog = ref<CompletionLogEntry[]>([])
 
     function getTodayDateString(): string {

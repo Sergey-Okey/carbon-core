@@ -104,11 +104,6 @@ function fmt(n: number) {
   return n.toFixed(2)
 }
 
-/**
- * Rounded annular sector (rose-chart petal track/fill).
- * Creates soft rounded corners at inner and outer edges so adjacent
- * segments leave a small star-shaped hole in the center.
- */
 function roundedWedge(rInner: number, rOuter: number, a0: number, a1: number, cr: number) {
   const span = a1 - a0
   if (span <= 0 || rOuter <= rInner) return ''
@@ -133,7 +128,6 @@ function roundedWedge(rInner: number, rOuter: number, a0: number, a1: number, cr
   const pInnerEnd = polar(rInner, ai1)
   const pInnerStart = polar(rInner, ai0)
 
-  // Corner midpoints for quadratic curves (inset from the sharp corners)
   const cOuterStart = polar(rOuter - outerCr, a0)
   const cOuterEnd = polar(rOuter - outerCr, a1)
   const cInnerEnd = polar(rInner + innerCr, a1)

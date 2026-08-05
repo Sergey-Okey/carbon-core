@@ -32,15 +32,15 @@ function atHour(base: Date, hour: number, minute = 0): number {
   return date.getTime()
 }
 
-/** ~30 days of work: weekday push, weekend dips, mid-month sprint. */
+
 function buildActivityHistory(): { date: string; count: number }[] {
   const pattern = [
-    // weeks ago → today (30 days)
-    2, 5, 7, 6, 8, 3, 1, // week −4
-    4, 6, 9, 7, 8, 2, 0, // week −3
-    5, 8, 10, 9, 11, 4, 2, // week −2 (sprint)
-    3, 7, 8, 6, 9, 5, 1, // week −1
-    6, 8, // this week so far
+
+    2, 5, 7, 6, 8, 3, 1,
+    4, 6, 9, 7, 8, 2, 0,
+    5, 8, 10, 9, 11, 4, 2,
+    3, 7, 8, 6, 9, 5, 1,
+    6, 8,
   ]
   return pattern.map((count, index) => {
     const offset = pattern.length - 1 - index
@@ -48,7 +48,7 @@ function buildActivityHistory(): { date: string; count: number }[] {
   })
 }
 
-/** Spread daily counts into timed events so hour chart matches history. */
+
 function buildCompletionLogFromHistory(
   history: { date: string; count: number }[],
   taskPool: { id: string; title: string; type: TaskType }[]
@@ -214,7 +214,7 @@ function buildDemoBranches(): Branch[] {
 
 function buildDemoEdges(): Edge[] {
   const links: Array<[string, string]> = [
-    // COF
+
     ['COF', 'cof-m1'],
     ['cof-m1', 'cof-m2'],
     ['cof-m1', 'cof-m3'],
@@ -235,7 +235,7 @@ function buildDemoEdges(): Edge[] {
     ['cof-m11', 'cof-m18'],
     ['cof-m12', 'cof-m19'],
     ['cof-m18', 'cof-m20'],
-    // BODY
+
     ['BODY', 'body-m1'],
     ['body-m1', 'body-m2'],
     ['body-m1', 'body-m3'],
@@ -251,7 +251,7 @@ function buildDemoEdges(): Edge[] {
     ['body-m5', 'body-m13'],
     ['body-m8', 'body-m14'],
     ['body-m12', 'body-m15'],
-    // MIND
+
     ['MIND', 'mind-m1'],
     ['mind-m1', 'mind-m2'],
     ['mind-m1', 'mind-m3'],
@@ -264,7 +264,7 @@ function buildDemoEdges(): Edge[] {
     ['mind-m3', 'mind-m10'],
     ['mind-m5', 'mind-m11'],
     ['mind-m9', 'mind-m12'],
-    // FIN
+
     ['FIN', 'fin-m1'],
     ['fin-m1', 'fin-m2'],
     ['fin-m1', 'fin-m3'],
@@ -309,7 +309,7 @@ function ensureDemoBoardEdges() {
   branchesStore.replaceEdges(buildDemoEdges())
 }
 
-/** Keep demo branch colors + milestone progress visible for analytics arcs. */
+
 function ensureDemoProgressArcs() {
   const branchesStore = useBranchesStore()
   const seeded = buildDemoBranches()
@@ -552,7 +552,7 @@ function buildDemoTasks(tagIds: {
     },
   ]
 
-  // Completed day/week/month work spread across ~30 days
+
   const completedDayTitles = [
     ['Закрыть релиз аналитики', [tagIds.work, tagIds.focus]],
     ['Созвон с командой', [tagIds.work]],

@@ -52,7 +52,7 @@ let pressedState: CursorState | null = null
 let hoverEl: Element | null = null
 let rafId = 0
 let active = false
-/** Native scrollbar drag: browser rarely sends mousemove — track the thumb instead */
+
 let scrollbarSession: {
   el: HTMLElement
   axis: 'x' | 'y'
@@ -120,7 +120,7 @@ function resolveScrollbarSession(
       return { el: node, axis: 'x', isViewport: false }
     }
 
-    // offset trick when target is the scrollable itself
+
     if (
       node === event.target &&
       (event.offsetX >= node.clientWidth || event.offsetY >= node.clientHeight)
@@ -139,7 +139,7 @@ function resolveScrollbarSession(
   return null
 }
 
-/** Map current scroll → scrollbar thumb center in viewport coords */
+
 function thumbCenter(
   el: HTMLElement,
   axis: 'x' | 'y',
@@ -292,7 +292,7 @@ function scheduleRender() {
 
 function showAt(clientX: number, clientY: number, target?: EventTarget | null) {
   if (!active) return
-  // While tracking thumb, ignore sparse mouse coords (often stuck at press point)
+
   if (scrollbarSession) return
   x = clientX
   y = clientY
@@ -319,7 +319,7 @@ function onPointerDown(event: PointerEvent) {
     scrollbarSession = session
     pressed.value = true
     pressedState = 'grab'
-    // Start at click, then lock to thumb while dragging
+
     x = event.clientX
     y = event.clientY
     isVisible.value = true
@@ -355,7 +355,7 @@ function onPointerUp(event?: PointerEvent | MouseEvent) {
   if (event && !wasScrollbar) {
     showAt(event.clientX, event.clientY, event.target)
   } else if (event && wasScrollbar) {
-    // After scrollbar: resume from event if valid, else keep thumb spot
+
     x = event.clientX
     y = event.clientY
     isVisible.value = true

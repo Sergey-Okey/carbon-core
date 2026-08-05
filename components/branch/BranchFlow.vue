@@ -337,7 +337,6 @@ function normalizeConnection(connection: Connection): Connection {
   let sourceHandle = connection.sourceHandle
   let targetHandle = connection.targetHandle
 
-  // Started from a target port → reverse flow direction
   if (sourceHandle?.startsWith('target-')) {
     ;[source, target] = [target, source]
     ;[sourceHandle, targetHandle] = [targetHandle, sourceHandle]
@@ -352,7 +351,6 @@ function normalizeConnection(connection: Connection): Connection {
     return null
   }
 
-  // Dropped on stacked source handle → keep direction, use target port on that side
   if (targetHandle?.startsWith('source-')) {
     const side = sideFromHandle(targetHandle) || 'left'
     targetHandle = `target-${side}-${target}`
@@ -843,14 +841,14 @@ function onNodeClick({ node, event }: NodeMouseEvent) {
     const current = new Set(selectedNodeIds.value)
 
     if (node.type === 'branch-node') {
-      // Ctrl/⌘ + клик по ветке — выделить ветку и все её этапы
+
       current.add(node.id)
       const branch = getBranchByNodeId(node.id)
       branch?.milestones.forEach((milestone) => current.add(milestone.id))
       setNodesSelected(current)
       selectedNodeId.value = node.id
     } else {
-      // Ctrl/⌘ + клик по этапу — добавить/убрать из выделения
+
       if (current.has(node.id)) current.delete(node.id)
       else current.add(node.id)
       setNodesSelected(current)

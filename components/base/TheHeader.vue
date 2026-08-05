@@ -9,7 +9,7 @@
     <HeaderQuickActions
       :is-demo="accessStore.isDemo"
       :highlight-guide="shouldHighlightGuideEntry"
-      @demo="navigateTo('/register')"
+      @demo="exitDemoToRegister"
       @guide="openOnboarding"
     >
       <template #leading>
@@ -130,6 +130,18 @@ const guidedTour = useGuidedTourStore()
 const accessStore = useAccessStore()
 const route = useRoute()
 const { info } = useNotification()
+const { confirm } = useConfirm()
+const router = useRouter()
+
+async function exitDemoToRegister() {
+  const ok = await confirm(
+    'Завершить демо-режим и перейти к регистрации? Локальные демо-данные будут сброшены.'
+  )
+  if (!ok) return
+  accessStore.leaveDemo()
+  sessionStorage.clear()
+  await navigateTo('/register')
+}
 const isProfileModalOpen = ref(false)
 const isFocusWidgetPanelOpen = ref(false)
 const headerRoot = ref<HTMLElement | null>(null)
@@ -386,7 +398,7 @@ onBeforeUnmount(() => {
   padding-block: var(--space-2);
   padding-inline: clamp(var(--space-2), 2vw, var(--space-3));
   border-radius: var(--radius-lg);
-  /* Real glass: do not use surface-panel here — opaque fill kills blur. */
+
   @include glass;
   overflow: visible;
   background-color: var(--glass-surface);

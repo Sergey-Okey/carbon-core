@@ -14,7 +14,7 @@ export type {
   NotificationAction,
 } from '~/types/notification.types'
 
-/** @deprecated call-site compatibility shape */
+
 export type Notification = {
   id: string
   type: NotificationType
@@ -26,10 +26,7 @@ export type Notification = {
   createdAt?: string
 }
 
-/**
- * Facade over notifications.store.
- * Prefer success/info/warning/error/toast/push in new code.
- */
+
 export function useNotification() {
   const store = useNotificationsStore()
   const { trigger } = useFeedback()
@@ -42,7 +39,7 @@ export function useNotification() {
     }
   }
 
-  /** Legacy entry — maps to toast and/or inbox */
+  
   function addNotification(
     notification: Omit<Notification, 'id' | 'createdAt' | 'category'> & {
       category?: NotificationCategory

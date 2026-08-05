@@ -189,7 +189,7 @@ export const useAuthStore = defineStore(
           clearCloudSession()
         }
       } catch {
-        // Local profiles remain available when the OAuth backend is offline.
+
         browserLog.warn(
           'auth',
           'Облачная сессия недоступна, используется локальный режим'
@@ -226,8 +226,6 @@ export const useAuthStore = defineStore(
     }
     async function register(
       email: string,
-      password: string,
-      name: string,
       mode: AuthMode = 'cloud',
       acceptedTerms = false
     ): Promise<{
@@ -239,14 +237,6 @@ export const useAuthStore = defineStore(
       isLoading.value = true
 
       try {
-        const accessStore = useAccessStore()
-        if (!accessStore.hasSubscription) {
-          return {
-            success: false,
-            error: 'Для регистрации нужна активная подписка',
-          }
-        }
-
         if (!acceptedTerms) {
           return {
             success: false,
@@ -265,8 +255,6 @@ export const useAuthStore = defineStore(
               method: 'POST',
               body: {
                 email,
-                password,
-                name,
                 acceptedTerms,
                 termsVersion: '2026-06-07',
               },
@@ -292,15 +280,10 @@ export const useAuthStore = defineStore(
             const status = getHttpStatus(error)
             if (status === 409)
               return { success: false, error: 'Этот email уже зарегистрирован' }
-            if (status === 402)
-              return {
-                success: false,
-                error: 'Подписка для этого email не найдена или истекла',
-              }
             if (status === 400)
               return {
                 success: false,
-                error: 'Проверьте имя, email, пароль и согласие с условиями',
+                error: 'Проверьте email и согласие с условиями',
               }
             if (status && status !== 503)
               return { success: false, error: 'Не удалось создать аккаунт' }
@@ -311,9 +294,8 @@ export const useAuthStore = defineStore(
             }
           }
 
-        await new Promise((resolve) => setTimeout(resolve, 350))
+        await new Promise((resolve) => setTimeout(resolve, 200))
         const users = getUsers()
-
         if (
           users.find(
             (user) => user.email.toLowerCase() === email.trim().toLowerCase()
@@ -325,29 +307,11 @@ export const useAuthStore = defineStore(
           }
         }
 
-        const newUser: User = {
-          id: generateId(),
-          email: email.trim(),
-          password: hashPassword(password),
-          name: name.trim() || email.split('@')[0],
-          bio: '',
-          avatar: '',
-          createdAt: new Date().toISOString(),
-          consentAt: new Date().toISOString(),
-          termsVersion: '2026-06-07',
+        return {
+          success: true,
+          requiresVerification: true,
+          email: email.trim().toLowerCase(),
         }
-
-        users.push(newUser)
-        saveUsers(users)
-
-        currentUser.value = newUser
-        isAuthenticated.value = true
-        authMode.value = 'local'
-        syncUserProfile(newUser)
-        persistSession()
-        browserLog.info('auth', 'Регистрация выполнена', { mode: 'local' })
-
-        return { success: true }
       } catch (error) {
         browserLog.error('auth', 'Ошибка локальной регистрации', {
           message: error instanceof Error ? error.message : String(error),
@@ -391,11 +355,6 @@ export const useAuthStore = defineStore(
               return {
                 success: false,
                 error: 'Подтвердите email кодом из письма',
-              }
-            if (status === 402)
-              return {
-                success: false,
-                error: 'Подписка для этого email не найдена или истекла',
               }
             if (status && status !== 503)
               return { success: false, error: 'Не удалось выполнить вход' }
@@ -442,37 +401,72 @@ export const useAuthStore = defineStore(
 
     async function verifyEmail(
       email: string,
-      code: string
+      code: string,
+      password: string
     ): Promise<{ success: boolean; error?: string }> {
       isLoading.value = true
 
       try {
-        const response = await fetchBackend<{
-          user: ServerUser
-          subscription?: SubscriptionSnapshot
-        }>(getBackendUrl('/api/auth/email-verification/verify'), {
-          method: 'POST',
-          body: { email, code },
-          ...getBackendFetchOptions(),
-        })
-        applyServerUser(response.user, response.subscription)
-        authMode.value = 'cloud'
-        browserLog.info('auth', 'Email подтверждён', {
-          mode: 'cloud',
-          provider: response.user.provider,
-        })
-        return { success: true }
-      } catch (error) {
-        const status = getHttpStatus(error)
-        if (status === 400)
-          return { success: false, error: 'Неверный или устаревший код' }
-        if (status === 429)
-          return {
-            success: false,
-            error: 'Слишком много попыток. Запросите новый код',
+        try {
+          const response = await fetchBackend<{
+            user: ServerUser
+            subscription?: SubscriptionSnapshot
+          }>(getBackendUrl('/api/auth/email-verification/verify'), {
+            method: 'POST',
+            body: { email, code, password },
+            ...getBackendFetchOptions(),
+          })
+          applyServerUser(response.user, response.subscription)
+          authMode.value = 'cloud'
+          browserLog.info('auth', 'Email подтверждён', {
+            mode: 'cloud',
+            provider: response.user.provider,
+          })
+          return { success: true }
+        } catch (error) {
+          const status = getHttpStatus(error)
+          if (status === 400)
+            return {
+              success: false,
+              error: 'Неверный код или пароль не соответствует требованиям',
+            }
+          if (status === 429)
+            return {
+              success: false,
+              error: 'Слишком много попыток. Запросите новый код',
+            }
+          if (status && status !== 503)
+            return { success: false, error: 'Не удалось подтвердить email' }
+
+          const users = getUsers()
+          const normalized = email.trim().toLowerCase()
+          if (users.some((user) => user.email.toLowerCase() === normalized)) {
+            return { success: false, error: 'Этот email уже зарегистрирован' }
           }
-        if (status === 402)
-          return { success: false, error: 'Для входа нужна активная подписка' }
+          const newUser: User = {
+            id: generateId(),
+            email: normalized,
+            password: hashPassword(password),
+            name: '',
+            bio: '',
+            avatar: '',
+            createdAt: new Date().toISOString(),
+            consentAt: new Date().toISOString(),
+            termsVersion: '2026-06-07',
+          }
+          users.push(newUser)
+          saveUsers(users)
+          currentUser.value = newUser
+          isAuthenticated.value = true
+          authMode.value = 'local'
+          syncUserProfile(newUser)
+          persistSession()
+          return { success: true }
+        }
+      } catch (error) {
+        browserLog.error('auth', 'Ошибка подтверждения email', {
+          message: error instanceof Error ? error.message : String(error),
+        })
         return { success: false, error: 'Не удалось подтвердить email' }
       } finally {
         isLoading.value = false

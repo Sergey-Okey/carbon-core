@@ -28,7 +28,7 @@
       </button>
     </div>
 
-    <!-- Вкладка 1: Условия использования -->
+    
     <div v-if="activeTab === 'terms'">
       <p class="document-note">
         Используя Core of Life или создавая аккаунт, пользователь подтверждает
@@ -100,7 +100,7 @@
       </div>
     </div>
 
-    <!-- Вкладка 2: Оферта (полная версия) -->
+    
     <div v-if="activeTab === 'offer'">
       <p class="document-note">
         <strong>Редакция от 15 июня 2026 года</strong>
@@ -417,7 +417,7 @@
       </div>
     </div>
 
-    <!-- Вкладка 3: Возврат (только правила возврата) -->
+    
     <div v-if="activeTab === 'refund'">
       <p class="document-note">
         <strong>Условия возврата денежных средств</strong>

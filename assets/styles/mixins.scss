@@ -19,10 +19,7 @@
   }
 }
 
-/**
- * Solid frosted fill without backdrop-filter or gradients.
- * For Vue Flow nodes: Chromium cannot reliably blur inside a transformed viewport.
- */
+
 @mixin frosted {
   position: relative;
   background-color: var(--frosted-surface, var(--glass-surface-strong));
@@ -41,10 +38,7 @@
   color: var(--color-text-primary);
 }
 
-/**
- * Padded shell whose children should use `border-radius: var(--radius-nested)`.
- * Keeps inner corners concentric with the outer radius.
- */
+
 @mixin nest-shell(
   $radius: var(--radius-md),
   $pad: var(--space-1)

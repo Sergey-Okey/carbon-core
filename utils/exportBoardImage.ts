@@ -278,11 +278,11 @@ function drawCard(ctx: CanvasRenderingContext2D, node: ExportNode, theme: ThemeC
   const contentW = node.w - CARD_PAD * 2
   let cy = node.y + CARD_PAD
 
-  // marker
+
   ctx.fillStyle = node.color || theme.accent
   ctx.fillRect(node.x + node.w - CARD_PAD - 8, cy + 4, 8, 8)
 
-  // title
+
   ctx.fillStyle = theme.text
   ctx.font = '600 15px Inter, system-ui, sans-serif'
   const titleLines = wrapText(ctx, node.title, contentW - 20, 2)
@@ -320,7 +320,7 @@ function drawCard(ctx: CanvasRenderingContext2D, node: ExportNode, theme: ThemeC
     cy += 18
   }
 
-  // details panel
+
   const detailY = node.y + node.baseH + DETAIL_GAP
   const detailH = node.h - node.baseH - DETAIL_GAP
   if (detailH < 40) return

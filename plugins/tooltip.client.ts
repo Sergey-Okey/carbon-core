@@ -9,6 +9,7 @@ type TooltipTarget = HTMLElement & {
 let tooltipEl: HTMLDivElement | null = null
 let activeTarget: TooltipTarget | null = null
 let hideTimer: number | null = null
+let placeFrame = 0
 
 function ensureTooltip() {
   if (tooltipEl) return tooltipEl
@@ -39,35 +40,42 @@ function getTooltipText(target: TooltipTarget) {
 
 function placeTooltip(target: TooltipTarget, tooltip: HTMLDivElement) {
   const rect = target.getBoundingClientRect()
-  const tooltipRect = tooltip.getBoundingClientRect()
   const gap = 10
   const margin = 10
   const position = target.dataset.tooltipPosition || 'top'
+  const maxWidth = Math.min(220, window.innerWidth - margin * 2)
 
-  let left = rect.left + rect.width / 2 - tooltipRect.width / 2
-  let top = rect.top - tooltipRect.height - gap
+  tooltip.style.maxWidth = `${maxWidth}px`
+  tooltip.style.width = 'max-content'
+  const tooltipRect = tooltip.getBoundingClientRect()
+  const width = Math.min(tooltipRect.width || maxWidth, maxWidth)
+  const height = tooltipRect.height
+
+  let left = rect.left + rect.width / 2 - width / 2
+  let top = rect.top - height - gap
 
   if (position === 'bottom') {
     top = rect.bottom + gap
   } else if (position === 'right') {
     left = rect.right + gap
-    top = rect.top + rect.height / 2 - tooltipRect.height / 2
+    top = rect.top + rect.height / 2 - height / 2
   } else if (position === 'left') {
-    left = rect.left - tooltipRect.width - gap
-    top = rect.top + rect.height / 2 - tooltipRect.height / 2
+    left = rect.left - width - gap
+    top = rect.top + rect.height / 2 - height / 2
   }
 
-  left = Math.min(
-    Math.max(margin, left),
-    window.innerWidth - tooltipRect.width - margin
-  )
-  top = Math.min(
-    Math.max(margin, top),
-    window.innerHeight - tooltipRect.height - margin
-  )
 
-  tooltip.style.left = `${left}px`
-  tooltip.style.top = `${top}px`
+  if (position === 'top' && top < margin) {
+    top = rect.bottom + gap
+  } else if (position === 'bottom' && top + height > window.innerHeight - margin) {
+    top = rect.top - height - gap
+  }
+
+  left = Math.min(Math.max(margin, left), window.innerWidth - width - margin)
+  top = Math.min(Math.max(margin, top), window.innerHeight - height - margin)
+
+  tooltip.style.left = `${Math.round(left)}px`
+  tooltip.style.top = `${Math.round(top)}px`
 }
 
 function showTooltip(target: TooltipTarget) {
@@ -84,9 +92,16 @@ function showTooltip(target: TooltipTarget) {
   tooltip.textContent = text
   tooltip.style.display = 'block'
   tooltip.classList.remove('is-visible')
-  requestAnimationFrame(() => {
+
+  if (placeFrame) window.cancelAnimationFrame(placeFrame)
+  placeFrame = window.requestAnimationFrame(() => {
     placeTooltip(target, tooltip)
-    tooltip.classList.add('is-visible')
+
+    placeFrame = window.requestAnimationFrame(() => {
+      placeTooltip(target, tooltip)
+      tooltip.classList.add('is-visible')
+      placeFrame = 0
+    })
   })
 }
 

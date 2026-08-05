@@ -7,7 +7,7 @@
       class="demo-access"
       type="button"
       aria-label="Открыть подписку"
-      data-tooltip="Демо: данные не сохраняются"
+      data-tooltip="Завершить демо и зарегистрироваться"
       data-tooltip-position="bottom"
       @click="emit('demo')"
     >
@@ -62,10 +62,10 @@ const emit = defineEmits<{
   justify-content: center;
   min-height: var(--space-9);
   padding-inline: var(--space-2);
-  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-error) 45%, transparent);
   border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
-  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-error) 16%, transparent);
+  color: var(--color-error);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
   letter-spacing: 0.01em;
@@ -77,12 +77,12 @@ const emit = defineEmits<{
 
   @media (hover: hover) and (pointer: fine) {
     &:hover {
-      background: color-mix(in srgb, var(--color-accent) 24%, transparent);
+      background: color-mix(in srgb, var(--color-error) 24%, transparent);
     }
   }
 
   &:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--color-error) 45%, transparent);
     outline-offset: 2px;
   }
 

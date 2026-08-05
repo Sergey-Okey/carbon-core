@@ -13,7 +13,6 @@ export const ACCENT_COLORS = [
   { name: 'Бирюзовый', value: '#0D9488' },
 ]
 
-/** Map legacy pastel accents to denser replacements. */
 const LEGACY_ACCENT_MAP: Record<string, string> = {
   '#7aa2ff': '#2563EB',
   '#74d6a0': '#16A34A',
@@ -55,7 +54,7 @@ export const useSettingsStore = defineStore(
     const customBackgroundImage = ref<string>('')
     const backgroundIntensity = ref<'soft' | 'normal' | 'contrast'>('normal')
     const animationsEnabled = ref<boolean>(true)
-    const animationSpeed = ref<number>(1) // multiplier, 0.5 = slower, 2 = faster
+    const animationSpeed = ref<number>(1)
     const soundEnabled = ref<boolean>(true)
     const soundVolume = ref<number>(0.65)
     const hapticsEnabled = ref<boolean>(true)
@@ -137,7 +136,7 @@ export const useSettingsStore = defineStore(
     function applyAccentColor(color: string) {
       if (import.meta.client) {
         const finalColor = resolveAccentColor(color, isLight())
-        // Keep both tokens in sync: some UI uses --accent, some --color-accent.
+
         document.documentElement.style.setProperty('--accent', finalColor)
         document.documentElement.style.setProperty('--color-accent', finalColor)
         const hex = finalColor.replace('#', '')
@@ -161,7 +160,7 @@ export const useSettingsStore = defineStore(
 
     function applyAnimations(enabled: boolean) {
       if (import.meta.client) {
-        const baseDuration = 0.1 // base duration in seconds
+        const baseDuration = 0.1
         const duration = enabled ? baseDuration / animationSpeed.value : 0
         document.documentElement.classList.toggle('no-animations', !enabled)
         document.documentElement.style.setProperty(

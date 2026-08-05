@@ -36,7 +36,6 @@ const isBoardLayout = computed(
   background-repeat: no-repeat;
   background-size: cover;
   color: var(--text);
-  /* Do not use isolation:isolate — it becomes a backdrop-root and kills header blur */
   transition: background var(--transition-standard);
 }
 
@@ -98,7 +97,6 @@ const isBoardLayout = computed(
     }
 
     .main {
-      /* Fill the shell and center the stub — no leftover flex gap under short content. */
       display: flex;
       flex-direction: column;
       padding: 0;
@@ -143,12 +141,9 @@ const isBoardLayout = computed(
   }
 
   @include mobile {
-    /*
-     * Block layout so short pages (settings, etc.) don't leave a flex
-     * leftover gap under content above the nav clearance padding.
-     */
+
     display: block;
-    /* Fixed header height + same gap as profile/widget stacks (space-3). */
+
     padding-block-start: calc(
       env(safe-area-inset-top, 0px) + var(--space-2) + var(--space-11) + var(--space-2) + 1px +
         var(--space-3)

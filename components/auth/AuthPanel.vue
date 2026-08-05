@@ -1,357 +1,390 @@
 <template>
   <div class="auth-page">
-    <div class="auth-workspace">
-      <div class="auth-grid">
-        <div class="auth-panel auth-intro">
+    <div
+      class="auth-card"
+      :class="{ 'is-mobile-form-open': isMobile && mobileFormOpen }"
+    >
+      <div
+        class="auth-card__brand-slot"
+        :class="{ 'is-mobile-landing': isMobile && !mobileFormOpen }"
+      >
+        <AuthBrandStage class="auth-card__brand" :slogan="brandSlogan" />
+
+        <div
+          v-if="isMobile && !mobileFormOpen"
+          class="auth-mobile-dock"
+          @pointerdown.stop
+        >
           <AppButton
             type="button"
-            variant="ghost"
-            size="sm"
-            class="back-action"
-            @click="goBack"
+            variant="primary"
+            size="lg"
+            class="auth-mobile-dock__btn"
+            @click="openMobileAuth"
           >
-            <ArrowLeft :size="16" />
-            Назад
+            Регистрация
           </AppButton>
+          <AppButton
+            type="button"
+            variant="secondary"
+            size="lg"
+            class="auth-mobile-dock__btn"
+            @click.stop="startDemo"
+          >
+            <Play :size="18" />
+            Демо
+          </AppButton>
+        </div>
+      </div>
 
-          <div class="intro-content">
-            <AppBadge variant="eyebrow" class="intro-badge">Core of Life</AppBadge>
-            <h1 v-if="isRegister">
-              Соберите свою систему задач
-              <span>в одном месте.</span>
-            </h1>
-            <h1 v-else>Продолжайте в своём ритме.</h1>
-            <p>
-              {{
-                isRegister
-                  ? 'Попробуйте готовое пространство или оформите доступ, чтобы создать личный профиль.'
-                  : 'Войдите, чтобы вернуться к задачам, привычкам, фокусу и доске.'
-              }}
-            </p>
+      <div
+        v-if="!isMobile || mobileFormOpen"
+        class="auth-card__form-slot"
+        :class="{ 'is-mobile-overlay': isMobile && mobileFormOpen }"
+      >
+        <section ref="authFormPanel" class="auth-card__form">
+          <div class="form-top">
+            <AppButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              class="back-action"
+              @click="goBack"
+            >
+              <ArrowLeft :size="16" />
+              Назад
+            </AppButton>
+
+            <AppButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              @click.stop="startDemo"
+            >
+              <Play :size="14" />
+              Демо
+            </AppButton>
           </div>
 
-          <div class="intro-actions">
-            <AppButton type="button" variant="secondary" @click="startDemo">
-              <Play :size="15" />
-              Попробовать демо
-            </AppButton>
-            <AppButton type="button" variant="secondary" disabled>
-              App скоро
-            </AppButton>
-            <NuxtLink
-              class="route-link"
-              :to="isRegister ? '/auth' : '/register'"
-              @click.prevent="openAuthMode"
+          <div class="form-header">
+            <h1>{{ formTitle }}</h1>
+            <p>{{ formDescription }}</p>
+          </div>
+
+        <template v-if="pendingVerification.active">
+          <form class="auth-form" @submit.prevent="confirmEmailVerification">
+            <div class="verification-card">
+              <span>Код отправлен на</span>
+              <strong>{{ pendingVerification.email }}</strong>
+              <p>
+                Введите код из письма и задайте пароль для входа. Код действует
+                15 минут.
+              </p>
+            </div>
+            <AppFormField
+              label="Код подтверждения"
+              :error="fieldErrors.code || undefined"
+            >
+              <AppInput
+                v-model="pendingVerification.code"
+                type="text"
+                inputmode="numeric"
+                placeholder="000000"
+                autocomplete="one-time-code"
+                maxlength="6"
+                :invalid="Boolean(fieldErrors.code)"
+                @update:model-value="onCodeInput"
+              />
+            </AppFormField>
+            <AppFormField
+              label="Пароль"
+              hint="Не менее 8 символов, цифра и специальный символ"
+              :error="fieldErrors.password || undefined"
+            >
+              <AppInput
+                v-model="form.password"
+                type="password"
+                placeholder="Придумайте пароль"
+                autocomplete="new-password"
+                maxlength="128"
+                :invalid="Boolean(fieldErrors.password)"
+                @update:model-value="onPasswordInput"
+              />
+            </AppFormField>
+            <AppFormField
+              label="Подтвердите пароль"
+              :error="fieldErrors.passwordConfirm || undefined"
+            >
+              <AppInput
+                v-model="form.passwordConfirm"
+                type="password"
+                placeholder="Повторите пароль"
+                autocomplete="new-password"
+                maxlength="128"
+                :invalid="Boolean(fieldErrors.passwordConfirm)"
+                @update:model-value="onPasswordConfirmInput"
+              />
+            </AppFormField>
+            <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
+            <p v-if="error" class="error-text">{{ error }}</p>
+            <AppButton
+              type="submit"
+              variant="primary"
+              class="submit-btn"
+              :loading="authStore.isLoading"
+              :disabled="authStore.isLoading"
             >
               {{
-                isRegister
-                  ? 'Уже есть профиль? Войти'
-                  : 'Нет профиля? Получить доступ'
+                authStore.isLoading ? 'Проверяем…' : 'Подтвердить и войти'
               }}
-              <ArrowUpRight :size="15" />
-            </NuxtLink>
+            </AppButton>
+            <AppButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              class="inline-action"
+              @click="resendEmailVerification"
+            >
+              Отправить код ещё раз
+            </AppButton>
+          </form>
+        </template>
+
+        <template v-else-if="resetToken">
+          <form class="auth-form" @submit.prevent="confirmPasswordReset">
+            <AppFormField
+              label="Новый пароль"
+              hint="Минимум 8 символов"
+              :error="fieldErrors.resetPassword || undefined"
+            >
+              <AppInput
+                v-model="resetPassword"
+                type="password"
+                placeholder="Введите новый пароль"
+                autocomplete="new-password"
+                maxlength="128"
+                :invalid="Boolean(fieldErrors.resetPassword)"
+                @update:model-value="onResetPasswordInput"
+              />
+            </AppFormField>
+            <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
+            <p v-if="error" class="error-text">{{ error }}</p>
+            <AppButton
+              type="submit"
+              variant="primary"
+              class="submit-btn"
+              :loading="isConfirmingReset"
+              :disabled="isConfirmingReset"
+            >
+              {{
+                isConfirmingReset ? 'Сохраняем…' : 'Сохранить новый пароль'
+              }}
+            </AppButton>
+          </form>
+        </template>
+
+        <template v-else-if="resetMode">
+          <form class="auth-form" @submit.prevent="requestPasswordReset">
+            <AppFormField
+              label="Email профиля"
+              :error="fieldErrors.resetEmail || undefined"
+            >
+              <AppInput
+                v-model="resetEmail"
+                type="email"
+                inputmode="email"
+                placeholder="email@example.com"
+                autocomplete="email"
+                maxlength="254"
+                :invalid="Boolean(fieldErrors.resetEmail)"
+                @update:model-value="onResetEmailInput"
+              />
+            </AppFormField>
+            <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
+            <p v-if="error" class="error-text">{{ error }}</p>
+            <AppButton
+              type="submit"
+              variant="primary"
+              class="submit-btn"
+              :loading="isRequestingReset"
+              :disabled="isRequestingReset"
+            >
+              {{ isRequestingReset ? 'Отправляем…' : 'Отправить письмо' }}
+            </AppButton>
+            <AppButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              class="inline-action"
+              @click="resetMode = false"
+            >
+              Вернуться ко входу
+            </AppButton>
+          </form>
+        </template>
+
+        <template v-else>
+          <form class="auth-form" @submit.prevent="submit">
+            <AppFormField label="Email" :error="fieldErrors.email || undefined">
+              <AppInput
+                v-model="form.email"
+                type="email"
+                inputmode="email"
+                placeholder="email@example.com"
+                autocomplete="email"
+                maxlength="254"
+                :invalid="Boolean(fieldErrors.email)"
+                @update:model-value="onEmailInput"
+              />
+            </AppFormField>
+
+            <AppFormField
+              v-if="!isRegister"
+              label="Пароль"
+              :error="fieldErrors.password || undefined"
+            >
+              <AppInput
+                v-model="form.password"
+                type="password"
+                placeholder="Введите пароль"
+                maxlength="128"
+                autocomplete="current-password"
+                :invalid="Boolean(fieldErrors.password)"
+                @update:model-value="onPasswordInput"
+              />
+            </AppFormField>
+
+            <AppButton
+              v-if="!isRegister"
+              type="button"
+              variant="ghost"
+              size="sm"
+              class="inline-action forgot"
+              @click="openResetMode"
+            >
+              Забыли пароль?
+            </AppButton>
+
+            <div v-if="isRegister" class="consent-block">
+              <AppCheckbox
+                v-model="form.acceptedTerms"
+                size="sm"
+                class="oauth-consent"
+                :invalid="Boolean(fieldErrors.terms)"
+                @update:model-value="fieldErrors.terms = ''"
+              >
+                Принимаю
+                <NuxtLink to="/terms">условия использования</NuxtLink>
+                и
+                <NuxtLink to="/privacy">политику конфиденциальности</NuxtLink>
+              </AppCheckbox>
+              <p v-if="fieldErrors.terms" class="error-text" role="alert">
+                {{ fieldErrors.terms }}
+              </p>
+            </div>
+
+            <p v-if="error && !oauthMessage" class="error-text">{{ error }}</p>
+
+            <AppButton
+              type="submit"
+              variant="primary"
+              class="submit-btn"
+              :loading="authStore.isLoading"
+              :disabled="authStore.isLoading"
+            >
+              {{
+                authStore.isLoading
+                  ? 'Подождите…'
+                  : isRegister
+                    ? 'Продолжить'
+                    : 'Войти'
+              }}
+            </AppButton>
+          </form>
+
+          <div class="auth-divider"><span>или</span></div>
+
+          <div class="oauth-actions" aria-label="Войти через сервис">
+            <AppButton
+              type="button"
+              variant="secondary"
+              class="oauth-button"
+              :disabled="isStartingOAuth || !oauthProviders.google"
+              @click="startOAuth('google')"
+            >
+              <svg
+                class="oauth-icon"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  fill="#4285f4"
+                  d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z"
+                />
+                <path
+                  fill="#34a853"
+                  d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.62A10 10 0 0 0 12 22Z"
+                />
+                <path
+                  fill="#fbbc05"
+                  d="M6.39 13.93A6.02 6.02 0 0 1 6.07 12c0-.67.11-1.32.32-1.93V7.45H3.04A10 10 0 0 0 2 12c0 1.61.39 3.14 1.04 4.55l3.35-2.62Z"
+                />
+                <path
+                  fill="#ea4335"
+                  d="M12 5.94c1.47 0 2.79.51 3.83 1.5l2.87-2.87A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.96 5.45l3.35 2.62C7.18 7.7 9.39 5.94 12 5.94Z"
+                />
+              </svg>
+              Google
+            </AppButton>
+            <AppButton
+              type="button"
+              variant="secondary"
+              class="oauth-button"
+              :disabled="isStartingOAuth || !oauthProviders.yandex"
+              @click="startOAuth('yandex')"
+            >
+              <span class="oauth-icon yandex-icon" aria-hidden="true">Я</span>
+              Яндекс
+            </AppButton>
           </div>
+          <p class="oauth-note">
+            Продолжая через Google или Яндекс, вы принимаете
+            <NuxtLink to="/terms">условия</NuxtLink>
+            и
+            <NuxtLink to="/privacy">политику конфиденциальности</NuxtLink>.
+          </p>
+          <p v-if="oauthMessage" class="error-text">{{ oauthMessage }}</p>
+
+          <p class="switch-mode">
+            {{ isRegister ? 'Уже есть аккаунт?' : 'Нет аккаунта?' }}
+            <button
+              v-if="isMobile"
+              type="button"
+              class="switch-mode__link"
+              @click="switchMobileAuthMode"
+            >
+              {{ isRegister ? 'Войти' : 'Зарегистрироваться' }}
+            </button>
+            <NuxtLink v-else :to="isRegister ? '/auth' : '/register'">
+              {{ isRegister ? 'Войти' : 'Зарегистрироваться' }}
+            </NuxtLink>
+          </p>
+        </template>
 
           <div class="legal-links">
+            <NuxtLink to="/terms">Условия использования</NuxtLink>
             <NuxtLink to="/privacy">Конфиденциальность</NuxtLink>
-            <NuxtLink to="/terms">Условия</NuxtLink>
             <NuxtLink to="/support">Поддержка</NuxtLink>
           </div>
-        </div>
-
-        <div ref="authFormPanel" class="auth-panel auth-form-panel">
-          <template v-if="isRegister && !accessStore.hasSubscription">
-            <div class="subscription-header">
-              <AppBadge variant="eyebrow" class="panel-badge">Полный доступ</AppBadge>
-              <h2>Оформите подписку</h2>
-              <p>
-                После оплаты вы сможете создать профиль и пользоваться всеми
-                разделами COF.
-              </p>
-            </div>
-
-            <div class="benefits-list">
-              <div
-                v-for="item in accessBenefits"
-                :key="item.title"
-                class="benefit-item"
-              >
-                <Check :size="16" />
-                <div>
-                  <strong>{{ item.title }}</strong>
-                  <span>{{ item.description }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="subscription-check">
-              <AppFormField label="Email профиля">
-                <AppInput
-                  v-model="form.email"
-                  type="email"
-                  placeholder="email@example.com"
-                  autocomplete="email"
-                />
-              </AppFormField>
-              <button
-                class="payment-link"
-                type="button"
-                @click="startSubscriptionPayment"
-              >
-                Оплатить доступ · {{ SUBSCRIPTION_PRICE }} ₽
-                <ArrowUpRight :size="16" />
-              </button>
-              <AppButton
-                type="button"
-                variant="secondary"
-                :disabled="isCheckingSubscription"
-                @click="() => verifySubscription()"
-              >
-                {{ isCheckingSubscription ? 'Проверяем…' : 'Проверить доступ' }}
-              </AppButton>
-              <p v-if="subscriptionError" class="error-text">
-                {{ subscriptionError }}
-              </p>
-              <p v-if="error" class="error-text">{{ error }}</p>
-            </div>
-          </template>
-
-          <template v-else>
-            <div class="form-header">
-              <AppBadge variant="eyebrow" class="panel-badge">{{
-                isRegister ? 'Регистрация' : 'Авторизация'
-              }}</AppBadge>
-              <h2>{{ isRegister ? 'Создайте профиль' : 'С возвращением' }}</h2>
-              <p>
-                {{
-                  isRegister
-                    ? 'Укажите данные, которые будете использовать для входа.'
-                    : 'Введите данные профиля, чтобы продолжить работу.'
-                }}
-              </p>
-            </div>
-
-            <AppCheckbox
-              v-if="isRegister"
-              v-model="form.acceptedTerms"
-              size="sm"
-              class="oauth-consent"
-            >
-              Принимаю
-              <NuxtLink to="/terms">условия использования</NuxtLink> и
-              <NuxtLink to="/privacy">политику конфиденциальности</NuxtLink>
-            </AppCheckbox>
-
-            <div class="oauth-actions" aria-label="Войти через сервис">
-              <button
-                class="oauth-button"
-                type="button"
-                :disabled="isStartingOAuth"
-                @click="startOAuth('google')"
-              >
-                <svg
-                  class="oauth-icon google-icon"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    fill="#4285f4"
-                    d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z"
-                  />
-                  <path
-                    fill="#34a853"
-                    d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.62A10 10 0 0 0 12 22Z"
-                  />
-                  <path
-                    fill="#fbbc05"
-                    d="M6.39 13.93A6.02 6.02 0 0 1 6.07 12c0-.67.11-1.32.32-1.93V7.45H3.04A10 10 0 0 0 2 12c0 1.61.39 3.14 1.04 4.55l3.35-2.62Z"
-                  />
-                  <path
-                    fill="#ea4335"
-                    d="M12 5.94c1.47 0 2.79.51 3.83 1.5l2.87-2.87A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.96 5.45l3.35 2.62C7.18 7.7 9.39 5.94 12 5.94Z"
-                  />
-                </svg>
-                Google
-              </button>
-              <button
-                class="oauth-button"
-                type="button"
-                :disabled="isStartingOAuth"
-                @click="startOAuth('yandex')"
-              >
-                <span class="oauth-icon yandex-icon" aria-hidden="true">Я</span>
-                Яндекс
-              </button>
-            </div>
-            <p v-if="oauthMessage" class="oauth-message error-text">
-              {{ oauthMessage }}
-            </p>
-
-            <div class="auth-divider"><span>или</span></div>
-
-            <form
-              v-if="pendingVerification.active"
-              class="auth-form verification-form"
-              @submit.prevent="confirmEmailVerification"
-            >
-              <div class="verification-card">
-                <span>Код отправлен на</span>
-                <strong>{{ pendingVerification.email }}</strong>
-                <p>Введите 6 цифр из письма. Код действует 15 минут.</p>
-              </div>
-              <AppFormField label="Код подтверждения">
-                <AppInput
-                  v-model="pendingVerification.code"
-                  inputmode="numeric"
-                  placeholder="000000"
-                  autocomplete="one-time-code"
-                />
-              </AppFormField>
-              <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
-              <p v-if="error" class="error-text">{{ error }}</p>
-              <AppButton
-                type="submit"
-                variant="primary"
-                :disabled="authStore.isLoading"
-              >
-                {{ authStore.isLoading ? 'Проверяем…' : 'Подтвердить email' }}
-              </AppButton>
-              <button
-                type="button"
-                class="forgot-link"
-                @click="resendEmailVerification"
-              >
-                Отправить код ещё раз
-              </button>
-            </form>
-
-            <form
-              v-else-if="resetToken"
-              class="auth-form"
-              @submit.prevent="confirmPasswordReset"
-            >
-              <AppFormField label="Новый пароль" hint="Минимум 8 символов">
-                <AppInput
-                  v-model="resetPassword"
-                  type="password"
-                  placeholder="Введите новый пароль"
-                  autocomplete="new-password"
-                />
-              </AppFormField>
-
-              <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
-              <p v-if="error" class="error-text">{{ error }}</p>
-              <AppButton
-                type="submit"
-                variant="primary"
-                :disabled="isConfirmingReset"
-              >
-                {{
-                  isConfirmingReset ? 'Сохраняем…' : 'Сохранить новый пароль'
-                }}
-              </AppButton>
-            </form>
-
-            <form
-              v-else-if="resetMode"
-              class="auth-form"
-              @submit.prevent="requestPasswordReset"
-            >
-              <AppFormField label="Email профиля">
-                <AppInput
-                  v-model="resetEmail"
-                  type="email"
-                  placeholder="email@example.com"
-                  autocomplete="email"
-                />
-              </AppFormField>
-              <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
-              <p v-if="error" class="error-text">{{ error }}</p>
-              <AppButton
-                type="submit"
-                variant="primary"
-                :disabled="isRequestingReset"
-              >
-                {{ isRequestingReset ? 'Отправляем…' : 'Отправить письмо' }}
-              </AppButton>
-              <button
-                type="button"
-                class="forgot-link"
-                @click="resetMode = false"
-              >
-                Вернуться ко входу
-              </button>
-            </form>
-
-            <form v-else class="auth-form" @submit.prevent="submit">
-              <AppFormField v-if="isRegister" label="Имя">
-                <AppInput
-                  v-model="form.name"
-                  placeholder="Как к вам обращаться"
-                  autocomplete="name"
-                />
-              </AppFormField>
-              <AppFormField label="Email">
-                <AppInput
-                  v-model="form.email"
-                  type="email"
-                  placeholder="email@example.com"
-                  autocomplete="email"
-                />
-              </AppFormField>
-              <AppFormField
-                label="Пароль"
-                :hint="isRegister ? 'Минимум 8 символов' : undefined"
-              >
-                <AppInput
-                  v-model="form.password"
-                  type="password"
-                  placeholder="Введите пароль"
-                  :autocomplete="
-                    isRegister ? 'new-password' : 'current-password'
-                  "
-                />
-              </AppFormField>
-              <button
-                v-if="!isRegister"
-                type="button"
-                class="forgot-link"
-                @click="openResetMode"
-              >
-                Забыли пароль?
-              </button>
-
-              <p v-if="error" class="error-text">{{ error }}</p>
-              <AppButton
-                type="submit"
-                variant="primary"
-                :disabled="
-                  authStore.isLoading || (isRegister && !form.acceptedTerms)
-                "
-              >
-                {{
-                  authStore.isLoading
-                    ? 'Подождите…'
-                    : isRegister
-                      ? 'Создать профиль'
-                      : 'Войти'
-                }}
-              </AppButton>
-            </form>
-          </template>
-        </div>
+        </section>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ArrowLeft, ArrowUpRight, Check, Play } from 'lucide-vue-next'
-import {
-  SUBSCRIPTION_PAYMENT_URL,
-  SUBSCRIPTION_PRICE,
-  useAccessStore,
-} from '~/stores/access.store'
+import { useMediaQuery } from '@vueuse/core'
+import { ArrowLeft, Play } from 'lucide-vue-next'
 import { resetDemoData } from '~/utils/accessStorage'
 import { seedDemoWorkspaceIfNeeded } from '~/utils/demoSeed'
 import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
@@ -361,7 +394,45 @@ const accessStore = useAccessStore()
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
-const isRegister = computed(() => props.mode === 'register')
+const isMobile = useMediaQuery('(max-width: 900px)')
+const mobileFormOpen = ref(false)
+const mobileAuthMode = ref<'login' | 'register'>(props.mode)
+
+function safeParse<T>(raw: string | null, fallback: T): T {
+  if (!raw) return fallback
+
+  try {
+    return JSON.parse(raw) as T
+  } catch {
+    return fallback
+  }
+}
+
+const AUTH_VISIT_KEY = 'carbon-auth-visited'
+
+function resolveMobileAuthMode(): 'login' | 'register' {
+  if (!import.meta.client) return 'register'
+
+  const users = safeParse<unknown[]>(localStorage.getItem('carbon-users'), [])
+  if (users.length > 0) return 'login'
+
+  const onboarding = safeParse<{ hasSeenOnboarding?: boolean } | null>(
+    localStorage.getItem('carbon-onboarding'),
+    null
+  )
+  if (onboarding?.hasSeenOnboarding) return 'login'
+
+  if (localStorage.getItem(AUTH_VISIT_KEY) === '1') return 'login'
+
+  return 'register'
+}
+
+const effectiveMode = computed(() => {
+  if (isMobile.value && mobileFormOpen.value) return mobileAuthMode.value
+  return props.mode
+})
+
+const isRegister = computed(() => effectiveMode.value === 'register')
 const backendFetch = $fetch as unknown as <T = unknown>(
   url: string,
   options?: Record<string, unknown>
@@ -370,37 +441,40 @@ const backendFetch = $fetch as unknown as <T = unknown>(
 const keepShortWords = (text: string) =>
   text.replace(/(^|[\s(])([А-Яа-яЁё]{1,2})\s+/g, '$1$2\u00a0')
 
-const accessBenefits = [
-  {
-    title: 'Личный профиль',
-    description: keepShortWords('Вход и доступ к вашему пространству COF.'),
-  },
-  {
-    title: 'Все инструменты',
-    description: keepShortWords('Задачи, привычки, доска, фокус и аналитика.'),
-  },
-  {
-    title: 'Дальнейшие обновления',
-    description: keepShortWords('Новые возможности будут доступны в профиле.'),
-  },
-]
+const brandSlogan = computed(() =>
+  keepShortWords('Рожденный в хаосе - стремится к порядку.')
+)
 
-const PENDING_SUBSCRIPTION_KEY = 'carbon-pending-subscription'
-const PENDING_SUBSCRIPTION_TTL = 24 * 60 * 60 * 1000
-const PENDING_SUBSCRIPTION_ATTEMPTS = 10
-const PENDING_SUBSCRIPTION_INTERVAL = 2500
+const formTitle = computed(() =>
+  isRegister.value ? 'Создайте аккаунт' : 'С возвращением'
+)
+
+const formDescription = computed(() =>
+  keepShortWords(
+    isRegister.value
+      ? 'Укажите email — пароль зададите после подтверждения письма.'
+      : 'Введите email и пароль, чтобы войти.'
+  )
+)
+
 const AUTH_FORM_SCROLL_KEY = 'carbon-auth-open-form'
 
 const authFormPanel = ref<HTMLElement | null>(null)
 const error = ref('')
-const subscriptionEmail = ref('')
-const subscriptionError = ref('')
-const isCheckingSubscription = ref(false)
 const form = reactive({
-  name: '',
   email: '',
   password: '',
+  passwordConfirm: '',
   acceptedTerms: false,
+})
+const fieldErrors = reactive({
+  email: '',
+  password: '',
+  passwordConfirm: '',
+  terms: '',
+  code: '',
+  resetEmail: '',
+  resetPassword: '',
 })
 const pendingVerification = reactive({ active: false, email: '', code: '' })
 const resetMode = ref(false)
@@ -411,12 +485,104 @@ const isRequestingReset = ref(false)
 const isConfirmingReset = ref(false)
 const isStartingOAuth = ref(false)
 const oauthMessage = ref('')
+const oauthProviders = reactive({ google: true, yandex: true })
 const resetToken = computed(() => {
   const value = route.query.resetToken
   return typeof value === 'string' ? value : ''
 })
 
+async function loadOAuthProviders() {
+  try {
+    const response = await backendFetch<{ google?: boolean; yandex?: boolean }>(
+      getBackendUrl('/api/auth/providers'),
+      { ...getBackendFetchOptions() }
+    )
+    oauthProviders.google = Boolean(response.google)
+    oauthProviders.yandex = Boolean(response.yandex)
+    if (!oauthProviders.google && !oauthProviders.yandex) {
+      oauthMessage.value =
+        'Вход через Google и Яндекс пока не настроен на сервере.'
+    }
+  } catch {
+    oauthProviders.google = false
+    oauthProviders.yandex = false
+  }
+}
+
+function clearFieldErrors() {
+  fieldErrors.email = ''
+  fieldErrors.password = ''
+  fieldErrors.passwordConfirm = ''
+  fieldErrors.terms = ''
+  fieldErrors.code = ''
+  fieldErrors.resetEmail = ''
+  fieldErrors.resetPassword = ''
+}
+
+function onEmailInput(value: string | number | undefined) {
+  form.email = formatEmailInput(String(value ?? ''))
+  fieldErrors.email = ''
+}
+
+function onCodeInput(value: string | number | undefined) {
+  pendingVerification.code = formatCodeInput(String(value ?? ''))
+  fieldErrors.code = ''
+}
+
+function onPasswordInput(value: string | number | undefined) {
+  form.password = formatPasswordInput(String(value ?? ''))
+  fieldErrors.password = ''
+}
+
+function onPasswordConfirmInput(value: string | number | undefined) {
+  form.passwordConfirm = formatPasswordInput(String(value ?? ''))
+  fieldErrors.passwordConfirm = ''
+}
+
+function onResetEmailInput(value: string | number | undefined) {
+  resetEmail.value = formatEmailInput(String(value ?? ''))
+  fieldErrors.resetEmail = ''
+}
+
+function onResetPasswordInput(value: string | number | undefined) {
+  resetPassword.value = formatPasswordInput(String(value ?? ''))
+  fieldErrors.resetPassword = ''
+}
+
+function validateAuthForm() {
+  clearFieldErrors()
+
+  fieldErrors.email = validateEmail(form.email)
+
+  if (isRegister.value) {
+    if (!form.acceptedTerms) {
+      fieldErrors.terms = 'Примите условия использования'
+    }
+  } else {
+    fieldErrors.password = validatePassword(form.password)
+  }
+
+  return ![fieldErrors.email, fieldErrors.password, fieldErrors.terms].some(
+    Boolean
+  )
+}
+
 onMounted(() => {
+  void loadOAuthProviders()
+
+  if (import.meta.client && isMobile.value) {
+    const hasDeepLink =
+      Boolean(resetToken.value) ||
+      route.query.oauth === 'success' ||
+      typeof route.query.oauthError === 'string' ||
+      typeof route.query.resetToken === 'string'
+
+    if (hasDeepLink) {
+      mobileAuthMode.value = props.mode === 'register' ? 'register' : 'login'
+      mobileFormOpen.value = true
+    }
+  }
+
   if (
     import.meta.client &&
     sessionStorage.getItem(AUTH_FORM_SCROLL_KEY) === '1'
@@ -428,7 +594,6 @@ onMounted(() => {
   const oauthError =
     typeof route.query.oauthError === 'string' ? route.query.oauthError : ''
   const oauthSuccess = route.query.oauth === 'success'
-  void resumePendingSubscription()
 
   if (oauthSuccess) {
     void authStore.init({ force: true }).then(() => {
@@ -439,114 +604,52 @@ onMounted(() => {
 
   if (!oauthError) return
 
-  const message = getOAuthErrorMessage(oauthError)
-  error.value = message
-  oauthMessage.value = message
+  oauthMessage.value = getOAuthErrorMessage(oauthError)
   void router.replace({ path: isRegister.value ? '/register' : '/auth' })
 })
 
-function normalizeEmail(value: string) {
-  return value.trim().toLowerCase()
-}
-
-function readPendingSubscription() {
-  if (!import.meta.client) return null
-
-  try {
-    const parsed = JSON.parse(
-      localStorage.getItem(PENDING_SUBSCRIPTION_KEY) || 'null'
-    ) as {
-      email?: string
-      createdAt?: number
-    } | null
-
-    if (!parsed?.email || !parsed.createdAt) return null
-    if (Date.now() - parsed.createdAt > PENDING_SUBSCRIPTION_TTL) {
-      localStorage.removeItem(PENDING_SUBSCRIPTION_KEY)
-      return null
-    }
-
-    return parsed
-  } catch {
-    localStorage.removeItem(PENDING_SUBSCRIPTION_KEY)
-    return null
+function openMobileAuth() {
+  mobileAuthMode.value = resolveMobileAuthMode()
+  if (import.meta.client) {
+    localStorage.setItem(AUTH_VISIT_KEY, '1')
   }
+  mobileFormOpen.value = true
 }
 
-function writePendingSubscription(email: string) {
-  if (!import.meta.client) return
-  localStorage.setItem(
-    PENDING_SUBSCRIPTION_KEY,
-    JSON.stringify({ email, createdAt: Date.now() })
-  )
+function closeMobileForm() {
+  mobileFormOpen.value = false
+  error.value = ''
+  oauthMessage.value = ''
+  clearFieldErrors()
 }
 
-function clearPendingSubscription() {
-  if (import.meta.client) localStorage.removeItem(PENDING_SUBSCRIPTION_KEY)
-}
-
-function buildSubscriptionPaymentUrl(email: string) {
-  const url = new URL(SUBSCRIPTION_PAYMENT_URL)
-  url.searchParams.set('EMail', email)
-  url.searchParams.set('Email', email)
-  url.searchParams.set('Shp_email', email)
-  url.searchParams.set('Shp_return', 'register')
-  return url.toString()
-}
-
-async function resumePendingSubscription() {
-  const pending = readPendingSubscription()
-  if (!pending) return
-  const pendingEmail = pending.email
-  if (!pendingEmail) return
-
-  subscriptionEmail.value = pendingEmail
-  if (!form.email) form.email = pendingEmail
-
-  if (!isRegister.value) {
-    await router.replace('/register')
-    return
-  }
-
-  const activated = await waitForSubscription(pendingEmail)
-  if (!activated) {
-    subscriptionError.value =
-      'Платёж ещё обрабатывается. Подождите немного и нажмите «Проверить доступ».'
-    return
-  }
-
-  clearPendingSubscription()
-}
-
-function delay(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms))
-}
-
-async function waitForSubscription(email: string) {
-  for (let attempt = 0; attempt < PENDING_SUBSCRIPTION_ATTEMPTS; attempt += 1) {
-    const activated = await verifySubscription(email, { silentMissing: true })
-    if (activated) return true
-    if (attempt < PENDING_SUBSCRIPTION_ATTEMPTS - 1) {
-      subscriptionError.value = 'Ждём подтверждение оплаты…'
-      await delay(PENDING_SUBSCRIPTION_INTERVAL)
-    }
-  }
-  return false
+function switchMobileAuthMode() {
+  mobileAuthMode.value = isRegister.value ? 'login' : 'register'
+  error.value = ''
+  oauthMessage.value = ''
+  clearFieldErrors()
 }
 
 function startDemo() {
-  resetDemoData()
-  accessStore.startDemo()
-  void seedDemoWorkspaceIfNeeded().finally(() => {
-    router.push('/')
-  })
+  try {
+    resetDemoData()
+    accessStore.startDemo()
+    void seedDemoWorkspaceIfNeeded()
+      .catch(() => undefined)
+      .finally(() => {
+        void router.push('/')
+      })
+  } catch {
+    accessStore.startDemo()
+    void router.push('/')
+  }
 }
 
 function scheduleAuthFormScroll() {
   if (!import.meta.client) return
 
   window.setTimeout(() => {
-    if (!window.matchMedia('(max-width: 820px)').matches) return
+    if (!window.matchMedia('(max-width: 900px)').matches) return
     authFormPanel.value?.scrollIntoView({
       behavior: 'smooth',
       block: 'nearest',
@@ -555,65 +658,44 @@ function scheduleAuthFormScroll() {
   }, 80)
 }
 
-async function openAuthMode() {
-  const target = isRegister.value ? '/auth' : '/register'
-  if (import.meta.client) sessionStorage.setItem(AUTH_FORM_SCROLL_KEY, '1')
-  await router.push(target)
-  await nextTick()
-  scheduleAuthFormScroll()
-}
-
 function goBack() {
+  if (isMobile.value && mobileFormOpen.value) {
+    closeMobileForm()
+    return
+  }
+
   router.push('/onboarding')
 }
 
 function startOAuth(provider: 'google' | 'yandex') {
   error.value = ''
   oauthMessage.value = ''
-  subscriptionError.value = ''
+  fieldErrors.terms = ''
 
-  if (isRegister.value && !form.acceptedTerms) {
-    const message =
-      'Перед входом через Google или Яндекс примите условия использования'
-    error.value = message
-    oauthMessage.value = message
+  if (!oauthProviders[provider]) {
+    oauthMessage.value =
+      provider === 'google'
+        ? 'Google вход не настроен. Добавьте NUXT_GOOGLE_CLIENT_ID и SECRET на сервере.'
+        : 'Яндекс вход не настроен. Добавьте NUXT_YANDEX_CLIENT_ID и SECRET на сервере.'
     return
   }
 
   isStartingOAuth.value = true
-  const consent =
-    isRegister.value && form.acceptedTerms
-      ? '?acceptedTerms=true&termsVersion=2026-06-07'
-      : ''
-  window.location.assign(getBackendUrl(`/api/auth/${provider}${consent}`))
-}
-
-function startSubscriptionPayment() {
-  const email = normalizeEmail(form.email || subscriptionEmail.value)
-  subscriptionError.value = ''
-
-  if (!email.includes('@')) {
-    subscriptionError.value = 'Сначала укажите email будущего профиля'
-    return
-  }
-
-  subscriptionEmail.value = email
-  form.email = email
-  writePendingSubscription(email)
-  window.location.assign(buildSubscriptionPaymentUrl(email))
+  window.location.assign(
+    getBackendUrl(
+      `/api/auth/${provider}?acceptedTerms=true&termsVersion=2026-06-07`
+    )
+  )
 }
 
 function getOAuthErrorMessage(reason: string) {
   const map: Record<string, string> = {
-    subscription:
-      'Подписка для email этого аккаунта не найдена или истекла. Google/Яндекс должен быть с тем же email, который указан при оплате.',
     terms:
       'Перед входом через Google или Яндекс нужно принять условия использования.',
     provider:
-      'Не удалось получить данные аккаунта у провайдера. Попробуйте ещё раз.',
+      'OAuth не настроен или провайдер не вернул данные. Проверьте Client ID/Secret и redirect URI.',
     invalid: 'Некорректный ответ авторизации. Попробуйте войти ещё раз.',
-    failed:
-      'Вход через сервис не выполнен. Проверьте подписку или попробуйте другой способ.',
+    failed: 'Вход через сервис не выполнен. Попробуйте другой способ.',
   }
 
   return map[reason] || map.failed
@@ -630,21 +712,31 @@ function openResetMode() {
 async function confirmEmailVerification() {
   error.value = ''
   resetMessage.value = ''
-  const email = pendingVerification.email || form.email.trim().toLowerCase()
-  const code = pendingVerification.code.trim()
-  if (!/^\d{6}$/.test(code)) {
-    error.value = 'Введите 6 цифр из письма'
+  fieldErrors.code = validateVerificationCode(pendingVerification.code)
+  fieldErrors.password = validatePassword(form.password, { strict: true })
+  fieldErrors.passwordConfirm = validatePasswordConfirm(
+    form.password,
+    form.passwordConfirm
+  )
+  if (
+    fieldErrors.code ||
+    fieldErrors.password ||
+    fieldErrors.passwordConfirm
+  ) {
     return
   }
 
-  const result = await authStore.verifyEmail(email, code)
+  const email = pendingVerification.email || form.email.trim().toLowerCase()
+  const code = pendingVerification.code.trim()
+
+  const result = await authStore.verifyEmail(email, code, form.password)
   if (!result.success) {
     error.value = result.error || 'Не удалось подтвердить email'
     return
   }
 
   accessStore.activateSubscription()
-  router.push('/')
+  router.push('/profile')
 }
 
 async function resendEmailVerification() {
@@ -679,11 +771,10 @@ async function resendEmailVerification() {
 async function requestPasswordReset() {
   error.value = ''
   resetMessage.value = ''
+  fieldErrors.resetEmail = validateEmail(resetEmail.value)
+  if (fieldErrors.resetEmail) return
+
   const email = resetEmail.value.trim().toLowerCase()
-  if (!email.includes('@')) {
-    error.value = 'Укажите email профиля'
-    return
-  }
 
   isRequestingReset.value = true
   try {
@@ -709,10 +800,8 @@ async function requestPasswordReset() {
 async function confirmPasswordReset() {
   error.value = ''
   resetMessage.value = ''
-  if (resetPassword.value.length < 8) {
-    error.value = 'Пароль должен быть не короче 8 символов'
-    return
-  }
+  fieldErrors.resetPassword = validatePassword(resetPassword.value)
+  if (fieldErrors.resetPassword) return
 
   isConfirmingReset.value = true
   try {
@@ -731,68 +820,16 @@ async function confirmPasswordReset() {
   }
 }
 
-async function verifySubscription(
-  emailValue = form.email || subscriptionEmail.value,
-  options: { silentMissing?: boolean } = {}
-) {
-  const email = normalizeEmail(emailValue)
-  subscriptionError.value = ''
-
-  if (!email.includes('@')) {
-    subscriptionError.value = 'Укажите email профиля'
-    return false
-  }
-
-  isCheckingSubscription.value = true
-  try {
-    const status = await backendFetch<{ active: boolean; expiresAt?: string }>(
-      getBackendUrl('/api/subscription/status'),
-      {
-        query: { email },
-        ...getBackendFetchOptions(),
-      }
-    )
-
-    if (!status.active) {
-      if (options.silentMissing) return false
-      subscriptionError.value = 'Оплата для этого email пока не найдена'
-      return false
-    }
-
-    subscriptionEmail.value = email
-    if (!form.email) form.email = email
-    accessStore.activateSubscription()
-    clearPendingSubscription()
-    return true
-  } catch {
-    subscriptionError.value =
-      'Не удалось проверить оплату. Попробуйте чуть позже'
-    return false
-  } finally {
-    isCheckingSubscription.value = false
-  }
-}
-
 async function submit() {
   error.value = ''
+  oauthMessage.value = ''
   form.email = form.email.trim()
-  form.name = form.name.trim()
-  if (!form.email || !form.password || (isRegister.value && !form.name)) {
-    error.value = 'Заполните обязательные поля'
+
+  if (!validateAuthForm()) {
+    error.value = 'Проверьте поля формы'
     return
   }
-  if (isRegister.value && !form.acceptedTerms) {
-    error.value = 'Примите условия использования'
-    return
-  }
-  if (form.password.length < 8) {
-    error.value = 'Пароль должен быть не короче 8 символов'
-    return
-  }
-  if (!accessStore.hasSubscription && !(await verifySubscription(form.email))) {
-    error.value = 'Для входа и регистрации нужна активная подписка'
-    return
-  }
+
   const wasRegister = isRegister.value
   const result: {
     success: boolean
@@ -800,13 +837,7 @@ async function submit() {
     requiresVerification?: boolean
     email?: string
   } = wasRegister
-    ? await authStore.register(
-        form.email,
-        form.password,
-        form.name,
-        'cloud',
-        form.acceptedTerms
-      )
+    ? await authStore.register(form.email, 'cloud', form.acceptedTerms)
     : await authStore.login(form.email, form.password, 'cloud')
   if (!result.success) {
     error.value = result.error || 'Не удалось выполнить действие'
@@ -814,7 +845,10 @@ async function submit() {
       pendingVerification.active = true
       pendingVerification.email = form.email.trim().toLowerCase()
       pendingVerification.code = ''
-      resetMessage.value = 'Введите код из письма или запросите новый.'
+      form.password = ''
+      form.passwordConfirm = ''
+      resetMessage.value =
+        'Введите код из письма и задайте пароль — или запросите новый код.'
     }
     return
   }
@@ -822,8 +856,11 @@ async function submit() {
     pendingVerification.active = true
     pendingVerification.email = result.email || form.email.trim().toLowerCase()
     pendingVerification.code = ''
+    form.password = ''
+    form.passwordConfirm = ''
     resetMode.value = false
-    resetMessage.value = 'Мы отправили код подтверждения на вашу почту.'
+    resetMessage.value =
+      'Мы отправили код на почту. Введите его и задайте пароль.'
     return
   }
   accessStore.activateSubscription()
@@ -833,643 +870,480 @@ async function submit() {
 
 <style scoped lang="scss">
 .auth-page {
-  min-height: 100dvh;
+  --auth-substrate: var(--color-bg);
+  width: 100%;
   height: 100dvh;
-  padding: clamp(12px, 2vw, 24px);
+  margin: 0;
+  padding: var(--space-2);
   box-sizing: border-box;
-  background: var(--bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
-  overscroll-behavior: none;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
 }
 
-.auth-workspace {
+.auth-card {
   width: 100%;
-  max-width: 1200px;
   height: 100%;
-  margin: 0 auto;
-  min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.auth-grid {
-  width: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr);
-  gap: 24px;
-  align-items: stretch;
-  max-height: 100%;
-
-  @media (max-width: 820px) {
-    grid-template-columns: 1fr;
-    gap: 16px;
-
-    .auth-panel {
-      min-height: 0;
-      max-height: none;
-    }
-  }
+  grid-template-columns: minmax(0, 1fr) minmax(0, 550px);
+  gap: var(--space-2);
+  overflow: hidden;
+  background: transparent;
+  animation: fade-in var(--duration-normal) var(--ease-standard) both;
 }
 
-.auth-panel {
-  @include surface-panel;
+.auth-card__brand-slot,
+.auth-card__form-slot {
   min-width: 0;
   min-height: 0;
-  max-height: 100%;
-  padding: clamp(22px, 2.8vw, 40px);
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
+  height: 100%;
   box-sizing: border-box;
+  border-radius: var(--radius-lg);
+  background: transparent;
   overflow: hidden;
+}
 
-  @media (max-width: 560px) {
-    padding: 20px;
+.auth-card__brand-slot {
+  padding: var(--space-2);
+  position: relative;
+  background: transparent;
+}
+
+.auth-card__form-slot {
+  display: flex;
+  justify-content: stretch;
+  padding: var(--space-2);
+}
+
+.auth-card__brand {
+  height: 100%;
+  min-height: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-bg);
+  transition: background var(--transition-standard);
+}
+
+.auth-card__form {
+  --pad: var(--space-4);
+  width: 100%;
+  max-width: 550px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+  height: 100%;
+  margin-inline: auto;
+  padding: var(--pad);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--color-text-primary);
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  animation: fade-in var(--duration-normal) var(--ease-standard) both;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+
+  :deep(.app-input) {
+    min-height: 48px;
+    font-size: var(--text-md);
+  }
+
+  :deep(.field-label) {
+    font-size: var(--text-sm);
   }
 }
 
-/* Левая панель (введение) */
-.auth-intro {
+.form-top {
   display: flex;
-  flex-direction: column;
-  gap: 28px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-shrink: 0;
 }
 
 .back-action {
-  align-self: flex-start;
-  margin-left: -8px;
+  margin-left: calc(var(--space-2) * -1);
 }
 
-.intro-content {
+.form-header {
   display: grid;
-  align-content: center;
-  flex: 1;
-  max-width: 460px;
-
-  .intro-badge {
-    margin-bottom: var(--space-3);
-  }
+  gap: var(--space-2);
+  flex-shrink: 0;
 
   h1 {
-    margin: 0 0 var(--space-4);
+    margin: 0;
     color: var(--color-text-primary);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(2.2rem, 4vw, 3.5rem);
-    font-weight: 600;
-    line-height: 1;
-    letter-spacing: -0.045em;
+    font-family: var(--font-sans);
+    font-size: clamp(1.85rem, 2.8vw, 2.4rem);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.035em;
+    line-height: var(--leading-tight);
     overflow-wrap: normal;
     word-break: normal;
-    hyphens: none;
-
-    span {
-      display: block;
-      color: var(--dim);
-    }
   }
 
   p {
     margin: 0;
-    color: var(--dim);
-    font-size: 0.9rem;
-    line-height: 1.6;
+    max-width: 36ch;
+    color: var(--color-text-secondary);
+    font-size: var(--text-md);
+    line-height: var(--leading-normal);
     overflow-wrap: normal;
     word-break: normal;
-    hyphens: none;
   }
 }
 
-.intro-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.consent-block {
+  display: grid;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
 
-  :deep(.app-button) {
-    width: 100%;
-  }
+.oauth-consent {
+  color: var(--color-text-secondary);
 
-  .route-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text);
-    font-size: 0.85rem;
-    font-weight: 500;
-    text-decoration: none;
-    width: fit-content;
-    transition: gap var(--transition-standard);
+  :deep(a) {
+    color: var(--color-text-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
 
     &:hover {
-      gap: 12px;
+      color: var(--color-accent);
     }
   }
+}
+
+.oauth-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.oauth-button {
+  width: 100%;
+}
+
+.oauth-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.yandex-icon {
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: #fc3f1d;
+  color: #fff;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+}
+
+.auth-divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  flex-shrink: 0;
+
+  &::before,
+  &::after {
+    content: '';
+    height: 1px;
+    background: var(--color-border);
+  }
+}
+
+.auth-form {
+  display: grid;
+  gap: var(--space-3);
+  flex: 0 0 auto;
+  align-content: start;
+  overflow: visible;
+}
+
+.password-row {
+  display: grid;
+  gap: var(--space-3);
+
+  &.is-split {
+    grid-template-columns: 1fr 1fr;
+
+    @media (max-width: 560px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+.verification-card {
+  @include surface-panel;
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+
+  strong {
+    color: var(--color-text-primary);
+  }
+
+  p {
+    margin: var(--space-1) 0 0;
+    line-height: var(--leading-normal);
+  }
+}
+
+.submit-btn {
+  width: 100%;
+  min-height: 52px;
+  font-size: var(--text-md);
+}
+
+.inline-action {
+  justify-self: start;
+  width: fit-content;
+
+  &.forgot {
+    margin-top: calc(var(--space-1) * -1);
+  }
+}
+
+.password-hint {
+  margin: calc(var(--space-1) * -1) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.oauth-note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  flex-shrink: 0;
+
+  a {
+    color: var(--color-text-secondary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+      color: var(--color-text-primary);
+    }
+  }
+}
+
+.switch-mode {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  flex-shrink: 0;
+
+  a,
+  &__link {
+    color: var(--color-text-primary);
+    font-weight: var(--weight-medium);
+    text-decoration: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-accent);
+    }
+  }
+}
+
+.auth-mobile-dock {
+  display: none;
+}
+
+.auth-mobile-dock__btn {
+  width: 100%;
+  min-height: 64px;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
 }
 
 .legal-links {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px 16px;
-  margin-top: 2px;
+  gap: var(--space-2) var(--space-4);
+  margin-top: auto;
+  padding-top: var(--space-2);
+  flex-shrink: 0;
   text-align: center;
 
   a {
-    color: var(--dim);
-    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
     text-decoration: none;
-    transition: color var(--transition-standard);
 
     &:hover {
-      color: var(--accent);
+      color: var(--color-text-secondary);
     }
   }
 }
 
-/* Правая панель (форма/подписка) */
-.auth-form-panel {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.auth-form-panel > * {
-  width: min(100%, 480px);
-  margin-inline: auto;
-}
-
-.form-header,
-.subscription-header {
-  margin-bottom: 24px;
-  text-align: left;
-
-  .panel-badge {
-    display: block;
-    margin-bottom: var(--space-2);
-  }
-
-  h2 {
-    margin: 0 0 var(--space-2);
-    color: var(--color-text-primary);
-    font-size: clamp(1.65rem, 3vw, 2rem);
-    font-weight: 600;
-    line-height: 1.08;
-    letter-spacing: -0.03em;
-  }
-
-  p {
-    margin: 0;
-    color: var(--dim);
-    font-size: 0.85rem;
-    line-height: 1.5;
-  }
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-
-  :deep(.app-button) {
-    width: 100%;
-    margin-top: 2px;
-  }
-}
-
-.verification-form {
-  gap: 14px;
-}
-
-.verification-card {
-  @include surface-panel;
-  display: grid;
-  gap: 6px;
-  padding: 14px;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-md);
-
-  span {
-    color: var(--dim);
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
-  strong {
-    color: var(--text);
-    font-size: 0.96rem;
-    font-weight: 600;
-    overflow-wrap: anywhere;
-  }
-
-  p {
-    margin: 0;
-    color: var(--dim);
-    font-size: 0.8rem;
-    line-height: 1.45;
-  }
-}
-
-.oauth-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.oauth-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  min-width: 0;
-  min-height: var(--control-height-md);
-  padding: 0 16px;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-pill);
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  font-size: 0.88rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background var(--transition-standard),
-    border-color var(--transition-standard);
-
-  &:hover {
-    background: color-mix(in srgb, var(--accent) 7%, transparent);
-    border-color: var(--ui-border-color);
-  }
-
-  &:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--accent) 16%, transparent);
-    outline-offset: 2px;
-  }
-
-  &:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
-}
-
-.oauth-icon {
-  width: 17px;
-  height: 17px;
-  flex: 0 0 17px;
-}
-
-.yandex-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #fc3f1d;
-  font-family: Arial, sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.auth-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 18px 0;
-  color: var(--dim);
-  font-size: 0.72rem;
-
-  &::before,
-  &::after {
-    content: '';
-    height: 1px;
-    flex: 1;
-    background: var(--ui-border-color);
-  }
-}
-
-.oauth-consent {
-  margin-bottom: var(--space-4);
-  align-items: flex-start;
-  color: var(--color-text-secondary);
-  font-size: 0.8rem;
-
-  :deep(.app-checkbox__box) {
-    margin-top: 2px;
-  }
-
-  :deep(a) {
-    color: var(--color-accent);
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-}
-
-.oauth-message {
-  margin-top: var(--space-2);
-  text-align: center;
-  line-height: 1.35;
+.error-text,
+.success-text {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-tight);
 }
 
 .error-text {
-  margin: 0;
-  color: var(--error);
-  font-size: 0.8rem;
-  text-align: left;
+  color: var(--color-error);
 }
 
 .success-text {
-  margin: 0;
-  color: var(--success);
-  font-size: 0.8rem;
-  line-height: 1.4;
-  text-align: left;
+  color: var(--color-success);
 }
 
-.forgot-link {
-  align-self: flex-start;
-  width: fit-content;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--dim);
-  font: inherit;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: color var(--transition-standard);
-
-  &:hover {
-    color: var(--text);
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
-/* Блок подписки */
-.benefits-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin-bottom: 24px;
-  overflow: hidden;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
-}
-
-.benefit-item {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 14px 16px;
-  border-bottom: var(--ui-border);
-
-  &:last-child {
-    border-bottom: none;
+@media (max-width: 900px) {
+  .auth-page {
+    padding: var(--space-2);
   }
 
-  svg {
-    margin-top: 2px;
-    color: var(--accent);
-    flex-shrink: 0;
+  .auth-card {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    gap: 0;
   }
 
-  div {
+  .auth-card__brand-slot {
+    padding: 0;
+    background: transparent;
+  }
+
+  .auth-card__brand-slot.is-mobile-landing {
+    grid-row: 1 / -1;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-  }
-
-  strong {
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    color: var(--text);
-  }
-
-  span {
-    font-size: var(--text-xs);
-    color: var(--dim);
-    line-height: 1.4;
-  }
-}
-
-.payment-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  align-self: center;
-  gap: 10px;
-  width: min(100%, 480px);
-  max-width: 480px;
-  min-height: var(--control-height-md);
-  margin-inline: auto;
-  padding: 12px 20px;
-  box-sizing: border-box;
-  background: var(--accent);
-  border: none;
-  border-radius: var(--border-radius-pill);
-  color: var(--bg);
-  cursor: pointer;
-  font: inherit;
-  font-weight: 600;
-  text-decoration: none;
-  transition: opacity var(--transition-standard);
-
-  &:hover {
-    opacity: 0.9;
-  }
-}
-
-.subscription-check {
-  display: grid;
-  gap: 10px;
-  width: min(100%, 480px);
-  max-width: 480px;
-  margin: var(--space-3) auto 0;
-
-  :deep(.app-button) {
-    width: 100%;
-  }
-
-  .error-text {
-    text-align: center;
-  }
-}
-
-/* Адаптивность */
-@media (max-width: 820px) {
-  .auth-page {
-    align-items: stretch;
-    justify-content: flex-start;
-    overflow: hidden;
-    padding: 16px;
-  }
-
-  .auth-workspace {
-    max-width: none;
-    overflow: visible;
-  }
-
-  .auth-grid {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    height: calc(100dvh - 32px);
-    padding-inline: 22px;
-    box-sizing: border-box;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-behavior: smooth;
-    scroll-padding-inline: 22px;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    overscroll-behavior-x: contain;
-    -webkit-overflow-scrolling: touch;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-
-  .auth-panel {
-    position: relative;
-    min-width: 0;
+    gap: var(--space-2);
+    height: 100%;
     min-height: 0;
-    max-height: 100%;
-    flex: 0 0 min(480px, calc(100vw - 78px));
-    height: auto;
-    overflow-y: auto;
-    scroll-snap-align: center;
-    scroll-snap-stop: always;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
+    padding: 0;
   }
 
-  .auth-form-panel {
-    order: 2;
-    justify-content: flex-start;
-    animation: auth-card-peek 0.82s ease-out 0.55s 1;
+  .auth-card__brand-slot.is-mobile-landing .auth-card__brand {
+    position: relative;
+    z-index: 1;
+    flex: 1 1 auto;
+    min-height: 0;
+
+    height: 0;
+    pointer-events: none;
   }
 
-  .auth-intro {
-    order: 1;
-    gap: 20px;
-  }
-
-  .intro-content {
+  .auth-mobile-dock {
+    display: grid;
+    position: relative;
+    z-index: 6;
     flex: 0 0 auto;
-    padding-block: 12px;
-  }
-
-  .intro-actions {
-    gap: 10px;
-
-    .route-link {
-      align-self: center;
-      justify-content: center;
-      text-align: center;
-    }
-  }
-
-  .form-header,
-  .subscription-header {
-    margin-bottom: 20px;
-  }
-
-  .subscription-header,
-  .benefits-list,
-  .payment-link {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
     width: 100%;
+    padding-inline: 0;
+    padding-bottom: max(var(--space-2), env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+    pointer-events: auto;
+    isolation: isolate;
   }
 
-  .auth-form {
-    gap: 13px;
+  .auth-mobile-dock__btn {
+    min-height: 64px;
+    font-size: var(--text-lg);
   }
 
-  .auth-divider {
-    margin: 15px 0;
+  .auth-card__form-slot.is-mobile-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    padding: var(--space-2);
+    padding-bottom: max(var(--space-2), env(safe-area-inset-bottom, 0px));
+    background: var(--color-bg);
   }
 
-  .benefits-list {
-    margin-bottom: 18px;
+  .auth-card__form-slot.is-mobile-overlay .auth-card__form {
+    background: transparent;
   }
 
-  .benefit-item {
-    padding: 12px 14px;
-    text-align: left;
-  }
-}
-
-@media (max-width: 480px) {
-  .auth-page {
-    padding: 10px;
-  }
-
-  .auth-grid {
-    height: calc(100dvh - 20px);
-    padding-inline: 22px;
-    scroll-padding-inline: 22px;
-  }
-
-  .auth-panel {
-    flex-basis: calc(100vw - 64px);
+  .auth-card__form {
+    --pad: var(--space-3);
+    max-width: none;
+    height: 100%;
     min-height: 0;
-    padding: 18px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 
-  .intro-content h1 {
-    margin-bottom: 14px;
-    font-size: clamp(1.8rem, 8vw, 2.4rem);
-  }
-
-  .intro-content p {
-    font-size: 0.84rem;
-    line-height: 1.5;
-  }
-
-  .form-header h2,
-  .subscription-header h2 {
-    font-size: 1.5rem;
+  .form-header h1 {
+    font-size: clamp(1.5rem, 7vw, 2rem);
   }
 
   .oauth-actions {
-    gap: 8px;
+    grid-template-columns: 1fr 1fr;
   }
 
-  .oauth-button {
-    padding-inline: 12px;
+  .oauth-note {
+    text-align: center;
   }
 
-  .legal-links {
-    gap: 8px 12px;
+  .switch-mode {
+    text-align: center;
+  }
+
+  .password-row.is-split {
+    grid-template-columns: 1fr;
   }
 }
 
-@keyframes auth-card-peek {
-  0%,
-  100% {
-    transform: translateX(0);
+@media (max-height: 760px) {
+  .form-header p {
+    display: none;
   }
 
-  24% {
-    transform: translateX(-12px);
+  .auth-card__form {
+    gap: var(--space-2);
+    --pad: var(--space-3);
   }
 
-  40% {
-    transform: translateX(0);
+  .auth-form {
+    gap: var(--space-2);
   }
+}
 
-  64% {
-    transform: translateX(-8px);
-  }
-
-  80% {
-    transform: translateX(0);
+@media (prefers-reduced-motion: reduce) {
+  .auth-card,
+  .auth-card__form {
+    animation: none;
   }
 }
 </style>

@@ -12,12 +12,6 @@ export default defineEventHandler(async (event) => {
     return { user: null, subscription: { active: false, expiresAt: '' } }
   }
 
-  const subscription = await getActiveSubscription(user.email)
-  if (!subscription.active) {
-    clearOAuthSession(event)
-    return { user: null, subscription }
-  }
-
   setOAuthSession(event, user)
-  return { user, subscription }
+  return { user, subscription: await getActiveSubscription(user.email) }
 })

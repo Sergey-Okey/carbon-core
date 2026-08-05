@@ -11,7 +11,6 @@
 withDefaults(
   defineProps<{
     noPadding?: boolean
-    /** glass — real blur overlays; frosted — Vue Flow / transformed UI; surface — solid panels */
     variant?: 'glass' | 'frosted' | 'surface'
   }>(),
   {

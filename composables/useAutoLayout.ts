@@ -123,10 +123,7 @@ function collectBranchNetworks(nodes: Node[], edges: Edge[]): Network[] {
   return networks.sort((a, b) => a.branchId.localeCompare(b.branchId))
 }
 
-/**
- * Primary flow = dominant exit side from the branch.
- * Uses both outgoing (sourceHandle) and incoming (targetHandle → opposite).
- */
+
 function detectPrimarySide(network: Network, rootId: string): HandleSide {
   const counts: Record<HandleSide, number> = { top: 0, right: 0, bottom: 0, left: 0 }
 
@@ -159,7 +156,7 @@ function detectPrimarySide(network: Network, rootId: string): HandleSide {
   return bestCount > 0 ? best : 'right'
 }
 
-/** Outgoing side of an edge (where the link leaves the source). */
+
 function edgeExitSide(edge: Edge, fallback: HandleSide): HandleSide {
   return (
     handleSide(edge.sourceHandle) ||
@@ -170,7 +167,7 @@ function edgeExitSide(edge: Edge, fallback: HandleSide): HandleSide {
   )
 }
 
-/** Pick source/target ports from relative node centers. */
+
 function portsFromPositions(
   source: Node,
   target: Node
@@ -210,7 +207,7 @@ function buildAdjacency(network: Network) {
   return { outgoing, incoming }
 }
 
-/** Snap near-equal coordinates into shared lanes. */
+
 function clusterLanes(values: number[], snapGrid: number, tolerance: number) {
   const sorted = [...values].sort((a, b) => a - b)
   const groups: number[][] = []
@@ -243,10 +240,7 @@ function boxesOverlap(a: LayoutBox, b: LayoutBox, gap: number) {
   )
 }
 
-/**
- * Push overlapping cards apart. Prefers keeping columns/rows:
- * same column → separate vertically; same row → horizontally.
- */
+
 function resolveNodeOverlaps(
   nodeIds: string[],
   byId: Map<string, Node>,
@@ -312,7 +306,7 @@ function resolveNodeOverlaps(
     }
   })
 
-  // Snap can reintroduce 1-grid overlaps — one more separation pass without snap first
+
   for (let pass = 0; pass < 8; pass++) {
     let moved = false
     for (let i = 0; i < boxes.length; i++) {
@@ -343,10 +337,7 @@ function resolveNodeOverlaps(
   }
 }
 
-/**
- * Place network from branch root using each edge's outgoing + incoming sides.
- * Children on different handles grow in different directions.
- */
+
 function layoutSingleNetwork(
   network: Network,
   byId: Map<string, Node>,
@@ -362,7 +353,7 @@ function layoutSingleNetwork(
   const flow = detectPrimarySide(network, branchNode.id)
   const { outgoing } = buildAdjacency(network)
 
-  // Pitch from actual card size along each axis so neighbors clear each other
+
   const maxWidth = Math.max(
     ...network.nodeIds.map((id) => getNodeSize(byId.get(id)!).width)
   )
@@ -418,7 +409,7 @@ function layoutSingleNetwork(
         const childSize = getNodeSize(child)
         const cross = -crossSpan / 2 + index * crossPitch
 
-        // Distance between centers: half parent + gap + half child along the exit axis
+
         const mainDistance = horizontal
           ? parentSize.width / 2 + edgeGap + childSize.width / 2
           : parentSize.height / 2 + edgeGap + childSize.height / 2
@@ -453,7 +444,7 @@ function layoutSingleNetwork(
 
   placeChildren(branchNode.id)
 
-  // Orphans (no path from root yet) — park along primary flow under root.
+
   const orphans = network.nodeIds.filter((id) => !placed.has(id))
   if (orphans.length > 0) {
     const rootSize = getNodeSize(branchNode)
@@ -496,7 +487,7 @@ function layoutSingleNetwork(
     })
   }
 
-  // Soft lane snap — only merge centers that are already very close
+
   const centers = network.nodeIds.map((id) => {
     const node = byId.get(id)!
     const size = getNodeSize(node)
@@ -565,12 +556,7 @@ function packNetworks(
 }
 
 export function useAutoLayout() {
-  /**
-   * Compact layout:
-   * - each edge's outgoing (source) + incoming (target) handles drive placement
-   * - stages align on shared horizontal & vertical center lanes
-   * - edge ports are set per-link from geometry (in + out)
-   */
+  
   function applyNetworkLayout(
     nodes: Node[],
     edges: Edge[],
@@ -603,7 +589,7 @@ export function useAutoLayout() {
 
     packNetworks(networks, byId, marginX, marginY, componentGap, snapGrid)
 
-    // Final pass across the whole board — no card may overlap another
+
     resolveNodeOverlaps(
       layoutedNodes.map((node) => node.id),
       byId,

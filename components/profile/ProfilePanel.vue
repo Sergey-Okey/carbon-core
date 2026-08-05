@@ -1,6 +1,6 @@
 <template>
   <section class="profile" aria-label="Профиль">
-    <div class="profile-bento">
+    <div class="profile-bento page-enter-stack">
       <article class="tile tile--avatar">
         <button
           class="avatar-upload"
@@ -55,6 +55,9 @@
           </template>
 
           <form v-else class="readme-form" @submit.prevent="saveProfile">
+            <p v-if="needsProfileSetup" class="profile-setup-hint">
+              Укажите имя, чтобы завершить настройку профиля.
+            </p>
             <div class="pair">
               <label class="field">
                 <span>Имя</span>
@@ -111,7 +114,12 @@
                 >
                   Сохранить
                 </AppButton>
-                <AppButton type="button" variant="ghost" @click="cancelEditing">
+                <AppButton
+                  v-if="!needsProfileSetup"
+                  type="button"
+                  variant="ghost"
+                  @click="cancelEditing"
+                >
                   Отмена
                 </AppButton>
               </template>
@@ -130,7 +138,7 @@
         </div>
       </article>
 
-      <!-- Mid left: achievements -->
+      
       <article class="tile tile--badges">
         <header class="tile-head">
           <h2>Достижения</h2>
@@ -180,7 +188,7 @@
         </div>
       </article>
 
-      <!-- Bottom: activity · access · profile -->
+      
       <article class="tile tile--activity">
         <header class="tile-head">
           <h2>Активность</h2>
@@ -211,13 +219,21 @@
       <article class="tile tile--access">
         <header class="tile-head">
           <h2>Доступ</h2>
-          <span class="tile-head__aside">{{ accessTitle }}</span>
+          <button
+            v-if="accessStore.isDemo"
+            type="button"
+            class="demo-exit"
+            @click="exitDemoToRegister"
+          >
+            Демо
+          </button>
+          <span v-else class="tile-head__aside">{{ accessTitle }}</span>
         </header>
 
         <div class="stat-rows">
           <div class="stat-row">
             <span>Режим</span>
-            <strong>{{ accessTitle }}</strong>
+            <strong :class="{ 'is-demo': accessStore.isDemo }">{{ accessTitle }}</strong>
           </div>
           <div v-if="expiresLabel" class="stat-row">
             <span>Истекает</span>
@@ -234,6 +250,15 @@
         </div>
 
         <p class="tile-note">{{ accessNote }}</p>
+        <AppButton
+          v-if="accessStore.isDemo"
+          type="button"
+          variant="danger"
+          class="demo-exit-cta"
+          @click="exitDemoToRegister"
+        >
+          Завершить демо
+        </AppButton>
       </article>
 
       <article class="tile tile--account">
@@ -303,6 +328,16 @@ const { confirm } = useConfirm()
 const { success, warning, info } = useNotification()
 const router = useRouter()
 
+async function exitDemoToRegister() {
+  const ok = await confirm(
+    'Завершить демо-режим и перейти к регистрации? Локальные демо-данные будут сброшены.'
+  )
+  if (!ok) return
+  accessStore.leaveDemo()
+  sessionStorage.clear()
+  await router.push('/register')
+}
+
 const fileInput = ref<HTMLInputElement | null>(null)
 const isSaving = ref(false)
 const isEditing = ref(false)
@@ -323,14 +358,24 @@ const draft = reactive({
   bio: '',
 })
 
+const needsProfileSetup = computed(
+  () =>
+    !accessStore.isDemo &&
+    Boolean(authStore.isAuthenticated) &&
+    !(authStore.currentUser?.name || '').trim()
+)
+
 watch(
   () => authStore.currentUser,
   (user) => {
-    if (isEditing.value) return
+    if (isEditing.value && !needsProfileSetup.value) return
     form.name = user?.name || userStore.profile.name
     form.email = user?.email || userStore.profile.email
     form.bio = user?.bio || userStore.profile.bio
     form.avatar = user?.avatar || userStore.profile.avatar
+    if (needsProfileSetup.value) {
+      isEditing.value = true
+    }
   },
   { immediate: true, deep: true }
 )
@@ -386,7 +431,7 @@ const levelPercent = computed(() =>
 
 const accessTitle = computed(() => {
   if (accessStore.isDemo) return 'Демо'
-  if (accessStore.hasSubscription || authStore.subscription.active) return 'Подписка'
+  if (accessStore.hasSubscription || authStore.subscription.active) return 'Аккаунт'
   return 'Гость'
 })
 
@@ -395,7 +440,7 @@ const accessNote = computed(() => {
   if (accessStore.hasSubscription || authStore.subscription.active) {
     return 'Полный доступ к разделам приложения.'
   }
-  return 'Оформите доступ, чтобы сохранять прогресс.'
+  return 'Войдите или зарегистрируйтесь, чтобы сохранять прогресс.'
 })
 
 const expiresLabel = computed(() => {
@@ -458,7 +503,6 @@ const yearCells = computed(() => {
 
 const yearWeeks = computed(() => Math.max(1, Math.ceil(yearCells.value.length / 7)))
 
-/** On mobile show fewer recent weeks so cubes stay large and readable. */
 const MOBILE_HEAT_WEEKS = 14
 
 const heatCols = computed(() => {
@@ -827,6 +871,37 @@ async function deleteAccount() {
   line-height: 1.45;
 }
 
+.demo-exit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--space-7);
+  padding-inline: var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--color-error) 45%, transparent);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-error) 16%, transparent);
+  color: var(--color-error);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+  transition: background var(--transition-standard);
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: color-mix(in srgb, var(--color-error) 24%, transparent);
+    }
+  }
+}
+
+.stat-row strong.is-demo {
+  color: var(--color-error);
+}
+
+.demo-exit-cta {
+  margin-top: auto;
+  width: 100%;
+}
+
 .level-bar {
   width: 100%;
   height: 6px;
@@ -1004,6 +1079,13 @@ async function deleteAccount() {
 
 .readme-actions__right {
   margin-inline-start: auto;
+}
+
+.profile-setup-hint {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
 }
 
 .form-error {
