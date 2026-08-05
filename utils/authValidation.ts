@@ -1,5 +1,4 @@
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
-const EMAIL_ALLOWED = /[^a-z0-9.!#$%&'*+/=?^_`{|}~@-]+/g
 
 export function normalizePhone(value: string): string {
   const digits = value.replace(/\D/g, '')
@@ -9,7 +8,7 @@ export function normalizePhone(value: string): string {
   return value.trim()
 }
 
-/** Mask: +7 (XXX) XXX-XX-XX — never longer than 11 digits / full mask. */
+/** Mask: +7 (XXX) XXX-XX-XX */
 export function formatPhoneInput(value: string): string {
   let digits = value.replace(/\D/g, '')
   if (!digits) return ''
@@ -33,14 +32,8 @@ export function formatPhoneInput(value: string): string {
   return out
 }
 
-export const PHONE_MASK_MAX_LENGTH = '+7 (999) 123-45-67'.length
-
 export function formatEmailInput(value: string): string {
-  return value
-    .replace(/\s+/g, '')
-    .toLowerCase()
-    .replace(EMAIL_ALLOWED, '')
-    .slice(0, 254)
+  return value.replace(/\s+/g, '').toLowerCase()
 }
 
 export function formatNameInput(value: string): string {
@@ -49,11 +42,6 @@ export function formatNameInput(value: string): string {
 
 export function formatCodeInput(value: string): string {
   return value.replace(/\D/g, '').slice(0, 6)
-}
-
-export function formatPasswordInput(value: string): string {
-  // Strip control chars; hard cap length — no mask characters beyond limit
-  return value.replace(/[\u0000-\u001F\u007F]/g, '').slice(0, 128)
 }
 
 export function validateName(value: string): string {

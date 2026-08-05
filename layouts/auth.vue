@@ -3,7 +3,10 @@
     <main class="auth-layout__content">
       <slot />
     </main>
-    <ThemeToggleButton class="auth-theme-toggle" />
+    <ThemeToggleButton
+      class="auth-theme-toggle"
+      data-tooltip-position="top"
+    />
     <ToastContainer />
   </div>
 </template>
@@ -17,8 +20,7 @@
   block-size: 100vh;
   block-size: 100dvh;
   overflow: hidden;
-  background: var(--color-bg);
-  color: var(--color-text-primary);
+  background: transparent;
 }
 
 .auth-layout__content {
@@ -36,11 +38,4 @@
   z-index: 20;
 }
 
-@media (max-width: 900px) {
-  .auth-theme-toggle {
-    top: max(var(--space-3), env(safe-area-inset-top, 0px));
-    bottom: auto;
-    right: max(var(--space-3), env(safe-area-inset-right, 0px));
-  }
-}
 </style>

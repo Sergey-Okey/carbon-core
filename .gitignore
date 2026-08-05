@@ -17,8 +17,6 @@ lerna-debug.log*
 # Environment
 .env
 .env*.local
-deploy/.env.production
-deploy/release.tgz
 
 # Cache
 *.tsbuildinfo

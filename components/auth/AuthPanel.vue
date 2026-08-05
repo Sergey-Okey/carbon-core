@@ -10,11 +10,7 @@
       >
         <AuthBrandStage class="auth-card__brand" :slogan="brandSlogan" />
 
-        <div
-          v-if="isMobile && !mobileFormOpen"
-          class="auth-mobile-dock"
-          @pointerdown.stop
-        >
+        <div v-if="isMobile && !mobileFormOpen" class="auth-mobile-dock">
           <AppButton
             type="button"
             variant="primary"
@@ -29,7 +25,7 @@
             variant="secondary"
             size="lg"
             class="auth-mobile-dock__btn"
-            @click.stop="startDemo"
+            @click="startDemo"
           >
             <Play :size="18" />
             Демо
@@ -56,10 +52,11 @@
             </AppButton>
 
             <AppButton
+              v-if="!isMobile"
               type="button"
               variant="secondary"
               size="sm"
-              @click.stop="startDemo"
+              @click="startDemo"
             >
               <Play :size="14" />
               Демо
@@ -76,10 +73,7 @@
             <div class="verification-card">
               <span>Код отправлен на</span>
               <strong>{{ pendingVerification.email }}</strong>
-              <p>
-                Введите код из письма и задайте пароль для входа. Код действует
-                15 минут.
-              </p>
+              <p>Введите 6 цифр из письма. Код действует 15 минут.</p>
             </div>
             <AppFormField
               label="Код подтверждения"
@@ -96,35 +90,6 @@
                 @update:model-value="onCodeInput"
               />
             </AppFormField>
-            <AppFormField
-              label="Пароль"
-              hint="Не менее 8 символов, цифра и специальный символ"
-              :error="fieldErrors.password || undefined"
-            >
-              <AppInput
-                v-model="form.password"
-                type="password"
-                placeholder="Придумайте пароль"
-                autocomplete="new-password"
-                maxlength="128"
-                :invalid="Boolean(fieldErrors.password)"
-                @update:model-value="onPasswordInput"
-              />
-            </AppFormField>
-            <AppFormField
-              label="Подтвердите пароль"
-              :error="fieldErrors.passwordConfirm || undefined"
-            >
-              <AppInput
-                v-model="form.passwordConfirm"
-                type="password"
-                placeholder="Повторите пароль"
-                autocomplete="new-password"
-                maxlength="128"
-                :invalid="Boolean(fieldErrors.passwordConfirm)"
-                @update:model-value="onPasswordConfirmInput"
-              />
-            </AppFormField>
             <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
             <p v-if="error" class="error-text">{{ error }}</p>
             <AppButton
@@ -134,9 +99,7 @@
               :loading="authStore.isLoading"
               :disabled="authStore.isLoading"
             >
-              {{
-                authStore.isLoading ? 'Проверяем…' : 'Подтвердить и войти'
-              }}
+              {{ authStore.isLoading ? 'Проверяем…' : 'Подтвердить email' }}
             </AppButton>
             <AppButton
               type="button"
@@ -225,6 +188,21 @@
 
         <template v-else>
           <form class="auth-form" @submit.prevent="submit">
+            <AppFormField
+              v-if="isRegister"
+              label="Имя"
+              :error="fieldErrors.name || undefined"
+            >
+              <AppInput
+                v-model="form.name"
+                placeholder="Как к вам обращаться"
+                autocomplete="name"
+                maxlength="40"
+                :invalid="Boolean(fieldErrors.name)"
+                @update:model-value="onNameInput"
+              />
+            </AppFormField>
+
             <AppFormField label="Email" :error="fieldErrors.email || undefined">
               <AppInput
                 v-model="form.email"
@@ -239,20 +217,60 @@
             </AppFormField>
 
             <AppFormField
-              v-if="!isRegister"
-              label="Пароль"
-              :error="fieldErrors.password || undefined"
+              v-if="isRegister"
+              label="Телефон"
+              :error="fieldErrors.phone || undefined"
             >
               <AppInput
-                v-model="form.password"
-                type="password"
-                placeholder="Введите пароль"
-                maxlength="128"
-                autocomplete="current-password"
-                :invalid="Boolean(fieldErrors.password)"
-                @update:model-value="onPasswordInput"
+                v-model="form.phone"
+                type="tel"
+                inputmode="tel"
+                placeholder="+7 (999) 123-45-67"
+                autocomplete="tel"
+                :maxlength="PHONE_MASK_MAX_LENGTH"
+                :invalid="Boolean(fieldErrors.phone)"
+                @update:model-value="onPhoneInput"
               />
             </AppFormField>
+
+            <div class="password-row" :class="{ 'is-split': isRegister }">
+              <AppFormField
+                label="Пароль"
+                :error="fieldErrors.password || undefined"
+              >
+                <AppInput
+                  v-model="form.password"
+                  type="password"
+                  placeholder="Введите пароль"
+                  maxlength="128"
+                  :autocomplete="
+                    isRegister ? 'new-password' : 'current-password'
+                  "
+                  :invalid="Boolean(fieldErrors.password)"
+                  @update:model-value="onPasswordInput"
+                />
+              </AppFormField>
+
+              <AppFormField
+                v-if="isRegister"
+                label="Подтвердите пароль"
+                :error="fieldErrors.passwordConfirm || undefined"
+              >
+                <AppInput
+                  v-model="form.passwordConfirm"
+                  type="password"
+                  placeholder="Повторите пароль"
+                  autocomplete="new-password"
+                  maxlength="128"
+                  :invalid="Boolean(fieldErrors.passwordConfirm)"
+                  @update:model-value="onPasswordConfirmInput"
+                />
+              </AppFormField>
+            </div>
+
+            <p v-if="isRegister" class="password-hint">
+              Не менее 8 символов, цифра и специальный символ.
+            </p>
 
             <AppButton
               v-if="!isRegister"
@@ -283,7 +301,7 @@
               </p>
             </div>
 
-            <p v-if="error && !oauthMessage" class="error-text">{{ error }}</p>
+            <p v-if="error" class="error-text">{{ error }}</p>
 
             <AppButton
               type="submit"
@@ -296,7 +314,7 @@
                 authStore.isLoading
                   ? 'Подождите…'
                   : isRegister
-                    ? 'Продолжить'
+                    ? 'Создать аккаунт'
                     : 'Войти'
               }}
             </AppButton>
@@ -309,7 +327,7 @@
               type="button"
               variant="secondary"
               class="oauth-button"
-              :disabled="isStartingOAuth || !oauthProviders.google"
+              :disabled="isStartingOAuth"
               @click="startOAuth('google')"
             >
               <svg
@@ -340,19 +358,13 @@
               type="button"
               variant="secondary"
               class="oauth-button"
-              :disabled="isStartingOAuth || !oauthProviders.yandex"
+              :disabled="isStartingOAuth"
               @click="startOAuth('yandex')"
             >
               <span class="oauth-icon yandex-icon" aria-hidden="true">Я</span>
               Яндекс
             </AppButton>
           </div>
-          <p class="oauth-note">
-            Продолжая через Google или Яндекс, вы принимаете
-            <NuxtLink to="/terms">условия</NuxtLink>
-            и
-            <NuxtLink to="/privacy">политику конфиденциальности</NuxtLink>.
-          </p>
           <p v-if="oauthMessage" class="error-text">{{ oauthMessage }}</p>
 
           <p class="switch-mode">
@@ -452,7 +464,7 @@ const formTitle = computed(() =>
 const formDescription = computed(() =>
   keepShortWords(
     isRegister.value
-      ? 'Укажите email — пароль зададите после подтверждения письма.'
+      ? 'Заполните данные, чтобы создать профиль.'
       : 'Введите email и пароль, чтобы войти.'
   )
 )
@@ -462,13 +474,17 @@ const AUTH_FORM_SCROLL_KEY = 'carbon-auth-open-form'
 const authFormPanel = ref<HTMLElement | null>(null)
 const error = ref('')
 const form = reactive({
+  name: '',
   email: '',
+  phone: '',
   password: '',
   passwordConfirm: '',
   acceptedTerms: false,
 })
 const fieldErrors = reactive({
+  name: '',
   email: '',
+  phone: '',
   password: '',
   passwordConfirm: '',
   terms: '',
@@ -485,32 +501,15 @@ const isRequestingReset = ref(false)
 const isConfirmingReset = ref(false)
 const isStartingOAuth = ref(false)
 const oauthMessage = ref('')
-const oauthProviders = reactive({ google: true, yandex: true })
 const resetToken = computed(() => {
   const value = route.query.resetToken
   return typeof value === 'string' ? value : ''
 })
 
-async function loadOAuthProviders() {
-  try {
-    const response = await backendFetch<{ google?: boolean; yandex?: boolean }>(
-      getBackendUrl('/api/auth/providers'),
-      { ...getBackendFetchOptions() }
-    )
-    oauthProviders.google = Boolean(response.google)
-    oauthProviders.yandex = Boolean(response.yandex)
-    if (!oauthProviders.google && !oauthProviders.yandex) {
-      oauthMessage.value =
-        'Вход через Google и Яндекс пока не настроен на сервере.'
-    }
-  } catch {
-    oauthProviders.google = false
-    oauthProviders.yandex = false
-  }
-}
-
 function clearFieldErrors() {
+  fieldErrors.name = ''
   fieldErrors.email = ''
+  fieldErrors.phone = ''
   fieldErrors.password = ''
   fieldErrors.passwordConfirm = ''
   fieldErrors.terms = ''
@@ -519,9 +518,19 @@ function clearFieldErrors() {
   fieldErrors.resetPassword = ''
 }
 
+function onPhoneInput(value: string | number | undefined) {
+  form.phone = formatPhoneInput(String(value ?? ''))
+  fieldErrors.phone = ''
+}
+
 function onEmailInput(value: string | number | undefined) {
   form.email = formatEmailInput(String(value ?? ''))
   fieldErrors.email = ''
+}
+
+function onNameInput(value: string | number | undefined) {
+  form.name = formatNameInput(String(value ?? ''))
+  fieldErrors.name = ''
 }
 
 function onCodeInput(value: string | number | undefined) {
@@ -552,9 +561,14 @@ function onResetPasswordInput(value: string | number | undefined) {
 function validateAuthForm() {
   clearFieldErrors()
 
-  fieldErrors.email = validateEmail(form.email)
-
   if (isRegister.value) {
+    fieldErrors.name = validateName(form.name)
+    fieldErrors.phone = validatePhone(form.phone)
+    fieldErrors.passwordConfirm = validatePasswordConfirm(
+      form.password,
+      form.passwordConfirm
+    )
+    fieldErrors.password = validatePassword(form.password, { strict: true })
     if (!form.acceptedTerms) {
       fieldErrors.terms = 'Примите условия использования'
     }
@@ -562,14 +576,19 @@ function validateAuthForm() {
     fieldErrors.password = validatePassword(form.password)
   }
 
-  return ![fieldErrors.email, fieldErrors.password, fieldErrors.terms].some(
-    Boolean
-  )
+  fieldErrors.email = validateEmail(form.email)
+
+  return ![
+    fieldErrors.name,
+    fieldErrors.email,
+    fieldErrors.phone,
+    fieldErrors.password,
+    fieldErrors.passwordConfirm,
+    fieldErrors.terms,
+  ].some(Boolean)
 }
 
 onMounted(() => {
-  void loadOAuthProviders()
-
   if (import.meta.client && isMobile.value) {
     const hasDeepLink =
       Boolean(resetToken.value) ||
@@ -604,7 +623,9 @@ onMounted(() => {
 
   if (!oauthError) return
 
-  oauthMessage.value = getOAuthErrorMessage(oauthError)
+  const message = getOAuthErrorMessage(oauthError)
+  error.value = message
+  oauthMessage.value = message
   void router.replace({ path: isRegister.value ? '/register' : '/auth' })
 })
 
@@ -631,18 +652,11 @@ function switchMobileAuthMode() {
 }
 
 function startDemo() {
-  try {
-    resetDemoData()
-    accessStore.startDemo()
-    void seedDemoWorkspaceIfNeeded()
-      .catch(() => undefined)
-      .finally(() => {
-        void router.push('/')
-      })
-  } catch {
-    accessStore.startDemo()
-    void router.push('/')
-  }
+  resetDemoData()
+  accessStore.startDemo()
+  void seedDemoWorkspaceIfNeeded().finally(() => {
+    router.push('/')
+  })
 }
 
 function scheduleAuthFormScroll() {
@@ -672,20 +686,21 @@ function startOAuth(provider: 'google' | 'yandex') {
   oauthMessage.value = ''
   fieldErrors.terms = ''
 
-  if (!oauthProviders[provider]) {
-    oauthMessage.value =
-      provider === 'google'
-        ? 'Google вход не настроен. Добавьте NUXT_GOOGLE_CLIENT_ID и SECRET на сервере.'
-        : 'Яндекс вход не настроен. Добавьте NUXT_YANDEX_CLIENT_ID и SECRET на сервере.'
+  if (isRegister.value && !form.acceptedTerms) {
+    const message =
+      'Перед входом через Google или Яндекс примите условия использования'
+    fieldErrors.terms = message
+    error.value = message
+    oauthMessage.value = message
     return
   }
 
   isStartingOAuth.value = true
-  window.location.assign(
-    getBackendUrl(
-      `/api/auth/${provider}?acceptedTerms=true&termsVersion=2026-06-07`
-    )
-  )
+  const consent =
+    isRegister.value && form.acceptedTerms
+      ? '?acceptedTerms=true&termsVersion=2026-06-07'
+      : ''
+  window.location.assign(getBackendUrl(`/api/auth/${provider}${consent}`))
 }
 
 function getOAuthErrorMessage(reason: string) {
@@ -693,7 +708,7 @@ function getOAuthErrorMessage(reason: string) {
     terms:
       'Перед входом через Google или Яндекс нужно принять условия использования.',
     provider:
-      'OAuth не настроен или провайдер не вернул данные. Проверьте Client ID/Secret и redirect URI.',
+      'Не удалось получить данные аккаунта у провайдера. Попробуйте ещё раз.',
     invalid: 'Некорректный ответ авторизации. Попробуйте войти ещё раз.',
     failed: 'Вход через сервис не выполнен. Попробуйте другой способ.',
   }
@@ -713,30 +728,19 @@ async function confirmEmailVerification() {
   error.value = ''
   resetMessage.value = ''
   fieldErrors.code = validateVerificationCode(pendingVerification.code)
-  fieldErrors.password = validatePassword(form.password, { strict: true })
-  fieldErrors.passwordConfirm = validatePasswordConfirm(
-    form.password,
-    form.passwordConfirm
-  )
-  if (
-    fieldErrors.code ||
-    fieldErrors.password ||
-    fieldErrors.passwordConfirm
-  ) {
-    return
-  }
+  if (fieldErrors.code) return
 
   const email = pendingVerification.email || form.email.trim().toLowerCase()
   const code = pendingVerification.code.trim()
 
-  const result = await authStore.verifyEmail(email, code, form.password)
+  const result = await authStore.verifyEmail(email, code)
   if (!result.success) {
     error.value = result.error || 'Не удалось подтвердить email'
     return
   }
 
   accessStore.activateSubscription()
-  router.push('/profile')
+  router.push('/')
 }
 
 async function resendEmailVerification() {
@@ -822,8 +826,11 @@ async function confirmPasswordReset() {
 
 async function submit() {
   error.value = ''
-  oauthMessage.value = ''
   form.email = form.email.trim()
+  form.name = form.name.trim()
+  if (isRegister.value) {
+    form.phone = formatPhoneInput(form.phone)
+  }
 
   if (!validateAuthForm()) {
     error.value = 'Проверьте поля формы'
@@ -837,7 +844,14 @@ async function submit() {
     requiresVerification?: boolean
     email?: string
   } = wasRegister
-    ? await authStore.register(form.email, 'cloud', form.acceptedTerms)
+    ? await authStore.register(
+        form.email,
+        form.password,
+        form.name,
+        'cloud',
+        form.acceptedTerms,
+        normalizePhone(form.phone)
+      )
     : await authStore.login(form.email, form.password, 'cloud')
   if (!result.success) {
     error.value = result.error || 'Не удалось выполнить действие'
@@ -845,10 +859,7 @@ async function submit() {
       pendingVerification.active = true
       pendingVerification.email = form.email.trim().toLowerCase()
       pendingVerification.code = ''
-      form.password = ''
-      form.passwordConfirm = ''
-      resetMessage.value =
-        'Введите код из письма и задайте пароль — или запросите новый код.'
+      resetMessage.value = 'Введите код из письма или запросите новый.'
     }
     return
   }
@@ -856,11 +867,8 @@ async function submit() {
     pendingVerification.active = true
     pendingVerification.email = result.email || form.email.trim().toLowerCase()
     pendingVerification.code = ''
-    form.password = ''
-    form.passwordConfirm = ''
     resetMode.value = false
-    resetMessage.value =
-      'Мы отправили код на почту. Введите его и задайте пароль.'
+    resetMessage.value = 'Мы отправили код подтверждения на вашу почту.'
     return
   }
   accessStore.activateSubscription()
@@ -870,15 +878,18 @@ async function submit() {
 
 <style scoped lang="scss">
 .auth-page {
-  --auth-substrate: var(--color-bg);
+  --auth-substrate: #000;
   width: 100%;
   height: 100dvh;
   margin: 0;
   padding: var(--space-2);
   box-sizing: border-box;
   overflow: hidden;
-  background: var(--color-bg);
-  color: var(--color-text-primary);
+  background: var(--auth-substrate);
+}
+
+:global(.light-theme) .auth-page {
+  --auth-substrate: var(--color-bg);
 }
 
 .auth-card {
@@ -906,7 +917,6 @@ async function submit() {
 .auth-card__brand-slot {
   padding: var(--space-2);
   position: relative;
-  background: transparent;
 }
 
 .auth-card__form-slot {
@@ -920,8 +930,7 @@ async function submit() {
   min-height: 0;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--color-bg);
-  transition: background var(--transition-standard);
+  background: transparent;
 }
 
 .auth-card__form {
@@ -1067,9 +1076,10 @@ async function submit() {
 .auth-form {
   display: grid;
   gap: var(--space-3);
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
   align-content: start;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .password-row {
@@ -1126,24 +1136,6 @@ async function submit() {
   line-height: var(--leading-normal);
 }
 
-.oauth-note {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  line-height: var(--leading-normal);
-  flex-shrink: 0;
-
-  a {
-    color: var(--color-text-secondary);
-    text-decoration: underline;
-    text-underline-offset: 2px;
-
-    &:hover {
-      color: var(--color-text-primary);
-    }
-  }
-}
-
 .switch-mode {
   margin: 0;
   color: var(--color-text-secondary);
@@ -1181,12 +1173,10 @@ async function submit() {
 .legal-links {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: var(--space-2) var(--space-4);
   margin-top: auto;
   padding-top: var(--space-2);
   flex-shrink: 0;
-  text-align: center;
 
   a {
     color: var(--color-text-muted);
@@ -1250,19 +1240,15 @@ async function submit() {
   }
 
   .auth-card__brand-slot.is-mobile-landing .auth-card__brand {
-    position: relative;
-    z-index: 1;
     flex: 1 1 auto;
     min-height: 0;
-
-    height: 0;
-    pointer-events: none;
+    height: auto;
   }
 
   .auth-mobile-dock {
     display: grid;
     position: relative;
-    z-index: 6;
+    z-index: 3;
     flex: 0 0 auto;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-2);
@@ -1270,8 +1256,6 @@ async function submit() {
     padding-inline: 0;
     padding-bottom: max(var(--space-2), env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
-    pointer-events: auto;
-    isolation: isolate;
   }
 
   .auth-mobile-dock__btn {
@@ -1285,7 +1269,7 @@ async function submit() {
     z-index: 15;
     padding: var(--space-2);
     padding-bottom: max(var(--space-2), env(safe-area-inset-bottom, 0px));
-    background: var(--color-bg);
+    background: var(--auth-substrate);
   }
 
   .auth-card__form-slot.is-mobile-overlay .auth-card__form {
@@ -1296,12 +1280,10 @@ async function submit() {
     --pad: var(--space-3);
     max-width: none;
     height: 100%;
-    min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
   }
 
   .form-header h1 {
@@ -1310,14 +1292,6 @@ async function submit() {
 
   .oauth-actions {
     grid-template-columns: 1fr 1fr;
-  }
-
-  .oauth-note {
-    text-align: center;
-  }
-
-  .switch-mode {
-    text-align: center;
   }
 
   .password-row.is-split {

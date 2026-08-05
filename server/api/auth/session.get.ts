@@ -12,6 +12,10 @@ export default defineEventHandler(async (event) => {
     return { user: null, subscription: { active: false, expiresAt: '' } }
   }
 
+  const paid = await getActiveSubscription(user.email)
+  // Keep the session for authenticated accounts even without a paid plan.
+  const subscription = { active: true, expiresAt: paid.expiresAt || '' }
+
   setOAuthSession(event, user)
-  return { user, subscription: await getActiveSubscription(user.email) }
+  return { user, subscription }
 })

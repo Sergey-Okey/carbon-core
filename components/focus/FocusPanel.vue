@@ -1,6 +1,6 @@
 <template>
   <section class="focus-page" aria-label="Фокус" data-tour="focus-page">
-    <div class="focus-grid page-enter-stack">
+    <div class="focus-grid">
       <AnalyticsWidgetShell
         title="Сессия"
         :subtitle="sessionSubtitle"

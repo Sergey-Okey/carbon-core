@@ -2,7 +2,13 @@ import { readBody } from 'h3'
 import { createPendingRegistration, isAuthDatabaseConfigured } from '../../utils/authStorage'
 import { enforceRateLimit } from '../../utils/rateLimit'
 import { sendMail } from '../../utils/smtp'
-import { validateEmail } from '../../../utils/authValidation'
+import {
+  normalizePhone,
+  validateEmail,
+  validateName,
+  validatePassword,
+  validatePhone,
+} from '../../../utils/authValidation'
 
 export default defineEventHandler(async (event) => {
   enforceRateLimit(event, 'register', 5, 15 * 60 * 1000)
@@ -12,10 +18,18 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody<Record<string, unknown>>(event)
   const email = typeof body?.email === 'string' ? body.email.trim() : ''
+  const password = typeof body?.password === 'string' ? body.password : ''
+  const name = typeof body?.name === 'string' ? body.name.trim() : ''
+  const phone = typeof body?.phone === 'string' ? normalizePhone(body.phone) : ''
   const acceptedTerms = body?.acceptedTerms === true
   const termsVersion = body?.termsVersion === '2026-06-07' ? body.termsVersion : ''
 
-  if (validateEmail(email)) {
+  if (
+    validateName(name) ||
+    validateEmail(email) ||
+    validatePhone(phone) ||
+    validatePassword(password)
+  ) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid registration data' })
   }
   if (!acceptedTerms || !termsVersion) {
@@ -23,16 +37,20 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const verification = await createPendingRegistration(email, termsVersion)
+    const verification = await createPendingRegistration(
+      email,
+      password,
+      name,
+      termsVersion,
+      phone
+    )
     const sent = await sendMail({
       to: verification.email,
       subject: 'Код подтверждения Core of Life',
       text: [
-        'Здравствуйте.',
+        `${verification.name}, здравствуйте.`,
         '',
-        'Чтобы завершить регистрацию в Core of Life:',
-        '1) введите этот код в приложении,',
-        '2) задайте пароль для входа.',
+        'Введите этот код в Core of Life, чтобы подтвердить email:',
         '',
         verification.code,
         '',

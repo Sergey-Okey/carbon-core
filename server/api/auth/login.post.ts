@@ -15,12 +15,16 @@ export default defineEventHandler(async (event) => {
   if (!email || !password) throw createError({ statusCode: 400, statusMessage: 'Email and password are required' })
 
   let user
+  let subscription
   try {
     user = await loginAccount(email, password)
+    const paid = await getActiveSubscription(user.email)
+    // Account access no longer requires a paid subscription.
+    subscription = { active: true, expiresAt: paid.expiresAt || '' }
   } catch (error) {
     if (typeof error === 'object' && error !== null && 'statusCode' in error) throw error
     throw createError({ statusCode: 503, statusMessage: 'Account database is unavailable' })
   }
   setOAuthSession(event, user)
-  return { user, subscription: await getActiveSubscription(user.email) }
+  return { user, subscription }
 })

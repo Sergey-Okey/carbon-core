@@ -1,0 +1,13 @@
+---
+description: Nested border-radius for padded shells
+alwaysApply: true
+---
+
+# Nested border radius
+
+For padded shells with inner chips/buttons (segmented controls, menus, pickers):
+
+- Outer sets `--nest-radius` and `--nest-pad` via `@include nest-shell(...)`.
+- Inner items use `@include nest-item` (`border-radius: var(--radius-nested)`).
+- Formula: **inner = max(0, outer − pad)** so corners stay concentric.
+- Do not pair `radius-md` outer with a hard-coded `radius-sm` inner unless pad equals `md − sm`.

@@ -1,0 +1,14 @@
+---
+description: Equal internal padding on cards and board nodes
+alwaysApply: true
+---
+
+# Equal card padding
+
+When styling cards, tiles, board nodes, widgets, or panels:
+
+- Keep **equal padding on all sides** — never remove padding to “fix” alignment.
+- If a card has `min-height` taller than its content, stretch the inner layout (`flex: 1`) and pin the bottom block with `margin-top: auto` so top/bottom insets stay visually equal.
+- Do **not** stack competing paddings (`GlassCard` default + local). Use `no-padding` on `GlassCard` only when the card itself sets one shared `--node-pad` / `padding`.
+- Avoid absolute offsets (`top: 45px`, `right: 13px`) that diverge from padding; keep controls in normal flow or inset with the same pad token.
+- Icon and title share the same content edge — no oversized icon box that shifts only one side inward.
