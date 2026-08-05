@@ -70,6 +70,7 @@
               type="button"
               class="activity-day"
               :class="{ active: day.isToday, empty: day.count === 0 }"
+              :title="`${day.label}: ${formatTaskCount(day.count)}`"
               :aria-label="`${day.label}: ${formatTaskCount(day.count)}`"
             >
               <span class="activity-track">
@@ -79,9 +80,7 @@
                 />
               </span>
               <span class="activity-label">{{ day.shortLabel }}</span>
-              <span class="activity-tooltip"
-                >{{ day.label }}: {{ formatTaskCount(day.count) }}</span
-              >
+              <span class="activity-tooltip">{{ formatTaskCount(day.count) }}</span>
             </button>
           </div>
         </div>
@@ -618,7 +617,6 @@ onMounted(() => {
   gap: var(--space-1);
   width: 100%;
   min-height: 52px;
-  overflow: visible;
   animation: chart-fade-in 260ms ease-out both;
 
   @include mobile {
@@ -646,7 +644,6 @@ onMounted(() => {
   gap: var(--space-1);
   width: 100%;
   min-height: 44px;
-  overflow: visible;
 }
 
 .activity-day {
@@ -656,7 +653,6 @@ onMounted(() => {
   gap: 3px;
   justify-items: center;
   min-width: 0;
-  overflow: visible;
   padding: 0;
   border: none;
   background: transparent;
@@ -729,35 +725,26 @@ onMounted(() => {
 }
 
 .activity-tooltip {
+  @include glass;
   position: absolute;
   bottom: calc(100% + 6px);
   left: 50%;
-  z-index: 30;
-  box-sizing: border-box;
+  z-index: 20;
   width: max-content;
-  max-width: none;
+  max-width: 150px;
   padding: var(--space-2) var(--space-3);
   border: var(--ui-border);
   border-radius: var(--radius-full);
-  background-color: var(--glass-surface, rgba(17, 24, 39, 0.92));
-  background-clip: padding-box;
-  box-shadow: var(--glass-shadow, none);
-  backdrop-filter: var(--glass-filter, blur(18px) saturate(1.2));
-  -webkit-backdrop-filter: var(--glass-filter, blur(18px) saturate(1.2));
   color: var(--color-text-primary);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   line-height: 1.18;
-  white-space: nowrap;
-  writing-mode: horizontal-tb;
-  overflow: visible;
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 0);
   transition:
     opacity var(--transition-standard),
-    visibility var(--transition-standard),
-    transform var(--transition-standard);
+    visibility var(--transition-standard);
   visibility: hidden;
 }
 

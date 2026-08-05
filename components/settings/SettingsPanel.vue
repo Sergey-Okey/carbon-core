@@ -1,15 +1,7 @@
 <template>
   <section class="settings" aria-label="Настройки">
-    <div v-if="accessStore.isDemo" class="demo-banner">
-      <div class="demo-banner__copy">
-        <strong>Демо-режим</strong>
-        <span>Данные не синхронизируются с сервером</span>
-      </div>
-      <AppButton type="button" variant="danger" @click="exitDemoToRegister">
-        Завершить демо
-      </AppButton>
-    </div>
-    <div class="settings-bento page-enter-stack">
+    <div class="settings-bento">
+      <!-- Appearance -->
       <article class="card card--appearance">
         <header class="card-head">
           <h2>Оформление</h2>
@@ -133,7 +125,7 @@
         </div>
       </article>
 
-      
+      <!-- Behavior: feedback + interface -->
       <article class="card card--prefs">
         <header class="card-head">
           <h2>Поведение</h2>
@@ -222,7 +214,7 @@
         </div>
       </article>
 
-      
+      <!-- Tags -->
       <article class="card card--tags">
         <header class="card-head">
           <h2>Теги</h2>
@@ -232,7 +224,7 @@
         <TagManager />
       </article>
 
-      
+      <!-- Data -->
       <article class="card card--data">
         <header class="card-head">
           <h2>Данные</h2>
@@ -365,17 +357,6 @@ const settingsStore = useSettingsStore()
 const accessStore = useAccessStore()
 const { confirm } = useConfirm()
 const { success, warning, error: notifyError } = useNotification()
-const router = useRouter()
-
-async function exitDemoToRegister() {
-  const ok = await confirm(
-    'Завершить демо-режим и перейти к регистрации? Локальные демо-данные будут сброшены.'
-  )
-  if (!ok) return
-  accessStore.leaveDemo()
-  sessionStorage.clear()
-  await router.push('/register')
-}
 
 const accentOptions = computed(() =>
   ACCENT_COLORS.map((color, index) => ({
@@ -571,43 +552,9 @@ async function resetAllData() {
 
 <style scoped lang="scss">
 .settings {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
   width: 100%;
   max-width: 100%;
   min-width: 0;
-}
-
-.demo-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  min-width: 0;
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--color-error) 40%, transparent);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-error) 12%, transparent);
-  animation: page-block-in 360ms ease-out both;
-
-  &__copy {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-
-    strong {
-      color: var(--color-error);
-      font-size: var(--text-sm);
-    }
-
-    span {
-      color: var(--color-text-secondary);
-      font-size: var(--text-xs);
-      @include text-ellipsis;
-    }
-  }
 }
 
 .settings-bento {

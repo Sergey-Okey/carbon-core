@@ -12,14 +12,7 @@ export default defineEventHandler((event) => {
       ? query.termsVersion
       : ''
   try {
-
-    const effectiveTerms =
-      termsVersion ||
-      (query.acceptedTerms === 'true' ? '2026-06-07' : '')
-    return sendRedirect(
-      event,
-      createAuthorizationUrl(event, provider, effectiveTerms)
-    )
+    return sendRedirect(event, createAuthorizationUrl(event, provider, termsVersion))
   } catch {
     return sendRedirect(event, '/auth?oauthError=provider')
   }

@@ -1,0 +1,14 @@
+---
+description: Text overflow — ellipsis vs wrap across the UI
+alwaysApply: true
+---
+
+# Text overflow
+
+When styling titles, labels, chips, and meta text:
+
+- Prefer **ellipsis** for single-line titles, nav labels, chip names, and cramped card headers (`overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0`).
+- Prefer **line-clamp** (2–3 lines) for descriptions and multi-line titles only when wrapping is intentional — use `@include text-clamp(n)` / `.text-clamp-*`.
+- Do **not** use `word-break: break-all` / `overflow-wrap: anywhere` on titles — it creates ugly mid-word wraps (e.g. «мин» alone on a line). Use `overflow-wrap: break-word` and normal word breaks.
+- Flex/grid children that truncate need `min-width: 0` (or `min-inline-size: 0`).
+- Habit cards: never show the type marker «П»; if description or tags are missing, show muted placeholders («Нет описания», «Нет тегов») instead of empty tiers.

@@ -46,8 +46,8 @@ async function ensureEmailVerificationTable(sql: NonNullable<ReturnType<typeof g
   await sql`
     CREATE TABLE IF NOT EXISTS cof_pending_registrations (
       email TEXT PRIMARY KEY,
-      password_hash TEXT NOT NULL DEFAULT '',
-      name TEXT NOT NULL DEFAULT '',
+      password_hash TEXT NOT NULL,
+      name TEXT NOT NULL,
       phone TEXT NOT NULL DEFAULT '',
       terms_version TEXT NOT NULL,
       code_hash TEXT NOT NULL,
@@ -57,8 +57,6 @@ async function ensureEmailVerificationTable(sql: NonNullable<ReturnType<typeof g
     )
   `
   await sql`ALTER TABLE cof_pending_registrations ADD COLUMN IF NOT EXISTS phone TEXT NOT NULL DEFAULT ''`
-  await sql`ALTER TABLE cof_pending_registrations ALTER COLUMN password_hash SET DEFAULT ''`
-  await sql`ALTER TABLE cof_pending_registrations ALTER COLUMN name SET DEFAULT ''`
   await sql`
     CREATE INDEX IF NOT EXISTS cof_pending_registrations_expires_idx
     ON cof_pending_registrations(expires_at)
@@ -82,12 +80,19 @@ async function ensurePasswordResetTable(sql: NonNullable<ReturnType<typeof getDa
   `
 }
 
-export async function createPendingRegistration(email: string, termsVersion: string) {
+export async function createPendingRegistration(
+  email: string,
+  password: string,
+  name: string,
+  termsVersion: string,
+  phone = ''
+) {
   const sql = getDatabase()
   if (!sql) throw createError({ statusCode: 503, statusMessage: 'Account database is not configured' })
   await ensureEmailVerificationTable(sql)
 
   const normalizedEmail = email.trim().toLowerCase()
+  const normalizedPhone = phone.trim()
   const existing = await sql`SELECT id FROM cof_users WHERE email = ${normalizedEmail} LIMIT 1`
   if (existing.length) throw createError({ statusCode: 409, statusMessage: 'Email is already registered' })
 
@@ -98,21 +103,21 @@ export async function createPendingRegistration(email: string, termsVersion: str
       email, password_hash, name, phone, terms_version, code_hash, attempts, expires_at
     )
     VALUES (
-      ${normalizedEmail}, '', '', '', ${termsVersion},
+      ${normalizedEmail}, ${hashPassword(password)}, ${name.trim()}, ${normalizedPhone}, ${termsVersion},
       ${codeHash}, 0, NOW() + INTERVAL '15 minutes'
     )
     ON CONFLICT (email)
     DO UPDATE SET
-      password_hash = '',
-      name = '',
-      phone = '',
+      password_hash = EXCLUDED.password_hash,
+      name = EXCLUDED.name,
+      phone = EXCLUDED.phone,
       terms_version = EXCLUDED.terms_version,
       code_hash = EXCLUDED.code_hash,
       attempts = 0,
       expires_at = EXCLUDED.expires_at,
       created_at = NOW()
   `
-  return { code, email: normalizedEmail }
+  return { code, email: normalizedEmail, name: name.trim(), phone: normalizedPhone }
 }
 
 export async function loginAccount(email: string, password: string) {
@@ -171,14 +176,14 @@ export async function createEmailVerificationCode(email: string) {
   }
 }
 
-export async function verifyEmailCode(email: string, code: string, password: string) {
+export async function verifyEmailCode(email: string, code: string) {
   const sql = getDatabase()
   if (!sql) throw createError({ statusCode: 503, statusMessage: 'Account database is not configured' })
   await ensureEmailVerificationTable(sql)
 
   const normalizedEmail = email.trim().toLowerCase()
   const rows = await sql`
-    SELECT email, name, terms_version, code_hash, attempts, expires_at
+    SELECT email, password_hash, name, terms_version, code_hash, attempts, expires_at
     FROM cof_pending_registrations
     WHERE email = ${normalizedEmail}
     LIMIT 1
@@ -214,8 +219,8 @@ export async function verifyEmailCode(email: string, code: string, password: str
       id, email, password_hash, name, phone, provider, terms_accepted_at, terms_version, email_verified_at
     )
     VALUES (
-      ${id}, ${normalizedEmail}, ${hashPassword(password)}, '',
-      '', 'local', NOW(), ${String(row.terms_version)}, NOW()
+      ${id}, ${normalizedEmail}, ${String(row.password_hash)}, ${String(row.name)},
+      ${String(row.phone || '')}, 'local', NOW(), ${String(row.terms_version)}, NOW()
     )
     RETURNING id, email, name, avatar, bio, phone, provider, created_at
   `

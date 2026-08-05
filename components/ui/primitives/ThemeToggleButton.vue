@@ -3,6 +3,7 @@
     class="theme-toggle-button"
     type="button"
     :aria-label="label"
+    :data-tooltip="label"
     @click="toggleTheme"
   >
     <Sun v-if="settingsStore.theme === 'dark'" :size="17" />
