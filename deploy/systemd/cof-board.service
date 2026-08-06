@@ -1,0 +1,21 @@
+[Unit]
+Description=Core of Life (cof-board.com) Nuxt server
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntuuser
+Group=ubuntuuser
+WorkingDirectory=/var/www/cof-board/app
+EnvironmentFile=/var/www/cof-board/.env
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3000
+ExecStart=/usr/bin/node /var/www/cof-board/app/.output/server/index.mjs
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=120
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
