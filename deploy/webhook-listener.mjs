@@ -77,16 +77,17 @@ createServer(async (req, res) => {
     return
   }
 
-  try {
-    const result = await runDeploy()
-    if (result.skipped) {
-      res.writeHead(202).end('deploy already running')
-      return
-    }
-    res.writeHead(200).end('deploy started')
-  } catch (error) {
-    res.writeHead(500).end(error instanceof Error ? error.message : 'deploy failed')
+  if (deployRunning) {
+    res.writeHead(202).end('deploy already running')
+    return
   }
+
+  // GitHub expects a quick acknowledgement. The build can take longer than
+  // GitHub's webhook response timeout, so continue it after responding.
+  runDeploy().catch((error) => {
+    console.error('deploy failed', error)
+  })
+  res.writeHead(202).end('deploy started')
 }).listen(PORT, '127.0.0.1', () => {
   console.log(`cof-board webhook listening on 127.0.0.1:${PORT}`)
 })
