@@ -15,13 +15,23 @@ type RuntimeMailConfig = {
   smtpFrom?: string
 }
 
-export async function sendMail(payload: MailPayload) {
+function getMailConfig() {
   const config = useRuntimeConfig() as unknown as RuntimeMailConfig
   const host = (config.smtpHost || process.env.SMTP_HOST || '').trim()
   const user = (config.smtpUser || process.env.SMTP_USER || '').trim()
   const password = config.smtpPassword || process.env.SMTP_PASSWORD || ''
   const from = (config.smtpFrom || process.env.SMTP_FROM || '').trim() || user
   const port = Number(config.smtpPort || process.env.SMTP_PORT || 465)
+  return { host, user, password, from, port }
+}
+
+export function isMailConfigured() {
+  const { host, user, password, from, port } = getMailConfig()
+  return Boolean(host && user && password && from && Number.isInteger(port) && port > 0)
+}
+
+export async function sendMail(payload: MailPayload) {
+  const { host, user, password, from, port } = getMailConfig()
 
   if (!host || !user || !password || !from) return false
 

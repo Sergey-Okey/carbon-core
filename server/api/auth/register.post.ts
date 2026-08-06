@@ -1,7 +1,7 @@
 import { readBody } from 'h3'
 import { createPendingRegistration, isAuthDatabaseConfigured } from '../../utils/authStorage'
 import { enforceRateLimit } from '../../utils/rateLimit'
-import { sendMail } from '../../utils/smtp'
+import { isMailConfigured, sendMail } from '../../utils/smtp'
 import {
   normalizePhone,
   validateEmail,
@@ -14,6 +14,9 @@ export default defineEventHandler(async (event) => {
   enforceRateLimit(event, 'register', 5, 15 * 60 * 1000)
   if (!isAuthDatabaseConfigured()) {
     throw createError({ statusCode: 503, statusMessage: 'Cloud accounts are not configured' })
+  }
+  if (!isMailConfigured()) {
+    throw createError({ statusCode: 503, statusMessage: 'Email delivery is not configured' })
   }
 
   const body = await readBody<Record<string, unknown>>(event)
