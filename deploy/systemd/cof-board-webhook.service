@@ -1,0 +1,18 @@
+[Unit]
+Description=Core of Life GitHub deploy webhook
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment=COF_WEBHOOK_PORT=9876
+Environment=COF_WEBHOOK_SECRET_FILE=/var/www/cof-board/.webhook-secret
+Environment=COF_DEPLOY_SCRIPT=/var/www/cof-board/app/deploy/deploy-from-git.sh
+Environment=COF_DEPLOY_BRANCH=stable
+ExecStart=/usr/bin/node /var/www/cof-board/app/deploy/webhook-listener.mjs
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
