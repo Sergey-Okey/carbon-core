@@ -6,15 +6,14 @@ APP_DIR="$ROOT/app"
 REPO_URL="${COF_REPO_URL:-https://github.com/Sergey-Okey/carbon-core.git}"
 BRANCH="${COF_DEPLOY_BRANCH:-stable}"
 ENV_BACKUP="/tmp/cof-board.env.backup"
+MIGRATION_DIR="$ROOT/backups"
+MIGRATION_STAMP="$(date +%Y%m%d-%H%M%S)"
+STAGING_DIR="$ROOT/app.git-staging-$MIGRATION_STAMP"
 
 echo "==> backup .env"
 if [[ -f "$ROOT/.env" ]]; then
   cp "$ROOT/.env" "$ENV_BACKUP"
 fi
-
-echo "==> cleanup old build artifacts in $ROOT"
-rm -rf "$ROOT/public" "$ROOT/server" "$ROOT/nitro.json"
-rm -rf "$ROOT/.output"
 
 echo "==> clone or update repo"
 if [[ -d "$APP_DIR/.git" ]]; then
@@ -22,8 +21,16 @@ if [[ -d "$APP_DIR/.git" ]]; then
   git fetch origin "$BRANCH"
   git reset --hard "origin/$BRANCH"
 else
-  rm -rf "$APP_DIR"
-  sudo -u ubuntuuser git clone --branch "$BRANCH" --depth 1 "$REPO_URL" "$APP_DIR"
+  # Clone before touching the running application.  The old app is retained
+  # under $ROOT/backups so this migration can be rolled back if needed.
+  rm -rf "$STAGING_DIR"
+  sudo -u ubuntuuser git clone --branch "$BRANCH" --depth 1 "$REPO_URL" "$STAGING_DIR"
+  if [[ -d "$APP_DIR" ]]; then
+    mkdir -p "$MIGRATION_DIR"
+    mv "$APP_DIR" "$MIGRATION_DIR/app-pre-git-$MIGRATION_STAMP"
+    echo "==> previous app saved to $MIGRATION_DIR/app-pre-git-$MIGRATION_STAMP"
+  fi
+  mv "$STAGING_DIR" "$APP_DIR"
 fi
 
 echo "==> restore .env"
