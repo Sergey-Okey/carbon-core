@@ -67,7 +67,7 @@ type Shard = {
 }
 
 const DESKTOP_RING_RADII = [0.16, 0.52, 0.92] as const
-const MOBILE_RING_RADII = [0.22, 0.58, 0.98] as const
+const MOBILE_RING_RADII = [0.3, 0.5, 0.72] as const
 
 const ringDefs: RingDef[] = [
   { radius: DESKTOP_RING_RADII[0], speed: 0.38, ticks: 56, tickLen: 0.12, width: 2.3, alpha: 0.64, angle: 0 },
@@ -77,26 +77,6 @@ const ringDefs: RingDef[] = [
 
 function isMobileLayout() {
   return cssW > 0 && cssW <= 900
-}
-
-function getLayout() {
-  if (isMobileLayout()) {
-    return {
-      cx: cssW * 0.97,
-      cy: cssH * 0.42,
-      span: Math.max(cssW * 1.45, cssH * 0.78),
-      edgeFadeAt: cssW * 0.9,
-      edgeFadeRange: Math.max(48, cssW * 0.24),
-    }
-  }
-
-  return {
-    cx: cssW * 0.98,
-    cy: cssH * 0.5,
-    span: Math.min(cssW, cssH) * 0.92,
-    edgeFadeAt: cssW * 0.92,
-    edgeFadeRange: Math.max(40, cssW * 0.18),
-  }
 }
 
 let shards: Shard[] = []
@@ -154,15 +134,13 @@ function rebuildShards() {
   let order = 0
   const mobile = isMobileLayout()
   const radii = mobile ? MOBILE_RING_RADII : DESKTOP_RING_RADII
-  const tickScale = mobile ? 2.8 : 1.7
-  const tickCounts = mobile ? [48, 64, 80] : [56, 76, 96]
+  const tickScale = mobile ? 1.15 : 1.7
 
   ringDefs.forEach((ring, ringIndex) => {
-    const ticks = tickCounts[ringIndex] || ring.ticks
     const homeRadius = radii[ringIndex] || ring.radius
 
-    for (let i = 0; i < ticks; i += 1) {
-      const homeAngle = (i / ticks) * Math.PI * 2
+    for (let i = 0; i < ring.ticks; i += 1) {
+      const homeAngle = (i / ring.ticks) * Math.PI * 2
       const n = hash(ringIndex * 1009 + i * 17 + 3)
       const n2 = hash(ringIndex * 503 + i * 41 + 9)
       const n3 = hash(ringIndex * 307 + i * 23 + 1)
@@ -176,7 +154,7 @@ function rebuildShards() {
         homeAngle,
         homeRadius,
         len: ring.tickLen * tickScale,
-        width: mobile ? Math.max(2, ring.width * 0.92) : ring.width,
+        width: ring.width,
         alpha: ring.alpha * (0.82 + n3 * 0.2),
         scatterR: 0.95 + n * 0.55 + ringIndex * 0.08,
         scatterA: homeAngle + (n2 - 0.5) * 1.8,
@@ -289,7 +267,9 @@ function tick(now: number) {
   lastTs = now
   assembleT += dt
 
-  const { cx, cy, span, edgeFadeAt, edgeFadeRange } = getLayout()
+  const cx = cssW * 0.98
+  const cy = cssH * 0.5
+  const span = Math.min(cssW, cssH) * 0.92
   const ringsAssembled = assembleT > 0.85
 
   ctx.clearRect(0, 0, cssW, cssH)
@@ -349,7 +329,7 @@ function tick(now: number) {
     const y1 = cy + Math.sin(dir) * r1
 
     const midX = (x0 + x1) * 0.5
-    const edgeFade = Math.max(0, Math.min(1, (edgeFadeAt - midX) / edgeFadeRange))
+    const edgeFade = Math.max(0, Math.min(1, (cssW * 0.92 - midX) / (cssW * 0.18)))
     const appear = p <= 0 ? 0 : Math.min(1, 0.25 + p * 0.75)
     const alpha = Math.min(0.95, (shard.alpha * appear + bright * 0.65) * edgeFade)
 
@@ -406,7 +386,9 @@ function drawStatic() {
   const canvas = canvasEl.value
   const ctx = canvas?.getContext('2d')
   if (!ctx || cssW <= 0) return
-  const { cx, cy, span, edgeFadeAt, edgeFadeRange } = getLayout()
+  const cx = cssW * 0.98
+  const cy = cssH * 0.5
+  const span = Math.min(cssW, cssH) * 0.92
   ctx.fillStyle = themeBg
   ctx.fillRect(0, 0, cssW, cssH)
   for (const shard of shards) {
@@ -416,7 +398,7 @@ function drawStatic() {
     const x0 = cx + Math.cos(a) * r0
     const x1 = cx + Math.cos(a) * r1
     const midX = (x0 + x1) * 0.5
-    const edgeFade = Math.max(0, Math.min(1, (edgeFadeAt - midX) / edgeFadeRange))
+    const edgeFade = Math.max(0, Math.min(1, (cssW * 0.92 - midX) / (cssW * 0.18)))
     if (edgeFade < 0.02) continue
     ctx.beginPath()
     ctx.moveTo(x0, cy + Math.sin(a) * r0)
@@ -580,27 +562,21 @@ onBeforeUnmount(() => {
 
   .brand-stage__copy {
     left: max(var(--brand-inset), env(safe-area-inset-left, 0px));
-    right: max(var(--brand-inset), env(safe-area-inset-right, 0px));
     bottom: max(var(--brand-inset), env(safe-area-inset-bottom, 0px));
-    top: auto;
-    width: auto;
-    max-width: none;
-    padding-top: var(--space-3);
-    background: linear-gradient(
-      to top,
-      color-mix(in srgb, var(--brand-stage-bg) 88%, transparent) 35%,
-      transparent
+    top: calc(
+      max(var(--brand-inset), env(safe-area-inset-top, 0px)) +
+        var(--control-icon-size) + var(--space-2)
     );
+    align-content: end;
   }
 
   .brand-stage__mark {
-    font-size: clamp(3.8rem, 18vw, 5.6rem);
+    font-size: clamp(4.4rem, 22vw, 6.5rem);
     -webkit-text-stroke: 0.055em currentColor;
   }
 
   .brand-stage__slogan {
-    font-size: var(--text-sm);
-    max-width: 28ch;
+    font-size: var(--text-md);
   }
 }
 
