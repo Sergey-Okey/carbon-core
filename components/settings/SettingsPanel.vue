@@ -1,6 +1,6 @@
 <template>
-  <section class="settings" aria-label="Настройки">
-    <div v-if="accessStore.isDemo" class="demo-banner">
+  <section class="settings" :class="{ 'is-entered': entered }" aria-label="Настройки">
+    <div v-if="accessStore.isDemo" class="demo-banner" style="--enter-i: 0">
       <div class="demo-banner__copy">
         <strong>Демо-режим</strong>
         <span>Данные не синхронизируются с сервером</span>
@@ -9,8 +9,8 @@
         Завершить демо
       </AppButton>
     </div>
-    <div class="settings-bento page-enter-stack">
-      <article class="card card--appearance">
+    <div class="settings-bento">
+      <article class="card card--appearance" style="--enter-i: 1">
         <header class="card-head">
           <h2>Оформление</h2>
           <span class="card-head__aside">{{ accentLabel }}</span>
@@ -134,7 +134,7 @@
       </article>
 
       <!-- Behavior: feedback + interface -->
-      <article class="card card--prefs">
+      <article class="card card--prefs" style="--enter-i: 2">
         <header class="card-head">
           <h2>Поведение</h2>
           <span class="card-head__aside">отклик и интерфейс</span>
@@ -223,7 +223,7 @@
       </article>
 
       <!-- Tags -->
-      <article class="card card--tags">
+      <article class="card card--tags" style="--enter-i: 3">
         <header class="card-head">
           <h2>Теги</h2>
           <span class="card-head__aside">общие</span>
@@ -233,7 +233,7 @@
       </article>
 
       <!-- Data -->
-      <article class="card card--data">
+      <article class="card card--data" style="--enter-i: 4">
         <header class="card-head">
           <h2>Данные</h2>
           <span class="card-head__aside">
@@ -366,6 +366,13 @@ const accessStore = useAccessStore()
 const { confirm } = useConfirm()
 const { success, warning, error: notifyError } = useNotification()
 const router = useRouter()
+const entered = ref(false)
+
+onMounted(() => {
+  requestAnimationFrame(() => {
+    entered.value = true
+  })
+})
 
 async function exitDemoToRegister() {
   const ok = await confirm(
@@ -589,7 +596,8 @@ async function resetAllData() {
   border: 1px solid color-mix(in srgb, var(--color-error) 40%, transparent);
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--color-error) 12%, transparent);
-  animation: page-block-in 360ms ease-out both;
+  opacity: 0;
+  transform: translateY(10px);
 
   &__copy {
     display: flex;
@@ -632,6 +640,39 @@ async function resetAllData() {
   background: var(--color-surface-1);
   border: var(--ui-border);
   border-radius: var(--radius-lg);
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.settings.is-entered .demo-banner,
+.settings.is-entered .card {
+  animation: settings-panel-in 380ms ease-out both;
+  animation-delay: calc(var(--enter-i, 0) * 50ms);
+}
+
+@keyframes settings-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-banner,
+  .card {
+    opacity: 1;
+    transform: none;
+  }
+
+  .settings.is-entered .demo-banner,
+  .settings.is-entered .card {
+    animation: none;
+  }
 }
 
 .card--appearance {
