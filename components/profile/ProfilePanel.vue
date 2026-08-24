@@ -1,7 +1,7 @@
 <template>
-  <section class="profile" aria-label="Профиль">
-    <div class="profile-bento page-enter-stack">
-      <article class="tile tile--avatar">
+  <section class="profile" :class="{ 'is-entered': entered }" aria-label="Профиль">
+    <div class="profile-bento">
+      <article class="tile tile--avatar" style="--enter-i: 0">
         <button
           class="avatar-upload"
           type="button"
@@ -34,7 +34,7 @@
         </AppButton>
       </article>
 
-      <article class="tile tile--readme">
+      <article class="tile tile--readme" style="--enter-i: 1">
         <div class="readme-body">
           <template v-if="!isEditing">
             <div class="info-grid">
@@ -131,7 +131,7 @@
       </article>
 
       <!-- Mid left: achievements -->
-      <article class="tile tile--badges">
+      <article class="tile tile--badges" style="--enter-i: 2">
         <header class="tile-head">
           <h2>Достижения</h2>
         </header>
@@ -148,7 +148,7 @@
         </div>
       </article>
 
-      <article class="tile tile--heatmap">
+      <article class="tile tile--heatmap" style="--enter-i: 3">
         <header class="tile-head">
           <h2>{{ yearTotal }} выполнений за год</h2>
           <span class="tile-head__aside">{{ heatmapAside }}</span>
@@ -181,7 +181,7 @@
       </article>
 
       <!-- Bottom: activity · access · profile -->
-      <article class="tile tile--activity">
+      <article class="tile tile--activity" style="--enter-i: 4">
         <header class="tile-head">
           <h2>Активность</h2>
           <span class="tile-head__aside">сегодня</span>
@@ -208,7 +208,7 @@
         </div>
       </article>
 
-      <article class="tile tile--access">
+      <article class="tile tile--access" style="--enter-i: 5">
         <header class="tile-head">
           <h2>Доступ</h2>
           <button
@@ -253,7 +253,7 @@
         </AppButton>
       </article>
 
-      <article class="tile tile--account">
+      <article class="tile tile--account" style="--enter-i: 6">
         <header class="tile-head">
           <h2>Профиль</h2>
           <span class="tile-head__aside">ур. {{ userStore.level }}</span>
@@ -331,6 +331,7 @@ async function exitDemoToRegister() {
 }
 
 const fileInput = ref<HTMLInputElement | null>(null)
+const entered = ref(false)
 const isSaving = ref(false)
 const isEditing = ref(false)
 const nameError = ref('')
@@ -375,6 +376,9 @@ onMounted(() => {
   mediaHeatmap = window.matchMedia('(max-width: 800px)')
   syncMobileHeatmap()
   mediaHeatmap.addEventListener('change', syncMobileHeatmap)
+  requestAnimationFrame(() => {
+    entered.value = true
+  })
 })
 
 onUnmounted(() => {
@@ -728,6 +732,36 @@ async function deleteAccount() {
   padding: var(--space-4);
   border: var(--ui-border);
   border-radius: var(--radius-lg);
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.profile.is-entered .tile {
+  animation: profile-panel-in 380ms ease-out both;
+  animation-delay: calc(var(--enter-i, 0) * 50ms);
+}
+
+@keyframes profile-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile {
+    opacity: 1;
+    transform: none;
+  }
+
+  .profile.is-entered .tile {
+    animation: none;
+  }
 }
 
 .tile--avatar {

@@ -61,7 +61,7 @@
         </Teleport>
       </div>
 
-      <div v-show="uiStore.activeNav === 'shop'">
+      <div v-if="uiStore.activeNav === 'shop'">
         <FocusPanel />
       </div>
       <AnalyticsPanel v-if="uiStore.activeNav === 'analytics'" />
