@@ -67,9 +67,9 @@ type Shard = {
 }
 
 const ringDefs: RingDef[] = [
-  { radius: 0.28, speed: 0.38, ticks: 56, tickLen: 0.042, width: 2.2, alpha: 0.64, angle: 0 },
-  { radius: 0.52, speed: -0.28, ticks: 76, tickLen: 0.048, width: 2.4, alpha: 0.5, angle: 0.4 },
-  { radius: 0.78, speed: 0.2, ticks: 96, tickLen: 0.054, width: 2.6, alpha: 0.4, angle: 1.1 },
+  { radius: 0.42, speed: 0.38, ticks: 64, tickLen: 0.05, width: 2.3, alpha: 0.64, angle: 0 },
+  { radius: 0.68, speed: -0.28, ticks: 88, tickLen: 0.056, width: 2.5, alpha: 0.5, angle: 0.4 },
+  { radius: 0.96, speed: 0.2, ticks: 112, tickLen: 0.062, width: 2.7, alpha: 0.42, angle: 1.1 },
 ]
 
 let shards: Shard[] = []
@@ -258,20 +258,12 @@ function tick(now: number) {
 
   const cx = cssW * 0.98
   const cy = cssH * 0.5
-  const span = Math.min(cssW, cssH) * 0.92
+  const span = Math.max(cssW, cssH) * 0.78
   const ringsAssembled = assembleT > 0.85
 
   ctx.clearRect(0, 0, cssW, cssH)
   ctx.fillStyle = themeBg
   ctx.fillRect(0, 0, cssW, cssH)
-
-  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, span * 0.22)
-  core.addColorStop(0, ink(0.12))
-  core.addColorStop(1, ink(0))
-  ctx.fillStyle = core
-  ctx.beginPath()
-  ctx.arc(cx, cy, span * 0.22, 0, Math.PI * 2)
-  ctx.fill()
 
   ringDefs.forEach((ring) => {
     let spin = ring.speed * (ringsAssembled ? 1 : 0.18)
@@ -356,24 +348,7 @@ function tick(now: number) {
       ctx.lineCap = 'round'
       ctx.stroke()
     }
-
-    if (bright > 0.55 && edgeFade > 0.4) {
-      const gx = cx + Math.cos(dir) * (r0 + (r1 - r0) * 0.55)
-      const gy = cy + Math.sin(dir) * (r0 + (r1 - r0) * 0.55)
-      const glow = ctx.createRadialGradient(gx, gy, 0, gx, gy, 14)
-      glow.addColorStop(0, ink(bright * 0.4 * edgeFade))
-      glow.addColorStop(1, ink(0))
-      ctx.fillStyle = glow
-      ctx.beginPath()
-      ctx.arc(gx, gy, 14, 0, Math.PI * 2)
-      ctx.fill()
-    }
   }
-
-  ctx.beginPath()
-  ctx.arc(cx - 1, cy, 3.4, 0, Math.PI * 2)
-  ctx.fillStyle = ink(0.85)
-  ctx.fill()
 
   raf = requestAnimationFrame(tick)
 }
@@ -402,7 +377,7 @@ function drawStatic() {
   if (!ctx || cssW <= 0) return
   const cx = cssW * 0.98
   const cy = cssH * 0.5
-  const span = Math.min(cssW, cssH) * 0.92
+  const span = Math.max(cssW, cssH) * 0.78
   ctx.fillStyle = themeBg
   ctx.fillRect(0, 0, cssW, cssH)
   for (const shard of shards) {
