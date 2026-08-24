@@ -72,11 +72,6 @@ const ringDefs: RingDef[] = [
   { radius: 0.78, speed: 0.2, ticks: 96, tickLen: 0.054, width: 2.6, alpha: 0.4, angle: 1.1 },
 ]
 
-const ASSEMBLE_SPAN = 1.05
-const HOLD_SPAN = 3.4
-const SCATTER_SPAN = 0.75
-const CYCLE_SPAN = ASSEMBLE_SPAN + HOLD_SPAN + SCATTER_SPAN
-
 let shards: Shard[] = []
 let themeInk = { r: 245, g: 245, b: 245 }
 let themeBg = '#050505'
@@ -100,11 +95,6 @@ function hash(n: number) {
 function easeInCubic(t: number) {
   const u = Math.min(1, Math.max(0, t))
   return u * u * u
-}
-
-function easeOutCubic(t: number) {
-  const u = Math.min(1, Math.max(0, t))
-  return 1 - (1 - u) ** 3
 }
 
 function parseRgb(color: string) {
@@ -147,7 +137,7 @@ function rebuildShards() {
       const lenMul = 0.75 + n * 0.55
       const widthMul = 0.85 + n2 * 1.2
 
-      const delay = (ringIndex * 0.12 + order * 0.004) / ASSEMBLE_SPAN
+      const delay = ringIndex * 0.08 + order * 0.003
       order += 1
 
       shards.push({
@@ -250,20 +240,11 @@ function ink(a: number) {
   return `rgba(${themeInk.r}, ${themeInk.g}, ${themeInk.b}, ${a.toFixed(3)})`
 }
 
-function cycleProgress(shard: Shard) {
-  const t = assembleT % CYCLE_SPAN
-  if (t < ASSEMBLE_SPAN) {
-    const localT = (t / ASSEMBLE_SPAN - shard.delay) / shard.duration
-    if (localT <= 0) return 0
-    if (localT >= 1) return 1
-    return easeInCubic(localT)
-  }
-  if (t < ASSEMBLE_SPAN + HOLD_SPAN) return 1
-  const scatterT = (t - ASSEMBLE_SPAN - HOLD_SPAN) / SCATTER_SPAN
-  const localT = (scatterT - shard.delay * 0.35) / Math.max(0.2, shard.duration * 0.7)
-  if (localT <= 0) return 1
-  if (localT >= 1) return 0
-  return 1 - easeOutCubic(localT)
+function shardProgress(shard: Shard) {
+  const localT = (assembleT - shard.delay) / shard.duration
+  if (localT <= 0) return 0
+  if (localT >= 1) return 1
+  return easeInCubic(localT)
 }
 
 function tick(now: number) {
@@ -281,8 +262,7 @@ function tick(now: number) {
   const cx = cssW
   const cy = cssH * 0.5
   const span = cssW
-  const cycleT = assembleT % CYCLE_SPAN
-  const ringsAssembled = cycleT >= ASSEMBLE_SPAN * 0.55 && cycleT < ASSEMBLE_SPAN + HOLD_SPAN + SCATTER_SPAN * 0.35
+  const ringsAssembled = assembleT > 0.85
 
   ctx.clearRect(0, 0, cssW, cssH)
   ctx.fillStyle = themeBg
@@ -297,7 +277,7 @@ function tick(now: number) {
   ctx.fill()
 
   ringDefs.forEach((ring) => {
-    let spin = ring.speed * (ringsAssembled ? 1 : 0.2)
+    let spin = ring.speed * (ringsAssembled ? 1 : 0.18)
     if (pointerActive && ringsAssembled) {
       const baseR = ring.radius * span
       const pointerDist = Math.hypot(pointerX - cx, pointerY - cy)
@@ -316,7 +296,7 @@ function tick(now: number) {
 
   for (const shard of shards) {
     const ring = ringDefs[shard.ringIndex]!
-    const p = cycleProgress(shard)
+    const p = shardProgress(shard)
 
     const homeA = shard.homeAngle + ring.angle
     const scatterA = shard.scatterA
