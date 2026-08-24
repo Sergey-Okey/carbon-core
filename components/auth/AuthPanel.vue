@@ -897,8 +897,10 @@ async function submit() {
   animation: fade-in var(--duration-normal) var(--ease-standard) both;
 }
 
-.auth-card__brand-slot,
 .auth-card__form-slot {
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
   min-width: 0;
   min-height: 0;
   height: 100%;
@@ -906,17 +908,19 @@ async function submit() {
   border-radius: var(--radius-lg);
   background: transparent;
   overflow: hidden;
+  padding: var(--space-2);
 }
 
 .auth-card__brand-slot {
   padding: var(--space-2);
   position: relative;
-}
-
-.auth-card__form-slot {
-  display: flex;
-  justify-content: stretch;
-  padding: var(--space-2);
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  overflow: hidden;
 }
 
 .auth-card__brand {
@@ -934,8 +938,10 @@ async function submit() {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  flex: 1 1 auto;
   min-height: 0;
   height: 100%;
+  max-height: 100%;
   margin-inline: auto;
   padding: var(--pad);
   border-radius: var(--radius-lg);
@@ -943,6 +949,9 @@ async function submit() {
   color: var(--color-text-primary);
   overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   scrollbar-width: none;
   -ms-overflow-style: none;
   animation: fade-in var(--duration-normal) var(--ease-standard) both;
@@ -951,6 +960,7 @@ async function submit() {
     width: 0;
     height: 0;
     display: none;
+    background: transparent;
   }
 
   :deep(.app-input) {
@@ -1276,23 +1286,45 @@ async function submit() {
     position: fixed;
     inset: 0;
     z-index: 15;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    min-height: 0;
     padding: var(--space-2);
     padding-bottom: max(var(--space-2), env(safe-area-inset-bottom, 0px));
     background: var(--auth-substrate);
+    overflow: hidden;
   }
 
   .auth-card__form-slot.is-mobile-overlay .auth-card__form {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+    height: auto;
+    max-height: 100%;
     background: transparent;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      display: none;
+      background: transparent;
+    }
   }
 
   .auth-card__form {
     --pad: var(--space-3);
     max-width: none;
-    height: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
   }
 
   .form-header h1 {
