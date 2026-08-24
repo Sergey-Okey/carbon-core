@@ -13,9 +13,7 @@
         :class="{ active: uiStore.activeNav === item.id }"
         :aria-label="item.label"
         :aria-current="uiStore.activeNav === item.id ? 'page' : undefined"
-        :data-tooltip="item.label"
         :data-tour="`nav-${item.id}`"
-        data-tooltip-position="right"
         @click="handleNavClick(item.id)"
       >
         <span class="icon-shell">
@@ -101,18 +99,22 @@ async function handleNavClick(section: NavSection) {
   }
 
   @include mobile {
+    @include glass;
     position: fixed;
-    inset-inline: 0;
-    inset-block-end: 0;
-    inline-size: 100%;
-    max-inline-size: none;
-    padding-block: var(--space-2);
-    padding-block-end: calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
-    padding-inline: max(var(--space-3), env(safe-area-inset-left, 0px))
-      max(var(--space-3), env(safe-area-inset-right, 0px));
-    transform: none;
-    border-bottom: none;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    inset-inline-start: 50%;
+    inset-inline-end: auto;
+    inset-block-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
+    inline-size: fit-content;
+    max-inline-size: calc(100dvw - var(--space-8) * 2);
+    padding-block: var(--space-1);
+    padding-inline: var(--space-2);
+    transform: translateX(-50%);
+    border: var(--ui-border);
+    border-radius: 28px;
+    background-color: color-mix(in srgb, var(--surface) 42%, transparent);
+    backdrop-filter: var(--glass-strong-filter);
+    -webkit-backdrop-filter: var(--glass-strong-filter);
+    box-shadow: none;
     animation: nav-fade-up var(--transition-emphasized) both;
   }
 }
@@ -128,7 +130,8 @@ async function handleNavClick(section: NavSection) {
   @include mobile {
     flex-direction: row;
     justify-content: center;
-    gap: var(--space-2);
+    gap: var(--space-1);
+    width: auto;
   }
 }
 
@@ -183,22 +186,24 @@ async function handleNavClick(section: NavSection) {
 
 @media (horizontal-viewport-segments: 2) and (max-width: 767px) {
   .nav-island {
-    inset-inline-start: env(viewport-segment-left 0 0);
+    inset-inline-start: calc(
+      env(viewport-segment-left 0 0) + env(viewport-segment-width 0 0) / 2
+    );
     inset-inline-end: auto;
-    inline-size: env(viewport-segment-width 0 0);
-    max-inline-size: none;
+    inline-size: fit-content;
+    max-inline-size: calc(env(viewport-segment-width 0 0) - var(--space-6));
   }
 }
 
 @keyframes nav-fade-up {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateX(-50%) translateY(18px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
   }
 }
 

@@ -45,7 +45,6 @@
                 class="tag-delete"
                 @click.stop="deleteTag(tag.id)"
                 aria-label="Отвязать тег"
-                data-tooltip="Отвязать тег"
               >
                 <X :size="14" />
               </button>
@@ -56,7 +55,6 @@
             class="tag-btn add-tag-btn"
             @click="openAddTagModal"
             aria-label="Добавить тег"
-            data-tooltip="Добавить тег"
           >
             <Plus :size="16" />
             <span class="tag-name">Добавить</span>

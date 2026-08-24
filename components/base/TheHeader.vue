@@ -21,8 +21,6 @@
           :aria-label="`Таймер фокуса: ${focusWidget.label}, ${focusWidgetTime}`"
           :aria-expanded="isFocusWidgetPanelOpen"
           aria-haspopup="dialog"
-          data-tooltip="Таймер фокуса"
-          data-tooltip-position="bottom"
           @click="toggleFocusWidgetPanel"
         >
           <Target class="focus-widget__icon" :size="18" aria-hidden="true" />
@@ -183,11 +181,12 @@ const focusPresetSeconds = computed(
       long: 15 * 60,
     })[focusWidget.value.preset] || 25 * 60
 )
-const showFocusWidget = computed(
-  () =>
-    uiStore.activeNav !== 'shop' &&
-    (focusWidget.value.isRunning || focusWidget.value.remainingSeconds < focusPresetSeconds.value)
-)
+const showFocusWidget = computed(() => {
+  if (uiStore.activeNav === 'shop') return false
+  if (focusWidget.value.isRunning) return true
+  const remaining = focusWidget.value.remainingSeconds
+  return remaining > 0 && remaining < focusPresetSeconds.value
+})
 const focusWidgetTime = computed(() => {
   const minutes = Math.floor(focusWidget.value.remainingSeconds / 60)
   const seconds = focusWidget.value.remainingSeconds % 60
@@ -374,6 +373,8 @@ onMounted(() => {
   syncFocusWidgetFromStorage()
 })
 
+useHeaderSheet(isFocusWidgetPanelOpen)
+
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleDocumentClick)
   window.removeEventListener('cof:close-profile-panel', closeProfilePanel)
@@ -397,6 +398,8 @@ onBeforeUnmount(() => {
   margin-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
   padding-block: var(--space-2);
   padding-inline: clamp(var(--space-2), 2vw, var(--space-3));
+  min-height: var(--space-11);
+  box-sizing: border-box;
   border-radius: var(--radius-lg);
   /* Real glass: do not use surface-panel here — opaque fill kills blur. */
   @include glass;
@@ -416,6 +419,7 @@ onBeforeUnmount(() => {
     margin: 0;
     padding-block: calc(env(safe-area-inset-top, 0px) + var(--space-2)) var(--space-2);
     padding-inline: max(var(--space-3), env(safe-area-inset-left, 0px)) max(var(--space-3), env(safe-area-inset-right, 0px));
+    min-height: calc(env(safe-area-inset-top, 0px) + var(--space-11));
     border: none;
     border-bottom: var(--ui-border);
     border-radius: 0;
@@ -503,7 +507,9 @@ onBeforeUnmount(() => {
   border: var(--ui-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  background: transparent;
   color: var(--color-text-primary);
+  box-shadow: none;
 }
 
 .sheet-backdrop {
@@ -640,17 +646,22 @@ onBeforeUnmount(() => {
 
   .focus-widget-panel {
     inset-block-start: calc(
-      env(safe-area-inset-top, 0px) + var(--space-2) + var(--space-11) + var(--space-2) + 1px
+      env(safe-area-inset-top, 0px) + var(--space-2) + var(--space-11) + var(--space-2) +
+        var(--space-2)
     );
     inset-block-end: auto;
-    inset-inline-start: 0;
-    inset-inline-end: 0;
+    inset-inline-start: max(var(--space-3), env(safe-area-inset-left, 0px));
+    inset-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
     z-index: var(--z-modal);
-    width: 100%;
+    width: auto;
     max-width: none;
     padding: var(--space-4);
-    border-top: none;
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    border: var(--ui-border);
+    border-radius: var(--radius-lg);
+    background: transparent;
+    backdrop-filter: var(--glass-strong-filter);
+    -webkit-backdrop-filter: var(--glass-strong-filter);
+    box-shadow: none;
   }
 }
 </style>

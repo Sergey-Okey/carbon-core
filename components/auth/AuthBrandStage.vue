@@ -95,6 +95,43 @@ let pointerY = -9999
 let pointerActive = false
 let resizeObs: ResizeObserver | null = null
 
+let pulseT = 0
+let pulseDur = 3.0
+let pulseNextAt = 3.2
+let pulseActive = false
+let pulsePhase = 0
+let pulseLobes = 5
+
+function scheduleNextPulse(fromT: number) {
+  pulseNextAt = fromT + 3
+  pulseDur = 2.05 + hash(Math.floor(fromT * 13) + 3) * 0.45
+  pulsePhase = hash(Math.floor(fromT * 19) + 5) * Math.PI * 2
+  pulseLobes = 4 + Math.floor(hash(Math.floor(fromT * 23) + 2) * 3)
+}
+
+function pulseEnvelope(t: number) {
+  if (t <= 0 || t >= 1) return 0
+  const attack = Math.min(1, t / 0.1)
+  const fade = t > 0.58 ? Math.pow(1 - (t - 0.58) / 0.42, 1.7) : 1
+  return attack * fade
+}
+
+function easeOutCubic(t: number) {
+  const u = Math.min(1, Math.max(0, t))
+  return 1 - (1 - u) * (1 - u) * (1 - u)
+}
+
+function angularDelta(a: number, b: number) {
+  let d = a - b
+  while (d > Math.PI) d -= Math.PI * 2
+  while (d < -Math.PI) d += Math.PI * 2
+  return d
+}
+
+function waveRadiusAt(baseR: number, amp: number, angle: number) {
+  return baseR + amp * Math.sin(angle * pulseLobes + pulsePhase)
+}
+
 function hash(n: number) {
   return ((n * 2654435761) >>> 0) / 4294967296
 }
@@ -272,9 +309,52 @@ function tick(now: number) {
   const span = Math.min(cssW, cssH) * 0.92
   const ringsAssembled = assembleT > 0.85
 
+  if (ringsAssembled) {
+    if (!pulseActive && assembleT >= pulseNextAt) {
+      pulseActive = true
+      pulseT = 0
+      scheduleNextPulse(assembleT)
+    }
+    if (pulseActive) {
+      pulseT += dt / pulseDur
+      if (pulseT >= 1) {
+        pulseActive = false
+        pulseT = 0
+      }
+    }
+  }
+
+  const pulseEnv = pulseActive ? pulseEnvelope(pulseT) : 0
+  const pulseBaseR = pulseActive ? easeOutCubic(pulseT) * span * 1.08 : 0
+  const pulseAmp = pulseActive ? span * 0.034 * pulseEnv : 0
+  const pulseBand = span * 0.07
+
   ctx.clearRect(0, 0, cssW, cssH)
   ctx.fillStyle = themeBg
   ctx.fillRect(0, 0, cssW, cssH)
+
+  if (pulseActive && pulseEnv > 0.02 && pulseBaseR > 2) {
+    const steps = 160
+    ctx.beginPath()
+    for (let i = 0; i <= steps; i += 1) {
+      const ang = (i / steps) * Math.PI * 2
+      const rr = waveRadiusAt(pulseBaseR, pulseAmp, ang)
+      const x = cx + Math.cos(ang) * rr
+      const y = cy + Math.sin(ang) * rr
+      if (i === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    }
+    ctx.closePath()
+    const waveFade = Math.max(
+      0,
+      Math.min(1, (cssW * 0.92 - (cx - pulseBaseR * 0.35)) / (cssW * 0.22))
+    )
+    ctx.strokeStyle = ink(0.42 * pulseEnv * waveFade)
+    ctx.lineWidth = 1.35 + pulseEnv * 1.1
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    ctx.stroke()
+  }
 
   ringDefs.forEach((ring) => {
     let spin = ring.speed * (ringsAssembled ? 1 : 0.18)
@@ -310,9 +390,7 @@ function tick(now: number) {
     let push = 0
     let bright = 0
     if (pointerActive && p > 0.95) {
-      let da = a - pointerAngle
-      while (da > Math.PI) da -= Math.PI * 2
-      while (da < -Math.PI) da += Math.PI * 2
+      const da = angularDelta(a, pointerAngle)
       const angular = Math.max(0, 1 - Math.abs(da) / 0.55)
       const nearRing = Math.max(0, 1 - Math.abs(pointerDist - homeR) / (span * 0.16))
       const influence = angular * angular * (0.35 + nearRing * 0.65)
@@ -320,43 +398,73 @@ function tick(now: number) {
       bright = influence
     }
 
+    let wavePaint = 0
+    if (pulseActive && pulseEnv > 0.01 && p > 0.95) {
+      const tickMid = homeR + shard.len * span * 0.5
+      const waveR = waveRadiusAt(pulseBaseR, pulseAmp, a)
+      const band = Math.max(0, 1 - Math.abs(tickMid - waveR) / pulseBand)
+      wavePaint = band * band * pulseEnv
+      bright = Math.max(bright, wavePaint)
+    }
+
     const dir = a + tilt
+    const tickLen = shard.len * span
     const r0 = r + push * 0.15
-    const r1 = r + shard.len * span + push
-    const x0 = cx + Math.cos(dir) * r0
-    const y0 = cy + Math.sin(dir) * r0
-    const x1 = cx + Math.cos(dir) * r1
-    const y1 = cy + Math.sin(dir) * r1
+    const r1 = r + tickLen + push
 
-    const midX = (x0 + x1) * 0.5
-    const edgeFade = Math.max(0, Math.min(1, (cssW * 0.92 - midX) / (cssW * 0.18)))
+    const midXBase = cx + Math.cos(dir) * (r0 + r1) * 0.5
+    const edgeFade = Math.max(0, Math.min(1, (cssW * 0.92 - midXBase) / (cssW * 0.18)))
     const appear = p <= 0 ? 0 : Math.min(1, 0.25 + p * 0.75)
-    const alpha = Math.min(0.95, (shard.alpha * appear + bright * 0.65) * edgeFade)
+    const baseAlpha = Math.min(0.95, (shard.alpha * appear + bright * 0.35) * edgeFade)
+    const paintAlpha = Math.min(
+      1,
+      baseAlpha + wavePaint * 0.72 * edgeFade
+    )
 
-    if (alpha < 0.02) continue
+    if (paintAlpha < 0.02) continue
+
+    ctx.lineCap = 'round'
 
     if (p > 0 && p < 1) {
-      const trail = (1 - p) * shard.len * span * 1.8
+      const x0 = cx + Math.cos(dir) * r0
+      const y0 = cy + Math.sin(dir) * r0
+      const x1 = cx + Math.cos(dir) * r1
+      const y1 = cy + Math.sin(dir) * r1
+      const trail = (1 - p) * tickLen * 1.8
       const tx = x0 - Math.cos(dir) * trail
       const ty = y0 - Math.sin(dir) * trail
       const grad = ctx.createLinearGradient(tx, ty, x1, y1)
       grad.addColorStop(0, ink(0))
-      grad.addColorStop(0.55, ink(alpha * 0.35))
-      grad.addColorStop(1, ink(alpha))
+      grad.addColorStop(0.55, ink(paintAlpha * 0.35))
+      grad.addColorStop(1, ink(paintAlpha))
       ctx.strokeStyle = grad
       ctx.lineWidth = shard.width * (0.7 + p * 0.5)
-      ctx.lineCap = 'round'
       ctx.beginPath()
       ctx.moveTo(tx, ty)
       ctx.lineTo(x1, y1)
       ctx.stroke()
     } else {
+      const x0 = cx + Math.cos(dir) * r0
+      const y0 = cy + Math.sin(dir) * r0
+      const x1 = cx + Math.cos(dir) * r1
+      const y1 = cy + Math.sin(dir) * r1
+
+      if (wavePaint > 0.05) {
+        const grad = ctx.createLinearGradient(x0, y0, x1, y1)
+        const crest = 0.35 + 0.3 * Math.sin(a * pulseLobes + pulsePhase)
+        grad.addColorStop(0, ink(paintAlpha * (0.45 + wavePaint * 0.2)))
+        grad.addColorStop(Math.min(0.92, Math.max(0.08, crest)), ink(paintAlpha))
+        grad.addColorStop(1, ink(paintAlpha * (0.5 + wavePaint * 0.25)))
+        ctx.strokeStyle = grad
+        ctx.lineWidth = shard.width + wavePaint * 1.6
+      } else {
+        ctx.strokeStyle = ink(paintAlpha)
+        ctx.lineWidth = shard.width + bright * 1.2
+      }
+
       ctx.beginPath()
       ctx.moveTo(x0, y0)
       ctx.lineTo(x1, y1)
-      ctx.strokeStyle = ink(alpha)
-      ctx.lineWidth = shard.width + bright * 1.2
-      ctx.lineCap = 'round'
       ctx.stroke()
     }
   }
@@ -367,6 +475,9 @@ function tick(now: number) {
 function startCanvas() {
   lastTs = 0
   assembleT = 0
+  pulseActive = false
+  pulseT = 0
+  scheduleNextPulse(0)
   resizeCanvas()
   if (raf) cancelAnimationFrame(raf)
   raf = requestAnimationFrame(tick)

@@ -28,7 +28,6 @@
                 v-if="closable"
                 variant="ghost"
                 icon-only
-                :title="closeTitle"
                 :aria-label="closeTitle"
                 @click="emit('close')"
               >

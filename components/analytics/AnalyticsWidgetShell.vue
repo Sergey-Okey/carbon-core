@@ -35,7 +35,6 @@
           class="widget-shell__drag"
           draggable="true"
           :aria-label="dragLabel"
-          title="Перетащить"
           @dragstart="$emit('dragstart', $event)"
           @dragend="$emit('dragend')"
         >

@@ -90,7 +90,7 @@
                     Выполнена
                   </span>
                 </span>
-                <span class="task-marker" :class="task.type" :title="taskTypeMeta(task.type).title">
+                <span class="task-marker" :class="task.type" :aria-label="taskTypeMeta(task.type).title">
                   {{ taskTypeMeta(task.type).label }}
                 </span>
               </label>

@@ -322,7 +322,7 @@ onMounted(() => {
 <style scoped lang="scss">
 .stats-bar {
   position: relative;
-  @include surface-panel;
+  @include collapse-panel(var(--space-3));
   display: grid;
   align-items: center;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -330,7 +330,6 @@ onMounted(() => {
   min-width: 0;
   padding: var(--space-3) calc(var(--space-3) + var(--control-icon-size) + var(--space-2))
     var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
 
   @include mobile {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -338,10 +337,9 @@ onMounted(() => {
   }
 
   &.is-collapsed {
+    @include collapse-panel-compact;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    min-height: 52px;
-    padding: var(--space-2);
   }
 
   @media (max-width: 520px) {
@@ -388,27 +386,7 @@ onMounted(() => {
 }
 
 .stats-collapsed-toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  width: 100%;
-  min-width: 0;
-  min-height: 36px;
-  padding: var(--space-2) var(--space-3);
-  border: none;
-  border-radius: var(--radius-nested, var(--radius-md));
-  background: color-mix(in srgb, var(--color-surface-2) 92%, transparent);
-  color: var(--color-text-primary);
-  cursor: pointer;
-  transition:
-    background var(--transition-standard),
-    color var(--transition-standard);
-
-  &:hover,
-  &:focus-visible {
-    outline: none;
-    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface-2));
-  }
+  @include collapse-toggle;
 }
 
 .stats-collapsed-row {
@@ -449,13 +427,7 @@ onMounted(() => {
 }
 
 .stats-collapsed-chevron {
-  display: grid;
-  place-items: center;
-  width: var(--control-icon-size);
-  height: var(--control-icon-size);
-  flex-shrink: 0;
-  border-radius: var(--radius-md);
-  color: var(--color-text-muted);
+  @include collapse-toggle-icon;
 }
 
 .stat-item {

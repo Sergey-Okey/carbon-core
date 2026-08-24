@@ -20,13 +20,13 @@
           />
           <div class="divider"></div>
 
-          <button @click="$emit('fit-view')" aria-label="Сбросить вид" data-tooltip="Сбросить вид">
+          <button @click="$emit('fit-view')" aria-label="Сбросить вид">
             <Maximize :size="18" />
           </button>
-          <button @click="$emit('align-layout')" aria-label="Выровнять доску" data-tooltip="Выровнять доску">
+          <button @click="$emit('align-layout')" aria-label="Выровнять доску">
             <LayoutGrid :size="18" />
           </button>
-          <button @click="$emit('export-png')" aria-label="Экспортировать доску в PNG" data-tooltip="Экспортировать PNG">
+          <button @click="$emit('export-png')" aria-label="Экспортировать доску в PNG">
             <ImageDown :size="18" />
           </button>
           <div class="divider"></div>
@@ -34,7 +34,6 @@
           <button
             @click="$emit('add-branch')"
             aria-label="Добавить ветку"
-            data-tooltip="Добавить ветку"
             data-tour="board-add-branch"
             :disabled="!canAddBranch"
           >
@@ -43,7 +42,6 @@
           <button
             @click="$emit('add-milestone')"
             :aria-label="milestoneTooltip"
-            :data-tooltip="milestoneTooltip"
             data-tour="board-add-milestone"
             :disabled="!canAddMilestone"
           >
@@ -55,7 +53,6 @@
             v-if="hasSelection"
             @click="$emit('delete-selected')"
             :aria-label="deleteTooltip"
-            :data-tooltip="deleteTooltip"
             class="delete-btn"
           >
             <Unlink2 v-if="selectionType === 'edge'" :size="18" />
@@ -63,10 +60,10 @@
           </button>
           <div v-if="hasSelection" class="divider"></div>
 
-          <button @click="$emit('undo')" aria-label="Отменить" data-tooltip="Отменить" :disabled="!canUndo">
+          <button @click="$emit('undo')" aria-label="Отменить" :disabled="!canUndo">
             <Undo :size="18" />
           </button>
-          <button @click="$emit('redo')" aria-label="Повторить" data-tooltip="Повторить" :disabled="!canRedo">
+          <button @click="$emit('redo')" aria-label="Повторить" :disabled="!canRedo">
             <Redo :size="18" />
           </button>
         </div>

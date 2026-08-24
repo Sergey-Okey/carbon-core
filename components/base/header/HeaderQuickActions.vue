@@ -7,8 +7,6 @@
       class="demo-access"
       type="button"
       aria-label="Открыть подписку"
-      data-tooltip="Завершить демо и зарегистрироваться"
-      data-tooltip-position="bottom"
       @click="emit('demo')"
     >
       Демо
@@ -18,8 +16,6 @@
       :class="['action-btn', { 'is-guided-prompt': highlightGuide }]"
       type="button"
       aria-label="Открыть обучение"
-      data-tooltip="Обучение"
-      data-tooltip-position="bottom"
       @click="emit('guide')"
     >
       <HelpCircle :size="20" />
@@ -48,8 +44,11 @@ const emit = defineEmits<{
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  justify-self: end;
   gap: var(--space-2);
   min-width: 0;
+  min-height: var(--space-9);
+  flex-wrap: nowrap;
 
   @include mobile {
     gap: var(--space-1);

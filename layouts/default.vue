@@ -21,6 +21,9 @@ const isBoardLayout = computed(
 
 <style scoped lang="scss">
 .layout {
+  --app-header-stack: calc(
+    max(var(--space-3), env(safe-area-inset-top, 0px)) + var(--space-11) + var(--space-1)
+  );
   position: relative;
   display: flex;
   flex-direction: column;
@@ -82,11 +85,17 @@ const isBoardLayout = computed(
 
   :deep(.nav-island) {
     position: fixed;
-    inset-block-start: 50%;
+    inset-block-start: calc(
+      var(--app-header-stack) + (100dvh - var(--app-header-stack)) / 2
+    );
     inset-inline-start: 12px;
     z-index: 3000;
     margin: 0;
     transform: translateY(-50%);
+    background: color-mix(in srgb, var(--color-surface-1) 52%, transparent);
+    backdrop-filter: var(--glass-filter, blur(18px) saturate(1.2));
+    -webkit-backdrop-filter: var(--glass-filter, blur(18px) saturate(1.2));
+    box-shadow: none;
   }
 
   @include mobile {
@@ -105,9 +114,14 @@ const isBoardLayout = computed(
 
     :deep(.nav-island) {
       inset-block-start: auto;
-      inset-inline: 0;
-      inset-block-end: 0;
-      transform: none;
+      inset-inline-start: 50%;
+      inset-inline-end: auto;
+      inset-block-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      inline-size: fit-content;
+      background-color: color-mix(in srgb, var(--surface) 42%, transparent);
+      backdrop-filter: var(--glass-strong-filter);
+      -webkit-backdrop-filter: var(--glass-strong-filter);
     }
   }
 }
@@ -150,7 +164,7 @@ const isBoardLayout = computed(
     );
     padding-inline-start: max(var(--space-3), env(safe-area-inset-left, 0px));
     padding-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
-    padding-block-end: calc(72px + env(safe-area-inset-bottom, 0px));
+    padding-block-end: calc(88px + env(safe-area-inset-bottom, 0px));
   }
 
   &::-webkit-scrollbar {

@@ -1,11 +1,36 @@
 <template>
-  <div class="task-list" :class="{ 'task-list--habits': taskType === 'HABITS' }">
-    <div class="list-header">
-      <div class="title-group">
+  <div
+    class="task-list"
+    :class="{
+      'task-list--habits': isCollapsible,
+      'is-collapsed': isCollapsible && isCollapsed,
+    }"
+  >
+    <div class="list-header" :class="{ 'list-header--collapsible': isCollapsible }">
+      <button
+        v-if="isCollapsible"
+        type="button"
+        class="collapse-toggle"
+        :aria-expanded="!isCollapsed"
+        @click="toggleCollapsed"
+      >
+        <span class="collapse-toggle__copy">
+          <strong>{{ title }}</strong>
+          <span class="collapse-toggle__summary">{{ listHint }}</span>
+        </span>
+        <span class="collapse-toggle__icon">
+          <ChevronDown
+            :size="18"
+            class="collapse-toggle__chevron"
+            :class="{ 'is-open': !isCollapsed }"
+          />
+        </span>
+      </button>
+      <div v-else class="title-group">
         <div class="title-wrapper">
           <h3>{{ title }}</h3>
           <button
-            v-if="taskType !== 'HABITS' && !hideRuleHint"
+            v-if="!hideRuleHint"
             type="button"
             class="info-badge"
             :aria-label="ruleHint"
@@ -35,6 +60,7 @@
       </div>
       <button
         v-if="!hideAdd"
+        type="button"
         class="add-btn"
         :class="{ limited: isAddLimited }"
         :aria-label="addButtonTitle"
@@ -44,25 +70,29 @@
         <Plus :size="20" />
       </button>
     </div>
-    <TransitionGroup name="task-list" class="tasks" tag="div">
-      <TaskCard
-        v-for="task in tasks"
-        :key="task.id"
-        :task="task"
-        :disable-toggle="disableToggle"
-        :restore-mode="restoreMode"
-        @toggle="handleToggle"
-        @delete="handleDelete"
-        @edit="handleEdit"
-        @restore="handleRestore"
-      />
-      <EmptyState
-        v-if="tasks.length === 0"
-        key="empty-state"
-        size="sm"
-        :description="emptyText || emptyMessage"
-      />
-    </TransitionGroup>
+
+    <div v-show="!isCollapsible || !isCollapsed" class="tasks-slot">
+      <TransitionGroup name="task-list" class="tasks" tag="div">
+        <TaskCard
+          v-for="task in tasks"
+          :key="task.id"
+          :task="task"
+          :disable-toggle="disableToggle"
+          :restore-mode="restoreMode"
+          @toggle="handleToggle"
+          @delete="handleDelete"
+          @edit="handleEdit"
+          @restore="handleRestore"
+        />
+        <EmptyState
+          v-if="tasks.length === 0"
+          key="empty-state"
+          size="sm"
+          :description="emptyText || emptyMessage"
+        />
+      </TransitionGroup>
+    </div>
+
     <Teleport to="body">
       <TaskForm
         v-if="showForm && !externalForm"
@@ -76,8 +106,10 @@
 </template>
 
 <script setup lang="ts">
-import { Plus, Info } from 'lucide-vue-next'
+import { Plus, Info, ChevronDown } from 'lucide-vue-next'
 import type { Task, TaskFormData, TaskType } from '~/types/task.types'
+
+const HABITS_COLLAPSE_KEY = 'cof-habits-collapsed'
 
 const props = defineProps<{
   taskType: TaskType | 'HABITS'
@@ -105,6 +137,9 @@ const editingTask = ref<Task | undefined>(undefined)
 const isRuleTooltipVisible = ref(false)
 const ruleTooltipPosition = ref({ x: 0, y: 0 })
 const ruleTooltipPlacement = ref<'top' | 'bottom'>('top')
+const isCollapsed = ref(false)
+
+const isCollapsible = computed(() => props.taskType === 'HABITS')
 
 const tasks = computed(() => {
   if (props.tasksOverride) return props.tasksOverride
@@ -113,6 +148,24 @@ const tasks = computed(() => {
   }
   return tasksStore.getTasksByType(props.taskType)
 })
+
+onMounted(() => {
+  if (!import.meta.client || !isCollapsible.value) return
+  const saved = localStorage.getItem(HABITS_COLLAPSE_KEY)
+  if (saved !== null) {
+    isCollapsed.value = saved === 'true' || saved === '1'
+  }
+})
+
+watch(isCollapsed, (value) => {
+  if (!import.meta.client || !isCollapsible.value) return
+  localStorage.setItem(HABITS_COLLAPSE_KEY, String(value))
+})
+
+function toggleCollapsed() {
+  if (!isCollapsible.value) return
+  isCollapsed.value = !isCollapsed.value
+}
 
 const ruleHint = computed(() => {
   const map: Record<string, string> = {
@@ -123,6 +176,7 @@ const ruleHint = computed(() => {
   }
   return map[props.taskType as string] || ''
 })
+
 const emptyMessage = computed(() => {
   if (props.taskType === 'HABITS') return 'Нет привычек. Добавьте первую.'
   return 'Нет активных задач. Можно добавить до 3.'
@@ -350,12 +404,6 @@ function handleSave(taskData: TaskFormData) {
       border: var(--ui-border);
       border-style: dashed;
     }
-
-    @include mobile {
-      width: 44px;
-      height: 44px;
-      min-height: 44px;
-    }
   }
 
   @media (pointer: coarse), (max-width: 767px) {
@@ -366,34 +414,18 @@ function handleSave(taskData: TaskFormData) {
     }
   }
 
+  .tasks-slot {
+    min-width: 0;
+  }
+
   .tasks {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
   }
 
-  &.task-list--habits {
-    .tasks {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: var(--space-2);
-    }
-  }
-
   .empty-state {
     grid-column: 1 / -1;
-  }
-
-  @media (max-width: 1180px) {
-    &.task-list--habits .tasks {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-  }
-
-  @media (max-width: 980px) {
-    &.task-list--habits .tasks {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
   }
 
   .task-list-enter-active,
@@ -417,6 +449,78 @@ function handleSave(taskData: TaskFormData) {
     transition: transform var(--transition-standard);
   }
 
+  // Habits: stable header box — panel paint only when collapsed (no layout jump)
+  &.task-list--habits {
+    padding-top: 0;
+
+    .list-header--collapsible {
+      @include nest-shell(var(--radius-lg), var(--space-2));
+      align-items: center;
+      gap: var(--space-2);
+      min-height: 52px;
+      margin-bottom: var(--space-4);
+      border: 1px solid transparent;
+      background: transparent;
+      box-shadow: none;
+      box-sizing: border-box;
+    }
+
+    &.is-collapsed .list-header--collapsible {
+      @include surface-panel;
+      margin-bottom: 0;
+    }
+
+    .collapse-toggle {
+      @include collapse-toggle;
+      flex: 1;
+    }
+
+    .collapse-toggle__copy {
+      @include collapse-toggle-copy;
+    }
+
+    .collapse-toggle__summary {
+      @include collapse-toggle-summary;
+    }
+
+    .collapse-toggle__icon {
+      @include collapse-toggle-icon;
+    }
+
+    .collapse-toggle__chevron {
+      transition: transform var(--transition-standard);
+
+      &.is-open {
+        transform: rotate(180deg);
+      }
+    }
+
+    .add-btn {
+      align-self: center;
+      width: 36px;
+      height: 36px;
+      min-height: 36px;
+    }
+
+    .tasks {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: var(--space-2);
+    }
+  }
+
+  @media (max-width: 1180px) {
+    &.task-list--habits .tasks {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 980px) {
+    &.task-list--habits .tasks {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
   @include mobile {
     .list-header {
       gap: var(--space-3);
@@ -431,10 +535,30 @@ function handleSave(taskData: TaskFormData) {
       gap: var(--space-2);
     }
 
-    &.task-list--habits .tasks {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      align-content: start;
-      align-items: start;
+    &.task-list--habits {
+      .list-header--collapsible {
+        margin-bottom: var(--space-4);
+      }
+
+      &.is-collapsed .list-header--collapsible {
+        margin-bottom: 0;
+      }
+
+      .collapse-toggle {
+        min-height: 44px;
+      }
+
+      .add-btn {
+        width: 44px;
+        height: 44px;
+        min-height: 44px;
+      }
+
+      .tasks {
+        grid-template-columns: 1fr;
+        align-content: start;
+        align-items: start;
+      }
     }
   }
 
@@ -448,8 +572,18 @@ function handleSave(taskData: TaskFormData) {
       font-size: var(--text-sm);
     }
 
-    &.task-list--habits .tasks {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    &.task-list--habits {
+      .list-header--collapsible {
+        margin-bottom: var(--space-3);
+      }
+
+      &.is-collapsed .list-header--collapsible {
+        margin-bottom: 0;
+      }
+
+      .tasks {
+        grid-template-columns: 1fr;
+      }
     }
   }
 }

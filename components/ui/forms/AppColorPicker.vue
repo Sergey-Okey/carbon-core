@@ -13,7 +13,6 @@
       role="radio"
       :aria-label="option.label"
       :aria-checked="option.value === modelValue"
-      :title="option.label"
       @click="emit('update:modelValue', option.value)"
     >
       <Check v-if="option.value === modelValue" class="swatch-check" :size="14" :stroke-width="2.6" />

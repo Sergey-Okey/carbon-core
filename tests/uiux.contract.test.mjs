@@ -49,6 +49,8 @@ test('nested radius tokens and mixins stay concentric', async () => {
   assert.match(radius, /--radius-nested:\s*max\(0px,\s*calc\(var\(--nest-radius\) - var\(--nest-pad\)\)\)/)
   assert.match(mixins, /@mixin nest-shell/)
   assert.match(mixins, /@mixin nest-item/)
+  assert.match(mixins, /@mixin collapse-panel/)
+  assert.match(mixins, /@mixin collapse-toggle/)
   assert.match(mixins, /border-radius:\s*var\(--radius-nested\)/)
   assert.match(mixins, /@mixin tablet/)
   assert.match(mixins, /@mixin narrow/)

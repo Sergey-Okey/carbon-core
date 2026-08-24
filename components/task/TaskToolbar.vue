@@ -179,21 +179,14 @@ watch(isCollapsed, (value) => {
 
 <style scoped lang="scss">
 .tasks-toolbar {
-  @include surface-panel;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
+  @include collapse-panel(var(--space-4));
 
   @include mobile {
-    gap: var(--space-3);
-    padding: var(--space-3);
+    --nest-pad: var(--space-3);
+    padding: var(--nest-pad);
 
     &.collapsed {
-      gap: 0;
-      min-height: 52px;
-      padding: var(--space-2);
+      @include collapse-panel-compact;
 
       .toolbar-body {
         display: none;
@@ -303,42 +296,11 @@ label,
 
 @include mobile {
   .toolbar-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-height: 36px;
-    gap: var(--space-3);
-    padding: var(--space-2) var(--space-3);
-    border: none;
-    border-radius: var(--radius-nested, var(--radius-md));
-    background: color-mix(in srgb, var(--color-surface-2) 92%, transparent);
-    color: var(--color-text-primary);
-    font: inherit;
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    cursor: pointer;
-    transition:
-      background var(--transition-standard),
-      color var(--transition-standard);
-
-    svg {
-      color: var(--color-text-muted);
-    }
+    @include collapse-toggle;
   }
 
   .toolbar-toggle__copy {
-    display: flex;
-    flex: 1;
-    min-width: 0;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-    text-align: left;
-
-    strong {
-      font-size: var(--text-sm);
-      line-height: var(--leading-tight);
-    }
+    @include collapse-toggle-copy;
   }
 
   .tasks-toolbar.collapsed .toolbar-toggle__copy {
@@ -346,27 +308,11 @@ label,
   }
 
   .toolbar-toggle__summary {
-    @include text-ellipsis;
-    max-width: 100%;
-    color: var(--color-text-muted);
-    font-size: var(--text-xs);
-    font-weight: var(--weight-medium);
-    line-height: var(--leading-tight);
+    @include collapse-toggle-summary;
   }
 
   .toolbar-toggle__icon {
-    display: grid;
-    place-items: center;
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
-    border-radius: var(--radius-full);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .toolbar-toggle:hover {
-      background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-    }
+    @include collapse-toggle-icon;
   }
 
   .view-switch {

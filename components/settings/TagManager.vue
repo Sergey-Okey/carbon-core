@@ -17,10 +17,10 @@
             <AppCustomColorPicker v-model="draftColor" label="Цвет тега" />
           </div>
           <div class="tag-actions">
-            <button type="button" aria-label="Отменить" data-tooltip="Отменить" @click="cancelEdit">
+            <button type="button" aria-label="Отменить" @click="cancelEdit">
               <X :size="16" />
             </button>
-            <button type="button" aria-label="Сохранить" data-tooltip="Сохранить" @click="saveEdit(tag.id)">
+            <button type="button" aria-label="Сохранить" @click="saveEdit(tag.id)">
               <Check :size="16" />
             </button>
           </div>
@@ -35,14 +35,13 @@
             </div>
           </div>
           <div class="tag-actions">
-            <button type="button" aria-label="Редактировать тег" data-tooltip="Редактировать" @click="startEdit(tag)">
+            <button type="button" aria-label="Редактировать тег" @click="startEdit(tag)">
               <Pencil :size="16" />
             </button>
             <button
               type="button"
               class="danger"
               aria-label="Удалить тег"
-              data-tooltip="Удалить"
               @click="removeTag(tag.id, tag.name)"
             >
               <Trash2 :size="16" />
