@@ -1,7 +1,10 @@
 <template>
   <div
-    class="dashboard page-enter-stack"
-    :class="{ 'is-board': uiStore.activeNav === 'board' }"
+    class="dashboard"
+    :class="{
+      'is-board': uiStore.activeNav === 'board',
+      'page-enter-stack': uiStore.activeNav !== 'board',
+    }"
   >
     <section
       v-if="
@@ -18,9 +21,18 @@
       class="dashboard-section content-section"
       :class="{ 'is-board': uiStore.activeNav === 'board' }"
     >
-      <div :key="uiStore.activeNav" class="nav-view page-enter-stack">
-      <BranchFlow v-if="uiStore.activeNav === 'board'" />
+      <div
+        v-if="uiStore.activeNav === 'board'"
+        class="nav-view nav-view--board"
+      >
+        <BranchFlow />
+      </div>
 
+      <div
+        v-else
+        :key="uiStore.activeNav"
+        class="nav-view page-enter-stack"
+      >
       <div v-if="uiStore.activeNav === 'tasks'" class="tasks-dashboard">
         <TaskToolbar
           v-model:search="taskSearch"
@@ -199,6 +211,11 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
 .nav-view {
   width: 100%;
   min-width: 0;
+
+  &--board {
+    height: 100%;
+    min-height: 0;
+  }
 }
 
 .content-section {

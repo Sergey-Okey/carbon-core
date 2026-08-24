@@ -4,7 +4,6 @@
       class="notification-trigger"
       variant="ghost"
       icon-only
-      :title="triggerTitle"
       :aria-label="triggerTitle"
       :aria-expanded="isOpen"
       aria-haspopup="dialog"
@@ -40,20 +39,15 @@
         >
           <div class="sheet-handle" aria-hidden="true" />
 
-          <header class="panel-header">
-            <div class="panel-heading">
-              <h3>Уведомления</h3>
-              <p>{{ countLabel }}</p>
-            </div>
+          <div v-if="totalCount" class="panel-toolbar">
             <AppButton
-              v-if="totalCount"
               variant="ghost"
               size="sm"
               @click="clearNotificationHistory"
             >
               Очистить всё
             </AppButton>
-          </header>
+          </div>
 
           <div v-if="totalCount" class="history-list" role="list">
             <article
@@ -78,7 +72,6 @@
               <AppButton
                 variant="ghost"
                 icon-only
-                title="Удалить уведомление"
                 aria-label="Удалить уведомление"
                 @click="removeHistoryItem(item.id)"
               >
@@ -121,7 +114,6 @@ const root = ref<HTMLElement | null>(null)
 const panel = ref<HTMLElement | null>(null)
 
 const totalCount = computed(() => notificationHistory.value.length)
-const countLabel = computed(() => formatNotificationCountRu(totalCount.value))
 
 const triggerTitle = computed(() => {
   if (!unreadCount.value) {
@@ -233,6 +225,8 @@ watch(isOpen, (open) => {
   syncBodyLock(open)
 })
 
+useHeaderSheet(isOpen)
+
 onMounted(() => {
   document.addEventListener('click', handleDocumentClick)
   document.addEventListener('keydown', handleKeydown)
@@ -299,38 +293,13 @@ onBeforeUnmount(() => {
   border-radius: var(--radius-lg);
   background: transparent;
   color: var(--color-text-primary);
-  box-shadow: var(--shadow-md);
+  box-shadow: none;
 }
 
-.panel-header {
+.panel-toolbar {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  border-bottom: var(--ui-border);
-}
-
-.panel-heading {
-  min-inline-size: 0;
-
-  h3,
-  p {
-    margin: 0;
-  }
-
-  h3 {
-    color: var(--color-text-primary);
-    font-size: var(--text-md);
-    font-weight: var(--weight-bold);
-    line-height: 1.25;
-  }
-
-  p {
-    margin-top: var(--space-1);
-    color: var(--color-text-secondary);
-    font-size: var(--text-sm);
-  }
+  justify-content: flex-end;
+  padding: var(--space-2) var(--space-3) 0;
 }
 
 .history-list {
@@ -469,22 +438,32 @@ onBeforeUnmount(() => {
 
   .notification-panel {
     inset-block-start: calc(
-      env(safe-area-inset-top, 0px) + var(--space-2) + var(--space-11) + var(--space-2) + 1px
+      env(safe-area-inset-top, 0px) + var(--space-2) + var(--space-11) + var(--space-2) +
+        var(--space-2)
     );
     inset-block-end: auto;
-    inset-inline-start: 0;
-    inset-inline-end: 0;
+    inset-inline-start: max(var(--space-3), env(safe-area-inset-left, 0px));
+    inset-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
     z-index: var(--z-modal);
-    inline-size: 100%;
+    inline-size: auto;
     max-inline-size: none;
     max-block-size: min(
       78dvh,
       calc(100dvh - env(safe-area-inset-top, 0px) - var(--space-11) - var(--space-8) - 72px)
     );
-    padding-block-end: var(--space-4);
-    border-top: none;
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    padding-block-end: var(--space-2);
+    border: var(--ui-border);
+    border-radius: var(--radius-lg);
+    background: transparent;
+    backdrop-filter: var(--glass-strong-filter);
+    -webkit-backdrop-filter: var(--glass-strong-filter);
+    box-shadow: none !important;
+    filter: none;
     grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .panel-toolbar {
+    padding: var(--space-3) var(--space-4) 0;
   }
 
   .history-list {

@@ -362,7 +362,9 @@
               Яндекс
             </AppButton>
           </div>
-          <p v-if="oauthMessage" class="error-text">{{ oauthMessage }}</p>
+          <p v-if="oauthMessage" class="error-text error-text--oauth" role="alert">
+            {{ oauthMessage }}
+          </p>
 
           <p class="switch-mode">
             {{ isRegister ? 'Уже есть аккаунт?' : 'Нет аккаунта?' }}
@@ -620,9 +622,7 @@ onMounted(() => {
 
   if (!oauthError) return
 
-  const message = getOAuthErrorMessage(oauthError)
-  error.value = message
-  oauthMessage.value = message
+  oauthMessage.value = getOAuthErrorMessage(oauthError)
   void router.replace({ path: isRegister.value ? '/register' : '/auth' })
 })
 
@@ -684,11 +684,8 @@ function startOAuth(provider: 'google' | 'yandex') {
   fieldErrors.terms = ''
 
   if (isRegister.value && !form.acceptedTerms) {
-    const message =
+    fieldErrors.terms =
       'Перед регистрацией через Google или Яндекс примите условия использования'
-    fieldErrors.terms = message
-    error.value = message
-    oauthMessage.value = message
     return
   }
 
@@ -709,7 +706,7 @@ function getOAuthErrorMessage(reason: string) {
     terms:
       'Для регистрации через Google или Яндекс нужно принять условия использования.',
     provider:
-      'Не удалось получить данные аккаунта у провайдера. Попробуйте ещё раз.',
+      'Не удалось получить данные аккаунта у провайдера.\nПопробуйте ещё раз.',
     invalid: 'Некорректный ответ авторизации. Попробуйте войти ещё раз.',
     failed: 'Вход через сервис не выполнен. Попробуйте другой способ.',
   }
@@ -1211,6 +1208,15 @@ async function submit() {
 
 .error-text {
   color: var(--color-error);
+}
+
+.error-text--oauth {
+  width: 100%;
+  margin-top: calc(var(--space-1) * -1);
+  text-align: left;
+  white-space: pre-line;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .success-text {

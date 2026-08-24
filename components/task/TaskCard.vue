@@ -16,7 +16,6 @@
             type="button"
             class="habit-done-icon"
             aria-label="Сегодня выполнена"
-            data-tooltip="Сегодня выполнена"
           >
             <Check :size="14" />
           </button>
@@ -25,7 +24,6 @@
             class="task-type"
             :class="task.type"
             :aria-label="typeTitle"
-            :data-tooltip="typeTitle"
           >{{ typeLabel }}</span>
         </div>
       </div>
@@ -51,7 +49,6 @@
             v-for="branch in linkedBranches"
             :key="branch.id"
             class="branch-link"
-            :data-tooltip="branch.displayName"
           >
             {{ branch.displayName }}
           </span>
@@ -86,7 +83,6 @@
                 :key="tag.id"
                 class="tag"
                 :aria-label="tag.name"
-                :data-tooltip="tag.name"
                 :style="{ '--tag-color': tag.color || 'var(--color-accent)' }"
               >
                 <span class="tag-dot" />
@@ -112,7 +108,6 @@
             v-if="restoreMode"
             class="restore-btn"
             :aria-label="restoreButtonTitle"
-            :data-tooltip="restoreButtonTitle"
             @click.stop="emit('restore', task.id)"
           >
             <RotateCcw :size="16" />
@@ -124,16 +119,15 @@
               @click="handleToggle"
               :disabled="disableToggle || isCompleted"
               :aria-label="completeButtonTitle"
-              :data-tooltip="completeButtonTitle"
               :data-tour="completeTourTarget"
             >
               <CheckCircle v-if="isCompleted" :size="18" />
               <Circle v-else :size="18" />
             </button>
-            <button class="edit-btn" aria-label="Редактировать" data-tooltip="Редактировать" @click.stop="emit('edit', task)">
+            <button class="edit-btn" aria-label="Редактировать" @click.stop="emit('edit', task)">
               <Edit :size="16" />
             </button>
-            <button class="delete-btn" aria-label="Удалить" data-tooltip="Удалить" @click.stop="handleDelete">
+            <button class="delete-btn" aria-label="Удалить" @click.stop="handleDelete">
               <Trash2 :size="16" />
             </button>
           </template>

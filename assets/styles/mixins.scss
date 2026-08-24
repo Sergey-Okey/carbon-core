@@ -53,6 +53,92 @@
   border-radius: var(--radius-nested);
 }
 
+/// Outer shell for collapsible sections (stats, filters, habits).
+@mixin collapse-panel($pad: var(--space-2)) {
+  @include surface-panel;
+  @include nest-shell(var(--radius-lg), $pad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+@mixin collapse-panel-compact {
+  gap: 0;
+  min-height: 52px;
+  --nest-pad: var(--space-2);
+  padding: var(--nest-pad);
+}
+
+/// Inner nested toggle row inside a collapse-panel.
+@mixin collapse-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  @include nest-item;
+  background: color-mix(in srgb, var(--color-surface-2) 92%, transparent);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition:
+    background var(--transition-standard),
+    color var(--transition-standard);
+
+  svg {
+    color: var(--color-text-muted);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover,
+    &:focus-visible {
+      outline: none;
+      background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+    }
+  }
+}
+
+@mixin collapse-toggle-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+
+  strong {
+    font-size: var(--text-sm);
+    line-height: var(--leading-tight);
+  }
+}
+
+@mixin collapse-toggle-summary {
+  @include text-ellipsis;
+  max-width: 100%;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+}
+
+@mixin collapse-toggle-icon {
+  display: grid;
+  place-items: center;
+  width: var(--control-icon-size, 28px);
+  height: var(--control-icon-size, 28px);
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+}
+
 @mixin text-ellipsis {
   overflow: hidden;
   text-overflow: ellipsis;

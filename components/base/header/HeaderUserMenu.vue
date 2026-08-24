@@ -4,8 +4,6 @@
       class="profile-btn"
       type="button"
       aria-label="Открыть меню профиля"
-      data-tooltip="Профиль"
-      data-tooltip-position="bottom"
       :aria-expanded="open"
       aria-haspopup="dialog"
       @click="emit('toggle')"
@@ -88,6 +86,8 @@ watch(
     syncBodyLock(open)
   }
 )
+
+useHeaderSheet(toRef(props, 'open'))
 
 onBeforeUnmount(() => {
   syncBodyLock(false)
@@ -175,7 +175,7 @@ defineExpose({ panelRef })
   border-radius: var(--radius-lg);
   background: transparent;
   color: var(--color-text-primary);
-  box-shadow: var(--shadow-md);
+  box-shadow: none;
 }
 
 .panel-actions {
@@ -229,37 +229,33 @@ defineExpose({ panelRef })
   }
 
   .panel-head {
-    display: block;
-    padding: var(--space-4);
-    border-bottom: var(--ui-border);
-
-    h3 {
-      margin: 0;
-      color: var(--color-text-primary);
-      font-size: var(--text-md);
-      font-weight: var(--weight-bold);
-      line-height: 1.25;
-    }
+    display: none;
   }
 
   .profile-panel {
     inset-block-start: calc(
-      env(safe-area-inset-top, 0px) + var(--space-2) + var(--space-11) + var(--space-2) + 1px
+      env(safe-area-inset-top, 0px) + var(--space-2) + var(--space-11) + var(--space-2) +
+        var(--space-2)
     );
     inset-block-end: auto;
-    inset-inline-start: 0;
-    inset-inline-end: 0;
+    inset-inline-start: max(var(--space-3), env(safe-area-inset-left, 0px));
+    inset-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
     z-index: var(--z-modal);
-    inline-size: 100%;
+    inline-size: auto;
     max-inline-size: none;
-    padding: 0;
-    border-top: none;
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    padding: var(--space-2);
+    border: var(--ui-border);
+    border-radius: var(--radius-lg);
+    background: transparent;
+    backdrop-filter: var(--glass-strong-filter);
+    -webkit-backdrop-filter: var(--glass-strong-filter);
+    box-shadow: none !important;
+    filter: none;
   }
 
   .panel-actions {
     gap: var(--space-2);
-    padding: var(--space-4);
+    padding: 0;
   }
 }
 </style>

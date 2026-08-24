@@ -3,10 +3,7 @@
     <main class="auth-layout__content">
       <slot />
     </main>
-    <ThemeToggleButton
-      class="auth-theme-toggle"
-      data-tooltip-position="bottom"
-    />
+    <ThemeToggleButton class="auth-theme-toggle" />
     <ToastContainer />
   </div>
 </template>
