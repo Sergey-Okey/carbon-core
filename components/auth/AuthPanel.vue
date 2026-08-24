@@ -1087,7 +1087,7 @@ async function submit() {
   flex: 1 1 auto;
   min-height: 0;
   align-content: start;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .password-row {
@@ -1184,6 +1184,7 @@ async function submit() {
 .legal-links {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2) var(--space-4);
   margin-top: auto;
   padding-top: var(--space-2);
@@ -1193,6 +1194,7 @@ async function submit() {
     color: var(--color-text-muted);
     font-size: var(--text-xs);
     text-decoration: none;
+    line-height: 1.2;
 
     &:hover {
       color: var(--color-text-secondary);
@@ -1326,9 +1328,28 @@ async function submit() {
     }
   }
 
+  .auth-card__form-slot.is-mobile-overlay .auth-form {
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  .auth-card__form-slot.is-mobile-overlay .legal-links {
+    margin-top: var(--space-4);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+
   .auth-card__form {
     --pad: var(--space-3);
     max-width: none;
+  }
+
+  .legal-links {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
   }
 
   .form-header h1 {
