@@ -1,6 +1,6 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import type { H3Event } from 'h3'
-import { deleteCookie, getCookie, getRequestURL, setCookie } from 'h3'
+import { deleteCookie, getCookie, getRequestHeader, getRequestURL, setCookie } from 'h3'
 
 export type OAuthProvider = 'google' | 'yandex'
 export type AuthProvider = OAuthProvider | 'local'
@@ -195,7 +195,16 @@ function safeEqual(left: string, right: string) {
 }
 
 function cookieOptions(event: H3Event, maxAge: number) {
-  const secure = getRequestURL(event).protocol === 'https:'
+  const requestUrl = getRequestURL(event)
+  const forwardedProto = String(getRequestHeader(event, 'x-forwarded-proto') || '')
+    .split(',')[0]
+    ?.trim()
+  const configuredOrigin = useRuntimeConfig().public.webAppUrl.trim()
+  const secure =
+    requestUrl.protocol === 'https:' ||
+    forwardedProto === 'https' ||
+    configuredOrigin.startsWith('https:')
+
   return {
     httpOnly: true,
     sameSite: 'lax' as const,
