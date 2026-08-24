@@ -685,7 +685,7 @@ function startOAuth(provider: 'google' | 'yandex') {
 
   if (isRegister.value && !form.acceptedTerms) {
     const message =
-      'Перед входом через Google или Яндекс примите условия использования'
+      'Перед регистрацией через Google или Яндекс примите условия использования'
     fieldErrors.terms = message
     error.value = message
     oauthMessage.value = message
@@ -693,17 +693,21 @@ function startOAuth(provider: 'google' | 'yandex') {
   }
 
   isStartingOAuth.value = true
-  const consent =
-    isRegister.value && form.acceptedTerms
-      ? '?acceptedTerms=true&termsVersion=2026-06-07'
-      : ''
-  window.location.assign(getBackendUrl(`/api/auth/${provider}${consent}`))
+  const params = new URLSearchParams()
+  if (!isRegister.value || form.acceptedTerms) {
+    params.set('acceptedTerms', 'true')
+    params.set('termsVersion', '2026-06-07')
+  }
+  const query = params.toString()
+  window.location.assign(
+    getBackendUrl(`/api/auth/${provider}${query ? `?${query}` : ''}`)
+  )
 }
 
 function getOAuthErrorMessage(reason: string) {
   const map: Record<string, string> = {
     terms:
-      'Перед входом через Google или Яндекс нужно принять условия использования.',
+      'Для регистрации через Google или Яндекс нужно принять условия использования.',
     provider:
       'Не удалось получить данные аккаунта у провайдера. Попробуйте ещё раз.',
     invalid: 'Некорректный ответ авторизации. Попробуйте войти ещё раз.',
