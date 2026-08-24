@@ -1,6 +1,9 @@
 <template>
   <section class="analytics" aria-label="Аналитика" data-tour="analytics-page">
-    <div class="analytics-grid" :class="{ 'is-reordering': Boolean(dragWidgetId) }">
+    <div
+      class="analytics-grid page-enter-stack"
+      :class="{ 'is-reordering': Boolean(dragWidgetId) }"
+    >
       <AnalyticsWidgetShell
         title="Активность"
         subtitle="Столбцы выполнений по дням"

@@ -1,10 +1,25 @@
 <template>
-  <aside class="brand-stage">
+  <aside
+    ref="stageEl"
+    class="brand-stage"
+    @pointermove="onPointerMove"
+    @pointerleave="onPointerLeave"
+  >
+    <canvas
+      ref="canvasEl"
+      class="brand-stage__canvas"
+      aria-hidden="true"
+    />
     <div class="brand-stage__copy">
       <p class="brand-stage__mark">COF</p>
       <p class="brand-stage__slogan">
-        <span>{{ typedSlogan }}</span
-        ><span class="brand-stage__caret" :class="{ idle: typeDone }" />
+        <span class="brand-stage__slogan-ghost" aria-hidden="true">{{
+          slogan
+        }}</span>
+        <span class="brand-stage__slogan-live">
+          <span>{{ typedSlogan }}</span
+          ><span class="brand-stage__caret" :class="{ idle: typeDone }" />
+        </span>
       </p>
     </div>
   </aside>
@@ -15,12 +30,139 @@ const props = defineProps<{
   slogan: string
 }>()
 
+const stageEl = ref<HTMLElement | null>(null)
+const canvasEl = ref<HTMLCanvasElement | null>(null)
 const typedSlogan = ref('')
 const typeDone = ref(false)
 
 let typeTimer = 0
 let typewriterCancelled = false
 let reducedMotion = false
+
+type RingDef = {
+  radius: number
+  speed: number
+  ticks: number
+  tickLen: number
+  width: number
+  alpha: number
+  angle: number
+}
+
+type Shard = {
+  ringIndex: number
+  tickIndex: number
+  homeAngle: number
+  homeRadius: number
+  len: number
+  width: number
+  alpha: number
+  /** scatter start (fraction of span / radians) */
+  scatterR: number
+  scatterA: number
+  scatterTilt: number
+  /** 0..1 assemble progress for this shard */
+  delay: number
+  duration: number
+}
+
+const ringDefs: RingDef[] = [
+  { radius: 0.28, speed: 0.22, ticks: 56, tickLen: 0.042, width: 2.2, alpha: 0.64, angle: 0 },
+  { radius: 0.52, speed: -0.16, ticks: 76, tickLen: 0.048, width: 2.4, alpha: 0.5, angle: 0.4 },
+  { radius: 0.78, speed: 0.11, ticks: 96, tickLen: 0.054, width: 2.6, alpha: 0.4, angle: 1.1 },
+]
+
+let shards: Shard[] = []
+let themeInk = { r: 245, g: 245, b: 245 }
+let themeBg = '#050505'
+let themeObserver: MutationObserver | null = null
+
+let raf = 0
+let dpr = 1
+let cssW = 0
+let cssH = 0
+let lastTs = 0
+let assembleT = 0
+let pointerX = -9999
+let pointerY = -9999
+let pointerActive = false
+let resizeObs: ResizeObserver | null = null
+
+function hash(n: number) {
+  return ((n * 2654435761) >>> 0) / 4294967296
+}
+
+function easeInCubic(t: number) {
+  const u = Math.min(1, Math.max(0, t))
+  return u * u * u
+}
+
+function easeOutCubic(t: number) {
+  const u = Math.min(1, Math.max(0, t))
+  return 1 - (1 - u) ** 3
+}
+
+function parseRgb(color: string) {
+  const ctx = document.createElement('canvas').getContext('2d')
+  if (!ctx) return { r: 214, g: 214, b: 214 }
+  ctx.fillStyle = color
+  const computed = ctx.fillStyle
+  if (computed.startsWith('#')) {
+    const h = computed.slice(1)
+    const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h
+    const n = Number.parseInt(full, 16)
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }
+  }
+  const m = computed.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+  if (!m) return { r: 214, g: 214, b: 214 }
+  return { r: Number(m[1]), g: Number(m[2]), b: Number(m[3]) }
+}
+
+function syncThemeColors() {
+  const stage = stageEl.value
+  if (!stage) return
+  const styles = getComputedStyle(stage)
+  themeBg = styles.getPropertyValue('--brand-stage-bg').trim() || styles.backgroundColor
+  const ink = styles.getPropertyValue('--brand-ink').trim() || styles.color
+  themeInk = parseRgb(ink)
+}
+
+function rebuildShards() {
+  shards = []
+  let order = 0
+  ringDefs.forEach((ring, ringIndex) => {
+    for (let i = 0; i < ring.ticks; i += 1) {
+      const homeAngle = (i / ring.ticks) * Math.PI * 2
+      // Only left half participates
+      if (Math.cos(homeAngle) > 0.02) continue
+
+      const n = hash(ringIndex * 1009 + i * 17 + 3)
+      const n2 = hash(ringIndex * 503 + i * 41 + 9)
+      const n3 = hash(ringIndex * 307 + i * 23 + 1)
+      const lenMul = 0.75 + n * 0.55
+      const widthMul = 0.85 + n2 * 1.2
+
+      // Stagger: ring by ring, then around the arc
+      const delay = ringIndex * 0.42 + order * 0.012
+      order += 1
+
+      shards.push({
+        ringIndex,
+        tickIndex: i,
+        homeAngle,
+        homeRadius: ring.radius,
+        len: ring.tickLen * lenMul,
+        width: Math.max(1.5, ring.width * widthMul),
+        alpha: ring.alpha * (0.75 + n3 * 0.4),
+        scatterR: 0.95 + n * 0.55 + ringIndex * 0.08,
+        scatterA: homeAngle + (n2 - 0.5) * 1.8,
+        scatterTilt: (n3 - 0.5) * 1.4,
+        delay,
+        duration: 0.55 + n * 0.35,
+      })
+    }
+  })
+}
 
 async function sleep(ms: number) {
   await new Promise((resolve) => {
@@ -66,47 +208,300 @@ async function runTypewriter() {
   }
 }
 
+function resizeCanvas() {
+  const stage = stageEl.value
+  const canvas = canvasEl.value
+  if (!stage || !canvas) return
+
+  const rect = stage.getBoundingClientRect()
+  cssW = Math.max(1, Math.round(rect.width))
+  cssH = Math.max(1, Math.round(rect.height))
+  dpr = Math.min(window.devicePixelRatio || 1, 2)
+  canvas.style.width = `${cssW}px`
+  canvas.style.height = `${cssH}px`
+  canvas.width = Math.round(cssW * dpr)
+  canvas.height = Math.round(cssH * dpr)
+  const ctx = canvas.getContext('2d')
+  if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+  syncThemeColors()
+  rebuildShards()
+}
+
+function onPointerMove(event: PointerEvent) {
+  const stage = stageEl.value
+  if (!stage || reducedMotion) return
+  const rect = stage.getBoundingClientRect()
+  pointerX = event.clientX - rect.left
+  pointerY = event.clientY - rect.top
+  pointerActive = true
+}
+
+function onPointerLeave() {
+  pointerActive = false
+  pointerX = -9999
+  pointerY = -9999
+}
+
+function ink(a: number) {
+  return `rgba(${themeInk.r}, ${themeInk.g}, ${themeInk.b}, ${a.toFixed(3)})`
+}
+
+function tick(now: number) {
+  const canvas = canvasEl.value
+  const ctx = canvas?.getContext('2d')
+  if (!canvas || !ctx || cssW <= 0) {
+    raf = requestAnimationFrame(tick)
+    return
+  }
+
+  const dt = lastTs ? Math.min(0.033, (now - lastTs) / 1000) : 0.016
+  lastTs = now
+  assembleT += dt
+
+  const cx = cssW
+  const cy = cssH * 0.5
+  const span = cssW
+
+  ctx.clearRect(0, 0, cssW, cssH)
+  ctx.fillStyle = themeBg
+  ctx.fillRect(0, 0, cssW, cssH)
+
+  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, span * 0.22)
+  core.addColorStop(0, ink(0.12))
+  core.addColorStop(1, ink(0))
+  ctx.fillStyle = core
+  ctx.beginPath()
+  ctx.arc(cx, cy, span * 0.22, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Advance ring rotation after assemble for each ring
+  ringDefs.forEach((ring, ringIndex) => {
+    const ringReady = assembleT > ringIndex * 0.42 + 0.8
+    let spin = ring.speed * (ringReady ? 1 : 0.15)
+    if (pointerActive && ringReady) {
+      const baseR = ring.radius * span
+      const pointerDist = Math.hypot(pointerX - cx, pointerY - cy)
+      const nearRing = Math.max(0, 1 - Math.abs(pointerDist - baseR) / (span * 0.12))
+      spin *= 1 - nearRing * 0.92
+    }
+    ring.angle += spin * dt
+  })
+
+  let pointerAngle = 0
+  let pointerDist = 0
+  if (pointerActive) {
+    pointerAngle = Math.atan2(pointerY - cy, pointerX - cx)
+    pointerDist = Math.hypot(pointerX - cx, pointerY - cy)
+  }
+
+  for (const shard of shards) {
+    const ring = ringDefs[shard.ringIndex]!
+    const localT = (assembleT - shard.delay) / shard.duration
+    // Accelerate into place (ease-in), then hold
+    const p = localT <= 0 ? 0 : localT >= 1 ? 1 : easeInCubic(localT)
+
+    const homeA = shard.homeAngle + ring.angle
+    const scatterA = shard.scatterA
+    const scatterR = shard.scatterR * span
+    const homeR = shard.homeRadius * span
+
+    // Fly like an arrow/shard toward the hub orbit
+    const a = scatterA + (homeA - scatterA) * p
+    const r = scatterR + (homeR - scatterR) * p
+    // Tilt settles from chaotic to radial
+    const tilt = shard.scatterTilt * (1 - p)
+
+    let push = 0
+    let bright = 0
+    if (pointerActive && p > 0.95) {
+      let da = a - pointerAngle
+      while (da > Math.PI) da -= Math.PI * 2
+      while (da < -Math.PI) da += Math.PI * 2
+      const angular = Math.max(0, 1 - Math.abs(da) / 0.55)
+      const nearRing = Math.max(0, 1 - Math.abs(pointerDist - homeR) / (span * 0.16))
+      const influence = angular * angular * (0.35 + nearRing * 0.65)
+      push = influence * span * 0.1
+      bright = influence
+    }
+
+    const dir = a + tilt
+    const r0 = r + push * 0.15
+    const r1 = r + shard.len * span + push
+    const x0 = cx + Math.cos(dir) * r0
+    const y0 = cy + Math.sin(dir) * r0
+    const x1 = cx + Math.cos(dir) * r1
+    const y1 = cy + Math.sin(dir) * r1
+
+    const appear = p <= 0 ? 0 : Math.min(1, 0.25 + p * 0.75)
+    const alpha = Math.min(0.95, shard.alpha * appear + bright * 0.65)
+
+    if (alpha < 0.02) continue
+
+    // Motion streak while flying in
+    if (p > 0 && p < 1) {
+      const trail = (1 - p) * shard.len * span * 1.8
+      const tx = x0 - Math.cos(dir) * trail
+      const ty = y0 - Math.sin(dir) * trail
+      const grad = ctx.createLinearGradient(tx, ty, x1, y1)
+      grad.addColorStop(0, ink(0))
+      grad.addColorStop(0.55, ink(alpha * 0.35))
+      grad.addColorStop(1, ink(alpha))
+      ctx.strokeStyle = grad
+      ctx.lineWidth = shard.width * (0.7 + p * 0.5)
+      ctx.lineCap = 'round'
+      ctx.beginPath()
+      ctx.moveTo(tx, ty)
+      ctx.lineTo(x1, y1)
+      ctx.stroke()
+    } else {
+      ctx.beginPath()
+      ctx.moveTo(x0, y0)
+      ctx.lineTo(x1, y1)
+      ctx.strokeStyle = ink(alpha)
+      ctx.lineWidth = shard.width + bright * 1.2
+      ctx.lineCap = 'round'
+      ctx.stroke()
+    }
+
+    if (bright > 0.55) {
+      const gx = cx + Math.cos(dir) * (r0 + (r1 - r0) * 0.55)
+      const gy = cy + Math.sin(dir) * (r0 + (r1 - r0) * 0.55)
+      const glow = ctx.createRadialGradient(gx, gy, 0, gx, gy, 14)
+      glow.addColorStop(0, ink(bright * 0.4))
+      glow.addColorStop(1, ink(0))
+      ctx.fillStyle = glow
+      ctx.beginPath()
+      ctx.arc(gx, gy, 14, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
+
+  ctx.beginPath()
+  ctx.arc(cx - 1, cy, 3.4, 0, Math.PI * 2)
+  ctx.fillStyle = ink(0.85)
+  ctx.fill()
+
+  raf = requestAnimationFrame(tick)
+}
+
+function startCanvas() {
+  lastTs = 0
+  assembleT = 0
+  resizeCanvas()
+  if (raf) cancelAnimationFrame(raf)
+  raf = requestAnimationFrame(tick)
+}
+
+function stopCanvas() {
+  if (raf) cancelAnimationFrame(raf)
+  raf = 0
+  resizeObs?.disconnect()
+  resizeObs = null
+  themeObserver?.disconnect()
+  themeObserver = null
+}
+
+function drawStatic() {
+  resizeCanvas()
+  const canvas = canvasEl.value
+  const ctx = canvas?.getContext('2d')
+  if (!ctx || cssW <= 0) return
+  const cx = cssW
+  const cy = cssH * 0.5
+  const span = cssW
+  ctx.fillStyle = themeBg
+  ctx.fillRect(0, 0, cssW, cssH)
+  for (const shard of shards) {
+    const a = shard.homeAngle
+    const r0 = shard.homeRadius * span
+    const r1 = r0 + shard.len * span
+    ctx.beginPath()
+    ctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0)
+    ctx.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1)
+    ctx.strokeStyle = ink(shard.alpha)
+    ctx.lineWidth = shard.width
+    ctx.lineCap = 'round'
+    ctx.stroke()
+  }
+}
+
 onMounted(() => {
   reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  syncThemeColors()
   void runTypewriter()
+
+  themeObserver = new MutationObserver(() => {
+    syncThemeColors()
+    if (reducedMotion) drawStatic()
+  })
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  })
+
+  if (reducedMotion) {
+    drawStatic()
+    return
+  }
+
+  startCanvas()
+  if (stageEl.value && typeof ResizeObserver !== 'undefined') {
+    resizeObs = new ResizeObserver(() => resizeCanvas())
+    resizeObs.observe(stageEl.value)
+  }
 })
 
 onBeforeUnmount(() => {
   typewriterCancelled = true
   if (typeTimer) window.clearTimeout(typeTimer)
+  stopCanvas()
 })
+
+// silence unused in case tree-shaking — easeOut kept for future
+void easeOutCubic
 </script>
 
 <style scoped lang="scss">
 .brand-stage {
-  --brand-ink: #f2f2f2;
+  --brand-inset: var(--space-4);
+  --brand-stage-bg: var(--color-bg);
+  --brand-ink: var(--color-text-primary);
+  --brand-muted: var(--color-text-secondary);
   position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: flex-start;
+  display: block;
   min-height: 0;
   height: 100%;
   overflow: hidden;
   border-radius: inherit;
-  padding: var(--space-4);
-  padding-left: max(var(--space-4), env(safe-area-inset-left, 0px));
-  padding-bottom: max(var(--space-4), env(safe-area-inset-bottom, 0px));
-  background: transparent;
+  background: var(--brand-stage-bg);
   color: var(--brand-ink);
+  transition:
+    background var(--transition-standard, 0.2s ease),
+    color var(--transition-standard, 0.2s ease);
 }
 
-:global(.light-theme) .brand-stage {
-  --brand-ink: var(--color-text-primary);
+.brand-stage__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
 }
 
 .brand-stage__copy {
+  position: absolute;
+  z-index: 3;
+  left: max(var(--brand-inset), env(safe-area-inset-left, 0px));
+  bottom: max(var(--brand-inset), env(safe-area-inset-bottom, 0px));
   display: grid;
   justify-items: start;
   gap: var(--space-2);
-  width: min(100%, 42ch);
-  max-width: 100%;
+  width: min(calc(100% - 2 * var(--brand-inset)), 42ch);
+  max-width: calc(100% - 2 * var(--brand-inset));
   text-align: left;
+  pointer-events: none;
 }
 
 .brand-stage__mark {
@@ -123,12 +518,8 @@ onBeforeUnmount(() => {
 }
 
 .brand-stage__slogan {
+  position: relative;
   margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  align-items: flex-end;
-  min-height: 1.35em;
   min-width: 0;
   width: 100%;
   font-family: 'Manrope', var(--font-sans);
@@ -136,12 +527,25 @@ onBeforeUnmount(() => {
   font-weight: var(--weight-medium);
   letter-spacing: 0.01em;
   line-height: var(--leading-normal);
-  color: color-mix(in srgb, var(--brand-ink) 72%, transparent);
+  color: var(--brand-muted);
   text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
   word-break: normal;
   hyphens: none;
+}
+
+.brand-stage__slogan-ghost {
+  display: block;
+  visibility: hidden;
+  white-space: normal;
+}
+
+.brand-stage__slogan-live {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  overflow: hidden;
 }
 
 .brand-stage__caret {
@@ -171,10 +575,17 @@ onBeforeUnmount(() => {
 
 @media (max-width: 900px) {
   .brand-stage {
-    padding: var(--space-3);
-    padding-top: calc(var(--space-3) + var(--control-icon-size) + var(--space-2));
-    padding-left: max(var(--space-3), env(safe-area-inset-left, 0px));
-    padding-bottom: var(--space-3);
+    --brand-inset: var(--space-3);
+  }
+
+  .brand-stage__copy {
+    left: max(var(--brand-inset), env(safe-area-inset-left, 0px));
+    bottom: max(var(--brand-inset), env(safe-area-inset-bottom, 0px));
+    top: calc(
+      max(var(--brand-inset), env(safe-area-inset-top, 0px)) +
+        var(--control-icon-size) + var(--space-2)
+    );
+    align-content: end;
   }
 
   .brand-stage__mark {

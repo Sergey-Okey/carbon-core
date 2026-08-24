@@ -1,5 +1,8 @@
 <template>
-  <div class="dashboard" :class="{ 'is-board': uiStore.activeNav === 'board' }">
+  <div
+    class="dashboard page-enter-stack"
+    :class="{ 'is-board': uiStore.activeNav === 'board' }"
+  >
     <section
       v-if="
         uiStore.activeNav !== 'board' &&
@@ -15,6 +18,7 @@
       class="dashboard-section content-section"
       :class="{ 'is-board': uiStore.activeNav === 'board' }"
     >
+      <div :key="uiStore.activeNav" class="nav-view page-enter-stack">
       <BranchFlow v-if="uiStore.activeNav === 'board'" />
 
       <div v-if="uiStore.activeNav === 'tasks'" class="tasks-dashboard">
@@ -62,6 +66,7 @@
       </div>
       <AnalyticsPanel v-if="uiStore.activeNav === 'analytics'" />
       <SettingsPanel v-if="uiStore.activeNav === 'settings'" />
+      </div>
     </section>
 
     <GuidedTourOverlay />
@@ -191,12 +196,9 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
   }
 }
 
-.dashboard-section {
-  animation: page-block-in 380ms ease-out both;
-
-  &:nth-child(2) {
-    animation-delay: 70ms;
-  }
+.nav-view {
+  width: 100%;
+  min-width: 0;
 }
 
 .content-section {
@@ -229,41 +231,10 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
   display: flex;
   flex-direction: column;
   gap: clamp(16px, 2vw, 24px);
-
-  > * {
-    animation: page-block-in 360ms ease-out both;
-  }
-
-  > *:nth-child(2) {
-    animation-delay: 55ms;
-  }
-
-  > *:nth-child(3) {
-    animation-delay: 95ms;
-  }
 }
 
 .tasks-empty-overview {
   margin-block: var(--space-2);
-}
-
-@keyframes page-block-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dashboard-section,
-  .tasks-dashboard > * {
-    animation: none;
-  }
 }
 
 </style>

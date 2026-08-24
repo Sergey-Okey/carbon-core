@@ -1,6 +1,6 @@
 <template>
   <section class="profile" aria-label="Профиль">
-    <div class="profile-bento">
+    <div class="profile-bento page-enter-stack">
       <article class="tile tile--avatar">
         <button
           class="avatar-upload"
@@ -211,13 +211,21 @@
       <article class="tile tile--access">
         <header class="tile-head">
           <h2>Доступ</h2>
-          <span class="tile-head__aside">{{ accessTitle }}</span>
+          <button
+            v-if="accessStore.isDemo"
+            type="button"
+            class="demo-exit"
+            @click="exitDemoToRegister"
+          >
+            Демо
+          </button>
+          <span v-else class="tile-head__aside">{{ accessTitle }}</span>
         </header>
 
         <div class="stat-rows">
           <div class="stat-row">
             <span>Режим</span>
-            <strong>{{ accessTitle }}</strong>
+            <strong :class="{ 'is-demo': accessStore.isDemo }">{{ accessTitle }}</strong>
           </div>
           <div v-if="expiresLabel" class="stat-row">
             <span>Истекает</span>
@@ -234,6 +242,15 @@
         </div>
 
         <p class="tile-note">{{ accessNote }}</p>
+        <AppButton
+          v-if="accessStore.isDemo"
+          type="button"
+          variant="danger"
+          class="demo-exit-cta"
+          @click="exitDemoToRegister"
+        >
+          Завершить демо
+        </AppButton>
       </article>
 
       <article class="tile tile--account">
@@ -302,6 +319,16 @@ const userStore = useUserStore()
 const { confirm } = useConfirm()
 const { success, warning, info } = useNotification()
 const router = useRouter()
+
+async function exitDemoToRegister() {
+  const ok = await confirm(
+    'Завершить демо-режим и перейти к регистрации? Локальные демо-данные будут сброшены.'
+  )
+  if (!ok) return
+  accessStore.leaveDemo()
+  sessionStorage.clear()
+  await router.push('/register')
+}
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const isSaving = ref(false)
@@ -825,6 +852,37 @@ async function deleteAccount() {
   color: var(--color-text-secondary);
   font-size: var(--text-sm);
   line-height: 1.45;
+}
+
+.demo-exit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--space-7);
+  padding-inline: var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--color-error) 45%, transparent);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-error) 16%, transparent);
+  color: var(--color-error);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+  transition: background var(--transition-standard);
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: color-mix(in srgb, var(--color-error) 24%, transparent);
+    }
+  }
+}
+
+.stat-row strong.is-demo {
+  color: var(--color-error);
+}
+
+.demo-exit-cta {
+  margin-top: auto;
+  width: 100%;
 }
 
 .level-bar {

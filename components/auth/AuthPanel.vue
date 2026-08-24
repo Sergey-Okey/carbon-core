@@ -878,18 +878,15 @@ async function submit() {
 
 <style scoped lang="scss">
 .auth-page {
-  --auth-substrate: #000;
+  --auth-substrate: var(--color-bg);
   width: 100%;
   height: 100dvh;
   margin: 0;
   padding: var(--space-2);
   box-sizing: border-box;
   overflow: hidden;
-  background: var(--auth-substrate);
-}
-
-:global(.light-theme) .auth-page {
-  --auth-substrate: var(--color-bg);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
 }
 
 .auth-card {
