@@ -26,6 +26,7 @@ if [[ ! -f "$ENV_FILE" ]]; then
   exit 1
 fi
 
+sudo -u "$APP_USER" git config --global --add safe.directory "$APP_DIR" 2>/dev/null || true
 sudo -u "$APP_USER" git -C "$APP_DIR" fetch origin "$BRANCH"
 sudo -u "$APP_USER" git -C "$APP_DIR" reset --hard "origin/$BRANCH"
 
