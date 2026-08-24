@@ -471,9 +471,6 @@ onBeforeUnmount(() => {
   if (typeTimer) window.clearTimeout(typeTimer)
   stopCanvas()
 })
-
-// silence unused in case tree-shaking — easeOut kept for future
-void easeOutCubic
 </script>
 
 <style scoped lang="scss">
