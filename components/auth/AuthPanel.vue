@@ -14,8 +14,7 @@
           <AppButton
             type="button"
             variant="primary"
-            size="lg"
-            class="auth-mobile-dock__btn"
+            class="auth-mobile-dock__btn auth-mobile-dock__btn--primary"
             @click="openMobileAuth"
           >
             Регистрация
@@ -23,11 +22,9 @@
           <AppButton
             type="button"
             variant="secondary"
-            size="lg"
-            class="auth-mobile-dock__btn"
+            class="auth-mobile-dock__btn auth-mobile-dock__btn--demo"
             @click="startDemo"
           >
-            <Play :size="18" />
             Демо
           </AppButton>
         </div>
@@ -1162,9 +1159,12 @@ async function submit() {
 
 .auth-mobile-dock__btn {
   width: 100%;
-  min-height: 64px;
-  font-size: var(--text-lg);
+  min-height: 48px;
+  border-width: 1px;
+  border-style: solid;
+  font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
+  letter-spacing: 0.02em;
 }
 
 .legal-links {
@@ -1256,8 +1256,20 @@ async function submit() {
   }
 
   .auth-mobile-dock__btn {
-    min-height: 64px;
-    font-size: var(--text-lg);
+    min-height: 48px;
+    font-size: var(--text-sm);
+  }
+
+  .auth-mobile-dock__btn--primary {
+    border-color: color-mix(in srgb, var(--color-text-primary) 88%, transparent);
+    background: var(--color-text-primary);
+    color: var(--color-bg);
+  }
+
+  .auth-mobile-dock__btn--demo {
+    border-color: color-mix(in srgb, var(--color-text-primary) 55%, transparent);
+    background: color-mix(in srgb, var(--color-bg) 72%, transparent);
+    color: var(--color-text-primary);
   }
 
   .auth-card__form-slot.is-mobile-overlay {
