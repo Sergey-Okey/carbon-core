@@ -67,10 +67,15 @@ type Shard = {
 }
 
 const ringDefs: RingDef[] = [
-  { radius: 0.28, speed: 0.22, ticks: 56, tickLen: 0.042, width: 2.2, alpha: 0.64, angle: 0 },
-  { radius: 0.52, speed: -0.16, ticks: 76, tickLen: 0.048, width: 2.4, alpha: 0.5, angle: 0.4 },
-  { radius: 0.78, speed: 0.11, ticks: 96, tickLen: 0.054, width: 2.6, alpha: 0.4, angle: 1.1 },
+  { radius: 0.28, speed: 0.38, ticks: 56, tickLen: 0.042, width: 2.2, alpha: 0.64, angle: 0 },
+  { radius: 0.52, speed: -0.28, ticks: 76, tickLen: 0.048, width: 2.4, alpha: 0.5, angle: 0.4 },
+  { radius: 0.78, speed: 0.2, ticks: 96, tickLen: 0.054, width: 2.6, alpha: 0.4, angle: 1.1 },
 ]
+
+const ASSEMBLE_SPAN = 1.05
+const HOLD_SPAN = 3.4
+const SCATTER_SPAN = 0.75
+const CYCLE_SPAN = ASSEMBLE_SPAN + HOLD_SPAN + SCATTER_SPAN
 
 let shards: Shard[] = []
 let themeInk = { r: 245, g: 245, b: 245 }
@@ -142,8 +147,7 @@ function rebuildShards() {
       const lenMul = 0.75 + n * 0.55
       const widthMul = 0.85 + n2 * 1.2
 
-      // Stagger: ring by ring, then around the arc
-      const delay = ringIndex * 0.42 + order * 0.012
+      const delay = (ringIndex * 0.12 + order * 0.004) / ASSEMBLE_SPAN
       order += 1
 
       shards.push({
@@ -158,7 +162,7 @@ function rebuildShards() {
         scatterA: homeAngle + (n2 - 0.5) * 1.8,
         scatterTilt: (n3 - 0.5) * 1.4,
         delay,
-        duration: 0.55 + n * 0.35,
+        duration: 0.28 + n * 0.18,
       })
     }
   })
@@ -246,6 +250,22 @@ function ink(a: number) {
   return `rgba(${themeInk.r}, ${themeInk.g}, ${themeInk.b}, ${a.toFixed(3)})`
 }
 
+function cycleProgress(shard: Shard) {
+  const t = assembleT % CYCLE_SPAN
+  if (t < ASSEMBLE_SPAN) {
+    const localT = (t / ASSEMBLE_SPAN - shard.delay) / shard.duration
+    if (localT <= 0) return 0
+    if (localT >= 1) return 1
+    return easeInCubic(localT)
+  }
+  if (t < ASSEMBLE_SPAN + HOLD_SPAN) return 1
+  const scatterT = (t - ASSEMBLE_SPAN - HOLD_SPAN) / SCATTER_SPAN
+  const localT = (scatterT - shard.delay * 0.35) / Math.max(0.2, shard.duration * 0.7)
+  if (localT <= 0) return 1
+  if (localT >= 1) return 0
+  return 1 - easeOutCubic(localT)
+}
+
 function tick(now: number) {
   const canvas = canvasEl.value
   const ctx = canvas?.getContext('2d')
@@ -261,6 +281,8 @@ function tick(now: number) {
   const cx = cssW
   const cy = cssH * 0.5
   const span = cssW
+  const cycleT = assembleT % CYCLE_SPAN
+  const ringsAssembled = cycleT >= ASSEMBLE_SPAN * 0.55 && cycleT < ASSEMBLE_SPAN + HOLD_SPAN + SCATTER_SPAN * 0.35
 
   ctx.clearRect(0, 0, cssW, cssH)
   ctx.fillStyle = themeBg
@@ -274,11 +296,9 @@ function tick(now: number) {
   ctx.arc(cx, cy, span * 0.22, 0, Math.PI * 2)
   ctx.fill()
 
-  // Advance ring rotation after assemble for each ring
-  ringDefs.forEach((ring, ringIndex) => {
-    const ringReady = assembleT > ringIndex * 0.42 + 0.8
-    let spin = ring.speed * (ringReady ? 1 : 0.15)
-    if (pointerActive && ringReady) {
+  ringDefs.forEach((ring) => {
+    let spin = ring.speed * (ringsAssembled ? 1 : 0.2)
+    if (pointerActive && ringsAssembled) {
       const baseR = ring.radius * span
       const pointerDist = Math.hypot(pointerX - cx, pointerY - cy)
       const nearRing = Math.max(0, 1 - Math.abs(pointerDist - baseR) / (span * 0.12))
@@ -296,19 +316,15 @@ function tick(now: number) {
 
   for (const shard of shards) {
     const ring = ringDefs[shard.ringIndex]!
-    const localT = (assembleT - shard.delay) / shard.duration
-    // Accelerate into place (ease-in), then hold
-    const p = localT <= 0 ? 0 : localT >= 1 ? 1 : easeInCubic(localT)
+    const p = cycleProgress(shard)
 
     const homeA = shard.homeAngle + ring.angle
     const scatterA = shard.scatterA
     const scatterR = shard.scatterR * span
     const homeR = shard.homeRadius * span
 
-    // Fly like an arrow/shard toward the hub orbit
     const a = scatterA + (homeA - scatterA) * p
     const r = scatterR + (homeR - scatterR) * p
-    // Tilt settles from chaotic to radial
     const tilt = shard.scatterTilt * (1 - p)
 
     let push = 0
@@ -337,7 +353,6 @@ function tick(now: number) {
 
     if (alpha < 0.02) continue
 
-    // Motion streak while flying in
     if (p > 0 && p < 1) {
       const trail = (1 - p) * shard.len * span * 1.8
       const tx = x0 - Math.cos(dir) * trail
