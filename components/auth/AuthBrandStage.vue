@@ -128,9 +128,6 @@ function rebuildShards() {
   ringDefs.forEach((ring, ringIndex) => {
     for (let i = 0; i < ring.ticks; i += 1) {
       const homeAngle = (i / ring.ticks) * Math.PI * 2
-      // Only left half participates
-      if (Math.cos(homeAngle) > 0.02) continue
-
       const n = hash(ringIndex * 1009 + i * 17 + 3)
       const n2 = hash(ringIndex * 503 + i * 41 + 9)
       const n3 = hash(ringIndex * 307 + i * 23 + 1)
@@ -259,9 +256,9 @@ function tick(now: number) {
   lastTs = now
   assembleT += dt
 
-  const cx = cssW
+  const cx = cssW * 0.98
   const cy = cssH * 0.5
-  const span = cssW
+  const span = Math.min(cssW, cssH) * 0.92
   const ringsAssembled = assembleT > 0.85
 
   ctx.clearRect(0, 0, cssW, cssH)
@@ -328,8 +325,10 @@ function tick(now: number) {
     const x1 = cx + Math.cos(dir) * r1
     const y1 = cy + Math.sin(dir) * r1
 
+    const midX = (x0 + x1) * 0.5
+    const edgeFade = Math.max(0, Math.min(1, (cssW * 0.92 - midX) / (cssW * 0.18)))
     const appear = p <= 0 ? 0 : Math.min(1, 0.25 + p * 0.75)
-    const alpha = Math.min(0.95, shard.alpha * appear + bright * 0.65)
+    const alpha = Math.min(0.95, (shard.alpha * appear + bright * 0.65) * edgeFade)
 
     if (alpha < 0.02) continue
 
@@ -358,11 +357,11 @@ function tick(now: number) {
       ctx.stroke()
     }
 
-    if (bright > 0.55) {
+    if (bright > 0.55 && edgeFade > 0.4) {
       const gx = cx + Math.cos(dir) * (r0 + (r1 - r0) * 0.55)
       const gy = cy + Math.sin(dir) * (r0 + (r1 - r0) * 0.55)
       const glow = ctx.createRadialGradient(gx, gy, 0, gx, gy, 14)
-      glow.addColorStop(0, ink(bright * 0.4))
+      glow.addColorStop(0, ink(bright * 0.4 * edgeFade))
       glow.addColorStop(1, ink(0))
       ctx.fillStyle = glow
       ctx.beginPath()
@@ -401,19 +400,24 @@ function drawStatic() {
   const canvas = canvasEl.value
   const ctx = canvas?.getContext('2d')
   if (!ctx || cssW <= 0) return
-  const cx = cssW
+  const cx = cssW * 0.98
   const cy = cssH * 0.5
-  const span = cssW
+  const span = Math.min(cssW, cssH) * 0.92
   ctx.fillStyle = themeBg
   ctx.fillRect(0, 0, cssW, cssH)
   for (const shard of shards) {
     const a = shard.homeAngle
     const r0 = shard.homeRadius * span
     const r1 = r0 + shard.len * span
+    const x0 = cx + Math.cos(a) * r0
+    const x1 = cx + Math.cos(a) * r1
+    const midX = (x0 + x1) * 0.5
+    const edgeFade = Math.max(0, Math.min(1, (cssW * 0.92 - midX) / (cssW * 0.18)))
+    if (edgeFade < 0.02) continue
     ctx.beginPath()
-    ctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0)
-    ctx.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1)
-    ctx.strokeStyle = ink(shard.alpha)
+    ctx.moveTo(x0, cy + Math.sin(a) * r0)
+    ctx.lineTo(x1, cy + Math.sin(a) * r1)
+    ctx.strokeStyle = ink(shard.alpha * edgeFade)
     ctx.lineWidth = shard.width
     ctx.lineCap = 'round'
     ctx.stroke()
