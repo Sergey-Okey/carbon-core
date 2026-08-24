@@ -67,9 +67,9 @@ type Shard = {
 }
 
 const ringDefs: RingDef[] = [
-  { radius: 0.22, speed: 0.38, ticks: 56, tickLen: 0.042, width: 2.2, alpha: 0.64, angle: 0 },
-  { radius: 0.52, speed: -0.28, ticks: 76, tickLen: 0.048, width: 2.4, alpha: 0.5, angle: 0.4 },
-  { radius: 0.84, speed: 0.2, ticks: 96, tickLen: 0.054, width: 2.6, alpha: 0.4, angle: 1.1 },
+  { radius: 0.22, speed: 0.38, ticks: 56, tickLen: 0.05, width: 2.3, alpha: 0.64, angle: 0 },
+  { radius: 0.52, speed: -0.28, ticks: 76, tickLen: 0.05, width: 2.3, alpha: 0.5, angle: 0.4 },
+  { radius: 0.84, speed: 0.2, ticks: 96, tickLen: 0.05, width: 2.3, alpha: 0.4, angle: 1.1 },
 ]
 
 let shards: Shard[] = []
@@ -127,8 +127,6 @@ function rebuildShards() {
   let order = 0
   const mobileTicks = cssW > 0 && cssW <= 900
   const tickScale = mobileTicks ? 2.15 : 1
-  const lenMulBase = mobileTicks ? 0.95 : 0.75
-  const lenMulSpread = mobileTicks ? 0.65 : 0.55
 
   ringDefs.forEach((ring, ringIndex) => {
     for (let i = 0; i < ring.ticks; i += 1) {
@@ -136,8 +134,6 @@ function rebuildShards() {
       const n = hash(ringIndex * 1009 + i * 17 + 3)
       const n2 = hash(ringIndex * 503 + i * 41 + 9)
       const n3 = hash(ringIndex * 307 + i * 23 + 1)
-      const lenMul = lenMulBase + n * lenMulSpread
-      const widthMul = 0.85 + n2 * 1.2
 
       const delay = ringIndex * 0.08 + order * 0.003
       order += 1
@@ -147,9 +143,9 @@ function rebuildShards() {
         tickIndex: i,
         homeAngle,
         homeRadius: ring.radius,
-        len: ring.tickLen * tickScale * lenMul,
-        width: Math.max(1.5, ring.width * widthMul),
-        alpha: ring.alpha * (0.75 + n3 * 0.4),
+        len: ring.tickLen * tickScale,
+        width: ring.width,
+        alpha: ring.alpha * (0.82 + n3 * 0.2),
         scatterR: 0.95 + n * 0.55 + ringIndex * 0.08,
         scatterA: homeAngle + (n2 - 0.5) * 1.8,
         scatterTilt: (n3 - 0.5) * 1.4,
