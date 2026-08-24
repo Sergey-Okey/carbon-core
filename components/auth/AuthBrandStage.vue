@@ -67,9 +67,9 @@ type Shard = {
 }
 
 const ringDefs: RingDef[] = [
-  { radius: 0.22, speed: 0.38, ticks: 56, tickLen: 0.12, width: 2.3, alpha: 0.64, angle: 0 },
+  { radius: 0.16, speed: 0.38, ticks: 56, tickLen: 0.12, width: 2.3, alpha: 0.64, angle: 0 },
   { radius: 0.52, speed: -0.28, ticks: 76, tickLen: 0.12, width: 2.3, alpha: 0.5, angle: 0.4 },
-  { radius: 0.84, speed: 0.2, ticks: 96, tickLen: 0.12, width: 2.3, alpha: 0.4, angle: 1.1 },
+  { radius: 0.92, speed: 0.2, ticks: 96, tickLen: 0.12, width: 2.3, alpha: 0.4, angle: 1.1 },
 ]
 
 let shards: Shard[] = []
