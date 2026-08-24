@@ -5,7 +5,7 @@
     </main>
     <ThemeToggleButton
       class="auth-theme-toggle"
-      data-tooltip-position="top"
+      data-tooltip-position="bottom"
     />
     <ToastContainer />
   </div>
@@ -36,6 +36,14 @@
   right: max(var(--space-4), env(safe-area-inset-right, 0px));
   bottom: max(var(--space-4), env(safe-area-inset-bottom, 0px));
   z-index: 20;
+}
+
+@media (max-width: 900px) {
+  .auth-theme-toggle {
+    top: max(var(--space-3), env(safe-area-inset-top, 0px));
+    right: max(var(--space-3), env(safe-area-inset-right, 0px));
+    bottom: auto;
+  }
 }
 
 </style>
