@@ -47,9 +47,10 @@ The production server listens on `http://localhost:3000` by default. Verify
 readiness with `GET /api/health`.
 
 Production runs as a Node process on the VPS. See `deploy/README.md`.
-The agent uses OpenRouter (`minimax/minimax-m2.7:free`) when `OPENAI_API_KEY` or
-`OPENROUTER_API_KEY` is set on the server. There is no local planner fallback:
-without a key the API returns 503.
+The agent uses an OpenAI-compatible chat API when `OPENAI_API_KEY` is set.
+On the SpaceWeb VPS `openrouter.ai` is WAF-blocked, so production uses
+Cloudflare Workers AI (`@cf/google/gemma-4-26b-a4b-it`). See `deploy/README.md`.
+Without a key the API returns 503.
 
 ## Project Structure
 

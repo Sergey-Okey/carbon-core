@@ -153,7 +153,7 @@ async function handleNavClick(section: NavSection) {
 
   @include desktop {
     align-self: center;
-    inline-size: 64px;
+    inline-size: var(--space-16);
     margin-block: 0;
     margin-inline: auto;
     padding-block: var(--space-3);
@@ -161,25 +161,12 @@ async function handleNavClick(section: NavSection) {
   }
 
   @include mobile {
-    @include glass;
-    --board-dock-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
+    @include island-shell;
     position: fixed;
     inset-inline-start: 50%;
     inset-inline-end: auto;
-    inset-block-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
-    inline-size: fit-content;
-    max-inline-size: calc(100dvw - var(--space-8) * 2);
-    box-sizing: border-box;
-    padding-block: var(--space-2);
-    padding-inline: var(--space-3);
-    overflow: visible;
+    inset-block-end: var(--board-island-end);
     transform: translateX(-50%);
-    border: var(--ui-border);
-    border-radius: var(--radius-full);
-    background-color: var(--island-surface);
-    backdrop-filter: var(--glass-strong-filter);
-    -webkit-backdrop-filter: var(--glass-strong-filter);
-    box-shadow: var(--shadow-xs);
     animation: nav-fade-up var(--transition-emphasized) both;
 
     &.is-dock-composer,
@@ -205,7 +192,7 @@ async function handleNavClick(section: NavSection) {
   @include mobile {
     flex-direction: row;
     justify-content: center;
-    gap: var(--space-2);
+    gap: var(--island-gap);
     width: 100%;
   }
 }
@@ -253,9 +240,7 @@ async function handleNavClick(section: NavSection) {
   }
 
   @include mobile {
-    width: var(--space-12);
-    min-width: var(--space-12);
-    height: var(--space-12);
+    @include island-control;
   }
 }
 
@@ -273,7 +258,7 @@ async function handleNavClick(section: NavSection) {
 @keyframes nav-fade-up {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(18px);
+    transform: translateX(-50%) translateY(var(--space-5));
   }
 
   to {
@@ -290,7 +275,7 @@ async function handleNavClick(section: NavSection) {
   }
 
   34% {
-    transform: translateY(10px);
+    transform: translateY(var(--space-3));
   }
 
   50% {
@@ -298,7 +283,7 @@ async function handleNavClick(section: NavSection) {
   }
 
   66% {
-    transform: translateY(7px);
+    transform: translateY(var(--space-2));
   }
 
   82% {

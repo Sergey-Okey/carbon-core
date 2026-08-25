@@ -33,13 +33,6 @@ const isBoardLayout = computed(
   --app-main-pad-inline-start: max(var(--space-3), env(safe-area-inset-left, 0px));
   --app-main-pad-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
   --app-main-pad-bottom: calc(var(--space-12) + var(--space-10) + env(safe-area-inset-bottom, 0px));
-  --board-island-width: min(
-    calc(5 * var(--space-12) + 4 * var(--space-2) + 2 * var(--space-3)),
-    calc(100dvw - 2 * var(--space-8))
-  );
-  --board-island-height: calc(var(--space-12) + 2 * var(--space-2));
-  --board-dock-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
-  --board-island-end: var(--board-dock-end);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -104,7 +97,7 @@ const isBoardLayout = computed(
     inset-block-start: calc(
       var(--app-header-stack) + (100dvh - var(--app-header-stack)) / 2
     );
-      inset-inline-start: var(--space-3);
+    inset-inline-start: var(--space-3);
     z-index: 3000;
     margin: 0;
     transform: translateY(-50%);
@@ -138,24 +131,15 @@ const isBoardLayout = computed(
       inset-block-start: auto;
       inset-inline-start: 50%;
       inset-inline-end: auto;
-      inset-block-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
+      inset-block-end: var(--board-island-end);
       transform: translateX(-50%);
-      inline-size: fit-content;
-      background-color: var(--island-surface);
-      backdrop-filter: var(--glass-strong-filter);
-      -webkit-backdrop-filter: var(--glass-strong-filter);
-    transition:
-      opacity var(--duration-fast) var(--ease-emphasized),
-      transform var(--duration-emphasized) var(--ease-emphasized);
+      transition:
+        opacity var(--duration-fast) var(--ease-emphasized),
+        transform var(--duration-emphasized) var(--ease-emphasized);
     }
 
     :deep(.nav-island.is-dock-composer),
     :deep(.nav-island.is-dock-nav) {
-      box-sizing: border-box;
-      inset-block-end: var(--board-island-end);
-      inline-size: var(--board-island-width);
-      block-size: var(--board-island-height);
-      min-block-size: var(--board-island-height);
       transform-origin: 50% 100%;
     }
 

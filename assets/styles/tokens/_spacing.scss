@@ -24,4 +24,23 @@
   --touch-target: var(--space-11);
   --overlay-offset-top: calc(var(--space-16) + var(--space-2));
   --overlay-offset-block: calc(var(--space-16) + var(--space-6));
+
+  --island-item: var(--space-12);
+  --island-gap: var(--space-2);
+  --island-pad-block: var(--space-2);
+  --island-pad-inline: var(--space-3);
+  --island-count: 5;
+  --island-stroke: 1px;
+  --board-dock-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
+  --board-island-end: var(--board-dock-end);
+  --board-island-height: calc(
+    var(--island-item) + 2 * var(--island-pad-block) + 2 * var(--island-stroke)
+  );
+  --board-island-width: min(
+    calc(
+      var(--island-count) * var(--island-item) + (var(--island-count) - 1) * var(--island-gap) + 2 *
+        var(--island-pad-inline) + 2 * var(--island-stroke)
+    ),
+    calc(100dvw - 2 * var(--space-8))
+  );
 }
