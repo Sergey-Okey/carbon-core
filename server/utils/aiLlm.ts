@@ -13,7 +13,7 @@ const OPENROUTER_FALLBACKS = [
   'z-ai/glm-5.2:free',
   'nvidia/nemotron-3.5-lightning:free',
 ]
-const CLOUD_TIMEOUT_MS = 18000
+const CLOUD_TIMEOUT_MS = 12000
 
 function mutatesWorkspace(operations: AiOperation[]) {
   return operations.some((item) => item.op !== 'updateSettings')
@@ -100,6 +100,16 @@ function isOpenAiCompatible(engine: string) {
   return engine === 'openai' || engine === 'openrouter'
 }
 
+export function resolveAiApiKey(configured?: string) {
+  return String(
+    configured ||
+      process.env.NUXT_OPENAI_API_KEY ||
+      process.env.OPENAI_API_KEY ||
+      process.env.OPENROUTER_API_KEY ||
+      ''
+  ).trim()
+}
+
 export async function runAiAgent(input: {
   request: string
   context: AiContext
@@ -110,16 +120,17 @@ export async function runAiAgent(input: {
   siteUrl?: string
 }): Promise<AiActResponse> {
   const engine = String(input.engine || 'openai').toLowerCase()
+  const apiKey = resolveAiApiKey(input.apiKey)
   const local = () => runLocalAgent(input.request, input.context)
 
   if (engine === 'local') return local()
 
-  if (isOpenAiCompatible(engine) && input.apiKey) {
+  if (isOpenAiCompatible(engine) && apiKey) {
     try {
       const cloud = await runCloudAgent({
         request: input.request,
         context: input.context,
-        apiKey: input.apiKey,
+        apiKey,
         model: input.model || OPENROUTER_MODEL,
         baseUrl: input.baseUrl || OPENROUTER_BASE_URL,
         siteUrl: input.siteUrl,

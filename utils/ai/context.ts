@@ -7,7 +7,7 @@ import {
   type AiContextMilestone,
   type AiContextTask,
 } from '../../types/ai.types.ts'
-import { isSecretKey } from './secrets.ts'
+import { isSecretKey, omitSecretFields } from './secrets.ts'
 
 const TASK_SLOT_LIMIT: Partial<Record<TaskType, number>> = {
   TASK_DAY: 3,
@@ -203,8 +203,8 @@ export function compactAiContext(
 }
 
 export function buildAiContext(raw: unknown): AiContext {
-  assertNoSecrets(raw)
-  const source = isRecord(raw) ? raw : {}
+  const cleaned = omitSecretFields(raw)
+  const source = isRecord(cleaned) ? cleaned : {}
   const tasks = Array.isArray(source.tasks)
     ? source.tasks.map(pickTask).filter((item): item is AiContextTask => Boolean(item))
     : []

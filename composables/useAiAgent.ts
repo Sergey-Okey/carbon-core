@@ -1,6 +1,5 @@
 import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
 import { applyAiOperations } from '~/utils/ai/apply'
-import { buildAiContext } from '~/utils/ai/context'
 import { runLocalAgent } from '~/utils/ai/localAgent'
 import { buildClientAiSnapshot } from '~/utils/ai/snapshot'
 import {
@@ -14,8 +13,14 @@ import { useAiStore } from '~/stores/ai.store'
 
 function getHttpStatus(error: unknown) {
   if (typeof error !== 'object' || error === null) return 0
-  const candidate = error as { statusCode?: unknown; status?: unknown }
-  return Number(candidate.statusCode || candidate.status || 0)
+  const candidate = error as {
+    statusCode?: unknown
+    status?: unknown
+    response?: { status?: unknown }
+  }
+  return Number(
+    candidate.statusCode || candidate.status || candidate.response?.status || 0
+  )
 }
 
 function getHttpMessage(error: unknown) {
@@ -95,20 +100,25 @@ export function useAiAgent() {
     liveError.value = ''
     try {
       let payload: AiActResponse
+      const snapshot = collectSnapshot()
       try {
         payload = await $fetch<AiActResponse>(getBackendUrl('/api/ai/act'), {
           method: 'POST',
           ...getBackendFetchOptions(),
           body: {
             request: text,
-            context: collectSnapshot(),
+            context: snapshot,
           },
         })
-      } catch (err) {
-        if (getHttpStatus(err) !== 401) throw err
-        payload = runLocalAgent(text, buildAiContext(collectSnapshot()))
+      } catch {
+        payload = runLocalAgent(text, snapshot)
       }
-      const results = applyAiOperations(payload.operations)
+      let results: AiApplyResult[] = []
+      try {
+        results = applyAiOperations(payload.operations)
+      } catch {
+        results = []
+      }
       lastResults.value = results
       const applied = results.filter((item) => item.ok).map((item) => item.detail)
       const message = stripPublicFallbackNotice(payload.message)

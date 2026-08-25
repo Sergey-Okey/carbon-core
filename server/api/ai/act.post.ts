@@ -3,7 +3,7 @@ import { isAuthDatabaseConfigured } from '../../utils/authStorage'
 import { readOAuthSession } from '../../utils/oauth'
 import { enforceRateLimit } from '../../utils/rateLimit'
 import { buildAiContext } from '../../../utils/ai/context'
-import { runAiAgent } from '../../utils/aiLlm'
+import { resolveAiApiKey, runAiAgent } from '../../utils/aiLlm'
 
 function asRequestText(value: unknown) {
   if (typeof value !== 'string') return ''
@@ -27,23 +27,22 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Request is required' })
   }
 
-  let context
-  try {
-    context = buildAiContext(body.context)
-  } catch (error) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: error instanceof Error ? error.message : 'Invalid AI context',
-    })
-  }
+  const context = buildAiContext(body.context)
 
   return runAiAgent({
     request,
     context,
-    engine: String(config.aiEngine || 'openai'),
-    apiKey: String(config.openaiApiKey || '').trim(),
-    model: String(config.openaiModel || 'minimax/minimax-m2.7:free'),
-    baseUrl: String(config.openaiBaseUrl || 'https://openrouter.ai/api/v1'),
-    siteUrl: String(config.public.webAppUrl || 'https://cof-board.com'),
+    engine: String(config.aiEngine || process.env.NUXT_AI_ENGINE || process.env.AI_ENGINE || 'openai'),
+    apiKey: resolveAiApiKey(config.openaiApiKey),
+    model: String(
+      config.openaiModel || process.env.NUXT_OPENAI_MODEL || process.env.OPENAI_MODEL || 'minimax/minimax-m2.7:free'
+    ),
+    baseUrl: String(
+      config.openaiBaseUrl ||
+        process.env.NUXT_OPENAI_BASE_URL ||
+        process.env.OPENAI_BASE_URL ||
+        'https://openrouter.ai/api/v1'
+    ),
+    siteUrl: String(config.public.webAppUrl || process.env.NUXT_PUBLIC_WEB_APP_URL || 'https://cof-board.com'),
   })
 })

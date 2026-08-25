@@ -7,7 +7,7 @@ import {
   type AiOpType,
   type AiOperation,
 } from '../../types/ai.types.ts'
-import { containsSecretPayload } from './secrets.ts'
+import { omitSecretFields } from './secrets.ts'
 import type { TaskType } from '../../types/task.types.ts'
 
 export const AI_MAX_OPERATIONS = 40
@@ -320,10 +320,8 @@ export function extractJsonObject(text: string): unknown | null {
 }
 
 export function parseAiResponse(raw: unknown): { message: string; operations: AiOperation[] } {
-  if (containsSecretPayload(raw)) {
-    throw new Error('Model response contained confidential fields')
-  }
-  const source = isRecord(raw) ? raw : {}
+  const cleaned = omitSecretFields(raw)
+  const source = isRecord(cleaned) ? cleaned : {}
   const operations = Array.isArray(source.operations)
     ? source.operations.map(parseOperation).filter((item): item is AiOperation => Boolean(item))
     : []

@@ -45,14 +45,15 @@ test('secret detector blocks passwords, tokens, and email fields', () => {
 })
 
 test('AI context drops confidential fields and keeps workspace facts', () => {
-  assert.throws(
-    () =>
-      buildAiContext({
-        password: 'hunter2',
-        tasks: [{ id: '1', title: 'Read', type: 'HABIT' }],
-      }),
-    /confidential field/i
-  )
+  const stripped = buildAiContext({
+    password: 'hunter2',
+    email: 'hidden@example.com',
+    avatar: 'https://example.com/a.png',
+    tasks: [{ id: '1', title: 'Read', type: 'HABIT' }],
+  })
+  assert.equal(stripped.tasks[0].title, 'Read')
+  assert.equal(JSON.stringify(stripped).includes('hunter2'), false)
+  assert.equal(JSON.stringify(stripped).includes('hidden@example.com'), false)
 
   const context = buildAiContext({
     today: '2026-08-25',
@@ -102,14 +103,14 @@ test('AI response parser keeps valid ops, sorts creates first, and rejects secre
   assert.equal(parsed.operations.length, 3)
   assert.equal(remainingSlots(buildAiContext({}), 'TASK_DAY'), 3)
 
-  assert.throws(
-    () =>
-      parseAiResponse({
-        message: 'hack',
-        operations: [{ op: 'updateProfile', name: 'X', password: 'nope' }],
-      }),
-    /confidential/i
-  )
+  const stripped = parseAiResponse({
+    message: 'ok',
+    password: 'nope',
+    operations: [{ op: 'updateProfile', name: 'X', password: 'nope' }],
+  })
+  assert.equal(stripped.message, 'ok')
+  assert.equal(stripped.operations[0].op, 'updateProfile')
+  assert.equal(JSON.stringify(stripped).includes('nope'), false)
 })
 
 test('local agent plans, briefs, and adds habits without a cloud model', () => {
@@ -252,11 +253,14 @@ test('AI endpoint stays server-side, rate limited, and defaults to OpenRouter', 
   const app = await read('app.vue')
 
   assert.match(endpoint, /enforceRateLimit\(event, 'ai-act'/)
-  assert.match(endpoint, /aiEngine \|\| 'openai'/)
+  assert.match(endpoint, /resolveAiApiKey/)
+  assert.match(endpoint, /AI_ENGINE \|\| 'openai'/)
   assert.doesNotMatch(endpoint, /AI is not configured/)
   assert.match(config, /aiEngine: process\.env\.AI_ENGINE \|\| 'openai'/)
   assert.match(config, /openrouter\.ai\/api\/v1/)
-  assert.match(config, /openaiApiKey: process\.env\.OPENAI_API_KEY/)
+  assert.match(config, /process\.env\.OPENAI_API_KEY/)
+  assert.match(llm, /resolveAiApiKey/)
+  assert.match(llm, /NUXT_OPENAI_API_KEY/)
   assert.doesNotMatch(config, /VERCEL|@vercel/)
   assert.doesNotMatch(publicBlock, /openaiApiKey|OPENAI_API_KEY/)
   assert.doesNotMatch(pkg, /@vercel\/analytics|@vercel\/speed-insights/)
@@ -269,6 +273,9 @@ test('AI endpoint stays server-side, rate limited, and defaults to OpenRouter', 
   assert.doesNotMatch(panel, /kicker/)
   assert.doesNotMatch(panel, /Pollinations|OpenRouter|облачная модель|Запрос/)
   assert.doesNotMatch(panel, /v-html/)
+  const agent = await read('composables/useAiAgent.ts')
+  assert.match(agent, /runLocalAgent\(text, snapshot\)/)
+  assert.doesNotMatch(agent, /!== 401/)
   const hub = await read('components/ai/AiHub.vue')
   const header = await read('components/base/TheHeader.vue')
   const mobileBoard = await read('components/branch/BranchMobileView.vue')

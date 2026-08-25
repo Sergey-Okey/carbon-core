@@ -31,7 +31,11 @@ export default defineNuxtConfig({
     smtpApiKey: process.env.SMTP_API_KEY || '',
     smtpApiUrl: process.env.SMTP_API_URL || 'https://api.smtp.bz/v1/smtp/send',
     aiEngine: process.env.AI_ENGINE || 'openai',
-    openaiApiKey: process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY || '',
+    openaiApiKey:
+      process.env.NUXT_OPENAI_API_KEY ||
+      process.env.OPENAI_API_KEY ||
+      process.env.OPENROUTER_API_KEY ||
+      '',
     openaiModel: process.env.OPENAI_MODEL || 'minimax/minimax-m2.7:free',
     openaiBaseUrl: process.env.OPENAI_BASE_URL || 'https://openrouter.ai/api/v1',
     public: {
