@@ -46,27 +46,6 @@ npm start
 The production server listens on `http://localhost:3000` by default. Verify
 readiness with `GET /api/health`.
 
-## Android APK
-
-The Capacitor Android project lives in `android`. To refresh its bundled web
-application and build a debug APK:
-
-```bash
-npm run android:build
-```
-
-The downloadable APK used by onboarding is stored at
-`public/downloads/core-of-life.apk`.
-
-For a signed Google Play App Bundle, provide the four `ANDROID_KEY_*`
-environment variables documented in `.env.example`, then run:
-
-```bash
-npm run android:bundle
-```
-
-The signed bundle is written to `dist/core-of-life-release.aab`.
-
 For Vercel, connect the repository and add `DATABASE_URL` plus auth/payment
 secrets in project environment variables. The Vercel build uses Nuxt's
 serverless output automatically.
@@ -127,7 +106,7 @@ enable their buttons. Register these callback URLs with the providers:
 - `https://your-domain/api/auth/google/callback`
 - `https://your-domain/api/auth/yandex/callback`
 
-Set `NUXT_PUBLIC_WEB_APP_URL=https://your-domain` before building Android so
-the static APK can reach the deployed OAuth endpoints. Without provider
-credentials and this HTTPS URL, the OAuth buttons remain available but explain
-that server login is not configured.
+Set `NUXT_PUBLIC_WEB_APP_URL=https://your-domain` so OAuth callbacks and
+password-reset links use the public origin. Without provider credentials and
+this HTTPS URL, the OAuth buttons remain available but explain that server
+login is not configured.

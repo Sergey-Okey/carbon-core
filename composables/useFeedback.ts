@@ -1,5 +1,3 @@
-import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics'
-import { Capacitor } from '@capacitor/core'
 import { useSettingsStore } from '~/stores/settings.store'
 
 export type FeedbackType = 'selection' | 'success' | 'warning' | 'error' | 'focusComplete'
@@ -32,25 +30,8 @@ export function useFeedback() {
 }
 
 async function playHaptic(type: FeedbackType) {
-  try {
-    if (type === 'selection') {
-      await Haptics.impact({ style: ImpactStyle.Light })
-      return
-    }
-
-    const notificationType = {
-      success: NotificationType.Success,
-      warning: NotificationType.Warning,
-      error: NotificationType.Error,
-      focusComplete: NotificationType.Success,
-    }[type]
-
-    await Haptics.notification({ type: notificationType })
-  } catch {
-    if (!Capacitor.isNativePlatform() && 'vibrate' in navigator) {
-      navigator.vibrate(type === 'selection' ? 12 : [18, 28, 24])
-    }
-  }
+  if (!('vibrate' in navigator)) return
+  navigator.vibrate(type === 'selection' ? 12 : [18, 28, 24])
 }
 
 async function playTone(type: FeedbackType, volume: number) {

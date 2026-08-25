@@ -34,10 +34,10 @@ test('API responses disable caching and sniffing', async () => {
   assert.match(config, /'x-content-type-options': 'nosniff'/)
 })
 
-test('CORS allowlist is limited to Capacitor and local origins', async () => {
+test('CORS allowlist is limited to local origins', async () => {
   const cors = await read('server/middleware/cors.ts')
-  assert.match(cors, /capacitor:\/\/localhost/)
   assert.match(cors, /http:\/\/localhost/)
+  assert.doesNotMatch(cors, /capacitor:\/\//)
   assert.match(cors, /access-control-allow-credentials',\s*'true'/)
   assert.match(cors, /access-control-allow-methods',\s*'GET,POST,OPTIONS'/)
   assert.match(cors, /event\.method === 'OPTIONS'/)

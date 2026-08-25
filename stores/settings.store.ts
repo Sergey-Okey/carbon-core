@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { Capacitor } from '@capacitor/core'
 import { accessAwareStorage } from '~/utils/accessStorage'
 
 export const ACCENT_COLORS = [
@@ -283,15 +282,6 @@ export const useSettingsStore = defineStore(
       }
     }
 
-    function enableNativeFeedbackDefaults() {
-      if (!import.meta.client || !Capacitor.isNativePlatform()) return
-      const migrationKey = 'cof-native-feedback-v1'
-      if (localStorage.getItem(migrationKey)) return
-      soundEnabled.value = true
-      hapticsEnabled.value = true
-      localStorage.setItem(migrationKey, 'done')
-    }
-
     function applyRuntimeSettings() {
       const resolved = resolveTheme(themeMode.value)
       theme.value = resolved
@@ -308,7 +298,6 @@ export const useSettingsStore = defineStore(
         await store.$persistedState.isReady
       }
       hydratePersistedSettings()
-      enableNativeFeedbackDefaults()
       applyRuntimeSettings()
       ready.value = true
     }

@@ -42,8 +42,3 @@ Thumbs.db
 
 # Vercel
 .vercel
-
-# Android build output and local SDK configuration
-android/.gradle
-android/local.properties
-android/**/build

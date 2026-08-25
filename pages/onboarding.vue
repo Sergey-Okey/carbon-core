@@ -105,16 +105,6 @@
                   Подробнее
                   <ChevronRight :size="20" class="btn-icon" />
                 </button>
-                <button
-                  class="apk-button"
-                  :class="{ disabled: !apkDownloadUrl }"
-                  type="button"
-                  :disabled="!apkDownloadUrl"
-                  @click="downloadApk"
-                >
-                  <Download :size="18" />
-                  <span>{{ apkDownloadUrl ? 'Скачать APK' : 'APK скоро' }}</span>
-                </button>
                 <span class="hint-text"
                   >или листайте дальше, чтобы узнать принципы</span
                 >
@@ -502,16 +492,6 @@
               Открыть COF
               <ArrowRight :size="24" class="btn-icon" />
             </button>
-            <button
-              class="apk-button final-apk"
-              :class="{ disabled: !apkDownloadUrl }"
-              type="button"
-              :disabled="!apkDownloadUrl"
-              @click="downloadApk"
-            >
-              <Download :size="18" />
-              <span>{{ apkDownloadUrl ? 'Скачать APK' : 'APK скоро' }}</span>
-            </button>
           </div>
           <div
             v-motion
@@ -602,7 +582,6 @@ const router = useRouter()
 const scrollContainer = ref<HTMLElement | null>(null)
 const progress = ref(0)
 const showDonation = ref(false)
-const apkDownloadUrl = ''
 
 const allTags = [
   { id: 't1', label: '#фокус' },
@@ -697,14 +676,6 @@ function scrollToNextStep() {
     top: target.offsetTop,
     behavior: 'smooth',
   })
-}
-
-function downloadApk() {
-  if (!apkDownloadUrl) return
-  const anchor = document.createElement('a')
-  anchor.href = apkDownloadUrl
-  anchor.download = 'core-of-life.apk'
-  anchor.click()
 }
 
 function handleScroll() {
@@ -1258,37 +1229,6 @@ onUnmounted(() => {
   max-width: 34ch;
 }
 
-.apk-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  min-height: 50px;
-  padding: 0 var(--space-5);
-  border: var(--ui-border);
-  border-radius: var(--radius-full);
-  background: var(--color-surface-1);
-  color: var(--color-accent);
-  cursor: pointer;
-  font-family: 'Manrope', sans-serif;
-  font-size: 0.98rem;
-  font-weight: 600;
-  transition:
-    background var(--transition-standard),
-    color var(--transition-standard),
-    opacity var(--transition-standard);
-
-  &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-  }
-
-  &.disabled,
-  &:disabled {
-    opacity: 0.58;
-    cursor: not-allowed;
-  }
-}
-
 .hero-visual {
   display: flex;
   justify-content: center;
@@ -1649,9 +1589,6 @@ onUnmounted(() => {
     font-size: 1.2rem;
     margin: 0;
   }
-  .final-apk {
-    margin: 0;
-  }
   .final-hint {
     max-width: 460px;
     margin: 20px auto 0;
@@ -1778,8 +1715,7 @@ onUnmounted(() => {
     align-items: stretch;
   }
 
-  .cta-button,
-  .apk-button {
+  .cta-button {
     width: 100%;
     justify-content: center;
     padding: 14px 22px;
@@ -1897,10 +1833,6 @@ onUnmounted(() => {
       width: 100%;
       padding: 16px 20px;
       font-size: 1rem;
-      margin: 0;
-    }
-    .final-apk {
-      width: 100%;
       margin: 0;
     }
     .final-hint {

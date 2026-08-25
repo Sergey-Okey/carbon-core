@@ -139,13 +139,6 @@ test('onboarding does not use CSS gradients', async () => {
   assert.match(onboarding, /\.first-slide\s*\{[^}]*scroll-snap-align:\s*start/s)
 })
 
-test('Android targets API 35 and release signing is externalized', async () => {
-  const variables = await read('android/variables.gradle')
-  const build = await read('android/app/build.gradle')
-  assert.match(variables, /targetSdkVersion = 35/)
-  assert.match(build, /COF_KEYSTORE_PATH/)
-})
-
 test('PWA manifest has standalone display and launch icons', async () => {
   const manifest = JSON.parse(await read('public/site.webmanifest'))
   assert.equal(manifest.display, 'standalone')
@@ -207,16 +200,13 @@ test('demo mode persists locally with a three hour TTL', async () => {
   assert.match(accessStore, /DEMO_TTL_MS/)
 })
 
-test('native app keeps launch animation and skips onboarding route', async () => {
+test('app keeps launch animation', async () => {
   const app = await read('app.vue')
   const launch = await read('components/base/AppLaunchScreen.vue')
-  const middleware = await read('middleware/entry.global.ts')
 
   assert.match(app, /<AppLaunchScreen \/>/)
   assert.match(launch, /DotSphereLoader/)
   assert.match(launch, /mode="boot"/)
-  assert.match(middleware, /Capacitor\.isNativePlatform\(\)/)
-  assert.match(middleware, /isNative && to\.path === '\/onboarding'/)
 })
 
 test('new users start with registration instead of login', async () => {

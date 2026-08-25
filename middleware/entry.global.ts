@@ -1,4 +1,3 @@
-import { Capacitor } from '@capacitor/core'
 import { readAccessMode } from '~/utils/accessStorage'
 
 function safeParse<T>(raw: string | null, fallback: T): T {
@@ -38,7 +37,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
     '/terms',
     '/support',
   ].includes(to.path)
-  const isNative = Capacitor.isNativePlatform()
 
   if ((to.path === '/auth' || to.path === '/register') && isAuthenticated) {
     return navigateTo('/')
@@ -46,22 +44,16 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   if (isAuthenticated) return
 
-  if (isNative && to.path === '/onboarding') {
-    return navigateTo(hasUsers ? '/auth' : '/register')
-  }
-
-  if (!isNative && !hasSeenOnboarding && !hasUsers && !isPublicRoute) {
+  if (!hasSeenOnboarding && !hasUsers && !isPublicRoute) {
     return navigateTo('/onboarding')
   }
 
-  if (!isNative && to.path === '/auth' && !hasSeenOnboarding && !hasUsers) {
+  if (to.path === '/auth' && !hasSeenOnboarding && !hasUsers) {
     return navigateTo('/onboarding')
   }
 
   if (!isAuthenticated && !isDemo && !isPublicRoute) {
     if (hasUsers) return navigateTo('/auth')
-    return navigateTo(
-      isNative || hasSeenOnboarding ? '/register' : '/onboarding'
-    )
+    return navigateTo(hasSeenOnboarding ? '/register' : '/onboarding')
   }
 })

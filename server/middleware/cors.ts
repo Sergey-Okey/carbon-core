@@ -1,11 +1,11 @@
 import { getHeader, setHeader, setResponseStatus } from 'h3'
 
-const nativeOrigins = new Set(['capacitor://localhost', 'http://localhost'])
+const allowedOrigins = new Set(['http://localhost'])
 
 export default defineEventHandler((event) => {
   if (!event.path.startsWith('/api/')) return
   const origin = getHeader(event, 'origin')
-  if (!origin || !nativeOrigins.has(origin)) return
+  if (!origin || !allowedOrigins.has(origin)) return
 
   setHeader(event, 'access-control-allow-origin', origin)
   setHeader(event, 'access-control-allow-credentials', 'true')
