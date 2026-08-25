@@ -228,7 +228,7 @@ const rendered = computed(() => {
 
   strong {
     color: var(--color-text-primary);
-    font-size: clamp(1.6rem, 2.8vw, 2.1rem);
+    font-size: clamp(var(--text-2xl), 2.8vw, var(--text-3xl));
     font-weight: var(--weight-bold);
     line-height: 1;
     letter-spacing: -0.04em;
@@ -301,7 +301,7 @@ const rendered = computed(() => {
   span {
     flex: 0 0 auto;
     color: var(--color-text-muted);
-    font-size: 0.68rem;
+    font-size: var(--text-2xs);
   }
 }
 
@@ -323,7 +323,7 @@ const rendered = computed(() => {
   }
 
   .nested-arcs__score strong {
-    font-size: clamp(1.35rem, 6vw, 1.8rem);
+    font-size: clamp(var(--text-xl), 6vw, var(--text-2xl));
   }
 
   .legend-copy strong,

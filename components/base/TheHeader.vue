@@ -568,7 +568,7 @@ onBeforeUnmount(() => {
 
   strong {
     font-family: 'Space Grotesk', var(--font-sans);
-    font-size: clamp(2rem, 6vw, 2.6rem);
+    font-size: clamp(var(--text-3xl), 6vw, var(--text-4xl));
     font-weight: var(--weight-bold);
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.04em;

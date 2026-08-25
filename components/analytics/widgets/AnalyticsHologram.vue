@@ -362,7 +362,7 @@ watch(
 
 .hologram__foot {
   display: grid;
-  gap: 4px;
+  gap: var(--space-1);
   flex: 0 0 auto;
   min-height: 2.4em;
 }
@@ -394,9 +394,9 @@ watch(
   li {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-2);
     color: var(--color-text-muted);
-    font-size: 0.62rem;
+    font-size: var(--text-2xs);
     font-weight: var(--weight-medium);
 
     &::before {

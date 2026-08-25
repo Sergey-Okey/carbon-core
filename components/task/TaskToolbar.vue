@@ -258,8 +258,8 @@ label,
   align-items: center;
 
   :deep(.app-input) {
-    padding-inline-start: 34px;
-    padding-inline-end: 36px;
+    padding-inline-start: var(--space-9);
+    padding-inline-end: var(--space-9);
     font-size: var(--text-sm);
   }
 }

@@ -310,8 +310,8 @@ function apply() {
 .color-preview {
   display: inline-grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: var(--control-icon-size);
+  height: var(--control-icon-size);
   border-radius: 11px;
   background: var(--custom-color);
   color: #fff;
@@ -397,7 +397,7 @@ function apply() {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text-primary) 10%, transparent);
 
   span {
-    padding: 4px 8px;
+    padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-full);
     background: color-mix(in srgb, var(--color-bg) 72%, transparent);
     color: var(--color-text-primary);

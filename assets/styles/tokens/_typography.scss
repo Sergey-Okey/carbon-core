@@ -1,12 +1,20 @@
 :root {
   --font-sans: 'Inter', sans-serif;
 
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-md: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
+  /* Type scale — use these for all UI text sizes */
+  --text-2xs: 0.625rem; /* 10px — dense labels / chart ticks */
+  --text-xs: 0.75rem; /* 12px — captions, meta */
+  --text-sm: 0.875rem; /* 14px — secondary body, controls */
+  --text-md: 1rem; /* 16px — body */
+  --text-lg: 1.125rem; /* 18px — section titles (h3) */
+  --text-xl: 1.25rem; /* 20px — page subsection (h2) */
+  --text-2xl: 1.5rem; /* 24px — page title (h1) */
+  --text-3xl: 1.875rem; /* 30px — display */
+  --text-4xl: 2.25rem; /* 36px — hero */
+  --text-5xl: 3rem; /* 48px — large hero */
+  --text-6xl: 3.75rem; /* 60px */
+  --text-7xl: 4.5rem; /* 72px */
+  --text-8xl: 6rem; /* 96px — brand / error display */
 
   --leading-none: 1;
   --leading-tight: 1.25;
@@ -17,4 +25,14 @@
   --weight-medium: 500;
   --weight-semibold: 600;
   --weight-bold: 700;
+
+  /* Semantic roles (shared hierarchy) */
+  --type-display: var(--text-4xl);
+  --type-h1: var(--text-2xl);
+  --type-h2: var(--text-xl);
+  --type-h3: var(--text-lg);
+  --type-body: var(--text-md);
+  --type-body-sm: var(--text-sm);
+  --type-caption: var(--text-xs);
+  --type-micro: var(--text-2xs);
 }

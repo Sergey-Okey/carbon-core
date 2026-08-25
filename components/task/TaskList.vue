@@ -373,9 +373,9 @@ function handleSave(taskData: TaskFormData) {
   }
 
   .add-btn {
-    width: 34px;
-    height: 34px;
-    min-height: 34px;
+    width: var(--control-icon-size);
+    height: var(--control-icon-size);
+    min-height: var(--control-icon-size);
     border-radius: var(--radius-full);
     display: flex;
     align-items: center;

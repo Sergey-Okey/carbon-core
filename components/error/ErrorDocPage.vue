@@ -66,7 +66,7 @@ function handlePrimaryAction() {
 .error-page {
   min-height: 100vh;
   min-height: 100dvh;
-  padding: clamp(16px, 3vw, 28px);
+  padding: clamp(var(--space-4), 3vw, var(--space-7));
   background: var(--bg);
   color: var(--text);
 }
@@ -77,7 +77,7 @@ function handlePrimaryAction() {
   grid-template-rows: auto 1fr auto;
   min-height: calc(100vh - clamp(32px, 6vw, 56px));
   min-height: calc(100dvh - clamp(32px, 6vw, 56px));
-  padding: clamp(20px, 4vw, 34px);
+  padding: clamp(var(--space-5), 4vw, var(--space-9));
   border: var(--ui-border);
   border-radius: var(--border-radius-xl);
 }
@@ -85,11 +85,11 @@ function handlePrimaryAction() {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
   width: fit-content;
   color: var(--text);
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 700;
   text-decoration: none;
 
@@ -104,14 +104,14 @@ function handlePrimaryAction() {
   align-content: center;
   justify-items: center;
   text-align: center;
-  gap: 12px;
+  gap: var(--space-3);
   width: min(100%, 720px);
   margin: 0 auto;
 }
 
 .eyebrow {
   color: var(--dim);
-  font-size: 0.74rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -119,7 +119,7 @@ function handlePrimaryAction() {
 
 .error-code {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(7rem, 18vw, 14rem);
+  font-size: clamp(var(--text-8xl), 18vw, calc(var(--text-8xl) * 2));
   font-weight: 700;
   line-height: 0.9;
   letter-spacing: -0.08em;
@@ -130,7 +130,7 @@ function handlePrimaryAction() {
 h1 {
   margin: 0;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(2rem, 5vw, 3.8rem);
+  font-size: clamp(var(--text-3xl), 5vw, var(--text-5xl));
   font-weight: 700;
   line-height: 0.98;
   letter-spacing: -0.05em;
@@ -145,25 +145,25 @@ h1 {
 
 .description {
   color: var(--dim);
-  font-size: clamp(0.94rem, 1.7vw, 1.05rem);
+  font-size: clamp(var(--text-sm), 1.7vw, var(--text-md));
 }
 
 .joke {
   color: var(--text);
-  font-size: 0.92rem;
+  font-size: var(--text-sm);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
-  margin-top: 12px;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
 }
 
 .footer-note {
   color: var(--dim);
-  font-size: 0.76rem;
+  font-size: var(--text-xs);
   text-align: center;
 }
 
@@ -171,7 +171,7 @@ h1 {
   .error-shell {
     min-height: calc(100vh - 32px);
     min-height: calc(100dvh - 32px);
-    padding: 18px;
+    padding: var(--space-5);
   }
 
   .actions {

@@ -156,7 +156,7 @@ function onClear() {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   pointer-events: auto;
   overflow: visible;
 
