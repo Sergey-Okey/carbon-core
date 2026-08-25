@@ -958,15 +958,23 @@ async function submit() {
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-text-muted) 55%, transparent)
+    transparent;
   animation: fade-in var(--duration-normal) var(--ease-standard) both;
 
   &::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-    display: none;
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
     background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-text-muted) 45%, transparent);
   }
 
   :deep(.app-input) {
@@ -1086,8 +1094,8 @@ async function submit() {
 .auth-form {
   display: grid;
   gap: var(--space-3);
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
+  min-height: auto;
   align-content: start;
   overflow: visible;
 }
@@ -1188,9 +1196,10 @@ async function submit() {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-4);
-  margin-top: auto;
+  margin-top: var(--space-4);
   padding-top: var(--space-2);
-  flex-shrink: 0;
+  padding-bottom: var(--space-1);
+  flex: 0 0 auto;
 
   a {
     color: var(--color-text-muted);

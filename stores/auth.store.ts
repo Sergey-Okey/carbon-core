@@ -301,7 +301,7 @@ export const useAuthStore = defineStore(
             return {
               success: false,
               error:
-                'Облачная регистрация недоступна. Выберите локальный режим',
+                'Облачная регистрация временно недоступна. Проверьте почтовый сервис или попробуйте позже',
             }
           }
 
@@ -395,7 +395,7 @@ export const useAuthStore = defineStore(
               return { success: false, error: 'Не удалось выполнить вход' }
             return {
               success: false,
-              error: 'Облачный вход недоступен. Выберите локальный режим',
+              error: 'Облачный вход временно недоступен. Попробуйте позже',
             }
           }
 

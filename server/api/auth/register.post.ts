@@ -47,21 +47,27 @@ export default defineEventHandler(async (event) => {
       termsVersion,
       phone
     )
-    const sent = await sendMail({
-      to: verification.email,
-      subject: 'Код подтверждения Core of Life',
-      text: [
-        `${verification.name}, здравствуйте.`,
-        '',
-        'Введите этот код в Core of Life, чтобы подтвердить email:',
-        '',
-        verification.code,
-        '',
-        'Код действует 15 минут. Если это были не вы, просто проигнорируйте письмо.',
-        '',
-        'Core of Life',
-      ].join('\n'),
-    })
+    let sent = false
+    try {
+      sent = await sendMail({
+        to: verification.email,
+        subject: 'Код подтверждения Core of Life',
+        text: [
+          `${verification.name}, здравствуйте.`,
+          '',
+          'Введите этот код в Core of Life, чтобы подтвердить email:',
+          '',
+          verification.code,
+          '',
+          'Код действует 15 минут. Если это были не вы, просто проигнорируйте письмо.',
+          '',
+          'Core of Life',
+        ].join('\n'),
+      })
+    } catch (error) {
+      console.error('[auth] verification mail failed', error)
+      sent = false
+    }
 
     return { requiresVerification: true, email: verification.email, sent }
   } catch (error) {
