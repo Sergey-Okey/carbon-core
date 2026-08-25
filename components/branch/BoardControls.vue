@@ -156,7 +156,7 @@ function onClear() {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   pointer-events: auto;
   overflow: visible;
 
@@ -199,8 +199,8 @@ function onClear() {
 
   @include mobile {
     button {
-      width: 44px;
-      height: 44px;
+      width: var(--touch-target);
+      height: var(--touch-target);
     }
   }
 
@@ -218,7 +218,7 @@ function onClear() {
     width: 1px;
     height: 20px;
     background: var(--ui-border-color);
-    margin: 0 2px;
+    margin: 0 var(--space-1);
   }
 }
 </style>

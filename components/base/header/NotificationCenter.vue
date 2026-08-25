@@ -283,12 +283,12 @@ onBeforeUnmount(() => {
   justify-content: center;
   min-inline-size: 16px;
   block-size: 16px;
-  padding-inline: 4px;
+  padding-inline: var(--space-1);
   border: var(--ui-border);
   border-radius: var(--radius-full);
   background: var(--color-accent);
   color: var(--color-bg, var(--bg));
-  font-size: 0.64rem;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
   line-height: 1;
 }
@@ -374,7 +374,7 @@ onBeforeUnmount(() => {
 .indicator {
   width: 8px;
   height: 8px;
-  margin-top: 6px;
+  margin-top: var(--space-1);
   border-radius: var(--radius-full);
   background: var(--color-accent, var(--accent));
 }
@@ -408,7 +408,7 @@ onBeforeUnmount(() => {
   gap: var(--space-1);
   color: var(--color-text-secondary);
   font-size: var(--text-xs);
-  line-height: 1.2;
+  line-height: var(--leading-tight);
 }
 
 .type-label {
@@ -425,7 +425,7 @@ onBeforeUnmount(() => {
   color: var(--color-text-primary);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  line-height: 1.35;
+  line-height: var(--leading-tight);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -437,7 +437,7 @@ onBeforeUnmount(() => {
   color: var(--color-text-primary);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
-  line-height: 1.45;
+  line-height: var(--leading-normal);
   overflow-wrap: break-word;
   min-width: 0;
   @include text-clamp(2);
@@ -446,7 +446,7 @@ onBeforeUnmount(() => {
 .history-time {
   color: var(--color-text-muted, var(--dim));
   font-size: var(--text-xs);
-  line-height: 1.2;
+  line-height: var(--leading-tight);
 }
 
 :deep(.empty-state) {

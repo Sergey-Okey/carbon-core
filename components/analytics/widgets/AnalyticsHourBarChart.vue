@@ -111,7 +111,7 @@ const topLabel = computed(() => {
 
 .bar__value {
   color: var(--color-text-muted);
-  font-size: 0.68rem;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
   font-variant-numeric: tabular-nums;
   opacity: 0;
@@ -137,7 +137,7 @@ const topLabel = computed(() => {
 .bar__fill {
   display: block;
   width: 100%;
-  min-height: 4px;
+  min-height: var(--space-1);
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   background: color-mix(in srgb, var(--accent) 55%, transparent);
   transform-origin: bottom center;
@@ -163,7 +163,7 @@ const topLabel = computed(() => {
 
 .bar__label {
   color: var(--color-text-muted);
-  font-size: 0.62rem;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-medium);
   white-space: nowrap;
 }
@@ -184,7 +184,7 @@ const topLabel = computed(() => {
     gap: var(--space-1);
     overflow-x: auto;
     overflow-y: hidden;
-    padding-bottom: 2px;
+    padding-bottom: var(--space-1);
     grid-auto-columns: minmax(36px, 1fr);
   }
 
@@ -196,7 +196,7 @@ const topLabel = computed(() => {
 
 @media (max-width: 420px) {
   .hour-bars__chart {
-    grid-auto-columns: minmax(40px, 1fr);
+    grid-auto-columns: minmax(var(--space-10), 1fr);
   }
 }
 </style>

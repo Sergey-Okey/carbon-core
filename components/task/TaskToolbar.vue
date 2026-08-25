@@ -25,6 +25,7 @@
             id="task-search"
             v-model="searchModel"
             type="search"
+            size="sm"
             placeholder="Название или описание"
           />
           <button
@@ -258,8 +259,8 @@ label,
   align-items: center;
 
   :deep(.app-input) {
-    padding-inline-start: 34px;
-    padding-inline-end: 36px;
+    padding-inline-start: var(--space-9);
+    padding-inline-end: var(--space-9);
     font-size: var(--text-sm);
   }
 }
@@ -278,8 +279,8 @@ label,
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: var(--space-6);
+  height: var(--space-6);
   margin: 0;
   padding: 0;
   border: none;

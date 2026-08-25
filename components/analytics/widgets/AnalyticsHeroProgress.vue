@@ -147,7 +147,7 @@ const hoverDetail = computed(() => {
 .hero__ticks {
   display: flex;
   align-items: stretch;
-  gap: 3px;
+  gap: var(--space-1);
   height: 22px;
 }
 
@@ -192,7 +192,7 @@ const hoverDetail = computed(() => {
 .metric-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-1);
   color: var(--color-text-muted);
   font-size: var(--text-xs);
   cursor: default;
@@ -221,7 +221,7 @@ const hoverDetail = computed(() => {
 
   .hero__ticks {
     height: 18px;
-    gap: 2px;
+    gap: var(--space-1);
   }
 
   .hero__detail,

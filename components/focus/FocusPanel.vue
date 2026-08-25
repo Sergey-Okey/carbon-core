@@ -369,7 +369,7 @@ onBeforeUnmount(() => {
 
   :deep(.widget-shell.span-8) {
     --tile-h: 560px;
-    min-height: 560px;
+    min-height: var(--space-16);
   }
 }
 
@@ -379,7 +379,7 @@ onBeforeUnmount(() => {
   grid-template-rows: 1.15fr 0.85fr;
   gap: var(--space-4);
   min-width: 0;
-  min-height: 560px;
+  min-height: var(--space-16);
   height: 100%;
 
   :deep(.widget-shell.is-fluid) {
@@ -540,7 +540,7 @@ onBeforeUnmount(() => {
   gap: var(--space-3);
   flex: 1 1 0;
   width: 100%;
-  min-height: 64px;
+  min-height: var(--space-16);
   margin: 0;
   padding: var(--space-3) var(--space-4);
   border: none;
@@ -597,7 +597,7 @@ onBeforeUnmount(() => {
 
 .preset-chip__copy {
   display: grid;
-  gap: 2px;
+  gap: var(--space-1);
   min-width: 0;
 }
 
@@ -689,10 +689,7 @@ onBeforeUnmount(() => {
 }
 
 .today-tip {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  line-height: var(--leading-normal);
+  @include meta-text;
 }
 
 @keyframes focus-tick-in {
@@ -732,7 +729,7 @@ onBeforeUnmount(() => {
     :deep(.widget-shell.span-8) {
       grid-column: span 6;
       --tile-h: auto;
-      min-height: 420px;
+      min-height: var(--space-16);
       height: auto;
     }
   }
@@ -776,7 +773,7 @@ onBeforeUnmount(() => {
   }
 
   .preset-chip {
-    min-height: 56px;
+    min-height: var(--space-14);
     flex: 0 0 auto;
   }
 
@@ -806,7 +803,7 @@ onBeforeUnmount(() => {
 
     :deep(.app-button) {
       flex: 1 1 140px;
-      min-height: 44px;
+      min-height: var(--space-11);
     }
   }
 

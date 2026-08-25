@@ -26,12 +26,9 @@ const confirmState = useConfirm()
 
 <style scoped lang="scss">
 .confirm-message {
-  margin: 0;
+  @include meta-text;
   color: var(--color-text-primary);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-normal);
-  line-height: var(--leading-normal);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .confirm-actions {

@@ -100,8 +100,7 @@
             </AppButton>
             <AppButton
               type="button"
-              variant="ghost"
-              size="sm"
+              variant="link"
               class="inline-action"
               @click="resendEmailVerification"
             >
@@ -173,8 +172,7 @@
             </AppButton>
             <AppButton
               type="button"
-              variant="ghost"
-              size="sm"
+              variant="link"
               class="inline-action"
               @click="resetMode = false"
             >
@@ -230,7 +228,7 @@
               />
             </AppFormField>
 
-            <div class="password-row" :class="{ 'is-split': isRegister }">
+            <div class="password-row">
               <AppFormField
                 label="Пароль"
                 :error="fieldErrors.password || undefined"
@@ -272,8 +270,7 @@
             <AppButton
               v-if="!isRegister"
               type="button"
-              variant="ghost"
-              size="sm"
+              variant="link"
               class="inline-action forgot"
               @click="openResetMode"
             >
@@ -283,7 +280,6 @@
             <div v-if="isRegister" class="consent-block">
               <AppCheckbox
                 v-model="form.acceptedTerms"
-                size="sm"
                 class="oauth-consent"
                 :invalid="Boolean(fieldErrors.terms)"
                 @update:model-value="fieldErrors.terms = ''"
@@ -938,12 +934,12 @@ async function submit() {
 }
 
 .auth-card__form {
-  --pad: var(--space-4);
+  --pad: var(--space-6);
   width: 100%;
   max-width: 550px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-5);
   flex: 1 1 auto;
   min-height: 0;
   height: 100%;
@@ -965,7 +961,7 @@ async function submit() {
   animation: fade-in var(--duration-normal) var(--ease-standard) both;
 
   &::-webkit-scrollbar {
-    width: 6px;
+    width: var(--space-2);
   }
 
   &::-webkit-scrollbar-track {
@@ -978,12 +974,16 @@ async function submit() {
   }
 
   :deep(.app-input) {
-    min-height: 48px;
-    font-size: var(--text-md);
+    @include form-control;
+  }
+
+  :deep(.app-form-field) {
+    gap: var(--space-3);
   }
 
   :deep(.field-label) {
-    font-size: var(--text-sm);
+    font-size: var(--caption-size);
+    line-height: var(--caption-leading);
   }
 }
 
@@ -1001,28 +1001,25 @@ async function submit() {
 
 .form-header {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-3);
   flex-shrink: 0;
+  min-width: 0;
 
   h1 {
-    margin: 0;
+    @include heading-1;
+    min-width: 0;
     color: var(--color-text-primary);
     font-family: var(--font-sans);
-    font-size: clamp(1.85rem, 2.8vw, 2.4rem);
-    font-weight: var(--weight-semibold);
-    letter-spacing: -0.035em;
-    line-height: var(--leading-tight);
-    overflow-wrap: normal;
+    overflow-wrap: break-word;
     word-break: normal;
   }
 
   p {
+    @include body-text;
     margin: 0;
-    max-width: 36ch;
+    max-width: 42ch;
     color: var(--color-text-secondary);
-    font-size: var(--text-md);
-    line-height: var(--leading-normal);
-    overflow-wrap: normal;
+    overflow-wrap: break-word;
     word-break: normal;
   }
 }
@@ -1034,12 +1031,25 @@ async function submit() {
 }
 
 .oauth-consent {
+  align-items: flex-start;
+  min-width: 0;
   color: var(--color-text-secondary);
+  font-size: var(--body-size);
+  font-weight: var(--weight-normal);
+  line-height: var(--body-leading);
+
+  :deep(.app-checkbox__label) {
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
 
   :deep(a) {
     color: var(--color-text-primary);
-    text-decoration: underline;
-    text-underline-offset: 2px;
+    font-size: inherit;
+    font-weight: var(--weight-medium);
+    line-height: inherit;
+    text-decoration: none;
 
     &:hover {
       color: var(--color-accent);
@@ -1050,17 +1060,18 @@ async function submit() {
 .oauth-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-2);
+  gap: var(--space-3);
   flex-shrink: 0;
 }
 
 .oauth-button {
   width: 100%;
+  min-height: var(--space-12);
 }
 
 .oauth-icon {
-  width: 18px;
-  height: 18px;
+  width: var(--space-5);
+  height: var(--space-5);
   flex: 0 0 auto;
 }
 
@@ -1079,8 +1090,9 @@ async function submit() {
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: var(--space-3);
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  font-size: var(--body-size);
+  line-height: var(--body-leading);
   flex-shrink: 0;
 
   &::before,
@@ -1093,7 +1105,7 @@ async function submit() {
 
 .auth-form {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-5);
   flex: 0 0 auto;
   min-height: auto;
   align-content: start;
@@ -1102,25 +1114,17 @@ async function submit() {
 
 .password-row {
   display: grid;
-  gap: var(--space-3);
-
-  &.is-split {
-    grid-template-columns: 1fr 1fr;
-
-    @media (max-width: 560px) {
-      grid-template-columns: 1fr;
-    }
-  }
+  gap: var(--space-5);
+  min-width: 0;
 }
 
 .verification-card {
   @include surface-panel;
+  @include meta-text;
   display: grid;
   gap: var(--space-1);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4);
   border-radius: var(--radius-md);
-  color: var(--color-text-secondary);
-  font-size: var(--text-sm);
 
   strong {
     color: var(--color-text-primary);
@@ -1128,52 +1132,56 @@ async function submit() {
 
   p {
     margin: var(--space-1) 0 0;
-    line-height: var(--leading-normal);
   }
 }
 
 .submit-btn {
   width: 100%;
-  min-height: 52px;
+  min-height: var(--space-14);
   font-size: var(--text-md);
 }
 
+.inline-action.size-sm,
 .inline-action {
   justify-self: start;
   width: fit-content;
-
-  &.forgot {
-    margin-top: calc(var(--space-1) * -1);
-  }
 }
 
-.password-hint {
-  margin: calc(var(--space-1) * -1) 0 0;
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  line-height: var(--leading-normal);
+.password-hint,
+.switch-mode,
+.legal-links {
+  @include meta-text;
 }
 
 .switch-mode {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: var(--text-sm);
   flex-shrink: 0;
 
   a,
   &__link {
-    color: var(--color-text-primary);
-    font-weight: var(--weight-medium);
-    text-decoration: none;
+    @include inline-link;
     background: none;
     border: 0;
     padding: 0;
-    font: inherit;
     cursor: pointer;
 
     &:hover {
       color: var(--color-accent);
     }
+  }
+}
+
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-1);
+  flex: 0 0 auto;
+
+  a {
+    @include inline-link;
   }
 }
 
@@ -1183,7 +1191,7 @@ async function submit() {
 
 .auth-mobile-dock__btn {
   width: 100%;
-  min-height: 48px;
+  min-height: var(--space-12);
   border-width: 1px;
   border-style: solid;
   font-size: var(--text-sm);
@@ -1191,33 +1199,11 @@ async function submit() {
   letter-spacing: 0.02em;
 }
 
-.legal-links {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-4);
-  margin-top: var(--space-4);
-  padding-top: var(--space-2);
-  padding-bottom: var(--space-1);
-  flex: 0 0 auto;
-
-  a {
-    color: var(--color-text-muted);
-    font-size: var(--text-xs);
-    text-decoration: none;
-    line-height: 1.2;
-
-    &:hover {
-      color: var(--color-text-secondary);
-    }
-  }
-}
-
 .error-text,
 .success-text {
   margin: 0;
-  font-size: var(--text-sm);
-  line-height: var(--leading-tight);
+  font-size: var(--body-size);
+  line-height: var(--body-leading);
 }
 
 .error-text {
@@ -1292,7 +1278,7 @@ async function submit() {
   }
 
   .auth-mobile-dock__btn {
-    min-height: 48px;
+    min-height: var(--space-12);
     font-size: var(--text-sm);
   }
 
@@ -1362,7 +1348,7 @@ async function submit() {
   }
 
   .auth-card__form {
-    --pad: var(--space-3);
+    --pad: var(--space-5);
     max-width: none;
   }
 
@@ -1373,15 +1359,12 @@ async function submit() {
   }
 
   .form-header h1 {
-    font-size: clamp(1.5rem, 7vw, 2rem);
+    font-size: var(--heading-1-size);
+    line-height: var(--heading-1-leading);
   }
 
   .oauth-actions {
     grid-template-columns: 1fr 1fr;
-  }
-
-  .password-row.is-split {
-    grid-template-columns: 1fr;
   }
 }
 
@@ -1391,12 +1374,12 @@ async function submit() {
   }
 
   .auth-card__form {
-    gap: var(--space-2);
-    --pad: var(--space-3);
+    gap: var(--space-4);
+    --pad: var(--space-4);
   }
 
   .auth-form {
-    gap: var(--space-2);
+    gap: var(--space-4);
   }
 }
 

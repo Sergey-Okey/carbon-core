@@ -350,7 +350,7 @@ onMounted(() => {
 .stats-hit-area {
   position: absolute;
   inset: 0 0 auto;
-  height: 38px;
+  height: var(--space-10);
   border: none;
   background: transparent;
   cursor: pointer;
@@ -498,7 +498,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(20, minmax(2px, 1fr));
   flex: 1;
-  gap: 2px;
+  gap: var(--space-1);
   min-width: 0;
 }
 
@@ -553,7 +553,7 @@ onMounted(() => {
   justify-content: center;
   gap: var(--space-1);
   min-width: 0;
-  min-height: 28px;
+  min-height: var(--space-7);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-full);
   background: var(--color-surface-2);
@@ -589,12 +589,12 @@ onMounted(() => {
   flex-direction: column;
   gap: var(--space-1);
   width: 100%;
-  min-height: 52px;
+  min-height: var(--space-12);
   overflow: visible;
   animation: chart-fade-in 260ms ease-out both;
 
   @include mobile {
-    min-height: 56px;
+    min-height: var(--space-14);
   }
 }
 
@@ -617,15 +617,15 @@ onMounted(() => {
   align-items: end;
   gap: var(--space-1);
   width: 100%;
-  min-height: 44px;
+  min-height: var(--space-11);
   overflow: visible;
 }
 
 .activity-day {
   position: relative;
   display: grid;
-  grid-template-rows: 30px auto;
-  gap: 3px;
+  grid-template-rows: var(--space-8) auto;
+  gap: var(--space-1);
   justify-items: center;
   min-width: 0;
   overflow: visible;
@@ -671,7 +671,7 @@ onMounted(() => {
   justify-content: center;
   width: 100%;
   max-width: 10px;
-  height: 30px;
+  height: var(--space-8);
   overflow: hidden;
   border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--ui-border-color) 38%, transparent);
@@ -679,7 +679,7 @@ onMounted(() => {
 
 .activity-fill {
   width: 100%;
-  min-height: 2px;
+  min-height: var(--space-1);
   border-radius: inherit;
   background: var(--color-accent);
   opacity: 0.74;
@@ -694,7 +694,7 @@ onMounted(() => {
 }
 
 .activity-label {
-  font-size: 0.62rem;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-bold, 700);
   line-height: 1;
   color: var(--color-text-muted);
@@ -719,7 +719,7 @@ onMounted(() => {
   color: var(--color-text-primary);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
-  line-height: 1.18;
+  line-height: var(--leading-tight);
   white-space: nowrap;
   writing-mode: horizontal-tb;
   overflow: visible;

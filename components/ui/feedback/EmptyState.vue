@@ -68,11 +68,8 @@ const iconSize = computed(() => (props.size === 'sm' ? 18 : 22))
 }
 
 .empty-state__description {
-  margin: 0;
+  @include meta-text;
   max-width: 36ch;
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  line-height: var(--leading-normal);
 }
 
 .empty-state__action {

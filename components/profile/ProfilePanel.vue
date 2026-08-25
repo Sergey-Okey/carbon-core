@@ -25,8 +25,7 @@
         <AppButton
           v-if="form.avatar"
           type="button"
-          variant="ghost"
-          size="sm"
+          variant="link"
           class="avatar-remove"
           @click="removeAvatar"
         >
@@ -814,17 +813,13 @@ async function deleteAccount() {
   flex: 0 0 auto;
 
   h2 {
-    margin: 0;
+    @include heading-2;
     color: var(--color-text-primary);
-    font-size: var(--text-md);
-    font-weight: var(--weight-bold);
-    line-height: 1.25;
   }
 }
 
 .tile-head__aside {
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
+  @include meta-text;
   font-weight: var(--weight-medium);
   letter-spacing: 0.02em;
   text-transform: lowercase;
@@ -844,7 +839,7 @@ async function deleteAccount() {
   justify-content: space-between;
   gap: var(--space-3);
   flex: 1;
-  min-height: 36px;
+  min-height: var(--space-9);
   padding-block: var(--space-1);
   border-bottom: var(--ui-border);
 
@@ -855,43 +850,40 @@ async function deleteAccount() {
   span {
     color: var(--color-text-secondary);
     font-size: var(--text-sm);
-    line-height: 1.3;
+    line-height: var(--leading-tight);
   }
 
   strong {
     color: var(--color-text-primary);
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
     text-align: right;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
 }
 
 .tile-foot {
+  @include meta-text;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3) var(--space-4);
   flex: 0 0 auto;
   padding-top: var(--space-3);
   border-top: var(--ui-border);
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
 
   span {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-1);
   }
 }
 
 .tile-note {
-  margin: 0;
+  @include meta-text;
   flex: 0 0 auto;
   padding-top: var(--space-3);
   border-top: var(--ui-border);
-  color: var(--color-text-secondary);
-  font-size: var(--text-sm);
-  line-height: 1.45;
 }
 
 .demo-exit {
@@ -1011,7 +1003,7 @@ async function deleteAccount() {
 .readme-form {
   display: grid;
   flex: 1;
-  gap: var(--space-3);
+  gap: var(--space-5);
   align-content: start;
   min-height: 0;
 }
@@ -1019,7 +1011,7 @@ async function deleteAccount() {
 .info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
+  gap: var(--space-5);
 }
 
 .info-item {
@@ -1039,7 +1031,7 @@ async function deleteAccount() {
     color: var(--color-text-primary);
     font-size: var(--text-lg);
     font-weight: var(--weight-semibold);
-    line-height: 1.3;
+    line-height: var(--leading-tight);
     overflow-wrap: anywhere;
   }
 
@@ -1047,7 +1039,7 @@ async function deleteAccount() {
     margin: 0;
     color: var(--color-text-primary);
     font-size: var(--text-md);
-    line-height: 1.5;
+    line-height: var(--leading-normal);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
@@ -1062,7 +1054,7 @@ async function deleteAccount() {
 .pair {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
+  gap: var(--space-5);
 }
 
 .field {
@@ -1151,7 +1143,7 @@ async function deleteAccount() {
 }
 
 .heatmap {
-  --heat-gap: clamp(1px, 0.45cqi, 4px);
+  --heat-gap: clamp(1px, 0.45cqi, var(--space-1));
   --heat-cols: 53;
   --heat-size: calc(
     (100cqi - (var(--heat-cols) - 1) * var(--heat-gap)) / var(--heat-cols)
@@ -1205,7 +1197,7 @@ async function deleteAccount() {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 4px;
+  gap: var(--space-1);
   flex: 0 0 auto;
   color: var(--color-text-muted);
   font-size: var(--text-xs);
@@ -1246,12 +1238,8 @@ async function deleteAccount() {
     padding: var(--space-3);
   }
 
-  .tile--heatmap .tile-head h2 {
-    font-size: var(--text-sm);
-  }
-
   .heatmap {
-    --heat-gap: clamp(2px, 0.9cqi, 4px);
+    --heat-gap: clamp(var(--space-1), 0.9cqi, var(--space-1));
   }
 
   .heat-cell {
@@ -1281,7 +1269,7 @@ async function deleteAccount() {
 
   .readme-actions :deep(.app-button) {
     width: 100%;
-    min-height: 44px;
+    min-height: var(--space-11);
   }
 }
 </style>

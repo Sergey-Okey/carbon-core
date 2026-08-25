@@ -12,7 +12,7 @@
           <component
             :is="asForm ? 'form' : 'div'"
             class="app-modal"
-            :class="[`size-${size}`, { 'allow-overflow': allowOverflow, 'is-form-sheet': asForm }]"
+            :class="[`size-${size}`, { 'allow-overflow': allowOverflow, 'is-form-sheet': asForm, 'is-fill': fillBody }]"
             role="dialog"
             aria-modal="true"
             :aria-label="title"
@@ -35,7 +35,10 @@
               </AppButton>
             </header>
 
-            <section class="app-modal-body" :class="{ 'allow-overflow': allowOverflow }">
+            <section
+              class="app-modal-body"
+              :class="{ 'allow-overflow': allowOverflow, 'is-fill': fillBody }"
+            >
               <slot />
             </section>
 
@@ -58,6 +61,7 @@ const props = withDefaults(
     kicker?: string
     size?: 'sm' | 'md' | 'lg'
     asForm?: boolean
+    fillBody?: boolean
     closable?: boolean
     closeOnBackdrop?: boolean
     closeTitle?: string
@@ -68,6 +72,7 @@ const props = withDefaults(
     kicker: undefined,
     size: 'md',
     asForm: false,
+    fillBody: false,
     closable: true,
     closeOnBackdrop: true,
     closeTitle: 'Закрыть',
@@ -128,6 +133,22 @@ function handleBackdrop() {
   &.size-lg {
     width: min(100%, 640px);
   }
+
+  &.is-fill {
+    width: min(100%, 560px);
+    height: min(calc(100dvh - var(--space-8)), 720px);
+  }
+
+  &.is-fill .app-modal-header {
+    min-height: var(--space-12);
+    padding-block: var(--space-2);
+  }
+}
+
+.app-modal.is-fill .app-modal-footer {
+  display: block;
+  min-height: 0;
+  padding: var(--space-3);
 }
 
 .app-modal-header,
@@ -144,12 +165,9 @@ function handleBackdrop() {
   min-width: 0;
 
   h3 {
-    margin: 0;
+    @include heading-3;
     color: var(--color-text-primary);
-    font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
-    line-height: var(--leading-tight);
-    word-break: break-word;
+    overflow-wrap: break-word;
   }
 }
 
@@ -164,16 +182,23 @@ function handleBackdrop() {
 }
 
 .app-modal-body {
+  @include body-text;
   min-height: 0;
   padding: var(--panel-padding);
   color: var(--color-text-primary);
-  font-size: var(--text-sm);
-  line-height: var(--leading-normal);
   overflow-y: auto;
   scrollbar-gutter: stable;
 
   &.allow-overflow {
     overflow: visible;
+  }
+
+  &.is-fill {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+    scrollbar-gutter: auto;
   }
 
   &::-webkit-scrollbar {
@@ -262,6 +287,16 @@ function handleBackdrop() {
       overflow-y: auto;
       overflow-x: visible;
     }
+
+    &.is-fill {
+      overflow: hidden;
+      padding: 0;
+    }
+  }
+
+  .app-modal.is-form-sheet.is-fill {
+    height: min(92dvh, 760px);
+    max-block-size: min(92dvh, 760px);
   }
 
   .app-modal.is-form-sheet.modal-panel-enter-from,

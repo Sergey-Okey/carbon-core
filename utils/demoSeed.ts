@@ -8,9 +8,15 @@ import { useTasksStore } from '~/stores/tasks.store'
 import { useUserStore } from '~/stores/user.store'
 import { accessAwareStorage } from '~/utils/accessStorage'
 
-const DEMO_SEED_KEY = 'carbon-demo-workspace-seeded-v8'
+const DEMO_SEED_KEY = 'carbon-demo-workspace-seeded-v11'
 const edgeStyle = { stroke: 'var(--dim)', strokeWidth: 1.15 }
-const DEMO_BRANCH_IDS = ['COF', 'BODY', 'MIND', 'FIN'] as const
+const DEMO_BRANCH_IDS = ['COF'] as const
+const COL = 340
+const ROW = 156
+
+function at(col: number, row: number) {
+  return { x: 380 + col * COL, y: 48 + row * ROW }
+}
 
 function dateKey(date: Date): string {
   const year = date.getFullYear()
@@ -107,175 +113,101 @@ function buildDemoBranches(): Branch[] {
       id: 'COF',
       displayName: 'Core of Life',
       icon: 'target',
-      description: 'Продукт: от идеи до публичного релиза',
+      description: 'Четыре потока от одного корня: продукт, тело, разум и деньги',
       markerColor: '#d6d6d6',
       taskIds: [],
       milestones: [
-        milestone('cof-m1', 'Видение продукта', 'completed', { x: 300, y: 360 }, 'target', 'Цель и позиционирование'),
-        milestone('cof-m2', 'Исследование', 'completed', { x: 620, y: 40 }, 'compass', 'Интервью и референсы'),
-        milestone('cof-m3', 'Бренд', 'completed', { x: 620, y: 240 }, 'lightbulb', 'Тон, лого, палитра'),
-        milestone('cof-m4', 'Продуктовый план', 'completed', { x: 620, y: 440 }, 'map', 'Roadmap и приоритеты'),
-        milestone('cof-m5', 'Рынок', 'completed', { x: 620, y: 640 }, 'users', 'Аудитория и позиционирование'),
-        milestone('cof-m6', 'Дизайн-система', 'completed', { x: 940, y: -60 }, 'folder-kanban', 'Компоненты и токены'),
-        milestone('cof-m7', 'UX-потоки', 'completed', { x: 940, y: 80 }, 'map', 'Онбординг и сценарии'),
-        milestone('cof-m8', 'Контент', 'active', { x: 940, y: 220 }, 'book-open', 'Тексты и онбординг'),
-        milestone('cof-m9', 'Архитектура', 'completed', { x: 940, y: 360 }, 'briefcase', 'Сторы, sync, доступ'),
-        milestone('cof-m10', 'API-контракт', 'active', { x: 940, y: 500 }, 'code', 'Эндпоинты и модели'),
-        milestone('cof-m11', 'Frontend ядро', 'completed', { x: 940, y: 640 }, 'code', 'Vue 3 + Nuxt экраны'),
-        milestone('cof-m12', 'Backend', 'active', { x: 940, y: 780 }, 'briefcase', 'Auth, данные, правила'),
-        milestone('cof-m13', 'Аналитика', 'active', { x: 940, y: 920 }, 'trending-up', 'Метрики и виджеты'),
-        milestone('cof-m14', 'Лендинг', 'pending', { x: 940, y: 1060 }, 'flag', 'Публичная страница'),
-        milestone('cof-m15', 'Бета-круг', 'pending', { x: 940, y: 1200 }, 'rocket', 'Закрытый круг пользователей'),
-        milestone('cof-m16', 'Компоненты UI', 'completed', { x: 1260, y: -60 }, 'folder-kanban', 'Карточки и формы'),
-        milestone('cof-m17', 'Прототипы', 'active', { x: 1260, y: 80 }, 'compass', 'Кликнутые сценарии'),
-        milestone('cof-m18', 'Интеграция FE', 'pending', { x: 1260, y: 640 }, 'code', 'Склейка экранов'),
-        milestone('cof-m19', 'Интеграция BE', 'pending', { x: 1260, y: 780 }, 'briefcase', 'API в прод'),
-        milestone('cof-m20', 'Релиз 1.0', 'pending', { x: 1580, y: 640 }, 'flag', 'Публичный запуск'),
+        milestone('cof-vision', 'Видение', 'completed', at(0, 6), 'target', 'Зачем это всё и какой ритм нужен'),
+        milestone('cof-product', 'Продукт', 'completed', at(1, 1), 'map', 'Core of Life как главная ставка'),
+        milestone('cof-body', 'Тело', 'completed', at(1, 5), 'heart', 'Энергия для длинной дистанции'),
+        milestone('cof-mind', 'Разум', 'completed', at(1, 8), 'brain', 'Фокус, обучение, ясность'),
+        milestone('cof-money', 'Деньги', 'completed', at(1, 11), 'wallet-cards', 'Запас и свобода решений'),
+
+        milestone('cof-research', 'Исследование', 'completed', at(2, 0), 'compass', 'Интервью и референсы'),
+        milestone('cof-brand', 'Бренд', 'completed', at(2, 1), 'lightbulb', 'Тон, лого, палитра'),
+        milestone('cof-plan', 'Продуктовый план', 'completed', at(2, 2), 'map', 'Roadmap и приоритеты'),
+        milestone('cof-checkup', 'Базовый чекап', 'completed', at(2, 4), 'heart', 'Стартовые метрики тела'),
+        milestone('cof-sleep', 'Сон', 'completed', at(2, 5), 'home', 'Режим и качество восстановления'),
+        milestone('cof-strength', 'Сила', 'active', at(2, 6), 'dumbbell', 'Силовые как опора энергии'),
+        milestone('cof-review', 'Утренний обзор', 'completed', at(2, 7), 'lightbulb', 'План дня на 10 минут'),
+        milestone('cof-focus', 'Фокус', 'completed', at(2, 8), 'target', 'Блоки без отвлечений'),
+        milestone('cof-learn', 'Обучение', 'active', at(2, 9), 'graduation-cap', 'Курс и навык в практике'),
+        milestone('cof-ledger', 'Учёт расходов', 'completed', at(2, 10), 'wallet-cards', 'Все траты в одном месте'),
+        milestone('cof-budget', 'Бюджет', 'completed', at(2, 11), 'folder-kanban', 'Лимиты по категориям'),
+        milestone('cof-debt', 'План долгов', 'active', at(2, 12), 'briefcase', 'График выплат'),
+
+        milestone('cof-ds', 'Дизайн-система', 'completed', at(3, 0), 'folder-kanban', 'Токены и компоненты'),
+        milestone('cof-ux', 'UX-потоки', 'completed', at(3, 1), 'map', 'Онбординг и сценарии'),
+        milestone('cof-arch', 'Архитектура', 'completed', at(3, 2), 'briefcase', 'Сторы, sync, доступ'),
+        milestone('cof-cardio', 'Кардио', 'completed', at(3, 4), 'trending-up', 'Зона 2 и интервалы'),
+        milestone('cof-food', 'Питание', 'active', at(3, 5), 'award', 'Белок и ритм еды'),
+        milestone('cof-recover', 'Восстановление', 'pending', at(3, 6), 'heart', 'Мобилити, свет, отдых'),
+        milestone('cof-deep', 'Глубокая работа', 'completed', at(3, 7), 'target', 'Сессии без шума'),
+        milestone('cof-read', 'Чтение', 'active', at(3, 8), 'book-open', 'Регулярный ритм книг'),
+        milestone('cof-notes', 'Система знаний', 'pending', at(3, 9), 'brain', 'Связанные заметки'),
+        milestone('cof-cushion', 'Подушка', 'active', at(3, 10), 'home', 'Резерв на месяц жизни'),
+        milestone('cof-save', 'Автонакопления', 'pending', at(3, 11), 'calendar-days', 'Перевод в день зарплаты'),
+
+        milestone('cof-fe', 'Frontend ядро', 'completed', at(4, 1), 'code', 'Экраны, доска, привычки'),
+        milestone('cof-be', 'Backend', 'active', at(4, 2), 'briefcase', 'Auth, данные, правила'),
+        milestone('cof-shape', 'Пиковая форма', 'pending', at(4, 5), 'trophy', 'Устойчивый уровень энергии'),
+        milestone('cof-streak', 'Стрик фокуса', 'active', at(4, 7), 'trophy', 'Серия продуктивных дней'),
+        milestone('cof-invest', 'Инвестиции', 'pending', at(4, 10), 'trending-up', 'Первый портфель'),
+
+        milestone('cof-analytics', 'Аналитика', 'active', at(5, 2), 'trending-up', 'Метрики, чтобы видеть сдвиг'),
+        milestone('cof-beta', 'Бета-круг', 'pending', at(5, 4), 'rocket', 'Закрытый круг пользователей'),
+        milestone('cof-rhythm', 'Устойчивый ритм', 'pending', at(5, 7), 'calendar-days', 'Всё сходится в одну неделю'),
+        milestone('cof-release', 'Релиз 1.0', 'pending', at(5, 5), 'flag', 'Публичный запуск продукта'),
       ],
       order: 0,
-      position: { x: 40, y: 360 },
-    },
-    {
-      id: 'BODY',
-      displayName: 'Тело',
-      icon: 'heart',
-      description: 'Энергия, сон, движение и восстановление',
-      markerColor: '#4caf7f',
-      taskIds: [],
-      milestones: [
-        milestone('body-m1', 'Базовый чекап', 'completed', { x: 300, y: 1680 }, 'heart', 'Стартовые метрики'),
-        milestone('body-m2', 'Сон', 'completed', { x: 620, y: 1400 }, 'home', 'Режим и качество'),
-        milestone('body-m3', 'Сила', 'active', { x: 620, y: 1600 }, 'dumbbell', 'Силовые тренировки'),
-        milestone('body-m4', 'Кардио', 'completed', { x: 620, y: 1800 }, 'trending-up', 'Зона 2 / интервалы'),
-        milestone('body-m5', 'Питание', 'active', { x: 620, y: 2000 }, 'award', 'Белок и режим еды'),
-        milestone('body-m6', 'Сон-скоринг', 'completed', { x: 940, y: 1320 }, 'calendar-days', 'Трекинг качества сна'),
-        milestone('body-m7', 'Ритуал отхода', 'active', { x: 940, y: 1480 }, 'home', 'Экран / свет / время'),
-        milestone('body-m8', 'Верх тела', 'active', { x: 940, y: 1600 }, 'dumbbell', 'Жим / тяга'),
-        milestone('body-m9', 'Низ тела', 'pending', { x: 940, y: 1720 }, 'dumbbell', 'Присед / выпады'),
-        milestone('body-m10', 'Зона 2', 'completed', { x: 940, y: 1800 }, 'plane', 'Длинные сессии'),
-        milestone('body-m11', 'Интервалы', 'pending', { x: 940, y: 1920 }, 'trending-up', 'Короткие серии'),
-        milestone('body-m12', 'Гидратация', 'active', { x: 940, y: 2000 }, 'compass', '2л воды в день'),
-        milestone('body-m13', 'Список покупок', 'pending', { x: 940, y: 2120 }, 'folder-kanban', 'Базовые продукты'),
-        milestone('body-m14', 'Восстановление', 'pending', { x: 1260, y: 1600 }, 'heart', 'Мобилити и отдых'),
-        milestone('body-m15', 'Пиковая форма', 'pending', { x: 1260, y: 2000 }, 'trophy', 'Устойчивый уровень энергии'),
-      ],
-      order: 1,
-      position: { x: 40, y: 1680 },
-    },
-    {
-      id: 'MIND',
-      displayName: 'Разум',
-      icon: 'brain',
-      description: 'Фокус, обучение и система знаний',
-      markerColor: '#f59e0b',
-      taskIds: [],
-      milestones: [
-        milestone('mind-m1', 'Утренний обзор', 'completed', { x: 300, y: 2620 }, 'lightbulb', 'План дня на 10 мин'),
-        milestone('mind-m2', 'Глубокая работа', 'completed', { x: 620, y: 2420 }, 'target', 'Блоки без отвлечений'),
-        milestone('mind-m3', 'Обучение', 'active', { x: 620, y: 2620 }, 'graduation-cap', 'Курс / навык'),
-        milestone('mind-m4', 'Рефлексия', 'completed', { x: 620, y: 2820 }, 'brain', 'Вечерний обзор'),
-        milestone('mind-m5', 'Стрик фокуса', 'active', { x: 940, y: 2300 }, 'trophy', 'Серия продуктивных дней'),
-        milestone('mind-m6', 'Контроль отвлечений', 'completed', { x: 940, y: 2460 }, 'flag', 'Без соцсетей до обеда'),
-        milestone('mind-m7', 'Трекинг сессий', 'completed', { x: 940, y: 2620 }, 'calendar-days', 'Помодоро / таймер'),
-        milestone('mind-m8', 'Чтение', 'active', { x: 940, y: 2780 }, 'book-open', 'Регулярный ритм книг'),
-        milestone('mind-m9', 'Заметки', 'pending', { x: 940, y: 2940 }, 'folder-kanban', 'Второй мозг'),
-        milestone('mind-m10', 'Практика', 'pending', { x: 940, y: 3100 }, 'code', 'Применение навыка'),
-        milestone('mind-m11', 'Недельный обзор', 'pending', { x: 1260, y: 2300 }, 'calendar-days', 'Итоги фокуса'),
-        milestone('mind-m12', 'Система знаний', 'pending', { x: 1260, y: 2940 }, 'brain', 'Связанные заметки'),
-      ],
-      order: 2,
-      position: { x: 40, y: 2620 },
-    },
-    {
-      id: 'FIN',
-      displayName: 'Финансы',
-      icon: 'wallet-cards',
-      description: 'Учёт, подушка и рост капитала',
-      markerColor: '#ffd700',
-      taskIds: [],
-      milestones: [
-        milestone('fin-m1', 'Учёт расходов', 'completed', { x: 300, y: 3480 }, 'wallet-cards', 'Все траты в одном месте'),
-        milestone('fin-m2', 'Бюджет месяца', 'completed', { x: 620, y: 3280 }, 'folder-kanban', 'Лимиты по категориям'),
-        milestone('fin-m3', 'Аудит подписок', 'completed', { x: 620, y: 3480 }, 'award', 'Отсечь лишнее'),
-        milestone('fin-m4', 'План долгов', 'active', { x: 620, y: 3680 }, 'briefcase', 'График выплат'),
-        milestone('fin-m5', 'Подушка 1 мес', 'active', { x: 940, y: 3180 }, 'home', 'Резерв на месяц'),
-        milestone('fin-m6', 'Автонакопления', 'pending', { x: 940, y: 3340 }, 'calendar-days', 'Перевод в день зарплаты'),
-        milestone('fin-m7', 'Категории трат', 'completed', { x: 940, y: 3500 }, 'folder-kanban', 'Еда / дом / сервис'),
-        milestone('fin-m8', 'Отмена лишнего', 'active', { x: 940, y: 3660 }, 'flag', 'Подписки под нож'),
-        milestone('fin-m9', 'Первый платёж', 'pending', { x: 940, y: 3820 }, 'trending-up', 'Старт графика'),
-        milestone('fin-m10', 'Старт инвестиций', 'pending', { x: 1260, y: 3180 }, 'trending-up', 'Первый портфель'),
-        milestone('fin-m11', 'Квартальный обзор', 'pending', { x: 1260, y: 3500 }, 'flag', 'Ревью целей и рисков'),
-      ],
-      order: 3,
-      position: { x: 40, y: 3480 },
+      position: { x: 40, y: 48 + 6 * ROW },
     },
   ]
 }
 
 function buildDemoEdges(): Edge[] {
   const links: Array<[string, string]> = [
+    ['COF', 'cof-vision'],
+    ['cof-vision', 'cof-product'],
+    ['cof-vision', 'cof-body'],
+    ['cof-vision', 'cof-mind'],
+    ['cof-vision', 'cof-money'],
 
-    ['COF', 'cof-m1'],
-    ['cof-m1', 'cof-m2'],
-    ['cof-m1', 'cof-m3'],
-    ['cof-m1', 'cof-m4'],
-    ['cof-m1', 'cof-m5'],
-    ['cof-m2', 'cof-m6'],
-    ['cof-m2', 'cof-m7'],
-    ['cof-m2', 'cof-m8'],
-    ['cof-m3', 'cof-m9'],
-    ['cof-m3', 'cof-m10'],
-    ['cof-m4', 'cof-m11'],
-    ['cof-m4', 'cof-m12'],
-    ['cof-m4', 'cof-m13'],
-    ['cof-m5', 'cof-m14'],
-    ['cof-m5', 'cof-m15'],
-    ['cof-m6', 'cof-m16'],
-    ['cof-m7', 'cof-m17'],
-    ['cof-m11', 'cof-m18'],
-    ['cof-m12', 'cof-m19'],
-    ['cof-m18', 'cof-m20'],
+    ['cof-product', 'cof-research'],
+    ['cof-product', 'cof-brand'],
+    ['cof-product', 'cof-plan'],
+    ['cof-research', 'cof-ds'],
+    ['cof-ds', 'cof-fe'],
+    ['cof-brand', 'cof-ux'],
+    ['cof-ux', 'cof-be'],
+    ['cof-plan', 'cof-arch'],
+    ['cof-fe', 'cof-analytics'],
+    ['cof-analytics', 'cof-beta'],
+    ['cof-beta', 'cof-release'],
 
-    ['BODY', 'body-m1'],
-    ['body-m1', 'body-m2'],
-    ['body-m1', 'body-m3'],
-    ['body-m1', 'body-m4'],
-    ['body-m1', 'body-m5'],
-    ['body-m2', 'body-m6'],
-    ['body-m2', 'body-m7'],
-    ['body-m3', 'body-m8'],
-    ['body-m3', 'body-m9'],
-    ['body-m4', 'body-m10'],
-    ['body-m4', 'body-m11'],
-    ['body-m5', 'body-m12'],
-    ['body-m5', 'body-m13'],
-    ['body-m8', 'body-m14'],
-    ['body-m12', 'body-m15'],
+    ['cof-body', 'cof-checkup'],
+    ['cof-body', 'cof-sleep'],
+    ['cof-body', 'cof-strength'],
+    ['cof-checkup', 'cof-cardio'],
+    ['cof-sleep', 'cof-recover'],
+    ['cof-strength', 'cof-food'],
+    ['cof-food', 'cof-shape'],
 
-    ['MIND', 'mind-m1'],
-    ['mind-m1', 'mind-m2'],
-    ['mind-m1', 'mind-m3'],
-    ['mind-m1', 'mind-m4'],
-    ['mind-m2', 'mind-m5'],
-    ['mind-m2', 'mind-m6'],
-    ['mind-m2', 'mind-m7'],
-    ['mind-m3', 'mind-m8'],
-    ['mind-m3', 'mind-m9'],
-    ['mind-m3', 'mind-m10'],
-    ['mind-m5', 'mind-m11'],
-    ['mind-m9', 'mind-m12'],
+    ['cof-mind', 'cof-review'],
+    ['cof-mind', 'cof-focus'],
+    ['cof-mind', 'cof-learn'],
+    ['cof-focus', 'cof-deep'],
+    ['cof-deep', 'cof-streak'],
+    ['cof-streak', 'cof-rhythm'],
+    ['cof-learn', 'cof-read'],
+    ['cof-read', 'cof-notes'],
 
-    ['FIN', 'fin-m1'],
-    ['fin-m1', 'fin-m2'],
-    ['fin-m1', 'fin-m3'],
-    ['fin-m1', 'fin-m4'],
-    ['fin-m2', 'fin-m5'],
-    ['fin-m2', 'fin-m6'],
-    ['fin-m2', 'fin-m7'],
-    ['fin-m3', 'fin-m8'],
-    ['fin-m4', 'fin-m9'],
-    ['fin-m5', 'fin-m10'],
-    ['fin-m7', 'fin-m11'],
+    ['cof-money', 'cof-ledger'],
+    ['cof-money', 'cof-budget'],
+    ['cof-money', 'cof-debt'],
+    ['cof-ledger', 'cof-cushion'],
+    ['cof-budget', 'cof-save'],
+    ['cof-cushion', 'cof-invest'],
   ]
 
   return links.map(([source, target], index) => ({
@@ -298,15 +230,25 @@ function ensureDemoBoardEdges() {
   )
   if (!hasDemoBranches) return
 
-  const connectedRoots = new Set(
-    branchesStore.edges
-      .filter((edge) => DEMO_BRANCH_IDS.includes(edge.source as (typeof DEMO_BRANCH_IDS)[number]))
-      .map((edge) => edge.source)
+  const expected = buildDemoEdges()
+  const demoNodeIds = new Set(
+    branchesStore.branches.flatMap((branch) =>
+      DEMO_BRANCH_IDS.includes(branch.id as (typeof DEMO_BRANCH_IDS)[number])
+        ? [branch.id, ...(branch.milestones || []).map((item) => item.id)]
+        : []
+    )
   )
-  const missing = DEMO_BRANCH_IDS.some((id) => !connectedRoots.has(id))
-  if (!missing) return
+  const current = branchesStore.edges.filter(
+    (edge) => demoNodeIds.has(edge.source) && demoNodeIds.has(edge.target)
+  )
+  const matches =
+    current.length === expected.length &&
+    expected.every((edge) =>
+      current.some((item) => item.source === edge.source && item.target === edge.target)
+    )
+  if (matches) return
 
-  branchesStore.replaceEdges(buildDemoEdges())
+  branchesStore.replaceEdges(expected)
 }
 
 
@@ -580,7 +522,7 @@ function buildDemoTasks(tagIds: {
     ['Закупка продуктов по списку', [tagIds.health, tagIds.money]],
     ['Код-ревью PR аналитики', [tagIds.work]],
     ['Медитация + дневник', [tagIds.focus]],
-    ['Прототип ветки Финансы', [tagIds.work]],
+    ['Собрать финансовый контур на доске', [tagIds.work]],
     ['Лёгкий бег 5 км', [tagIds.health]],
     ['Обновить демо-сид', [tagIds.work]],
     ['Планирование месяца', [tagIds.focus, tagIds.work]],
@@ -741,10 +683,10 @@ function applyDemoSeed() {
   tagsStore.$patch({ tags: [] })
 
   const focus = tagsStore.addTag({ name: 'Фокус', color: 'var(--accent)', order: 0, branchId: '' })
-  const health = tagsStore.addTag({ name: 'Здоровье', color: 'var(--success)', order: 1, branchId: 'BODY' })
+  const health = tagsStore.addTag({ name: 'Здоровье', color: 'var(--success)', order: 1, branchId: 'COF' })
   const work = tagsStore.addTag({ name: 'Работа', color: 'var(--warning)', order: 2, branchId: 'COF' })
-  const learn = tagsStore.addTag({ name: 'Учёба', color: 'var(--gold)', order: 3, branchId: 'MIND' })
-  const money = tagsStore.addTag({ name: 'Деньги', color: 'var(--bronze)', order: 4, branchId: 'FIN' })
+  const learn = tagsStore.addTag({ name: 'Учёба', color: 'var(--gold)', order: 3, branchId: 'COF' })
+  const money = tagsStore.addTag({ name: 'Деньги', color: 'var(--bronze)', order: 4, branchId: 'COF' })
 
   const tagIds = {
     focus: focus.id,
@@ -783,7 +725,7 @@ function applyDemoSeed() {
     completedTasksCount: Math.max(completedCount, 160),
     profile: {
       name: 'Алекс',
-      bio: 'Месяц в ритме Core of Life — продукт, тело, фокус и финансы',
+      bio: 'Одна ветка жизни: четыре потока от видения к релизу',
       email: 'demo@coreoflife.app',
       avatar: '',
     },

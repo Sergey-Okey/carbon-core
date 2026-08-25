@@ -215,8 +215,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: var(--space-2);
   inline-size: 100%;
-  min-block-size: var(--control-height-md);
-  padding-inline: var(--space-3) calc(var(--space-8) + var(--space-1));
+  padding-inline: var(--space-5) calc(var(--space-8) + var(--space-1));
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--radius-md);
@@ -224,8 +223,8 @@ onBeforeUnmount(() => {
   box-shadow: var(--shadow-xs);
   color: var(--color-text-primary);
   font: inherit;
-  font-size: var(--text-sm);
-  line-height: var(--leading-none);
+  @include form-control;
+  padding-inline: var(--space-5) calc(var(--space-8) + var(--space-1));
   text-align: start;
   cursor: pointer;
   transition:
@@ -234,7 +233,9 @@ onBeforeUnmount(() => {
     box-shadow var(--transition-standard);
 
   .size-sm & {
+    min-height: var(--control-height-sm);
     min-block-size: var(--control-height-sm);
+    padding-block: var(--space-2);
     padding-inline: var(--space-2) var(--space-8);
     font-size: var(--text-xs);
   }

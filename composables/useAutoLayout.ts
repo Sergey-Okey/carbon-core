@@ -114,18 +114,143 @@ function collectBranchNetworks(nodes: Node[], edges: Edge[]): Network[] {
   return networks.sort((a, b) => a.branchId.localeCompare(b.branchId))
 }
 
+function uniqueSorted(ids: string[]) {
+  return [...new Set(ids)].sort()
+}
+
 function buildAdjacency(network: Network) {
   const outgoing = new Map<string, string[]>()
+  const incoming = new Map<string, string[]>()
 
   network.edges.forEach((edge) => {
     const outs = outgoing.get(edge.source) || []
     outs.push(edge.target)
     outgoing.set(edge.source, outs)
+
+    const ins = incoming.get(edge.target) || []
+    ins.push(edge.source)
+    incoming.set(edge.target, ins)
   })
 
-  outgoing.forEach((list, key) => outgoing.set(key, [...new Set(list)].sort()))
+  outgoing.forEach((list, key) => outgoing.set(key, uniqueSorted(list)))
+  incoming.forEach((list, key) => incoming.set(key, uniqueSorted(list)))
 
-  return { outgoing }
+  return { outgoing, incoming }
+}
+
+function compareByBoardOrder(a: string, b: string, byId: Map<string, Node>) {
+  const na = byId.get(a)
+  const nb = byId.get(b)
+  const dy = (na?.position.y ?? 0) - (nb?.position.y ?? 0)
+  if (dy) return dy
+  const dx = (na?.position.x ?? 0) - (nb?.position.x ?? 0)
+  if (dx) return dx
+  return a.localeCompare(b)
+}
+
+/** Shortest-path layers from the branch root. Used to pick one layout parent per node. */
+function computeBfsRanks(rootId: string, outgoing: Map<string, string[]>) {
+  const ranks = new Map<string, number>()
+  ranks.set(rootId, 0)
+  const queue = [rootId]
+
+  while (queue.length > 0) {
+    const id = queue.shift()!
+    const rank = ranks.get(id) || 0
+    for (const next of outgoing.get(id) || []) {
+      if (ranks.has(next)) continue
+      ranks.set(next, rank + 1)
+      queue.push(next)
+    }
+  }
+
+  return ranks
+}
+
+/** Longest-path layers so sinks sit on the far side of the flow. */
+function computeLongestPathRanks(
+  rootId: string,
+  nodeIds: string[],
+  outgoing: Map<string, string[]>,
+  incoming: Map<string, string[]>
+) {
+  const reachable = new Set(computeBfsRanks(rootId, outgoing).keys())
+  const indeg = new Map<string, number>()
+  reachable.forEach((id) => indeg.set(id, 0))
+  reachable.forEach((id) => {
+    for (const src of incoming.get(id) || []) {
+      if (reachable.has(src)) indeg.set(id, (indeg.get(id) || 0) + 1)
+    }
+  })
+  indeg.set(rootId, 0)
+
+  const remaining = new Map(indeg)
+  const queue = [...reachable].filter((id) => (remaining.get(id) || 0) === 0)
+  queue.sort((a, b) => (a === rootId ? -1 : b === rootId ? 1 : a.localeCompare(b)))
+
+  const topo: string[] = []
+  while (queue.length > 0) {
+    const id = queue.shift()!
+    topo.push(id)
+    for (const next of outgoing.get(id) || []) {
+      if (!reachable.has(next)) continue
+      const nextDeg = (remaining.get(next) || 0) - 1
+      remaining.set(next, nextDeg)
+      if (nextDeg === 0) queue.push(next)
+    }
+  }
+
+  const ranks = new Map<string, number>()
+  ranks.set(rootId, 0)
+  for (const id of topo) {
+    const current = ranks.get(id) || 0
+    for (const next of outgoing.get(id) || []) {
+      if (!reachable.has(next)) continue
+      ranks.set(next, Math.max(ranks.get(next) || 0, current + 1))
+    }
+  }
+
+  nodeIds.forEach((id) => {
+    if (ranks.has(id)) return
+    let best = 0
+    for (const src of incoming.get(id) || []) {
+      if (ranks.has(src)) best = Math.max(best, (ranks.get(src) || 0) + 1)
+    }
+    ranks.set(id, best)
+  })
+
+  return ranks
+}
+
+/**
+ * BFS spanning tree: first visit wins, siblings keep the current board order.
+ * Extra DAG edges stay drawn but do not steal or double-count subtrees.
+ */
+function buildSpanningTree(
+  rootId: string,
+  nodeIds: string[],
+  outgoing: Map<string, string[]>,
+  byId: Map<string, Node>
+) {
+  const children = new Map<string, string[]>()
+  nodeIds.forEach((id) => children.set(id, []))
+
+  const visited = new Set<string>([rootId])
+  const queue = [rootId]
+
+  while (queue.length > 0) {
+    const id = queue.shift()!
+    const kids = (outgoing.get(id) || [])
+      .filter((target) => !visited.has(target))
+      .sort((a, b) => compareByBoardOrder(a, b, byId))
+    children.set(id, kids)
+    kids.forEach((kid) => {
+      visited.add(kid)
+      queue.push(kid)
+    })
+  }
+
+  return children
 }
 
 type LayoutBox = { id: string; x: number; y: number; w: number; h: number }
@@ -144,7 +269,8 @@ function resolveNodeOverlaps(
   nodeIds: string[],
   byId: Map<string, Node>,
   gap: number,
-  snapGrid: number
+  snapGrid: number,
+  crossAxis: 'x' | 'y' = 'y'
 ) {
   const boxes: LayoutBox[] = nodeIds
     .map((id) => {
@@ -161,7 +287,11 @@ function resolveNodeOverlaps(
     })
     .filter((box): box is LayoutBox => !!box)
 
-  boxes.sort((a, b) => a.y - b.y || a.x - b.x || a.id.localeCompare(b.id))
+  boxes.sort((a, b) =>
+    crossAxis === 'y'
+      ? a.y - b.y || a.x - b.x || a.id.localeCompare(b.id)
+      : a.x - b.x || a.y - b.y || a.id.localeCompare(b.id)
+  )
 
   for (let pass = 0; pass < 24; pass++) {
     let moved = false
@@ -171,18 +301,10 @@ function resolveNodeOverlaps(
         const b = boxes[j]
         if (!boxesOverlap(a, b, gap)) continue
 
-        const acx = a.x + a.w / 2
-        const bcx = b.x + b.w / 2
-        const sameColumn = Math.abs(acx - bcx) <= Math.max(a.w, b.w) * 0.4
-        const pushDown = a.y + a.h + gap - b.y
-        const pushRight = a.x + a.w + gap - b.x
-
-        if (sameColumn) {
+        if (crossAxis === 'y') {
           b.y = a.y + a.h + gap
-        } else if (pushDown <= pushRight) {
-          b.y += Math.max(0, pushDown)
         } else {
-          b.x += Math.max(0, pushRight)
+          b.x = a.x + a.w + gap
         }
         moved = true
       }
@@ -205,8 +327,9 @@ function flowFromDirection(direction: LayoutDirection): HandleSide {
 }
 
 /**
- * HubSpot-style tidy tree: forced primary axis, subtree-height spacing,
- * parent vertically centered on its children stack.
+ * HubSpot-style tidy tree on a spanning tree of the DAG:
+ * forced primary axis, subtree-height spacing, parent centered on children.
+ * Shared descendants are counted once; columns follow BFS rank.
  */
 function layoutSingleNetwork(
   network: Network,
@@ -217,6 +340,7 @@ function layoutSingleNetwork(
   const { edgeGap, nodeSep, snapGrid } = options
   const flow = flowFromDirection(direction)
   const horizontal = flow === 'left' || flow === 'right'
+  const crossAxis: 'x' | 'y' = horizontal ? 'y' : 'x'
 
   const branchNode =
     byId.get(network.branchId) ||
@@ -224,33 +348,42 @@ function layoutSingleNetwork(
 
   if (!branchNode) return flow
 
-  const { outgoing } = buildAdjacency(network)
+  const { outgoing, incoming } = buildAdjacency(network)
+  const ranks = computeLongestPathRanks(branchNode.id, network.nodeIds, outgoing, incoming)
+  const tree = buildSpanningTree(branchNode.id, network.nodeIds, outgoing, byId)
   const placed = new Set<string>()
   const spanCache = new Map<string, number>()
 
-  const treeChildren = (parentId: string, blocked: Set<string>) =>
-    (outgoing.get(parentId) || []).filter((id) => !blocked.has(id) && !placed.has(id))
+  const kidsOf = (parentId: string) => tree.get(parentId) || []
 
-  const nodeMainSize = (node: Node) => {
+  const nodeCrossSize = (node: Node) => {
     const size = getNodeSize(node)
     return horizontal ? size.height : size.width
   }
 
-  const subtreeSpan = (id: string, ancestors: Set<string>): number => {
+  const nodeFlowSize = (node: Node) => {
+    const size = getNodeSize(node)
+    return horizontal ? size.width : size.height
+  }
+
+  const columnPitch =
+    network.nodeIds.reduce((max, id) => {
+      const node = byId.get(id)
+      return node ? Math.max(max, nodeFlowSize(node)) : max
+    }, 0) + edgeGap
+
+  const subtreeSpan = (id: string): number => {
     const cached = spanCache.get(id)
     if (cached !== undefined) return cached
 
     const node = byId.get(id)
     if (!node) return 0
 
-    const self = nodeMainSize(node)
-    const next = new Set(ancestors)
-    next.add(id)
-    const kids = (outgoing.get(id) || []).filter((kid) => !next.has(kid))
-
+    const kids = kidsOf(id)
+    const self = nodeCrossSize(node)
     let span = self
     if (kids.length > 0) {
-      const childSpans = kids.map((kid) => subtreeSpan(kid, next))
+      const childSpans = kids.map((kid) => subtreeSpan(kid))
       const stacked =
         childSpans.reduce((sum, value) => sum + value, 0) + nodeSep * (kids.length - 1)
       span = Math.max(self, stacked)
@@ -260,16 +393,13 @@ function layoutSingleNetwork(
     return span
   }
 
-  const placeTree = (
-    id: string,
-    mainOrigin: number,
-    crossCenter: number,
-    ancestors: Set<string>
-  ) => {
+  const placeTree = (id: string, crossCenter: number) => {
     const node = byId.get(id)
     if (!node || placed.has(id)) return
 
     const size = getNodeSize(node)
+    const rank = ranks.get(id) ?? 0
+    const mainOrigin = rank * columnPitch
     if (horizontal) {
       node.position = {
         x: snap(mainOrigin, snapGrid),
@@ -283,43 +413,38 @@ function layoutSingleNetwork(
     }
     placed.add(id)
 
-    const next = new Set(ancestors)
-    next.add(id)
-    const kids = treeChildren(id, next)
+    const kids = kidsOf(id).filter((kid) => !placed.has(kid))
     if (kids.length === 0) return
 
-    const childSpans = kids.map((kid) => {
-      spanCache.delete(kid)
-      return subtreeSpan(kid, next)
-    })
+    const childSpans = kids.map((kid) => subtreeSpan(kid))
     const total =
       childSpans.reduce((sum, value) => sum + value, 0) + nodeSep * (kids.length - 1)
     let cursor = crossCenter - total / 2
-    const childMain = mainOrigin + (horizontal ? size.width : size.height) + edgeGap
 
     kids.forEach((kid, index) => {
       const span = childSpans[index]
-      placeTree(kid, childMain, cursor + span / 2, next)
+      placeTree(kid, cursor + span / 2)
       cursor += span + nodeSep
     })
   }
 
   spanCache.clear()
-  const rootSpan = subtreeSpan(branchNode.id, new Set())
-  placeTree(branchNode.id, 0, rootSpan / 2, new Set())
+  const rootSpan = subtreeSpan(branchNode.id)
+  placeTree(branchNode.id, rootSpan / 2)
 
   const orphans = network.nodeIds.filter((id) => !placed.has(id))
   if (orphans.length > 0) {
     const bounds = getComponentBounds([...placed], byId)
-    const baseMain = Number.isFinite(bounds.maxX)
-      ? (horizontal ? bounds.maxX : bounds.maxY) + edgeGap
-      : edgeGap
+    const maxRank = Math.max(0, ...[...ranks.values()])
+    orphans.forEach((id) => {
+      if (!ranks.has(id)) ranks.set(id, maxRank + 1)
+    })
 
     orphans.forEach((id) => {
       spanCache.delete(id)
     })
 
-    const orphanSpans = orphans.map((id) => subtreeSpan(id, new Set(placed)))
+    const orphanSpans = orphans.map((id) => subtreeSpan(id))
     const total =
       orphanSpans.reduce((sum, value) => sum + value, 0) +
       nodeSep * Math.max(orphans.length - 1, 0)
@@ -328,12 +453,12 @@ function layoutSingleNetwork(
 
     orphans.forEach((id, index) => {
       const span = orphanSpans[index]
-      placeTree(id, baseMain, cursor + span / 2, new Set(placed))
+      placeTree(id, cursor + span / 2)
       cursor += span + nodeSep
     })
   }
 
-  resolveNodeOverlaps(network.nodeIds, byId, nodeSep, snapGrid)
+  resolveNodeOverlaps(network.nodeIds, byId, nodeSep, snapGrid, crossAxis)
 
   const bounds = getComponentBounds(network.nodeIds, byId)
   if (Number.isFinite(bounds.minX)) {
@@ -410,7 +535,8 @@ export function useAutoLayout() {
       layoutedNodes.map((node) => node.id),
       byId,
       nodeSep,
-      snapGrid
+      snapGrid,
+      direction === 'TB' ? 'x' : 'y'
     )
 
     const { sourceSide, targetSide } = forcedFlowPorts(flow)

@@ -223,7 +223,7 @@ const rendered = computed(() => {
   bottom: 8px;
   display: flex;
   align-items: baseline;
-  gap: 2px;
+  gap: var(--space-1);
   transform: translateX(-50%);
 
   strong {
@@ -301,7 +301,7 @@ const rendered = computed(() => {
   span {
     flex: 0 0 auto;
     color: var(--color-text-muted);
-    font-size: 0.68rem;
+    font-size: var(--text-2xs);
   }
 }
 
@@ -334,7 +334,7 @@ const rendered = computed(() => {
 
 @media (max-width: 420px) {
   .nested-arcs__legend li {
-    padding: 2px var(--space-1);
+    padding: var(--space-1) var(--space-1);
   }
 }
 </style>

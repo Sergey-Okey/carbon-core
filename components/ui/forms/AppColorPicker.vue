@@ -130,8 +130,8 @@ function isLightColor(color: string) {
   }
 
   .swatch {
-    width: 40px;
-    height: 40px;
+    width: var(--space-10);
+    height: var(--space-10);
     border-radius: 14px;
   }
 }

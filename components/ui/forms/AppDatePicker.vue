@@ -229,8 +229,6 @@ onUnmounted(() => {
   justify-content: space-between;
   gap: var(--space-2);
   inline-size: 100%;
-  min-height: var(--control-height-md);
-  padding-inline: var(--space-4);
   border: var(--ui-border);
   border-radius: var(--radius-md);
   background: var(--color-surface-1);
@@ -238,7 +236,7 @@ onUnmounted(() => {
   color: var(--color-text-primary);
   cursor: pointer;
   font: inherit;
-  font-size: var(--text-sm);
+  @include form-control;
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard),
@@ -409,7 +407,7 @@ onUnmounted(() => {
   }
 
   .days-grid {
-    gap: 5px;
+    gap: var(--space-1);
   }
 
   .day-btn {

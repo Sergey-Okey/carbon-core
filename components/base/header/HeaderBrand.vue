@@ -25,8 +25,8 @@
   background: transparent;
 
   @include mobile {
-    width: 30px;
-    height: 30px;
+    width: var(--space-8);
+    height: var(--space-8);
     border-radius: var(--radius-full);
   }
 }

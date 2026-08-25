@@ -322,7 +322,7 @@ function handleSave(taskData: TaskFormData) {
     justify-content: space-between;
     align-items: flex-start;
     gap: var(--space-3);
-    min-height: 44px;
+    min-height: var(--space-11);
     margin-bottom: var(--space-4);
   }
 
@@ -337,19 +337,13 @@ function handleSave(taskData: TaskFormData) {
   }
 
   h3 {
-    margin: 0;
-    font-weight: var(--weight-semibold);
-    font-size: var(--text-lg);
-    color: var(--color-text-primary);
-    letter-spacing: -0.01em;
+    @include heading-3;
   }
 
   .list-hint {
+    @include meta-text;
     display: block;
     margin-top: var(--space-1);
-    color: var(--color-text-muted);
-    font-size: var(--text-xs);
-    line-height: var(--leading-tight);
   }
 
   .info-badge {
@@ -357,8 +351,8 @@ function handleSave(taskData: TaskFormData) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
+    width: var(--space-6);
+    height: var(--space-6);
     border-radius: var(--radius-full);
     color: var(--color-text-muted);
     cursor: help;
@@ -373,9 +367,9 @@ function handleSave(taskData: TaskFormData) {
   }
 
   .add-btn {
-    width: 34px;
-    height: 34px;
-    min-height: 34px;
+    width: var(--space-8);
+    height: var(--space-8);
+    min-height: var(--space-8);
     border-radius: var(--radius-full);
     display: flex;
     align-items: center;
@@ -408,9 +402,9 @@ function handleSave(taskData: TaskFormData) {
 
   @media (pointer: coarse), (max-width: 767px) {
     .add-btn {
-      width: 44px;
-      height: 44px;
-      min-height: 44px;
+      width: var(--touch-target);
+      height: var(--touch-target);
+      min-height: var(--space-11);
     }
   }
 
@@ -457,7 +451,7 @@ function handleSave(taskData: TaskFormData) {
       @include nest-shell(var(--radius-lg), var(--space-2));
       align-items: center;
       gap: var(--space-2);
-      min-height: 52px;
+      min-height: var(--space-12);
       margin-bottom: var(--space-4);
       border: 1px solid transparent;
       background: transparent;
@@ -499,7 +493,7 @@ function handleSave(taskData: TaskFormData) {
       align-self: center;
       width: 36px;
       height: 36px;
-      min-height: 36px;
+      min-height: var(--space-9);
     }
 
     .tasks {
@@ -527,10 +521,6 @@ function handleSave(taskData: TaskFormData) {
       margin-bottom: var(--space-4);
     }
 
-    h3 {
-      font-size: var(--text-md);
-    }
-
     .tasks {
       gap: var(--space-2);
     }
@@ -545,13 +535,13 @@ function handleSave(taskData: TaskFormData) {
       }
 
       .collapse-toggle {
-        min-height: 44px;
+        min-height: var(--space-11);
       }
 
       .add-btn {
-        width: 44px;
-        height: 44px;
-        min-height: 44px;
+        width: var(--touch-target);
+        height: var(--touch-target);
+        min-height: var(--space-11);
       }
 
       .tasks {
@@ -566,10 +556,6 @@ function handleSave(taskData: TaskFormData) {
     .list-header {
       gap: var(--space-2);
       margin-bottom: var(--space-3);
-    }
-
-    h3 {
-      font-size: var(--text-sm);
     }
 
     &.task-list--habits {
@@ -615,7 +601,7 @@ function handleSave(taskData: TaskFormData) {
     color: var(--color-text-primary);
     font-size: var(--text-xs);
     font-weight: var(--weight-bold);
-    line-height: 1.1;
+    line-height: var(--leading-tight);
   }
 }
 </style>

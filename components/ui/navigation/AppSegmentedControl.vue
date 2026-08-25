@@ -119,7 +119,7 @@ const emit = defineEmits<{
 @media (max-width: 420px) {
   .segment-option {
     padding-inline: var(--space-1);
-    font-size: 0.7rem;
+    font-size: var(--text-xs);
   }
 }
 </style>

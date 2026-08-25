@@ -35,7 +35,7 @@ defineProps<{ eyebrow: string; title: string; lead: string }>()
   inset: 0;
   z-index: 10;
   min-block-size: 100dvh;
-  padding: clamp(16px, 4vw, 48px);
+  padding: clamp(var(--space-4), 4vw, var(--space-12));
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior-y: contain;
@@ -48,79 +48,81 @@ nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-4);
   max-width: 860px;
   margin-inline: auto;
-  padding-block-end: 24px;
+  padding-block-end: var(--space-6);
   border-bottom: var(--ui-border);
-  font-size: 0.84rem;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
 
   div {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
-    gap: 14px;
+    gap: var(--space-3);
     color: var(--dim);
   }
 
   a {
-    min-block-size: 44px;
+    @include inline-link;
+    min-block-size: var(--touch-target);
     display: inline-flex;
     align-items: center;
-    color: var(--dim);
-    text-decoration: none;
+    color: var(--color-text-secondary);
+    font-size: var(--body-size);
+    font-weight: var(--weight-medium);
+    line-height: var(--body-leading);
   }
 
   a.active,
   a:hover {
-    color: var(--text);
+    color: var(--color-text-primary);
   }
 
   .brand {
     color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 1rem;
+    font-size: var(--text-md);
   }
 }
 
 article {
   max-width: 820px;
   margin-inline: auto;
-  padding-block: clamp(48px, 8vw, 92px);
+  padding-block: clamp(var(--space-12), 8vw, var(--space-16));
 
   header {
-    padding-block-end: clamp(30px, 5vw, 52px);
+    padding-block-end: clamp(var(--space-8), 5vw, var(--space-14));
     border-bottom: var(--ui-border);
   }
 
   :deep(h2) {
-    margin-block: 38px 12px;
+    @include heading-2;
+    margin-block: var(--space-8) var(--space-3);
     color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(1.15rem, 3vw, 1.35rem);
   }
 
   :deep(p),
   :deep(li) {
     color: var(--dim);
-    line-height: 1.7;
+    font-size: var(--body-size);
+    line-height: var(--leading-relaxed);
   }
 
   :deep(ul) {
     display: grid;
-    gap: 8px;
-    padding-inline-start: 22px;
+    gap: var(--space-2);
+    padding-inline-start: var(--space-5);
   }
 
   :deep(a) {
-    color: var(--text);
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    @include inline-link;
   }
 
   :deep(.document-note) {
-    padding: 14px 16px;
+    padding: var(--space-3) var(--space-4);
     border: var(--ui-border);
     border-radius: var(--border-radius-sm);
     background: color-mix(in srgb, var(--surface) 72%, transparent);
@@ -130,15 +132,15 @@ article {
   :deep(.document-actions) {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-block-start: 18px;
+    gap: var(--space-2);
+    margin-block-start: var(--space-4);
   }
 
   :deep(.document-actions a) {
-    min-block-size: 44px;
+    min-block-size: var(--touch-target);
     display: inline-flex;
     align-items: center;
-    padding-inline: 16px;
+    padding-inline: var(--space-4);
     border: var(--ui-border);
     border-radius: var(--border-radius-sm);
     background: color-mix(in srgb, var(--surface) 72%, transparent);
@@ -153,49 +155,50 @@ article {
 }
 
 .document-content {
-  padding-block-start: 10px;
+  padding-block-start: var(--space-3);
 }
 
 .eyebrow {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
   color: var(--dim);
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
   text-transform: uppercase;
 }
 
 h1 {
   max-width: 18ch;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(2.2rem, 7vw, 4.4rem);
-  line-height: 1.05;
+  font-size: var(--heading-hero);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--heading-display-tracking);
+  line-height: var(--heading-display-leading);
 }
 
 .lead {
   max-width: 58ch;
-  margin-top: 22px;
-  font-size: 1.05rem;
+  margin-top: var(--space-5);
+  font-size: var(--text-md);
 }
 
 footer {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-4);
   max-width: 860px;
   margin-inline: auto;
-  padding-block: 24px;
+  padding-block: var(--space-6);
   border-top: var(--ui-border);
-  color: var(--dim);
-  font-size: 0.78rem;
+  @include meta-text;
 
   a {
-    color: var(--text);
+    @include inline-link;
   }
 }
 
 @media (max-width: 640px) {
   .public-page {
-    padding-inline: max(14px, env(safe-area-inset-left, 0px)) max(14px, env(safe-area-inset-right, 0px));
+    padding-inline: max(var(--space-3), env(safe-area-inset-left, 0px)) max(var(--space-3), env(safe-area-inset-right, 0px));
   }
 
   nav {
@@ -204,14 +207,14 @@ footer {
     div {
       display: flex;
       justify-content: flex-start;
-      gap: 12px;
+      gap: var(--space-3);
       overflow-x: auto;
       white-space: nowrap;
     }
   }
 
   article {
-    padding-block: 34px 54px;
+    padding-block: var(--space-8) var(--space-14);
   }
 
   footer {

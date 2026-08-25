@@ -75,7 +75,7 @@ withDefaults(
   border-radius: 0;
   background: transparent;
   color: var(--color-text-secondary);
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   letter-spacing: 0.08em;
   text-transform: uppercase;

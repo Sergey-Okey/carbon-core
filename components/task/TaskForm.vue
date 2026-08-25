@@ -373,7 +373,7 @@ function getTodayDateString() {
 .modal-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
   min-width: 0;
   width: 100%;
 }
@@ -398,8 +398,8 @@ function getTodayDateString() {
   min-height: var(--control-height-md);
   margin: 0;
   color: var(--color-text-primary);
-  font-size: var(--text-sm);
-  line-height: var(--leading-tight);
+  font-size: var(--body-size);
+  line-height: var(--body-leading);
 }
 
 .tag-color-row {
@@ -415,16 +415,9 @@ function getTodayDateString() {
   margin-top: var(--space-1);
 }
 
-.available-tags__label {
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  line-height: var(--leading-normal);
-}
-
+.available-tags__label,
 .helper-text {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
+  @include meta-text;
 }
 
 .tags-cloud {
@@ -521,7 +514,7 @@ function getTodayDateString() {
 
     :deep(.app-button) {
       width: 100%;
-      min-height: 44px;
+      min-height: var(--space-11);
     }
   }
 }

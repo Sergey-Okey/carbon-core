@@ -610,6 +610,7 @@ function alignLayoutSmart() {
   syncNodesAndEdges()
   saveToHistory()
   nextTick(() => {
+    void fitBoardView()
     window.setTimeout(() => {
       isAutoLayoutAnimating.value = false
     }, 460)

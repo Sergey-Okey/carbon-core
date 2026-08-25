@@ -215,15 +215,14 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: var(--space-2);
   width: 100%;
-  min-height: var(--control-height-md);
-  padding: 0 var(--space-2);
   border: var(--ui-border);
   border-radius: var(--radius-md);
   background: var(--color-surface-1);
   box-shadow: var(--shadow-xs);
   color: var(--color-text-primary);
   font: inherit;
-  font-size: var(--text-sm);
+  @include form-control;
+  font-variant-numeric: tabular-nums;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
   transition:
@@ -417,7 +416,7 @@ onBeforeUnmount(() => {
   }
 
   .time-preview {
-    min-height: 50px;
+    min-height: var(--space-12);
     margin-bottom: var(--space-2);
     font-size: var(--text-md);
   }
@@ -443,7 +442,7 @@ onBeforeUnmount(() => {
   }
 
   .time-columns {
-    grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) var(--control-glyph) minmax(0, 1fr);
     gap: var(--space-2);
   }
 

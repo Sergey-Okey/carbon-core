@@ -306,14 +306,14 @@ function handleQuickTask(data: TaskFormData) {
 .board-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-5);
 }
 
 .visual-row {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) 1px minmax(180px, 0.65fr);
   align-items: start;
-  column-gap: 18px;
+  column-gap: var(--space-4);
 
   > :last-child {
     grid-column: 3;
@@ -333,12 +333,12 @@ function handleQuickTask(data: TaskFormData) {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .tasks-section {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
   padding: 0;
   border: none;
   background: transparent;
@@ -346,12 +346,12 @@ function handleQuickTask(data: TaskFormData) {
 
 .tasks-list {
   display: grid;
-  gap: 6px;
+  gap: var(--space-1);
   width: 100%;
   min-width: 0;
   max-width: 100%;
   max-height: 190px;
-  padding: 8px;
+  padding: var(--space-2);
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
@@ -367,14 +367,14 @@ function handleQuickTask(data: TaskFormData) {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
   width: 100%;
   min-width: 0;
-  padding: 10px 12px;
+  padding: var(--space-2) var(--space-3);
   box-sizing: border-box;
   border-radius: var(--border-radius-md);
   color: var(--text);
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   cursor: pointer;
 
   &.selected {
@@ -389,9 +389,9 @@ function handleQuickTask(data: TaskFormData) {
 
 .custom-checkbox {
   position: relative;
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
+  width: var(--control-glyph);
+  height: var(--control-glyph);
+  flex: 0 0 var(--control-glyph);
 
   input {
     position: absolute;
@@ -402,8 +402,8 @@ function handleQuickTask(data: TaskFormData) {
 
 .checkmark {
   display: block;
-  width: 18px;
-  height: 18px;
+  width: var(--control-glyph);
+  height: var(--control-glyph);
   border-radius: var(--border-radius-sm);
   background: var(--glass-surface);
   transition: background var(--transition-standard);
@@ -414,9 +414,8 @@ function handleQuickTask(data: TaskFormData) {
 }
 
 .empty-list {
-  padding: 10px;
-  color: var(--dim);
-  font-size: 0.76rem;
+  @include meta-text;
+  padding: var(--space-2);
   text-align: center;
 }
 
@@ -424,10 +423,10 @@ function handleQuickTask(data: TaskFormData) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
   width: 100%;
   min-height: var(--control-height-md);
-  padding: 0 14px;
+  padding: 0 var(--space-3);
   color: var(--text);
   background: transparent;
   border: none;
@@ -470,17 +469,17 @@ function handleQuickTask(data: TaskFormData) {
   align-items: center;
   justify-items: center;
   width: 100%;
-  gap: 6px;
+  gap: var(--space-1);
 }
 
 .icons-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1);
   align-self: flex-start;
-  padding: 5px 9px;
+  padding: var(--space-1) var(--space-2);
   color: var(--dim);
-  font-size: 0.76rem;
+  font-size: var(--text-xs);
   background: transparent;
   border: var(--ui-border);
   border-radius: var(--border-radius-pill);
@@ -505,7 +504,7 @@ function handleQuickTask(data: TaskFormData) {
 
 .task-main {
   display: grid;
-  gap: 3px;
+  gap: var(--space-1);
   min-width: 0;
 }
 
@@ -518,11 +517,11 @@ function handleQuickTask(data: TaskFormData) {
 
 .task-state {
   justify-self: flex-start;
-  padding: 2px 7px;
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--border-radius-pill);
-  font-size: 0.66rem;
+  font-size: var(--text-2xs);
   font-weight: 700;
-  line-height: 1.2;
+  line-height: var(--leading-tight);
 
   &.done {
     background: color-mix(in srgb, var(--success) 13%, transparent);
@@ -571,10 +570,10 @@ function handleQuickTask(data: TaskFormData) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: var(--space-2);
   width: 100%;
-  min-height: 40px;
-  padding: 0 14px;
+  min-height: var(--space-10);
+  padding: 0 var(--space-3);
   border: var(--ui-border);
   border-radius: var(--border-radius-pill);
   background: color-mix(in srgb, var(--accent) 7%, transparent);
@@ -596,7 +595,7 @@ function handleQuickTask(data: TaskFormData) {
 .footer-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: var(--space-2);
   margin-left: auto;
 }
 
@@ -633,13 +632,13 @@ function handleQuickTask(data: TaskFormData) {
 }
 @media (max-width: 640px) {
   .board-form {
-    gap: 12px;
+    gap: var(--space-3);
   }
 
   .visual-row {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1px auto;
-    row-gap: 18px;
+    row-gap: var(--space-4);
 
     > :last-child {
       grid-column: 1;
@@ -655,8 +654,8 @@ function handleQuickTask(data: TaskFormData) {
   }
 
   .icons-grid {
-    grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(var(--space-10), 1fr));
+    gap: var(--space-2);
   }
 
   .icons-toggle,
@@ -669,24 +668,24 @@ function handleQuickTask(data: TaskFormData) {
 
   .tasks-list {
     max-height: min(300px, 46dvh);
-    padding: 7px;
+    padding: var(--space-2);
     border-radius: var(--border-radius-md);
   }
 
   .task-row {
     grid-template-columns: auto auto minmax(0, 1fr);
     align-items: center;
-    gap: 8px;
-    padding: 9px 10px;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-2);
   }
 
   .task-title {
     white-space: normal;
-    line-height: 1.35;
+    line-height: var(--leading-normal);
   }
 
   .task-state {
-    font-size: 0.64rem;
+    font-size: var(--text-2xs);
   }
 
   .footer-actions {
@@ -700,14 +699,14 @@ function handleQuickTask(data: TaskFormData) {
   }
 
   .toggle-btn {
-    min-height: 44px;
+    min-height: var(--space-11);
   }
 
   .icon-option {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    min-height: 40px;
+    width: var(--space-10);
+    height: var(--space-10);
+    min-width: var(--space-10);
+    min-height: var(--space-10);
   }
 }
 </style>

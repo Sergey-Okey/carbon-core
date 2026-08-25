@@ -357,19 +357,15 @@ defineEmits<{
   min-width: 0;
 
   h2 {
-    margin: 0;
+    @include heading-2;
     overflow: hidden;
     color: var(--color-text-primary);
-    font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
-    line-height: var(--leading-tight);
-    letter-spacing: -0.02em;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   p {
-    margin: 2px 0 0;
+    margin: var(--space-1) 0 0;
     overflow: hidden;
     color: var(--color-text-muted);
     font-size: var(--text-xs);
@@ -434,13 +430,13 @@ defineEmits<{
   .widget-shell.span-4 {
     grid-column: span 1;
     height: auto;
-    min-height: 280px;
+    min-height: var(--space-16);
     padding: var(--space-4);
     gap: var(--space-3);
   }
 
   .widget-shell.is-fluid {
-    min-height: 220px;
+    min-height: var(--space-16);
   }
 
   .widget-shell__head {
@@ -457,13 +453,9 @@ defineEmits<{
     height: var(--space-7);
   }
 
-  .widget-shell__copy h2 {
-    font-size: var(--text-sm);
-  }
-
   .widget-shell__drag {
-    width: 28px;
-    height: 28px;
+    width: var(--space-7);
+    height: var(--space-7);
   }
 }
 
@@ -473,7 +465,7 @@ defineEmits<{
   .widget-shell.span-8,
   .widget-shell.span-6,
   .widget-shell.span-4 {
-    min-height: 240px;
+    min-height: var(--space-16);
     padding: var(--space-3);
   }
 

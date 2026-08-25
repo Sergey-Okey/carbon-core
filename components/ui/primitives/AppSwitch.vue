@@ -77,20 +77,20 @@ function toggle() {
 }
 
 .size-md {
-  width: 46px;
-  min-width: 46px;
+  width: var(--space-12);
+  min-width: var(--space-12);
 }
 
 .size-sm {
-  width: 40px;
-  min-width: 40px;
+  width: var(--space-10);
+  min-width: var(--space-10);
 }
 
 .switch-track {
   position: relative;
   display: block;
-  width: 46px;
-  height: 26px;
+  width: var(--space-12);
+  height: var(--space-6);
   border: var(--ui-border);
   border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--color-surface-1) 82%, var(--color-text-primary) 18%);
@@ -99,8 +99,8 @@ function toggle() {
     border-color var(--transition-standard);
 
   .size-sm & {
-    width: 40px;
-    height: 22px;
+    width: var(--space-10);
+    height: var(--space-6);
   }
 
   .checked & {
@@ -111,10 +111,10 @@ function toggle() {
 
 .switch-thumb {
   position: absolute;
-  left: 3px;
+  left: var(--space-1);
   top: 50%;
-  width: 20px;
-  height: 20px;
+  width: var(--space-5);
+  height: var(--space-5);
   border: var(--ui-border);
   border-radius: var(--radius-full);
   background: var(--color-bg);
@@ -126,17 +126,17 @@ function toggle() {
   will-change: transform;
 
   .size-sm & {
-    width: 16px;
-    height: 16px;
+    width: var(--space-4);
+    height: var(--space-4);
   }
 
   .checked & {
-    transform: translate(20px, -50%);
+    transform: translate(calc(var(--space-12) - var(--space-5) - var(--space-1) * 2), -50%);
     border-color: color-mix(in srgb, var(--color-bg) 84%, var(--color-text-primary) 16%);
   }
 
   .size-sm.checked & {
-    transform: translate(18px, -50%);
+    transform: translate(calc(var(--space-10) - var(--space-4) - var(--space-1) * 2), -50%);
   }
 }
 </style>

@@ -454,7 +454,7 @@ h4 {
   color: var(--color-text-muted);
   font-size: var(--text-xs);
   background: color-mix(in srgb, var(--color-accent) 6%, transparent);
-  padding: 2px var(--space-2);
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-full);
   white-space: nowrap;
 }
@@ -462,7 +462,7 @@ h4 {
 .branch-link {
   display: inline-block;
   max-width: 104px;
-  padding: 2px var(--space-2);
+  padding: var(--space-1) var(--space-2);
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--radius-full);
@@ -543,7 +543,7 @@ h4 {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: 2px var(--space-2);
+  padding: var(--space-1) var(--space-2);
   background: transparent;
   border: none;
   border-radius: var(--radius-full);
@@ -600,7 +600,7 @@ h4 {
   gap: var(--space-1);
   flex-shrink: 0;
   margin: 0;
-  margin-inline-end: calc((var(--control-icon-size) - 16px) / -2);
+  margin-inline-end: calc((var(--control-icon-size) - var(--space-4)) / -2);
   padding: 0;
 }
 
@@ -703,21 +703,21 @@ h4 {
     justify-content: flex-end;
     flex-shrink: 0;
     gap: var(--space-1);
-    margin-inline-end: calc((40px - 16px) / -2);
+    margin-inline-end: calc((var(--space-10) - var(--space-4)) / -2);
   }
 
   .actions button {
-    width: 40px;
-    height: 40px;
+    width: var(--space-10);
+    height: var(--space-10);
   }
 
   .scroll-btn {
-    width: 22px;
-    height: 22px;
+    width: var(--space-6);
+    height: var(--space-6);
   }
 
   .branch-link {
-    max-width: 88px;
+    max-width: calc(var(--space-12) + var(--space-10));
   }
 
   .task-card.HABIT {
@@ -813,7 +813,7 @@ h4 {
       align-items: center;
       justify-content: flex-end;
       width: auto;
-      margin-inline-end: calc((40px - 16px) / -2);
+      margin-inline-end: calc((var(--space-10) - var(--space-4)) / -2);
       padding-top: 0;
     }
   }

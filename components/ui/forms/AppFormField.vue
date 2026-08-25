@@ -28,7 +28,7 @@ defineProps<{
 .app-form-field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
   min-width: 0;
 }
 
@@ -47,12 +47,8 @@ defineProps<{
 }
 
 .field-message {
-  margin: 0;
+  @include meta-text;
   color: var(--color-text-muted);
-  font-family: var(--font-sans);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-normal);
-  line-height: var(--leading-normal);
 
   &.is-error {
     color: var(--color-error);

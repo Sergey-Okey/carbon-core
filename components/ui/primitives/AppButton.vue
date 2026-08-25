@@ -19,7 +19,7 @@
 const props = withDefaults(
   defineProps<{
     type?: 'button' | 'submit' | 'reset'
-    variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
+    variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'link'
     size?: 'sm' | 'md'
     iconOnly?: boolean
     disabled?: boolean
@@ -162,9 +162,35 @@ const isDisabled = computed(() => props.disabled || props.loading)
   }
 }
 
+.variant-link {
+  min-height: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: var(--body-size);
+  font-weight: var(--weight-medium);
+  line-height: var(--body-leading);
+  white-space: normal;
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:disabled):not([data-disabled]) {
+      background: transparent;
+      color: var(--color-accent);
+    }
+  }
+}
+
+.size-sm.variant-link,
+.size-md.variant-link {
+  min-height: 0;
+  padding: 0;
+  font-size: var(--body-size);
+}
+
 @media (pointer: coarse), (max-width: 767px) {
-  .size-md,
-  .size-sm {
+  .size-md:not(.variant-link),
+  .size-sm:not(.variant-link) {
     min-height: var(--space-11);
   }
 

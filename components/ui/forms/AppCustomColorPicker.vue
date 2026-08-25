@@ -259,7 +259,7 @@ function apply() {
   gap: var(--space-3);
   width: max-content;
   max-width: 100%;
-  min-height: 44px;
+  min-height: var(--space-11);
   margin: 0;
   padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
   border: var(--ui-border);
@@ -295,7 +295,7 @@ function apply() {
   strong {
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
-    line-height: 1.15;
+    line-height: var(--leading-tight);
   }
 
   em {
@@ -303,15 +303,15 @@ function apply() {
     font-size: var(--text-xs);
     font-style: normal;
     font-variant-numeric: tabular-nums;
-    line-height: 1.2;
+    line-height: var(--leading-tight);
   }
 }
 
 .color-preview {
   display: inline-grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: var(--space-8);
+  height: var(--space-8);
   border-radius: 11px;
   background: var(--custom-color);
   color: #fff;
@@ -382,7 +382,7 @@ function apply() {
 
   :deep(.app-button) {
     width: 100%;
-    min-height: 44px;
+    min-height: var(--space-11);
   }
 }
 
@@ -390,14 +390,14 @@ function apply() {
   display: flex;
   align-items: flex-end;
   justify-content: flex-start;
-  min-height: 96px;
+  min-height: var(--space-16);
   padding: var(--space-3);
   border-radius: var(--radius-lg);
   background: var(--custom-color);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text-primary) 10%, transparent);
 
   span {
-    padding: 4px 8px;
+    padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-full);
     background: color-mix(in srgb, var(--color-bg) 72%, transparent);
     color: var(--color-text-primary);
@@ -429,8 +429,8 @@ function apply() {
 
     &::-webkit-slider-thumb {
       appearance: none;
-      width: 18px;
-      height: 18px;
+      width: var(--control-glyph);
+      height: var(--control-glyph);
       border: 2px solid #fff;
       border-radius: var(--radius-full);
       background: var(--custom-color);
@@ -438,8 +438,8 @@ function apply() {
     }
 
     &::-moz-range-thumb {
-      width: 18px;
-      height: 18px;
+      width: var(--control-glyph);
+      height: var(--control-glyph);
       border: 2px solid #fff;
       border-radius: var(--radius-full);
       background: var(--custom-color);
@@ -487,14 +487,14 @@ function apply() {
 
   :deep(.app-button) {
     min-width: 112px;
-    min-height: 44px;
+    min-height: var(--space-11);
   }
 }
 
 @include mobile {
   .color-trigger {
     width: 100%;
-    min-height: 48px;
+    min-height: var(--space-12);
   }
 
   .palette-row {

@@ -11,10 +11,17 @@
   --space-10: 40px;
   --space-11: 44px;
   --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
 
-  --control-height-md: 40px;
-  --control-height-sm: 34px;
-  --control-icon-size: 34px;
-  --panel-padding: 18px;
-  --panel-gap: 16px;
+  --control-height-md: var(--space-10);
+  --control-height-sm: var(--space-9);
+  --control-height-lg: var(--space-14);
+  --control-icon-size: var(--space-9);
+  --control-glyph: var(--space-5);
+  --panel-padding: var(--space-4);
+  --panel-gap: var(--space-4);
+  --touch-target: var(--space-11);
+  --overlay-offset-top: calc(var(--space-16) + var(--space-2));
+  --overlay-offset-block: calc(var(--space-16) + var(--space-6));
 }

@@ -76,16 +76,14 @@ function handleInput(event: Event) {
   appearance: none;
   -webkit-appearance: none;
   inline-size: 100%;
-  padding-inline: var(--space-4);
   border: var(--ui-border);
   border-radius: var(--radius-md);
   background: var(--color-surface-1);
   color: var(--color-text-primary);
   font: inherit;
   font-family: var(--font-sans);
-  font-size: var(--text-sm);
   font-weight: var(--weight-normal);
-  line-height: var(--leading-tight);
+  @include form-control;
   box-shadow: var(--shadow-xs);
   transition:
     background var(--transition-standard),
@@ -148,11 +146,12 @@ function handleInput(event: Event) {
 }
 
 .size-md {
-  min-height: var(--control-height-md);
+  min-height: var(--control-height-lg);
 }
 
 .size-sm {
   min-height: var(--control-height-sm);
+  padding-block: var(--space-2);
   padding-inline: var(--space-3);
   font-size: var(--text-xs);
 }
@@ -177,8 +176,8 @@ input[type='search'].app-input {
 }
 
 @media (pointer: coarse), (max-width: 767px) {
-  .app-input {
-    min-height: var(--space-11);
+  .app-input.size-md {
+    min-height: var(--control-height-lg);
     font-size: var(--text-md);
   }
 

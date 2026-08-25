@@ -207,6 +207,8 @@ export function discardDemoWorkspace() {
   localStorage.removeItem('carbon-rewards-demo-initialized')
   // Seed markers may linger in localStorage after a demo→auth mode flip race.
   localStorage.removeItem('carbon-demo-workspace-seeded-v8')
+  localStorage.removeItem('carbon-demo-workspace-seeded-v10')
+  localStorage.removeItem('carbon-demo-workspace-seeded-v11')
 }
 
 function activeStorage(): Storage {

@@ -135,8 +135,8 @@ defineExpose({ panelRef })
 }
 
 .avatar-small {
-  width: 22px;
-  height: 22px;
+  width: var(--space-6);
+  height: var(--space-6);
   flex-shrink: 0;
   overflow: hidden;
   border-radius: var(--radius-full);
@@ -185,7 +185,7 @@ defineExpose({ panelRef })
   :deep(.app-button) {
     justify-content: flex-start;
     width: 100%;
-    min-height: 44px;
+    min-height: var(--space-11);
   }
 }
 

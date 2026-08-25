@@ -288,7 +288,7 @@ const totalCount = computed(() =>
 
 .segment__value {
   fill: var(--color-text-primary);
-  font-size: 16px;
+  font-size: var(--text-md);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   pointer-events: none;
@@ -296,7 +296,7 @@ const totalCount = computed(() =>
 
 .segment__name {
   fill: var(--color-text-muted);
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 600;
   pointer-events: none;
 }
@@ -307,11 +307,11 @@ const totalCount = computed(() =>
   }
 
   .segment__value {
-    font-size: 14px;
+    font-size: var(--text-sm);
   }
 
   .segment__name {
-    font-size: 10px;
+    font-size: var(--text-2xs);
   }
 
   .category-chart__summary {

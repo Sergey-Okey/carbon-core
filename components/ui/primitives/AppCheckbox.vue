@@ -57,8 +57,8 @@ function onChange(event: Event) {
   cursor: pointer;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  line-height: var(--leading-tight);
+  font-size: var(--body-size);
+  line-height: var(--body-leading);
 
   &[data-disabled] {
     opacity: 0.5;
@@ -78,9 +78,9 @@ function onChange(event: Event) {
 .app-checkbox__box {
   display: inline-grid;
   place-content: center;
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
+  width: var(--control-glyph);
+  height: var(--control-glyph);
+  flex: 0 0 var(--control-glyph);
   border: var(--ui-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface-1);

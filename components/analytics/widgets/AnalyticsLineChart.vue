@@ -190,7 +190,7 @@ const tooltipStyle = computed(() => {
   --nest-radius: var(--radius-full);
   --nest-pad: 3px;
   display: inline-flex;
-  gap: 2px;
+  gap: var(--space-1);
   padding: var(--nest-pad);
   border-radius: var(--nest-radius);
   background: color-mix(in srgb, var(--color-bg) 65%, transparent);
@@ -198,7 +198,7 @@ const tooltipStyle = computed(() => {
 
 .period__btn {
   @include nest-item;
-  min-height: 28px;
+  min-height: var(--space-7);
   padding: 0 var(--space-3);
   border: none;
   background: transparent;
@@ -285,7 +285,7 @@ const tooltipStyle = computed(() => {
   gap: var(--space-2);
   min-height: 0;
   height: 100%;
-  padding-inline: 2px;
+  padding-inline: var(--space-1);
 }
 
 .bar {
@@ -346,7 +346,7 @@ const tooltipStyle = computed(() => {
   position: relative;
   height: 100%;
   color: var(--color-text-muted);
-  font-size: 0.62rem;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-medium);
   font-variant-numeric: tabular-nums;
 
@@ -360,9 +360,9 @@ const tooltipStyle = computed(() => {
 .bar-chart__x {
   position: relative;
   height: 1.1em;
-  margin-right: 36px;
+  margin-right: var(--space-9);
   color: var(--color-text-muted);
-  font-size: 0.62rem;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-medium);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -382,7 +382,7 @@ const tooltipStyle = computed(() => {
   display: inline-flex;
   align-items: baseline;
   gap: var(--space-2);
-  padding: 6px 10px;
+  padding: var(--space-1) var(--space-2);
   border: 1px solid color-mix(in srgb, var(--color-text-primary) 10%, transparent);
   border-radius: var(--radius-sm);
   background: var(--color-surface-1);
@@ -399,7 +399,7 @@ const tooltipStyle = computed(() => {
 
   span {
     color: var(--color-text-muted);
-    font-size: 0.68rem;
+    font-size: var(--text-2xs);
   }
 }
 
@@ -438,16 +438,16 @@ const tooltipStyle = computed(() => {
   }
 
   .bar-chart__x {
-    margin-right: 28px;
+    margin-right: var(--space-7);
   }
 
   .bar-chart__bars {
-    gap: 3px;
+    gap: var(--space-1);
   }
 
   .tooltip {
     top: 4px;
-    padding: 5px 8px;
+    padding: var(--space-1) var(--space-2);
   }
 }
 

@@ -30,6 +30,7 @@ import {
   CheckSquare,
   LayoutGrid,
   Settings,
+  Sparkles,
   Timer,
 } from 'lucide-vue-next'
 import type { NavSection } from '~/stores/ui.store'
@@ -39,15 +40,19 @@ const guidedTour = useGuidedTourStore()
 const route = useRoute()
 const router = useRouter()
 
-const navItems: { id: NavSection; label: string; icon: any }[] = [
-  { id: 'board', label: 'Доска', icon: LayoutGrid },
-  { id: 'tasks', label: 'Задачи', icon: CheckSquare },
-  { id: 'shop', label: 'Фокус', icon: Timer },
-  { id: 'analytics', label: 'Аналитика', icon: BarChart2 },
-  { id: 'settings', label: 'Настройки', icon: Settings },
-]
-
 const isMobile = ref(false)
+
+const navItems = computed(() => {
+  const boardIcon = isMobile.value ? Sparkles : LayoutGrid
+  const boardLabel = isMobile.value ? 'Агент' : 'Доска'
+  return [
+    { id: 'board' as const, label: boardLabel, icon: boardIcon },
+    { id: 'tasks' as const, label: 'Задачи', icon: CheckSquare },
+    { id: 'shop' as const, label: 'Фокус', icon: Timer },
+    { id: 'analytics' as const, label: 'Аналитика', icon: BarChart2 },
+    { id: 'settings' as const, label: 'Настройки', icon: Settings },
+  ]
+})
 
 function checkMobile() {
   isMobile.value = window.innerWidth < 768
@@ -140,9 +145,9 @@ async function handleNavClick(section: NavSection) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  min-width: 44px;
-  height: 44px;
+  width: var(--touch-target);
+  min-width: var(--touch-target);
+  height: var(--touch-target);
   padding: 0;
   border: none;
   border-radius: var(--radius-full);
@@ -178,9 +183,9 @@ async function handleNavClick(section: NavSection) {
   }
 
   @include mobile {
-    width: 48px;
-    min-width: 48px;
-    height: 48px;
+    width: var(--space-12);
+    min-width: var(--space-12);
+    height: var(--space-12);
   }
 }
 
@@ -215,11 +220,11 @@ async function handleNavClick(section: NavSection) {
 
 .icon-shell {
   display: inline-flex;
-  flex: 0 0 32px;
+  flex: 0 0 var(--space-8);
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: var(--space-8);
+  height: var(--space-8);
   border-radius: var(--radius-full);
   color: inherit;
   transition:
@@ -228,18 +233,18 @@ async function handleNavClick(section: NavSection) {
 
   svg {
     display: block;
-    width: 20px;
-    height: 20px;
+    width: var(--space-5);
+    height: var(--space-5);
   }
 
   @include mobile {
-    flex-basis: 34px;
-    width: 34px;
-    height: 34px;
+    flex-basis: var(--space-8);
+    width: var(--space-8);
+    height: var(--space-8);
 
     svg {
-      width: 22px;
-      height: 22px;
+      width: var(--space-6);
+      height: var(--space-6);
     }
   }
 }

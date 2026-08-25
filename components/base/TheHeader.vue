@@ -519,7 +519,7 @@ onBeforeUnmount(() => {
 .focus-widget-panel {
   @include glass;
   position: fixed;
-  inset-block-start: calc(72px + env(safe-area-inset-top, 0px));
+  inset-block-start: calc(var(--overlay-offset-top) + env(safe-area-inset-top, 0px));
   inset-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
   z-index: var(--z-dropdown);
   display: grid;
@@ -579,7 +579,7 @@ onBeforeUnmount(() => {
 .focus-widget-panel__ribs {
   display: flex;
   align-items: stretch;
-  gap: 2px;
+  gap: var(--space-1);
   height: 28px;
 }
 
@@ -607,6 +607,7 @@ onBeforeUnmount(() => {
 }
 
 .focus-widget-panel__link {
+  @include inline-link;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -616,16 +617,8 @@ onBeforeUnmount(() => {
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--color-text-muted);
   font: inherit;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
   cursor: pointer;
-  transition: color var(--transition-standard);
-
-  &:hover {
-    color: var(--color-text-primary);
-  }
 }
 
 .profile-panel-enter-active,

@@ -603,7 +603,7 @@ async function resetAllData() {
   &__copy {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-1);
     min-width: 0;
 
     strong {
@@ -613,8 +613,7 @@ async function resetAllData() {
     }
 
     span {
-      color: var(--color-text-muted);
-      font-size: var(--text-xs);
+      @include meta-text;
       @include text-ellipsis;
     }
   }
@@ -701,26 +700,18 @@ async function resetAllData() {
   flex: 0 0 auto;
 
   h2 {
-    margin: 0;
+    @include heading-2;
     color: var(--color-text-primary);
-    font-size: clamp(1.15rem, 1.5vw, 1.35rem);
-    font-weight: var(--weight-bold);
-    line-height: 1.2;
-    letter-spacing: -0.02em;
   }
 }
 
 .card-head__aside {
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
+  @include meta-text;
   font-weight: var(--weight-medium);
 }
 
 .card-lead {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: var(--text-sm);
-  line-height: 1.45;
+  @include meta-text;
 }
 
 .card-foot {
@@ -733,7 +724,7 @@ async function resetAllData() {
   border-top: var(--ui-border);
 
   :deep(.app-button) {
-    min-height: 44px;
+    min-height: var(--space-11);
   }
 }
 
@@ -761,7 +752,7 @@ async function resetAllData() {
   align-items: center;
   gap: var(--space-4);
   min-width: 0;
-  min-height: 64px;
+  min-height: var(--space-16);
   padding: var(--space-4) var(--space-6);
   border-bottom: var(--ui-border);
 
@@ -790,8 +781,8 @@ async function resetAllData() {
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
+  width: var(--space-10);
+  height: var(--space-10);
   color: var(--color-text-secondary);
   background: var(--color-surface-2);
   border-radius: var(--radius-md);
@@ -803,7 +794,7 @@ async function resetAllData() {
 
 .row-copy {
   display: grid;
-  gap: 4px;
+  gap: var(--space-1);
   min-width: 0;
   flex: 1 1 auto;
 
@@ -812,20 +803,15 @@ async function resetAllData() {
     color: var(--color-text-primary);
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
-    line-height: 1.25;
+    line-height: var(--leading-tight);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   em {
-    display: -webkit-box;
-    overflow: hidden;
-    color: var(--color-text-muted);
-    font-size: var(--text-sm);
+    @include meta-text;
+    @include text-clamp(2);
     font-style: normal;
-    line-height: 1.35;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
   }
 }
 
@@ -865,7 +851,7 @@ async function resetAllData() {
 
   :deep(.app-button) {
     width: 100%;
-    min-height: 48px;
+    min-height: var(--space-12);
   }
 }
 
@@ -880,7 +866,7 @@ async function resetAllData() {
 
   :deep(.app-button) {
     flex-shrink: 0;
-    min-height: 44px;
+    min-height: var(--space-11);
   }
 }
 
@@ -915,7 +901,7 @@ async function resetAllData() {
   }
 
   .row {
-    min-height: 56px;
+    min-height: var(--space-14);
     gap: var(--space-3);
     padding: var(--space-3) var(--space-5);
   }
@@ -943,7 +929,7 @@ async function resetAllData() {
   .card-foot :deep(.app-button),
   .action-grid :deep(.app-button) {
     width: 100%;
-    min-height: 44px;
+    min-height: var(--space-11);
   }
 }
 </style>

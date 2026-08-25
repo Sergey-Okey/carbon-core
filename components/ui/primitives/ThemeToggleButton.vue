@@ -5,8 +5,8 @@
     :aria-label="label"
     @click="toggleTheme"
   >
-    <Sun v-if="settingsStore.theme === 'dark'" :size="17" />
-    <Moon v-else :size="17" />
+    <Sun v-if="settingsStore.theme === 'dark'" :size="16" />
+    <Moon v-else :size="16" />
   </button>
 </template>
 
@@ -32,8 +32,8 @@ function toggleTheme() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: var(--touch-target);
+  height: var(--touch-target);
   padding: 0;
   border-radius: var(--radius-full);
   color: var(--color-text-primary);
