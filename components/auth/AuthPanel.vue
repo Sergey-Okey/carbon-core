@@ -1008,7 +1008,7 @@ async function submit() {
     margin: 0;
     color: var(--color-text-primary);
     font-family: var(--font-sans);
-    font-size: clamp(1.85rem, 2.8vw, 2.4rem);
+    font-size: clamp(var(--text-3xl), 2.8vw, var(--text-4xl));
     font-weight: var(--weight-semibold);
     letter-spacing: -0.035em;
     line-height: var(--leading-tight);
@@ -1373,7 +1373,7 @@ async function submit() {
   }
 
   .form-header h1 {
-    font-size: clamp(1.5rem, 7vw, 2rem);
+    font-size: clamp(var(--text-2xl), 7vw, var(--text-3xl));
   }
 
   .oauth-actions {

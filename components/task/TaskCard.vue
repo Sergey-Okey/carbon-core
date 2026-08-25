@@ -600,7 +600,7 @@ h4 {
   gap: var(--space-1);
   flex-shrink: 0;
   margin: 0;
-  margin-inline-end: calc((var(--control-icon-size) - 16px) / -2);
+  margin-inline-end: calc((var(--control-icon-size) - var(--space-4)) / -2);
   padding: 0;
 }
 
@@ -703,7 +703,7 @@ h4 {
     justify-content: flex-end;
     flex-shrink: 0;
     gap: var(--space-1);
-    margin-inline-end: calc((40px - 16px) / -2);
+    margin-inline-end: calc((var(--space-10) - var(--space-4)) / -2);
   }
 
   .actions button {
@@ -813,7 +813,7 @@ h4 {
       align-items: center;
       justify-content: flex-end;
       width: auto;
-      margin-inline-end: calc((40px - 16px) / -2);
+      margin-inline-end: calc((var(--space-10) - var(--space-4)) / -2);
       padding-top: 0;
     }
   }

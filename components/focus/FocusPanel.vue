@@ -475,7 +475,7 @@ onBeforeUnmount(() => {
     min-width: 5.25ch;
     max-width: 100%;
     font-family: 'Space Grotesk', var(--font-sans);
-    font-size: clamp(2.8rem, 8vw, 4.8rem);
+    font-size: clamp(var(--text-4xl), 8vw, var(--text-7xl));
     font-weight: var(--weight-bold);
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.055em;
@@ -616,7 +616,7 @@ onBeforeUnmount(() => {
 
 .preset-chip__value {
   font-family: 'Space Grotesk', var(--font-sans);
-  font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+  font-size: clamp(var(--text-2xl), 2.4vw, var(--text-3xl));
   font-weight: var(--weight-bold);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.04em;
@@ -643,7 +643,7 @@ onBeforeUnmount(() => {
   strong {
     color: var(--color-text-primary);
     font-family: 'Space Grotesk', var(--font-sans);
-    font-size: clamp(2.4rem, 4vw, 3.2rem);
+    font-size: clamp(var(--text-4xl), 4vw, var(--text-5xl));
     font-weight: var(--weight-bold);
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.05em;
@@ -792,11 +792,11 @@ onBeforeUnmount(() => {
     }
 
     strong {
-      font-size: clamp(2.6rem, 14vw, 3.8rem);
+      font-size: clamp(var(--text-4xl), 14vw, var(--text-5xl));
     }
 
     span {
-      top: calc(50% + 34px);
+      top: calc(50% + var(--space-9));
       font-size: var(--text-xs);
     }
   }

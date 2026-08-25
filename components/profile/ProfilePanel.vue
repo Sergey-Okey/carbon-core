@@ -880,7 +880,7 @@ async function deleteAccount() {
   span {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-2);
   }
 }
 
@@ -1151,7 +1151,7 @@ async function deleteAccount() {
 }
 
 .heatmap {
-  --heat-gap: clamp(1px, 0.45cqi, 4px);
+  --heat-gap: clamp(1px, 0.45cqi, var(--space-1));
   --heat-cols: 53;
   --heat-size: calc(
     (100cqi - (var(--heat-cols) - 1) * var(--heat-gap)) / var(--heat-cols)
@@ -1205,7 +1205,7 @@ async function deleteAccount() {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 4px;
+  gap: var(--space-1);
   flex: 0 0 auto;
   color: var(--color-text-muted);
   font-size: var(--text-xs);
@@ -1251,7 +1251,7 @@ async function deleteAccount() {
   }
 
   .heatmap {
-    --heat-gap: clamp(2px, 0.9cqi, 4px);
+    --heat-gap: clamp(2px, 0.9cqi, var(--space-1));
   }
 
   .heat-cell {

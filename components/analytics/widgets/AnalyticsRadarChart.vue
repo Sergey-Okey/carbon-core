@@ -241,7 +241,7 @@ const labels = computed(() => {
 
 .radar__label {
   fill: var(--color-text-muted);
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 600;
   cursor: pointer;
   transition: fill var(--transition-standard);
@@ -262,7 +262,7 @@ const labels = computed(() => {
 
   text {
     fill: var(--accent);
-    font-size: 10px;
+    font-size: var(--text-2xs);
     font-weight: 700;
     text-anchor: middle;
     font-variant-numeric: tabular-nums;
@@ -283,7 +283,7 @@ const labels = computed(() => {
   }
 
   .radar__label {
-    font-size: 11px;
+    font-size: var(--text-2xs);
   }
 
   .radar__avg {
@@ -297,7 +297,7 @@ const labels = computed(() => {
   }
 
   .radar__label {
-    font-size: 10px;
+    font-size: var(--text-2xs);
   }
 }
 </style>

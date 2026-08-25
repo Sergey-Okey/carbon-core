@@ -452,7 +452,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   h4 {
     flex: 1 1 auto;
     min-width: 0;
-    font-size: 0.95rem;
+    font-size: var(--text-sm);
     font-weight: 600;
     margin: 0;
     color: var(--text);
@@ -486,7 +486,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
   }
 
   .task-counter {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     color: var(--dim);
     margin: 0;
   }
@@ -536,7 +536,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     padding: var(--node-pad);
     overflow-y: auto;
     border-radius: var(--border-radius-md);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     word-wrap: break-word;
 
     &::-webkit-scrollbar {
@@ -555,12 +555,12 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     .detail-section {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: var(--space-2);
       min-width: 0;
 
       & + .detail-section {
-        margin-top: 12px;
-        padding-top: 12px;
+        margin-top: var(--space-3);
+        padding-top: var(--space-3);
         border-top: 1px solid var(--ui-border-color);
       }
     }
@@ -569,14 +569,14 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
       display: flex;
       align-items: baseline;
       justify-content: space-between;
-      gap: 8px;
+      gap: var(--space-2);
       min-height: 1em;
     }
 
     .detail-label {
       margin: 0;
       color: var(--dim);
-      font-size: 0.68rem;
+      font-size: var(--text-2xs);
       font-weight: 700;
       letter-spacing: 0.06em;
       line-height: 1.2;
@@ -586,7 +586,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     .detail-count {
       flex: 0 0 auto;
       color: var(--dim);
-      font-size: 0.68rem;
+      font-size: var(--text-2xs);
       font-weight: 600;
       font-variant-numeric: tabular-nums;
       line-height: 1.2;
@@ -596,7 +596,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     .detail-empty {
       margin: 0;
       padding: 0;
-      font-size: 0.8rem;
+      font-size: var(--text-sm);
       line-height: 1.4;
     }
 
@@ -621,10 +621,10 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     .task-row {
       display: grid;
       grid-template-columns: 1.25rem minmax(0, 1fr);
-      column-gap: 8px;
+      column-gap: var(--space-2);
       align-items: baseline;
       min-width: 0;
-      padding: 4px 0;
+      padding: var(--space-1) 0;
       margin: 0;
       background: none;
 
@@ -643,7 +643,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     .task-index {
       grid-column: 1;
       color: var(--dim);
-      font-size: 0.8rem;
+      font-size: var(--text-sm);
       font-weight: 600;
       font-variant-numeric: tabular-nums;
       line-height: 1.4;
@@ -655,7 +655,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
       display: block;
       min-width: 0;
       color: var(--text);
-      font-size: 0.8rem;
+      font-size: var(--text-sm);
       line-height: 1.4;
       overflow-wrap: anywhere;
 

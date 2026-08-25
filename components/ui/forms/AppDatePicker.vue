@@ -409,7 +409,7 @@ onUnmounted(() => {
   }
 
   .days-grid {
-    gap: 5px;
+    gap: var(--space-1);
   }
 
   .day-btn {

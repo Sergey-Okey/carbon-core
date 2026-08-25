@@ -344,14 +344,14 @@ function handleQuickTask(data: TaskFormData) {
 .board-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .visual-row {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) 1px minmax(180px, 0.65fr);
   align-items: start;
-  column-gap: 18px;
+  column-gap: var(--space-5);
 
   > :last-child {
     grid-column: 3;
@@ -371,7 +371,7 @@ function handleQuickTask(data: TaskFormData) {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
   width: 100%;
   min-width: 0;
 }
@@ -380,10 +380,10 @@ function handleQuickTask(data: TaskFormData) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
   width: 100%;
   min-height: var(--control-height-md);
-  padding: 0 14px;
+  padding: 0 var(--space-4);
   box-sizing: border-box;
   color: var(--text);
   background: color-mix(in srgb, var(--color-surface-2) 80%, transparent);
@@ -419,7 +419,7 @@ function handleQuickTask(data: TaskFormData) {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .selected-icon {
@@ -434,17 +434,17 @@ function handleQuickTask(data: TaskFormData) {
   align-items: center;
   justify-items: center;
   width: 100%;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .icons-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-2);
   align-self: flex-start;
-  padding: 5px 9px;
+  padding: var(--space-1) var(--space-2);
   color: var(--dim);
-  font-size: 0.76rem;
+  font-size: var(--text-xs);
   background: transparent;
   border: none;
   border-radius: var(--border-radius-pill);
@@ -556,11 +556,11 @@ function handleQuickTask(data: TaskFormData) {
 .tasks-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-2);
   width: 100%;
   min-width: 0;
   max-height: 240px;
-  padding: 8px;
+  padding: var(--space-2);
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
@@ -573,11 +573,11 @@ function handleQuickTask(data: TaskFormData) {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr) auto;
   align-items: center;
-  column-gap: 10px;
+  column-gap: var(--space-3);
   width: 100%;
   min-width: 0;
   min-height: 40px;
-  padding: 8px 10px;
+  padding: var(--space-2) var(--space-3);
   box-sizing: border-box;
   color: var(--text);
   border: none;
@@ -619,21 +619,21 @@ function handleQuickTask(data: TaskFormData) {
 
 .task-main {
   display: grid;
-  gap: 3px;
+  gap: var(--space-1);
   min-width: 0;
 }
 
 .linked-elsewhere {
   color: var(--dim);
-  font-size: 0.68rem;
+  font-size: var(--text-2xs);
   line-height: 1.25;
 }
 
 .task-state {
   justify-self: flex-start;
-  padding: 2px 7px;
+  padding: 2px var(--space-2);
   border-radius: var(--border-radius-pill);
-  font-size: 0.66rem;
+  font-size: var(--text-2xs);
   font-weight: 700;
   line-height: 1.2;
 
@@ -646,7 +646,7 @@ function handleQuickTask(data: TaskFormData) {
 .task-marker,
 .empty-list {
   color: var(--dim);
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
 }
 
 .task-marker {
@@ -658,13 +658,13 @@ function handleQuickTask(data: TaskFormData) {
   border-radius: var(--border-radius-pill);
   background: color-mix(in srgb, var(--accent) 8%, transparent);
   color: var(--text);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   line-height: 1;
 }
 
 .empty-list {
-  padding: 12px;
+  padding: var(--space-3);
   text-align: center;
   background: var(--glass-surface);
   border: none;
@@ -675,10 +675,10 @@ function handleQuickTask(data: TaskFormData) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: var(--space-2);
   width: 100%;
   min-height: 40px;
-  padding: 0 14px;
+  padding: 0 var(--space-4);
   border: var(--ui-border);
   border-radius: var(--border-radius-pill);
   background: color-mix(in srgb, var(--accent) 7%, transparent);
@@ -700,7 +700,7 @@ function handleQuickTask(data: TaskFormData) {
 .footer-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: var(--space-3);
   margin-left: auto;
 }
 
@@ -737,13 +737,13 @@ function handleQuickTask(data: TaskFormData) {
 }
 @media (max-width: 640px) {
   .board-form {
-    gap: 12px;
+    gap: var(--space-3);
   }
 
   .visual-row {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1px auto;
-    row-gap: 18px;
+    row-gap: var(--space-5);
 
     > :last-child {
       grid-column: 1;
@@ -760,7 +760,7 @@ function handleQuickTask(data: TaskFormData) {
 
   .icons-grid {
     grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
-    gap: 8px;
+    gap: var(--space-2);
   }
 
   .icons-toggle,
@@ -795,15 +795,15 @@ function handleQuickTask(data: TaskFormData) {
   .task-row {
     grid-template-columns: auto auto minmax(0, 1fr) auto;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
     min-height: 44px;
-    padding: 8px 10px;
+    padding: var(--space-2) var(--space-3);
   }
 
   .tasks-list {
     max-height: min(300px, 46dvh);
-    gap: 6px;
-    padding: 8px;
+    gap: var(--space-2);
+    padding: var(--space-2);
   }
 
   .task-title {
@@ -814,11 +814,11 @@ function handleQuickTask(data: TaskFormData) {
   .task-marker {
     width: 22px;
     height: 22px;
-    font-size: 0.7rem;
+    font-size: var(--text-2xs);
   }
 
   .task-state {
-    font-size: 0.64rem;
+    font-size: var(--text-2xs);
   }
 }
 </style>

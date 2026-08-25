@@ -111,7 +111,7 @@ const topLabel = computed(() => {
 
 .bar__value {
   color: var(--color-text-muted);
-  font-size: 0.68rem;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
   font-variant-numeric: tabular-nums;
   opacity: 0;
@@ -163,7 +163,7 @@ const topLabel = computed(() => {
 
 .bar__label {
   color: var(--color-text-muted);
-  font-size: 0.62rem;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-medium);
   white-space: nowrap;
 }

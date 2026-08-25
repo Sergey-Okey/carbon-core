@@ -26,18 +26,18 @@ import { MonitorUp } from 'lucide-vue-next'
   width: 100%;
   min-height: 100%;
   box-sizing: border-box;
-  padding: calc(88px + env(safe-area-inset-top, 0px))
-    max(20px, env(safe-area-inset-right, 0px))
-    calc(72px + env(safe-area-inset-bottom, 0px))
-    max(20px, env(safe-area-inset-left, 0px));
+  padding: calc(var(--space-12) + var(--space-10) + env(safe-area-inset-top, 0px))
+    max(var(--space-5), env(safe-area-inset-right, 0px))
+    calc(var(--space-16) + var(--space-2) + env(safe-area-inset-bottom, 0px))
+    max(var(--space-5), env(safe-area-inset-left, 0px));
 }
 
 .stub-card {
   display: grid;
   justify-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   width: min(100%, 360px);
-  padding: 28px 22px;
+  padding: var(--space-7) var(--space-6);
   text-align: center;
   border: var(--ui-border);
   border-radius: var(--border-radius-lg);
@@ -47,9 +47,9 @@ import { MonitorUp } from 'lucide-vue-next'
 .stub-icon {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
-  margin-bottom: 4px;
+  width: var(--space-12);
+  height: var(--space-12);
+  margin-bottom: var(--space-1);
   border-radius: var(--border-radius-pill);
   background: color-mix(in srgb, var(--accent) 10%, transparent);
   color: var(--accent);
@@ -58,7 +58,7 @@ import { MonitorUp } from 'lucide-vue-next'
 h2 {
   margin: 0;
   color: var(--text);
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   line-height: 1.25;
 }
@@ -66,7 +66,7 @@ h2 {
 p {
   margin: 0;
   color: var(--dim);
-  font-size: 0.88rem;
+  font-size: var(--text-sm);
   line-height: 1.5;
 }
 </style>

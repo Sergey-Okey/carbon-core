@@ -351,9 +351,9 @@ onBeforeUnmount(() => {
   top: 0;
   left: 0;
   display: grid;
-  gap: 10px;
+  gap: var(--space-3);
   min-height: 0;
-  padding: 14px;
+  padding: var(--space-4);
   border-radius: var(--border-radius-lg);
   color: var(--text);
   pointer-events: auto;
@@ -369,7 +369,7 @@ onBeforeUnmount(() => {
 
   h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: var(--text-md);
     font-weight: 700;
     letter-spacing: 0;
   }
@@ -377,7 +377,7 @@ onBeforeUnmount(() => {
   p {
     margin: 0;
     color: var(--dim);
-    font-size: 13px;
+    font-size: var(--text-xs);
     line-height: 1.4;
   }
 }
@@ -386,7 +386,7 @@ onBeforeUnmount(() => {
 .guided-tour__actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .guided-tour__head {
@@ -401,7 +401,7 @@ onBeforeUnmount(() => {
 
 .guided-tour__step {
   color: var(--accent);
-  font-size: 11px;
+  font-size: var(--text-2xs);
   font-weight: 700;
 }
 
@@ -412,11 +412,11 @@ onBeforeUnmount(() => {
 
 .guided-tour__progress {
   display: grid;
-  gap: 6px;
+  gap: var(--space-2);
 
   span {
     color: var(--accent);
-    font-size: 12px;
+    font-size: var(--text-xs);
     font-weight: 700;
   }
 
@@ -471,8 +471,8 @@ onBeforeUnmount(() => {
 .guided-tour__ghost,
 .guided-tour__primary {
   min-height: 38px;
-  padding: 0 13px;
-  font-size: 13px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-xs);
 }
 
 @media (pointer: coarse), (max-width: 767px) {
@@ -517,7 +517,7 @@ onBeforeUnmount(() => {
   .guided-tour__card {
     max-width: calc(100dvw - 20px);
     overflow: auto;
-    padding: 13px;
+    padding: var(--space-3);
   }
 
   .guided-tour__card.is-centered,

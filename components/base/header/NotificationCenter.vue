@@ -283,12 +283,12 @@ onBeforeUnmount(() => {
   justify-content: center;
   min-inline-size: 16px;
   block-size: 16px;
-  padding-inline: 4px;
+  padding-inline: var(--space-1);
   border: var(--ui-border);
   border-radius: var(--radius-full);
   background: var(--color-accent);
   color: var(--color-bg, var(--bg));
-  font-size: 0.64rem;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
   line-height: 1;
 }
@@ -374,7 +374,7 @@ onBeforeUnmount(() => {
 .indicator {
   width: 8px;
   height: 8px;
-  margin-top: 6px;
+  margin-top: var(--space-2);
   border-radius: var(--radius-full);
   background: var(--color-accent, var(--accent));
 }

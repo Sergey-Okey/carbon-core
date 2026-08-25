@@ -320,7 +320,7 @@ defineExpose({
     inline-size: auto;
     min-height: var(--control-icon-size);
     height: var(--control-icon-size);
-    padding-inline: 8px 6px;
+    padding-inline: var(--space-2) var(--space-2);
     border-radius: var(--radius-full);
     background: color-mix(in srgb, var(--color-bg, var(--bg)) 35%, transparent);
     box-shadow: none;
@@ -328,7 +328,7 @@ defineExpose({
 
     .field {
       width: 132px;
-      font-size: 0.8rem;
+      font-size: var(--text-sm);
     }
   }
 
@@ -407,7 +407,7 @@ defineExpose({
   .counter {
     flex: 0 0 auto;
     color: var(--color-text-muted);
-    font-size: 0.68rem;
+    font-size: var(--text-2xs);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     line-height: 1;
@@ -457,7 +457,7 @@ defineExpose({
   flex-direction: column;
   gap: 2px;
   max-height: 220px;
-  padding: 6px;
+  padding: var(--space-2);
   overflow-y: auto;
   border: var(--ui-border);
   border-radius: var(--radius-md);
@@ -479,9 +479,9 @@ defineExpose({
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--space-3);
   width: 100%;
-  padding: 8px 10px;
+  padding: var(--space-2) var(--space-3);
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -503,7 +503,7 @@ defineExpose({
 
 .result-label {
   min-width: 0;
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   line-height: 1.35;
   overflow-wrap: anywhere;
 
@@ -519,7 +519,7 @@ defineExpose({
 .result-kind {
   flex: 0 0 auto;
   color: var(--color-text-muted);
-  font-size: 0.68rem;
+  font-size: var(--text-2xs);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -527,9 +527,9 @@ defineExpose({
 
 .empty {
   margin: 0;
-  padding: 10px 8px;
+  padding: var(--space-3) var(--space-2);
   color: var(--color-text-muted);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   text-align: center;
 }
 
