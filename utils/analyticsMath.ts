@@ -108,3 +108,124 @@ export function computeStreak(
 
   return { current, longest: Math.max(longest, current) }
 }
+
+export type AnalyticsHistoryEntry = { date: string; count: number }
+
+export type AnalyticsLogLike = {
+  at: number
+  taskId: string
+  type?: string
+  title?: string
+}
+
+export type AnalyticsTaskLike = {
+  id: string
+  title?: string
+  type?: string
+  done?: boolean
+  completedAt?: number
+  lastCompletedAt?: number
+}
+
+export type AnalyticsCompletionEvent = {
+  at: number
+  taskId: string
+  type: string
+  title: string
+}
+
+function isPurchase(type?: string) {
+  return type === 'PURCHASE'
+}
+
+function bumpCount(map: Map<string, number>, date: string, delta = 1) {
+  if (!date || !delta) return
+  map.set(date, (map.get(date) || 0) + delta)
+}
+
+export function collectTaskCompletionEvents(
+  tasks: AnalyticsTaskLike[]
+): AnalyticsCompletionEvent[] {
+  const events: AnalyticsCompletionEvent[] = []
+  const seen = new Set<string>()
+
+  function push(task: AnalyticsTaskLike, at: number | undefined) {
+    if (!task.id || !at) return
+    const key = `${task.id}:${at}`
+    if (seen.has(key)) return
+    seen.add(key)
+    events.push({
+      at,
+      taskId: task.id,
+      type: task.type || 'TASK_DAY',
+      title: task.title || 'Задача',
+    })
+  }
+
+  for (const task of tasks) {
+    if (isPurchase(task.type)) continue
+    if (task.done && task.completedAt) push(task, task.completedAt)
+    if (task.type === 'HABIT' && task.lastCompletedAt) push(task, task.lastCompletedAt)
+  }
+
+  return events
+}
+
+/** Take the richest daily count from history, the event log, and task timestamps. */
+export function mergeActivityCounts(input: {
+  history?: AnalyticsHistoryEntry[]
+  log?: AnalyticsLogLike[]
+  tasks?: AnalyticsTaskLike[]
+}): Map<string, number> {
+  const historyMap = new Map<string, number>()
+  for (const item of input.history || []) {
+    if (!item?.date) continue
+    historyMap.set(item.date, Math.max(historyMap.get(item.date) || 0, item.count || 0))
+  }
+
+  const logMap = new Map<string, number>()
+  for (const entry of input.log || []) {
+    if (!entry?.at) continue
+    bumpCount(logMap, getLocalDateKey(new Date(entry.at)))
+  }
+
+  const taskMap = new Map<string, number>()
+  for (const event of collectTaskCompletionEvents(input.tasks || [])) {
+    bumpCount(taskMap, getLocalDateKey(new Date(event.at)))
+  }
+
+  const merged = new Map<string, number>()
+  const dates = new Set([...historyMap.keys(), ...logMap.keys(), ...taskMap.keys()])
+  for (const date of dates) {
+    merged.set(
+      date,
+      Math.max(historyMap.get(date) || 0, logMap.get(date) || 0, taskMap.get(date) || 0)
+    )
+  }
+  return merged
+}
+
+export function mergeCompletionEvents(input: {
+  log?: AnalyticsLogLike[]
+  tasks?: AnalyticsTaskLike[]
+}): AnalyticsCompletionEvent[] {
+  const fromLog: AnalyticsCompletionEvent[] = []
+  const seen = new Set<string>()
+  for (const entry of input.log || []) {
+    if (!entry?.at || !entry.taskId) continue
+    const key = `${entry.taskId}:${entry.at}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    fromLog.push({
+      at: entry.at,
+      taskId: entry.taskId,
+      type: entry.type || 'TASK_DAY',
+      title: entry.title || 'Задача',
+    })
+  }
+
+  const extra = collectTaskCompletionEvents(input.tasks || []).filter(
+    (event) => !seen.has(`${event.taskId}:${event.at}`)
+  )
+  return [...fromLog, ...extra].sort((a, b) => b.at - a.at)
+}

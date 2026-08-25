@@ -1,6 +1,5 @@
 import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
 import { applyAiOperations } from '~/utils/ai/apply'
-import { runLocalAgent } from '~/utils/ai/localAgent'
 import { buildClientAiSnapshot } from '~/utils/ai/snapshot'
 import {
   linksFromApplyResults,
@@ -99,20 +98,15 @@ export function useAiAgent() {
     liveRequest.value = text
     liveError.value = ''
     try {
-      let payload: AiActResponse
       const snapshot = collectSnapshot()
-      try {
-        payload = await $fetch<AiActResponse>(getBackendUrl('/api/ai/act'), {
-          method: 'POST',
-          ...getBackendFetchOptions(),
-          body: {
-            request: text,
-            context: snapshot,
-          },
-        })
-      } catch {
-        payload = runLocalAgent(text, snapshot)
-      }
+      const payload = await $fetch<AiActResponse>(getBackendUrl('/api/ai/act'), {
+        method: 'POST',
+        ...getBackendFetchOptions(),
+        body: {
+          request: text,
+          context: snapshot,
+        },
+      })
       let results: AiApplyResult[] = []
       try {
         results = applyAiOperations(payload.operations)
@@ -135,6 +129,10 @@ export function useAiAgent() {
       const status = getHttpStatus(err)
       if (status === 429) {
         liveError.value = 'Слишком много запросов. Подождите немного.'
+      } else if (status === 503) {
+        liveError.value = 'Агент не настроен. Нужен ключ OpenRouter на сервере.'
+      } else if (status === 502) {
+        liveError.value = 'OpenRouter не ответил. Попробуйте ещё раз.'
       } else {
         liveError.value = getHttpMessage(err) || 'Не получилось выполнить запрос.'
       }

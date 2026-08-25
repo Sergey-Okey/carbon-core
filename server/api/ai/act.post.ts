@@ -1,6 +1,4 @@
 import { createError, readBody } from 'h3'
-import { isAuthDatabaseConfigured } from '../../utils/authStorage'
-import { readOAuthSession } from '../../utils/oauth'
 import { enforceRateLimit } from '../../utils/rateLimit'
 import { buildAiContext } from '../../../utils/ai/context'
 import { resolveAiApiKey, runAiAgent } from '../../utils/aiLlm'
@@ -12,10 +10,6 @@ function asRequestText(value: unknown) {
 
 export default defineEventHandler(async (event) => {
   enforceRateLimit(event, 'ai-act', 20, 15 * 60 * 1000)
-  const session = readOAuthSession(event)
-  if (isAuthDatabaseConfigured() && !session) {
-    throw createError({ statusCode: 401, statusMessage: 'Authentication required' })
-  }
 
   const config = useRuntimeConfig()
   const body = ((await readBody(event).catch(() => null)) ?? {}) as Record<

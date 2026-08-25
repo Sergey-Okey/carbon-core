@@ -2,8 +2,7 @@ import { createError } from 'h3'
 import type { AiActResponse, AiContext, AiOperation } from '../../types/ai.types'
 import { compactAiContext } from '../../utils/ai/context'
 import { parseAiTextResponse } from '../../utils/ai/operations'
-import { detectIntent, runLocalAgent } from '../../utils/ai/localAgent'
-import { POLLINATIONS_ANON_MODEL, runPollinationsAgent } from '../../utils/ai/pollinations'
+import { detectIntent } from '../../utils/ai/localAgent'
 import { AI_PROMPT_EXAMPLES, AI_SYSTEM_PROMPT } from '../../utils/ai/prompt'
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
@@ -13,7 +12,7 @@ const OPENROUTER_FALLBACKS = [
   'z-ai/glm-5.2:free',
   'nvidia/nemotron-3.5-lightning:free',
 ]
-const CLOUD_TIMEOUT_MS = 12000
+const CLOUD_TIMEOUT_MS = 25000
 
 function mutatesWorkspace(operations: AiOperation[]) {
   return operations.some((item) => item.op !== 'updateSettings')
@@ -96,10 +95,6 @@ async function runCloudAgent(input: {
   return parseAiTextResponse(content)
 }
 
-function isOpenAiCompatible(engine: string) {
-  return engine === 'openai' || engine === 'openrouter'
-}
-
 export function resolveAiApiKey(configured?: string) {
   return String(
     configured ||
@@ -119,43 +114,21 @@ export async function runAiAgent(input: {
   baseUrl?: string
   siteUrl?: string
 }): Promise<AiActResponse> {
-  const engine = String(input.engine || 'openai').toLowerCase()
   const apiKey = resolveAiApiKey(input.apiKey)
-  const local = () => runLocalAgent(input.request, input.context)
-
-  if (engine === 'local') return local()
-
-  if (isOpenAiCompatible(engine) && apiKey) {
-    try {
-      const cloud = await runCloudAgent({
-        request: input.request,
-        context: input.context,
-        apiKey,
-        model: input.model || OPENROUTER_MODEL,
-        baseUrl: input.baseUrl || OPENROUTER_BASE_URL,
-        siteUrl: input.siteUrl,
-      })
-      return acceptCloudPlan(input.request, cloud)
-    } catch {
-      return local()
-    }
+  if (!apiKey) {
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'OpenRouter is not configured',
+    })
   }
 
-  if (engine === 'pollinations') {
-    try {
-      const cloud = await Promise.race([
-        runPollinationsAgent(input.request, input.context, {
-          model: input.model || POLLINATIONS_ANON_MODEL,
-        }),
-        new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Pollinations timeout')), 2500)
-        }),
-      ])
-      return acceptCloudPlan(input.request, cloud)
-    } catch {
-      return local()
-    }
-  }
-
-  return local()
+  const cloud = await runCloudAgent({
+    request: input.request,
+    context: input.context,
+    apiKey,
+    model: input.model || OPENROUTER_MODEL,
+    baseUrl: input.baseUrl || OPENROUTER_BASE_URL,
+    siteUrl: input.siteUrl,
+  })
+  return acceptCloudPlan(input.request, cloud)
 }

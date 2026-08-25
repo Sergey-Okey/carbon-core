@@ -48,7 +48,8 @@ readiness with `GET /api/health`.
 
 Production runs as a Node process on the VPS. See `deploy/README.md`.
 The agent uses OpenRouter (`minimax/minimax-m2.7:free`) when `OPENAI_API_KEY` or
-`OPENROUTER_API_KEY` is set on the server.
+`OPENROUTER_API_KEY` is set on the server. There is no local planner fallback:
+without a key the API returns 503.
 
 ## Project Structure
 
