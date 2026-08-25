@@ -567,9 +567,9 @@ function alignLayoutSmart() {
   if (branchesStore.branches.length === 0) return
 
   const density = {
-    compact: { nodeSep: 48, rankSep: 88, componentGap: 88 },
-    normal: { nodeSep: 64, rankSep: 112, componentGap: 112 },
-    wide: { nodeSep: 80, rankSep: 140, componentGap: 140 },
+    compact: { nodeSep: 56, rankSep: 100, componentGap: 96 },
+    normal: { nodeSep: 72, rankSep: 128, componentGap: 120 },
+    wide: { nodeSep: 88, rankSep: 156, componentGap: 148 },
   }[settingsStore.boardLayoutDensity]
 
   isAutoLayoutAnimating.value = true
