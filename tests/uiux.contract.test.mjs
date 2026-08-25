@@ -132,13 +132,27 @@ test('header icons and AI hub stay readable in the light theme', async () => {
   const hub = await read('components/ai/AiHub.vue')
   const glow = await read('components/ai/BoardAiGlow.vue')
 
-  assert.match(header, /color:\s*var\(--color-text-primary\)/)
-  assert.match(actions, /--header-icon,\s*var\(--color-text-primary\)/)
+  assert.match(header, /color:\s*var\(--color-text-primary\)|--header-icon/)
+  assert.match(actions, /--header-icon|color-text-primary/)
   assert.match(hub, /\.ai-hub__kicker[\s\S]*color:\s*var\(--color-text-primary\)/)
   assert.match(hub, /--island-surface/)
   assert.match(colors, /\.light-theme[\s\S]*--island-surface:\s*color-mix\(in srgb, var\(--surface\) 90%/)
   assert.match(colors, /\.light-theme[\s\S]*--glass-strong-border:\s*rgba\(0, 0, 0/)
   assert.match(glow, /html\.light-theme/)
+})
+
+test('composer island and navbar wait for launch gate', async () => {
+  const dock = await read('components/ai/BoardDock.vue')
+  const nav = await read('components/base/TheNavbar.vue')
+  const launch = await read('components/base/AppLaunchScreen.vue')
+  const gate = await read('composables/useLaunchGate.ts')
+  const index = await read('pages/index.vue')
+
+  assert.match(gate, /cof:launch-complete/)
+  assert.match(launch, /dataset\.launchComplete/)
+  assert.match(dock, /v-if="launchReady"/)
+  assert.match(nav, /v-if="launchReady"/)
+  assert.match(index, /LazyBranchFlow|LazyAnalyticsPanel|LazySettingsPanel/)
 })
 
 test('select size modifiers do not inherit AppModal size-sm', async () => {

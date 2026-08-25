@@ -14,7 +14,7 @@
       "
       class="dashboard-section stats"
     >
-      <LazyStatsOverview />
+      <StatsOverview />
     </section>
 
     <section
@@ -25,7 +25,7 @@
         v-if="uiStore.activeNav === 'board'"
         class="nav-view nav-view--board"
       >
-        <LazyBranchMobileView v-if="isMobileBoard" />
+        <BranchMobileView v-if="isMobileBoard" />
         <LazyBranchFlow v-else />
       </div>
 

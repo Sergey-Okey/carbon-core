@@ -1,6 +1,6 @@
 <template>
   <div class="board-ai">
-    <AiHub />
+    <LazyAiHub />
   </div>
 </template>
 

@@ -1,6 +1,6 @@
 <template>
   <nav
-    v-show="launchReady"
+    v-if="launchReady"
     class="nav-island"
     :class="{
       'is-mobile': isMobile,

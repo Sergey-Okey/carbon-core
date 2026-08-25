@@ -39,11 +39,11 @@ const swapLabel = computed(() =>
   uiStore.boardDock === 'composer' ? 'Показать навигацию жестом вверх' : 'Показать ввод жестом вниз'
 )
 
-onMounted(() => {
+watch(launchReady, (ready) => {
+  if (!ready || !import.meta.client) return
   if (
-    import.meta.client &&
-    (window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
-      document.documentElement.classList.contains('no-animations'))
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+    document.documentElement.classList.contains('no-animations')
   ) {
     showSwipeHint.value = false
     return
