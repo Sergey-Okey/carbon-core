@@ -165,7 +165,7 @@
         drag-label="Перетащить тепловую карту"
         v-bind="dragHandlers('heatmap')"
       >
-        <AnalyticsHeatmap :days="heatmapDays" :empty="!heatmapDays.length" />
+        <AnalyticsHeatmap :days="heatmapDays" :empty="!hasHeatmapData" />
       </AnalyticsWidgetShell>
 
       <AnalyticsWidgetShell
@@ -219,6 +219,7 @@ const {
   periodAverage,
   activityTrend,
   hasActivityData,
+  hasHeatmapData,
   currentStreak,
   longestStreak,
   hourBarStats,
@@ -250,6 +251,7 @@ const nestedArcs = computed(() => {
       color: branch.color,
     }))
   }
+  if (!analyticsTasks.value.length && !hasActivityData.value) return []
   return focusMetrics.value.slice(0, 4).map((metric) => ({
     key: metric.key,
     label: metric.label,

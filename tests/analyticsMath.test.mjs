@@ -5,6 +5,8 @@ import {
   computeActivityTrend,
   computeStreak,
   getLocalDateKey,
+  mergeActivityCounts,
+  mergeCompletionEvents,
   milestoneProgressWeight,
   weightedBranchesScore,
 } from '../utils/analyticsMath.ts'
@@ -105,4 +107,46 @@ test('computeStreak tracks current and longest runs', () => {
     ['2026-07-29', 1],
   ])
   assert.deepEqual(computeStreak(idleToday, '2026-07-30'), { current: 2, longest: 2 })
+})
+
+test('mergeActivityCounts prefers the richest source for a day', () => {
+  const merged = mergeActivityCounts({
+    history: [{ date: '2026-08-20', count: 2 }],
+    log: [
+      { at: Date.UTC(2026, 7, 25, 10), taskId: 'a' },
+      { at: Date.UTC(2026, 7, 25, 12), taskId: 'b' },
+    ],
+    tasks: [
+      {
+        id: 't1',
+        title: 'Done',
+        type: 'TASK_DAY',
+        done: true,
+        completedAt: new Date(2026, 7, 24, 18).getTime(),
+      },
+      {
+        id: 'h1',
+        title: 'Habit',
+        type: 'HABIT',
+        lastCompletedAt: new Date(2026, 7, 20, 9).getTime(),
+      },
+    ],
+  })
+  assert.equal(merged.get('2026-08-20'), 2)
+  assert.equal(merged.get(getLocalDateKey(new Date(2026, 7, 24))), 1)
+  assert.equal(merged.get(getLocalDateKey(new Date(Date.UTC(2026, 7, 25, 10)))), 2)
+})
+
+test('mergeCompletionEvents unions log entries with task timestamps', () => {
+  const at = new Date(2026, 7, 24, 18).getTime()
+  const events = mergeCompletionEvents({
+    log: [{ at: at - 1000, taskId: 'log-1', type: 'TASK_WEEK', title: 'From log' }],
+    tasks: [
+      { id: 't1', title: 'From task', type: 'TASK_DAY', done: true, completedAt: at },
+      { id: 'log-1', title: 'dup', type: 'TASK_WEEK', done: true, completedAt: at - 1000 },
+    ],
+  })
+  assert.equal(events.length, 2)
+  assert.equal(events.some((item) => item.taskId === 't1'), true)
+  assert.equal(events.filter((item) => item.taskId === 'log-1').length, 1)
 })

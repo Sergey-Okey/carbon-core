@@ -307,6 +307,7 @@ import {
   Zap,
 } from 'lucide-vue-next'
 import { accessAwareStorage } from '~/utils/accessStorage'
+import { mergeActivityCounts } from '~/utils/analyticsMath'
 import { upgradeAvatarUrl } from '~/utils/avatarUrl'
 
 const MAX_AVATAR_DIMENSION = 720
@@ -454,13 +455,13 @@ const activeTasks = computed(
 
 const currentYear = computed(() => new Date().getFullYear())
 
-const historyMap = computed(() => {
-  const map = new Map<string, number>()
-  for (const item of tasksStore.completedTasksHistory || []) {
-    map.set(item.date, item.count)
-  }
-  return map
-})
+const historyMap = computed(() =>
+  mergeActivityCounts({
+    history: tasksStore.completedTasksHistory || [],
+    log: tasksStore.completionLog || [],
+    tasks: tasksStore.tasks || [],
+  })
+)
 
 const yearCells = computed(() => {
   const year = currentYear.value

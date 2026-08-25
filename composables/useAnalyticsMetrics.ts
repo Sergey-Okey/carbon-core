@@ -9,6 +9,8 @@ import {
   computeActivityTrend,
   computeStreak,
   getLocalDateKey,
+  mergeActivityCounts,
+  mergeCompletionEvents,
   milestoneProgressWeight,
   weightedBranchesScore,
 } from '~/utils/analyticsMath'
@@ -80,18 +82,24 @@ export function useAnalyticsMetrics(rangeDays?: Ref<AnalyticsRangeDays>) {
     () => analyticsTasks.value.filter((task) => task.type === 'HABIT').length
   )
 
+  const activityByDate = computed(() =>
+    // Union history, completionLog, and task timestamps so signed-in accounts work without demo seed
+    mergeActivityCounts({
+      history: tasksStore.completedTasksHistory,
+      log: tasksStore.completionLog,
+      tasks: analyticsTasks.value,
+    })
+  )
+
   const activitySeries = computed<ActivityDayPoint[]>(() => {
     const range = createDateRange(days.value)
-    return range.map((date) => {
-      const item = tasksStore.completedTasksHistory.find((history) => history.date === date.key)
-      return {
-        date: date.key,
-        label: date.label,
-        shortLabel: date.shortLabel,
-        count: item?.count ?? 0,
-        isToday: date.key === todayKey.value,
-      }
-    })
+    return range.map((date) => ({
+      date: date.key,
+      label: date.label,
+      shortLabel: date.shortLabel,
+      count: activityByDate.value.get(date.key) ?? 0,
+      isToday: date.key === todayKey.value,
+    }))
   })
 
   const periodTotal = computed(() =>
@@ -111,23 +119,18 @@ export function useAnalyticsMetrics(rangeDays?: Ref<AnalyticsRangeDays>) {
 
   const heatmapDays = computed<ActivityDayPoint[]>(() => {
     const range = createDateRange(30)
-    return range.map((date) => {
-      const item = tasksStore.completedTasksHistory.find((history) => history.date === date.key)
-      return {
-        date: date.key,
-        label: date.label,
-        shortLabel: date.shortLabel,
-        count: item?.count ?? 0,
-        isToday: date.key === todayKey.value,
-      }
-    })
+    return range.map((date) => ({
+      date: date.key,
+      label: date.label,
+      shortLabel: date.shortLabel,
+      count: activityByDate.value.get(date.key) ?? 0,
+      isToday: date.key === todayKey.value,
+    }))
   })
 
-  const historyByDate = computed(
-    () => new Map(tasksStore.completedTasksHistory.map((entry) => [entry.date, entry.count]))
-  )
+  const hasHeatmapData = computed(() => heatmapDays.value.some((day) => day.count > 0))
 
-  const streakInfo = computed(() => computeStreak(historyByDate.value, todayKey.value))
+  const streakInfo = computed(() => computeStreak(activityByDate.value, todayKey.value))
 
   const currentStreak = computed(() => streakInfo.value.current)
   const longestStreak = computed(() => streakInfo.value.longest)
@@ -140,44 +143,21 @@ export function useAnalyticsMetrics(rangeDays?: Ref<AnalyticsRangeDays>) {
   const tasksForNextLevel = computed(() => userStore.tasksForNextLevel)
 
   const completionEvents = computed(() => {
-    const cutoff = Date.now() - days.value * 24 * 60 * 60 * 1000
+    const range = createDateRange(days.value)
+    const startKey = range[0]?.key
     const titles = new Map(analyticsTasks.value.map((task) => [task.id, task.title]))
 
-    if (tasksStore.completionLog.length) {
-      return tasksStore.completionLog
-        .filter((entry) => entry.at >= cutoff)
-        .map((entry) => ({
-          at: entry.at,
-          title: entry.title || titles.get(entry.taskId) || 'Задача',
-          type: entry.type,
-          taskId: entry.taskId,
-        }))
-        .sort((a, b) => b.at - a.at)
-    }
-
-    return analyticsTasks.value
-      .flatMap((task) => {
-        const events: { at: number; title: string; type: TaskType; taskId: string }[] = []
-        if (task.done && task.completedAt) {
-          events.push({
-            at: task.completedAt,
-            title: task.title,
-            type: task.type,
-            taskId: task.id,
-          })
-        }
-        if (task.type === 'HABIT' && task.lastCompletedAt) {
-          events.push({
-            at: task.lastCompletedAt,
-            title: task.title,
-            type: task.type,
-            taskId: task.id,
-          })
-        }
-        return events
-      })
-      .filter((event) => event.at >= cutoff)
-      .sort((a, b) => b.at - a.at)
+    return mergeCompletionEvents({
+      log: tasksStore.completionLog,
+      tasks: analyticsTasks.value,
+    })
+      .filter((entry) => !startKey || getLocalDateKey(new Date(entry.at)) >= startKey)
+      .map((entry) => ({
+        at: entry.at,
+        title: entry.title || titles.get(entry.taskId) || 'Задача',
+        type: (entry.type as TaskType) || 'TASK_DAY',
+        taskId: entry.taskId,
+      }))
   })
 
   const productiveHourSeries = computed(() => {
@@ -229,30 +209,49 @@ export function useAnalyticsMetrics(rangeDays?: Ref<AnalyticsRangeDays>) {
   const branchStats = computed(() =>
     branchesStore.branches.map((branch) => {
       const milestones = branch.milestones ?? []
-      const total = milestones.length
+      const totalMilestones = milestones.length
 
-      const weights = milestones.map((milestone) => {
-        const linked = (milestone.taskIds ?? [])
-          .map((id) => tasksStore.tasks.find((task) => task.id === id))
-          .filter(Boolean)
-        return milestoneProgressWeight({
-          linkedDone: linked.filter((task) => task?.done).length,
-          linkedTotal: linked.length,
-          status: milestone.status,
-          achieved: milestone.achieved,
+      if (totalMilestones > 0) {
+        const weights = milestones.map((milestone) => {
+          const linked = (milestone.taskIds ?? [])
+            .map((id) => tasksStore.tasks.find((task) => task.id === id))
+            .filter(Boolean)
+          return milestoneProgressWeight({
+            linkedDone: linked.filter((task) => task?.done).length,
+            linkedTotal: linked.length,
+            status: milestone.status,
+            achieved: milestone.achieved,
+          })
         })
-      })
 
-      const done = weights.filter((value) => value >= 1).length
-      const progress = branchProgressPercent(weights)
+        const done = weights.filter((value) => value >= 1).length
+        return {
+          id: branch.id,
+          name: branch.displayName,
+          color: branch.markerColor || 'var(--accent)',
+          total: totalMilestones,
+          done,
+          progress: branchProgressPercent(weights),
+        }
+      }
 
+      const linked = branchesStore
+        .getBranchTaskIds(branch.id)
+        .map((id) => tasksStore.tasks.find((task) => task.id === id))
+        .filter((task): task is (typeof tasksStore.tasks)[number] =>
+          Boolean(task && task.type !== 'PURCHASE')
+        )
+      const done = linked.filter((task) =>
+        task.type === 'HABIT' ? Boolean(task.lastCompletedAt) : task.done
+      ).length
+      const total = linked.length
       return {
         id: branch.id,
         name: branch.displayName,
         color: branch.markerColor || 'var(--accent)',
         total,
         done,
-        progress,
+        progress: total ? Math.round((done / total) * 100) : 0,
       }
     })
   )
@@ -444,6 +443,7 @@ export function useAnalyticsMetrics(rangeDays?: Ref<AnalyticsRangeDays>) {
     setRangeDays,
     activitySeries,
     heatmapDays,
+    hasHeatmapData,
     periodTotal,
     periodAverage,
     activityTrend,

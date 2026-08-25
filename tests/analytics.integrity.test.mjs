@@ -16,11 +16,12 @@ test('completion log prune limits remain in place', async () => {
   assert.match(tasksStore, /pruneHistory/)
 })
 
-test('analytics metrics keep completionLog fallback and range union', async () => {
+test('analytics metrics union history, log, and task timestamps', async () => {
   const metrics = await read('composables/useAnalyticsMetrics.ts')
   assert.match(metrics, /AnalyticsRangeDays = 7 \| 14 \| 30/)
-  assert.match(metrics, /completionLog\.length/)
-  assert.match(metrics, /Fallback for older saves without completionLog/)
+  assert.match(metrics, /mergeActivityCounts/)
+  assert.match(metrics, /mergeCompletionEvents/)
+  assert.match(metrics, /Union history, completionLog, and task timestamps/)
   assert.match(metrics, /branchesProgressScore/)
   assert.match(metrics, /productiveHourSeries/)
   assert.match(metrics, /from '~\/utils\/analyticsMath'/)
@@ -31,4 +32,5 @@ test('reopening a task rolls back history, log, and user counters', async () => 
   assert.match(tasksStore, /decrementCompletedTasks/)
   assert.match(tasksStore, /completionLog\.value\.splice/)
   assert.match(tasksStore, /bumpHistory\([^,]+,\s*-1\)|bumpHistory\(.*-1/)
+  assert.match(tasksStore, /reconcileCompletionStats/)
 })

@@ -15,6 +15,7 @@ test('analytics panel wires metrics composable and range control', async () => {
   assert.match(panel, /useAnalyticsMetrics/)
   assert.match(panel, /analyticsRangeDays/)
   assert.match(metrics, /completionLog/)
+  assert.match(metrics, /mergeActivityCounts/)
   assert.match(metrics, /branchesProgressScore/)
   assert.match(uiStore, /analyticsRangeDays/)
 })

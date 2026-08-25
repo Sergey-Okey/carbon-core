@@ -1,12 +1,17 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Task, TaskTag, TaskType } from '~/types/task.types'
 import { v4 as uuidv4 } from 'uuid'
-import { useUserStore } from './user.store'
-import { useBranchesStore } from './branches.store'
-import { useTagsStore } from './tags.store'
-import { useRewardsStore } from './rewards.store'
+import type { Task, TaskTag, TaskType } from '~/types/task.types'
 import { accessAwareStorage } from '~/utils/accessStorage'
+import {
+  getLocalDateKey,
+  mergeActivityCounts,
+  mergeCompletionEvents,
+} from '~/utils/analyticsMath'
+import { useBranchesStore } from './branches.store'
+import { useRewardsStore } from './rewards.store'
+import { useTagsStore } from './tags.store'
+import { useUserStore } from './user.store'
 
 type NewTaskData = Omit<Task, 'id' | 'createdAt' | 'done'> & {
   id?: string
@@ -37,13 +42,6 @@ export const useTasksStore = defineStore(
 
     function getTodayDateString(): string {
       return getLocalDateKey(new Date())
-    }
-
-    function getLocalDateKey(date: Date): string {
-      const year = date.getFullYear()
-      const month = String(date.getMonth() + 1).padStart(2, '0')
-      const day = String(date.getDate()).padStart(2, '0')
-      return `${year}-${month}-${day}`
     }
 
     function getActiveTasksByType(type: TaskType): Task[] {
@@ -276,6 +274,66 @@ export const useTasksStore = defineStore(
       pruneCompletionLog()
     }
 
+    function isTaskType(value: string): value is TaskType {
+      return (
+        value === 'HABIT' ||
+        value === 'TASK_DAY' ||
+        value === 'TASK_WEEK' ||
+        value === 'TASK_MONTH' ||
+        value === 'TASK_YEAR' ||
+        value === 'PURCHASE'
+      )
+    }
+
+    function reconcileCompletionStats() {
+      const merged = mergeActivityCounts({
+        history: completedTasksHistory.value,
+        log: completionLog.value,
+        tasks: tasks.value,
+      })
+      const nextHistory = [...merged.entries()]
+        .filter(([, count]) => count > 0)
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => a.date.localeCompare(b.date))
+      const historyChanged =
+        nextHistory.length !== completedTasksHistory.value.length ||
+        nextHistory.some(
+          (item, index) =>
+            item.date !== completedTasksHistory.value[index]?.date ||
+            item.count !== completedTasksHistory.value[index]?.count
+        )
+      if (historyChanged) {
+        completedTasksHistory.value = nextHistory
+        pruneHistory()
+      }
+
+      const seen = new Set(
+        completionLog.value.map((entry) => `${entry.taskId}:${entry.at}`)
+      )
+      for (const event of mergeCompletionEvents({
+        log: completionLog.value,
+        tasks: tasks.value,
+      })) {
+        if (seen.has(`${event.taskId}:${event.at}`)) continue
+        seen.add(`${event.taskId}:${event.at}`)
+        appendCompletionLog({
+          at: event.at,
+          taskId: event.taskId,
+          type: isTaskType(event.type) ? event.type : 'TASK_DAY',
+          title: event.title,
+        })
+      }
+
+      const reconstructed = (historyChanged ? completedTasksHistory.value : nextHistory).reduce(
+        (sum, item) => sum + item.count,
+        0
+      )
+      const userStore = useUserStore()
+      if (reconstructed > userStore.completedTasksCount) {
+        userStore.incrementCompletedTasks(reconstructed - userStore.completedTasksCount)
+      }
+    }
+
     return {
       tasks,
       deletedTasks,
@@ -295,6 +353,7 @@ export const useTasksStore = defineStore(
       canAddTask,
       replaceCompletionLog,
       appendCompletionLog,
+      reconcileCompletionStats,
     }
   },
   {

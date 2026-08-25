@@ -87,4 +87,4 @@ NUXT_OPENAI_API_KEY=sk-or-v1-...
 
 3. `sudo systemctl restart cof-board`
 
-Без ключа агент отвечает локальным планировщиком.
+Без ключа агент отвечает ошибкой «OpenRouter is not configured». Локальный планировщик не используется.

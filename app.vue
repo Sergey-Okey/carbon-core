@@ -199,6 +199,7 @@ onMounted(async () => {
 
   tasksStore.resetDailyTasks();
   tagsStore.normalizeTags(tasksStore.tasks);
+  tasksStore.reconcileCompletionStats();
   scheduleNextReset();
   window.addEventListener("beforeunload", autoBackupOnUnload);
   [
