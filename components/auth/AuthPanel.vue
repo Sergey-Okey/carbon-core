@@ -741,6 +741,7 @@ async function confirmEmailVerification() {
     return
   }
 
+  accessStore.wipeLocalWorkspace()
   accessStore.activateSubscription()
   markWelcomeRegistrationPending()
   window.location.assign('/')
@@ -874,6 +875,7 @@ async function submit() {
     resetMessage.value = 'Мы отправили код подтверждения на вашу почту.'
     return
   }
+  accessStore.wipeLocalWorkspace()
   accessStore.activateSubscription()
   window.location.assign('/')
 }

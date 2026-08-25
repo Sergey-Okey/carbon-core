@@ -327,8 +327,8 @@ async function exitDemoToRegister() {
   )
   if (!ok) return
   accessStore.leaveDemo()
-  sessionStorage.clear()
   sessionStorage.setItem('cof-workspace-fresh', '1')
+  sessionStorage.setItem('cof-exit-demo', '1')
   window.location.assign('/register')
 }
 

@@ -140,8 +140,8 @@ async function exitDemoToRegister() {
   )
   if (!ok) return
   accessStore.leaveDemo()
-  sessionStorage.clear()
   sessionStorage.setItem('cof-workspace-fresh', '1')
+  sessionStorage.setItem('cof-exit-demo', '1')
   window.location.assign('/register')
 }
 
@@ -273,7 +273,7 @@ function handleDocumentClick(event: MouseEvent) {
   }
 }
 
-function closeProfileMenu() {
+function closeProfilePanel() {
   if (activeSheet.value === 'profile') activeSheet.value = 'none'
 }
 
