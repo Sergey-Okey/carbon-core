@@ -12,12 +12,13 @@ export default defineNuxtPlugin(() => {
   const oauthOk = params.get('oauth') === 'success'
   const exitPending = sessionStorage.getItem('cof-exit-demo') === '1'
   const workspaceFresh = sessionStorage.getItem('cof-workspace-fresh') === '1'
+  const workspaceReset = sessionStorage.getItem('cof-workspace-reset') === '1'
 
   if (params.get('welcome') === '1') {
     markWelcomeRegistrationPending()
   }
 
-  if (oauthOk || exitPending || workspaceFresh) {
+  if (oauthOk || exitPending || workspaceFresh || workspaceReset) {
     discardDemoWorkspace()
   }
 

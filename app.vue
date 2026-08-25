@@ -15,6 +15,7 @@ import { saveAutoBackup } from "~/utils/backup";
 import { getBackendFetchOptions, getBackendUrl } from "~/utils/backend";
 import { browserLog } from "~/utils/browserLog";
 import { seedDemoWorkspaceIfNeeded } from "~/utils/demoSeed";
+import { emptyWorkspaceStores } from "~/utils/emptyWorkspace";
 import {
   consumeWelcomeRegistrationPending,
   WELCOME_INBOX_MESSAGE,
@@ -135,6 +136,14 @@ onMounted(async () => {
   window.addEventListener("offline", handleOffline);
   if (!navigator.onLine) syncStatus.setState("offline");
 
+  const workspaceReset =
+    import.meta.client &&
+    sessionStorage.getItem("cof-workspace-reset") === "1";
+  if (workspaceReset) {
+    sessionStorage.removeItem("cof-workspace-reset");
+    emptyWorkspaceStores({ includePrefs: true });
+  }
+
   if (accessStore.isDemo) {
     syncStatus.setState("local");
     browserLog.info("sync", "Sync disabled in demo mode");
@@ -147,51 +156,42 @@ onMounted(async () => {
       const freshWorkspace =
         import.meta.client &&
         sessionStorage.getItem("cof-workspace-fresh") === "1";
-      if (freshWorkspace) {
-        sessionStorage.removeItem("cof-workspace-fresh");
-        // Drop in-memory demo leftovers before cloud hydrate (new account / left demo).
-        tasksStore.$patch({
-          tasks: [],
-          deletedTasks: [],
-          completedTasksHistory: [],
-          completionLog: [],
-        });
-        rewardsStore.$patch({ rewards: [] });
-        tagsStore.$patch({ tags: [] });
-        userStore.$patch({
-          leaguePoints: 0,
-          completedTasksCount: 0,
-        });
-        branchesStore.replaceEdges([]);
-      }
+      if (workspaceReset) {
+        await pushToCloud();
+        browserLog.info("sync", "Workspace reset pushed empty state");
+      } else {
+        if (freshWorkspace) {
+          sessionStorage.removeItem("cof-workspace-fresh");
+          emptyWorkspaceStores();
+        }
 
-      syncStatus.setState("syncing");
-      browserLog.info("sync", "Requesting initial sync");
-      const data = await backendFetch<SyncResponse>(syncEndpoint, {
-        query: { userId: syncUserId.value },
-        ...getBackendFetchOptions(),
-      });
-      if (data.user) userStore.$patch(data.user);
-      if (data.tasks) tasksStore.$patch(data.tasks);
-      if (data.branches?.branches) {
-        branchesStore.$patch({ branches: data.branches.branches });
+        syncStatus.setState("syncing");
+        browserLog.info("sync", "Requesting initial sync");
+        const data = await backendFetch<SyncResponse>(syncEndpoint, {
+          query: { userId: syncUserId.value },
+          ...getBackendFetchOptions(),
+        });
+        if (data.user) userStore.$patch(data.user);
+        if (data.tasks) tasksStore.$patch(data.tasks);
+        if (data.branches?.branches) {
+          branchesStore.$patch({ branches: data.branches.branches });
+        }
+        if (data.branches?.edges) branchesStore.replaceEdges(data.branches.edges);
+        if (data.rewards) rewardsStore.$patch(data.rewards);
+        if (data.tags) {
+          tagsStore.$patch(data.tags);
+          tagsStore.normalizeTags(tasksStore.tasks);
+        }
+        if (data.ui) uiStore.$patch(data.ui);
+        if (data.settings) {
+          settingsStore.$patch(data.settings);
+          settingsStore.applyRuntimeSettings();
+        }
+        await pushToCloud();
+        browserLog.info("sync", "Initial sync completed", {
+          mode: authStore.authMode,
+        });
       }
-      if (data.branches?.edges) branchesStore.replaceEdges(data.branches.edges);
-      if (data.rewards) rewardsStore.$patch(data.rewards);
-      if (data.tags) {
-        tagsStore.$patch(data.tags);
-        tagsStore.normalizeTags(tasksStore.tasks);
-      }
-      if (data.ui) uiStore.$patch(data.ui);
-      if (data.settings) {
-        settingsStore.$patch(data.settings);
-        settingsStore.applyRuntimeSettings();
-      }
-      // Push current workspace so server is not empty after first login.
-      await pushToCloud();
-      browserLog.info("sync", "Initial sync completed", {
-        mode: authStore.authMode,
-      });
     } catch {
       syncStatus.setState(navigator.onLine ? "error" : "offline");
       browserLog.warn("sync", "Cloud sync unavailable, using local data");

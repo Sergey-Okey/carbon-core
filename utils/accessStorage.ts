@@ -15,6 +15,9 @@ export const ACCESS_DATA_KEYS = [
   'carbon-ai',
   'carbon-notifications',
 ] as const
+export const DEMO_SEED_KEY = 'carbon-demo-workspace-seeded-v11'
+export const DEMO_REWARDS_INIT_KEY = 'carbon-rewards-demo-initialized'
+export const DEMO_CLEARED_KEY = 'carbon-demo-workspace-cleared'
 
 const defaultAccessState: AccessState = {
   mode: 'guest',
@@ -197,6 +200,14 @@ export function resetDemoData() {
   clearPersistedDemo()
 }
 
+/** Keep demo mode but do not re-seed after an explicit reset. */
+export function markDemoWorkspaceCleared() {
+  if (!import.meta.client) return
+  accessAwareStorage.setItem(DEMO_CLEARED_KEY, '1')
+  accessAwareStorage.setItem(DEMO_SEED_KEY, '1')
+  accessAwareStorage.setItem(DEMO_REWARDS_INIT_KEY, 'true')
+}
+
 /** Drop demo workspace instead of copying it into a real account. */
 export function discardDemoWorkspace() {
   if (!import.meta.client) return
@@ -205,11 +216,12 @@ export function discardDemoWorkspace() {
   for (const key of ACCESS_DATA_KEYS) {
     localStorage.removeItem(key)
   }
-  localStorage.removeItem('carbon-rewards-demo-initialized')
+  localStorage.removeItem(DEMO_REWARDS_INIT_KEY)
+  localStorage.removeItem(DEMO_CLEARED_KEY)
   // Seed markers may linger in localStorage after a demo→auth mode flip race.
+  localStorage.removeItem(DEMO_SEED_KEY)
   localStorage.removeItem('carbon-demo-workspace-seeded-v8')
   localStorage.removeItem('carbon-demo-workspace-seeded-v10')
-  localStorage.removeItem('carbon-demo-workspace-seeded-v11')
 }
 
 function activeStorage(): Storage {

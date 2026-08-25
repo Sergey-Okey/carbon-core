@@ -352,7 +352,8 @@ import {
   Vibrate,
   Volume2,
 } from 'lucide-vue-next'
-import { ACCESS_STORAGE_KEY } from '~/utils/accessStorage'
+import { markDemoWorkspaceCleared } from '~/utils/accessStorage'
+import { persistWorkspaceStores } from '~/utils/emptyWorkspace'
 import { ACCENT_COLORS } from '~/stores/settings.store'
 import {
   buildBackupPayload,
@@ -565,15 +566,15 @@ async function resetAllData() {
   )
   if (!confirmed) return
 
-  if (accessStore.isDemo) {
-    sessionStorage.clear()
+  const wasDemo = accessStore.isDemo
+  accessStore.wipeLocalWorkspace({ markFresh: false, includePrefs: true })
+  if (wasDemo) {
+    markDemoWorkspaceCleared()
   } else {
-    const accessState = localStorage.getItem(ACCESS_STORAGE_KEY)
-    localStorage.clear()
-    if (accessState) localStorage.setItem(ACCESS_STORAGE_KEY, accessState)
+    sessionStorage.setItem('cof-workspace-reset', '1')
   }
-  success('Данные сброшены. Перезагрузка...')
-  setTimeout(() => window.location.reload(), 1000)
+  persistWorkspaceStores()
+  window.location.reload()
 }
 </script>
 

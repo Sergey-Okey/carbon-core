@@ -3,6 +3,9 @@ import test from 'node:test'
 import {
   ACCESS_DATA_KEYS,
   ACCESS_STORAGE_KEY,
+  DEMO_CLEARED_KEY,
+  DEMO_REWARDS_INIT_KEY,
+  DEMO_SEED_KEY,
   DEMO_STORAGE_KEY,
   DEMO_TTL_MS,
 } from '../utils/accessStorage.ts'
@@ -25,4 +28,10 @@ test('access storage keys stay stable for demo/migrate flows', () => {
     'carbon-ai',
     'carbon-notifications',
   ])
+})
+
+test('demo seed keys stay stable for wipe/reset flows', () => {
+  assert.equal(DEMO_SEED_KEY, 'carbon-demo-workspace-seeded-v11')
+  assert.equal(DEMO_REWARDS_INIT_KEY, 'carbon-rewards-demo-initialized')
+  assert.equal(DEMO_CLEARED_KEY, 'carbon-demo-workspace-cleared')
 })

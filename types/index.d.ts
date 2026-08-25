@@ -5,6 +5,7 @@ export * from './ai.types'
 
 declare module 'pinia' {
   export interface PiniaCustomProperties {
+    $persist?: () => void
     $persistedState?: {
       isReady: Promise<void>
     }

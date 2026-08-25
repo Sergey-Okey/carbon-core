@@ -6,9 +6,12 @@ import { useBranchesStore } from '~/stores/branches.store'
 import { useTagsStore } from '~/stores/tags.store'
 import { useTasksStore } from '~/stores/tasks.store'
 import { useUserStore } from '~/stores/user.store'
-import { accessAwareStorage } from '~/utils/accessStorage'
+import {
+  DEMO_CLEARED_KEY,
+  DEMO_SEED_KEY,
+  accessAwareStorage,
+} from '~/utils/accessStorage'
 
-const DEMO_SEED_KEY = 'carbon-demo-workspace-seeded-v11'
 const edgeStyle = { stroke: 'var(--dim)', strokeWidth: 1.15 }
 const DEMO_BRANCH_IDS = ['COF'] as const
 const COL = 340
@@ -254,6 +257,7 @@ function ensureDemoBoardEdges() {
 
 function ensureDemoProgressArcs() {
   const branchesStore = useBranchesStore()
+  if (!branchesStore.branches.length) return
   const seeded = buildDemoBranches()
   const seedById = new Map(seeded.map((branch) => [branch.id, branch]))
 
@@ -741,6 +745,8 @@ export async function seedDemoWorkspaceIfNeeded() {
   if (!accessStore.isDemo) return false
 
   await waitStoreHydration()
+
+  if (accessAwareStorage.getItem(DEMO_CLEARED_KEY) === '1') return false
 
   if (accessAwareStorage.getItem(DEMO_SEED_KEY) === '1') {
     ensureDemoBoardEdges()

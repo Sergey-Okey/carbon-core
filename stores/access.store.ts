@@ -9,11 +9,7 @@ import {
   type AccessMode,
 } from '~/utils/accessStorage'
 import { browserLog } from '~/utils/browserLog'
-import { useBranchesStore } from '~/stores/branches.store'
-import { useRewardsStore } from '~/stores/rewards.store'
-import { useTagsStore } from '~/stores/tags.store'
-import { useTasksStore } from '~/stores/tasks.store'
-import { useUserStore } from '~/stores/user.store'
+import { emptyWorkspaceStores, persistWorkspaceStores } from '~/utils/emptyWorkspace'
 
 export const SUBSCRIPTION_PRICE = 250
 export const SUBSCRIPTION_PAYMENT_URL = 'https://auth.robokassa.ru/RecurringSubscriptionPage/Subscription/Subscribe?SubscriptionId=f1624c7a-3c92-4c9f-a3a7-0b705f3d37a8'
@@ -50,29 +46,12 @@ export const useAccessStore = defineStore('access', () => {
    * Otherwise pinia-persist rewrites demo tasks into localStorage as soon as
    * accessAwareStorage starts pointing at the real account storage.
    */
-  function wipeLocalWorkspace(options: { markFresh?: boolean } = {}) {
+  function wipeLocalWorkspace(options: { markFresh?: boolean; includePrefs?: boolean } = {}) {
     if (!import.meta.client) return
 
     try {
-      const tasksStore = useTasksStore()
-      const rewardsStore = useRewardsStore()
-      const tagsStore = useTagsStore()
-      const userStore = useUserStore()
-      const branchesStore = useBranchesStore()
-
-      tasksStore.$patch({
-        tasks: [],
-        deletedTasks: [],
-        completedTasksHistory: [],
-        completionLog: [],
-      })
-      rewardsStore.$patch({ rewards: [] })
-      tagsStore.$patch({ tags: [] })
-      userStore.$patch({
-        leaguePoints: 0,
-        completedTasksCount: 0,
-      })
-      branchesStore.replaceEdges([])
+      emptyWorkspaceStores({ includePrefs: options.includePrefs })
+      persistWorkspaceStores()
     } catch (error) {
       browserLog.warn('access', 'Не удалось очистить workspace в памяти', {
         message: error instanceof Error ? error.message : String(error),
@@ -80,6 +59,14 @@ export const useAccessStore = defineStore('access', () => {
     }
 
     discardDemoWorkspace()
+
+    try {
+      persistWorkspaceStores()
+    } catch (error) {
+      browserLog.warn('access', 'Не удалось записать пустой workspace', {
+        message: error instanceof Error ? error.message : String(error),
+      })
+    }
 
     if (options.markFresh !== false) {
       sessionStorage.setItem('cof-exit-demo', '1')
@@ -96,6 +83,7 @@ export const useAccessStore = defineStore('access', () => {
     activatedAt.value = subscription.activatedAt || activatedAt.value || new Date().toISOString()
     expiresAt.value = subscription.expiresAt || ''
     persistState()
+    persistWorkspaceStores()
     browserLog.info('access', 'Подписка активирована', { activatedAt: activatedAt.value, expiresAt: expiresAt.value })
   }
 
@@ -120,6 +108,7 @@ export const useAccessStore = defineStore('access', () => {
     activatedAt.value = ''
     expiresAt.value = ''
     persistState()
+    persistWorkspaceStores()
     browserLog.info('access', 'Демо-режим завершен')
   }
 

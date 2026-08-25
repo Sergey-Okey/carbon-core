@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import type { Reward } from '~/types/reward.types'
 import { v4 as uuidv4 } from 'uuid'
 import { useUserStore } from './user.store'
-import { accessAwareStorage } from '~/utils/accessStorage'
+import { DEMO_REWARDS_INIT_KEY, accessAwareStorage } from '~/utils/accessStorage'
 
 export const useRewardsStore = defineStore(
   'rewards',
@@ -14,11 +14,10 @@ export const useRewardsStore = defineStore(
       const accessStore = useAccessStore()
       if (!accessStore.isDemo) return
 
-      const DEMO_KEY = 'carbon-rewards-demo-initialized'
       const store = useRewardsStore()
       if (store.$persistedState) await store.$persistedState.isReady
       if (!accessStore.isDemo) return
-      if (rewards.value.length === 0 && !accessAwareStorage.getItem(DEMO_KEY)) {
+      if (rewards.value.length === 0 && !accessAwareStorage.getItem(DEMO_REWARDS_INIT_KEY)) {
         rewards.value = [
           {
             id: uuidv4(),
@@ -36,7 +35,7 @@ export const useRewardsStore = defineStore(
             effect: { leaguePoints: 150 },
           },
         ]
-        accessAwareStorage.setItem(DEMO_KEY, 'true')
+        accessAwareStorage.setItem(DEMO_REWARDS_INIT_KEY, 'true')
       }
     }
 
