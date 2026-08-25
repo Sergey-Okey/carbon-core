@@ -44,7 +44,7 @@
               :key="hint"
               type="button"
               class="agent-chip"
-              :disabled="pending"
+              :disabled="pending || typing"
               @click="submitHint(hint)"
             >
               {{ hint }}
@@ -53,7 +53,7 @@
         </div>
 
         <div
-          v-for="row in thread"
+          v-for="row in visibleThread"
           :key="row.id"
           class="agent-row"
           :class="row.role"
@@ -82,7 +82,7 @@
           </div>
         </div>
 
-        <div v-if="pending" class="agent-row assistant">
+        <div v-if="typing" class="agent-row assistant">
           <div class="agent-bubble is-waiting" aria-label="Агент печатает">
             <span class="agent-typing" aria-hidden="true">
               <i></i>
@@ -92,14 +92,14 @@
           </div>
         </div>
 
-        <div v-if="liveError && !pending" class="agent-row assistant">
+        <div v-if="liveError && !typing" class="agent-row assistant">
           <div class="agent-bubble failed">
             <p class="agent-text">{{ liveError }}</p>
           </div>
         </div>
         </div>
 
-        <div class="agent-composer" :class="{ 'is-waiting': pending }">
+        <div class="agent-composer" :class="{ 'is-waiting': typing }">
           <textarea
             ref="composerRef"
             v-model="request"
@@ -148,7 +148,15 @@ const shellRef = ref<HTMLElement | null>(null)
 const streamId = ref('')
 const streamed = ref('')
 const shouldStream = ref(false)
+const typing = ref(false)
+const heldRowId = ref('')
 let streamTimer: number | null = null
+let typingTimer: number | null = null
+let typingUntil = 0
+let queuedStream: { id: string; text: string } | null = null
+
+// The local agent can answer in under 100 ms, so the dots need a floor to be seen.
+const TYPING_MIN_MS = 700
 
 const suggestions = [
   'Что делать сегодня?',
@@ -168,7 +176,9 @@ const showEmpty = computed(
   () => !memory.value.length && !liveRequest.value && !pending.value && !liveError.value
 )
 
-const canSubmit = computed(() => request.value.trim().length > 1 && !pending.value)
+const canSubmit = computed(
+  () => request.value.trim().length > 1 && !pending.value && !typing.value
+)
 
 const thread = computed<ChatRow[]>(() => {
   const catalog = {
@@ -195,6 +205,10 @@ const thread = computed<ChatRow[]>(() => {
   }
   return rows
 })
+
+const visibleThread = computed(() =>
+  thread.value.filter((row) => row.id !== heldRowId.value)
+)
 
 function isHabitLink(link: AiEntityRef) {
   if (link.kind !== 'task') return false
@@ -338,16 +352,56 @@ watch(
   { immediate: true }
 )
 
+function stopTypingTimer() {
+  if (typingTimer === null) return
+  window.clearTimeout(typingTimer)
+  typingTimer = null
+}
+
+function releaseTyping() {
+  typing.value = false
+  heldRowId.value = ''
+  const next = queuedStream
+  queuedStream = null
+  if (next) startStream(next.id, next.text)
+}
+
+watch(pending, (value) => {
+  if (value) {
+    stopTypingTimer()
+    typingUntil = Date.now() + TYPING_MIN_MS
+    typing.value = true
+    return
+  }
+  const rest = Math.max(0, typingUntil - Date.now())
+  if (!rest) {
+    releaseTyping()
+    return
+  }
+  typingTimer = window.setTimeout(() => {
+    typingTimer = null
+    releaseTyping()
+  }, rest)
+})
+
 watch(
   () => memory.value[0]?.at,
   (at) => {
     if (!at || !shouldStream.value) return
     shouldStream.value = false
-    startStream(`a-${at}`, stripPublicFallbackNotice(memory.value[0]?.message || ''))
+    const id = `a-${at}`
+    const text = stripPublicFallbackNotice(memory.value[0]?.message || '')
+    if (typing.value) {
+      // Hold the answer back so the dots are not overtaken by the reply.
+      heldRowId.value = id
+      queuedStream = { id, text }
+      return
+    }
+    startStream(id, text)
   }
 )
 
-watch([thread, pending, liveRequest, liveError, streamed], () => {
+watch([thread, typing, liveRequest, liveError, streamed], () => {
   nextTick(scrollThread)
 })
 
@@ -385,6 +439,7 @@ onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
   syncBodyLock(false)
   stopStream()
+  stopTypingTimer()
 })
 </script>
 
