@@ -807,16 +807,7 @@ async function deleteAccount() {
 }
 
 .tile-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-3);
-  flex: 0 0 auto;
-
-  h2 {
-    @include heading-2;
-    color: var(--color-text-primary);
-  }
+  @include card-head;
 }
 
 .tile-head__aside {

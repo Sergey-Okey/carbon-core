@@ -151,7 +151,12 @@ function handleBackdrop() {
   padding: var(--space-3);
 }
 
-.app-modal-header,
+.app-modal-header {
+  @include panel-head;
+  gap: var(--panel-gap);
+  padding-inline: var(--panel-padding);
+}
+
 .app-modal-footer {
   display: flex;
   align-items: center;
@@ -162,18 +167,13 @@ function handleBackdrop() {
 }
 
 .title-block {
+  display: grid;
+  gap: var(--space-1);
   min-width: 0;
-
-  h3 {
-    @include heading-3;
-    color: var(--color-text-primary);
-    overflow-wrap: break-word;
-  }
 }
 
 .modal-kicker {
   display: block;
-  margin-bottom: var(--space-1);
   color: var(--color-text-secondary);
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);

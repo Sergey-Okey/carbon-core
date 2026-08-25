@@ -39,7 +39,7 @@
         >
           <div class="sheet-handle" aria-hidden="true" />
 
-          <header class="panel-head" :class="{ 'has-clear': totalCount }">
+          <header class="panel-head">
             <h3 id="notification-panel-title">Уведомления</h3>
             <AppButton
               v-if="totalCount"
@@ -323,21 +323,7 @@ onBeforeUnmount(() => {
 }
 
 .panel-head {
-  display: none;
-  align-items: center;
-  justify-content: flex-end;
-  min-width: 0;
-  padding: var(--space-2) var(--space-3) 0;
-
-  &.has-clear {
-    display: flex;
-  }
-
-  h3 {
-    display: none;
-    margin: 0;
-    min-width: 0;
-  }
+  @include panel-head;
 }
 
 .panel-clear {
@@ -540,18 +526,7 @@ onBeforeUnmount(() => {
   }
 
   .panel-head {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--space-3);
     min-height: var(--space-12);
-    padding: var(--space-3);
-
-    h3 {
-      @include heading-3;
-      @include text-ellipsis;
-      display: block;
-      color: var(--color-text-primary);
-    }
   }
 
   .history-list {

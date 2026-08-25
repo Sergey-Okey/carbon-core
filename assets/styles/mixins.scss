@@ -251,6 +251,58 @@
   line-height: var(--body-leading);
 }
 
+/// Header row for in-page cards and tiles (settings, profile).
+@mixin card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex: 0 0 auto;
+  min-width: 0;
+
+  h2 {
+    @include heading-2;
+    min-width: 0;
+    color: var(--color-text-primary);
+    overflow-wrap: break-word;
+  }
+}
+
+/// Shared header row for overlay plates: agent chat, notifications, modals, sheets.
+/// Title block on the left (`h2`/`h3` plus optional `.panel-head-note`), actions on the right.
+@mixin panel-head {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: var(--space-14);
+  padding: var(--space-3) var(--space-4);
+  border-block-end: var(--ui-border);
+
+  h2,
+  h3 {
+    @include heading-3;
+    min-width: 0;
+    color: var(--color-text-primary);
+    overflow-wrap: break-word;
+  }
+
+  .panel-head-text {
+    display: grid;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+
+  .panel-head-note {
+    @include caption-text;
+    @include text-ellipsis;
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+}
+
 @mixin caption-text {
   font-size: var(--caption-size);
   line-height: var(--caption-leading);

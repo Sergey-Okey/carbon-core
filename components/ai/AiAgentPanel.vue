@@ -22,7 +22,10 @@
       >
         <header class="agent-head">
           <div class="agent-handle" aria-hidden="true" />
-          <h3>Агент</h3>
+          <div class="panel-head-text">
+            <h3>Агент</h3>
+            <p class="panel-head-note">Меняет доску, задачи и привычки</p>
+          </div>
           <AppButton
             type="button"
             variant="ghost"
@@ -464,18 +467,7 @@ onUnmounted(() => {
 }
 
 .agent-head {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-3);
-  min-height: var(--space-12);
-  padding: var(--space-3);
-
-  h3 {
-    @include heading-3;
-    @include text-ellipsis;
-    color: var(--color-text-primary);
-  }
+  @include panel-head;
 }
 
 .sheet-backdrop {
@@ -494,7 +486,7 @@ onUnmounted(() => {
   display: none;
   width: var(--space-9);
   height: var(--space-1);
-  margin: 0 auto;
+  margin: 0 auto var(--space-2);
   border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--color-text-muted) 55%, transparent);
 }
@@ -783,7 +775,7 @@ onUnmounted(() => {
 
   .agent-head {
     grid-template-columns: minmax(0, 1fr) auto;
-    padding-block-start: var(--space-3);
+    padding-block-start: var(--space-2);
   }
 
   .agent-handle {
