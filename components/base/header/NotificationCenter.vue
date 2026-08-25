@@ -64,6 +64,7 @@
                   <span class="meta-dot" aria-hidden="true">·</span>
                   <span class="category-label">{{ categoryLabel(item.category) }}</span>
                 </div>
+                <p v-if="item.title" class="history-title">{{ item.title }}</p>
                 <p class="history-message">{{ item.message }}</p>
                 <time class="history-time" :datetime="item.createdAt">
                   {{ formatRelativeRu(item.createdAt) }}
@@ -380,13 +381,26 @@ onBeforeUnmount(() => {
   opacity: 0.55;
 }
 
-.history-message {
+.history-title {
   margin: 0;
   color: var(--color-text-primary);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  line-height: 1.4;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.history-message {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: 1.45;
   overflow-wrap: break-word;
+  white-space: pre-line;
 }
 
 .history-time {

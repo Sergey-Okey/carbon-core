@@ -1,4 +1,5 @@
 import { readBody } from 'h3'
+import { sendWelcomeRegistrationMail } from '../../../utils/authMail'
 import { isAuthDatabaseConfigured, verifyEmailCode } from '../../../utils/authStorage'
 import { setOAuthSession } from '../../../utils/oauth'
 import { enforceRateLimit } from '../../../utils/rateLimit'
@@ -21,5 +22,6 @@ export default defineEventHandler(async (event) => {
   const paid = await getActiveSubscription(user.email)
   const subscription = { active: true, expiresAt: paid.expiresAt || '' }
   setOAuthSession(event, user)
-  return { user, subscription }
+  void sendWelcomeRegistrationMail({ name: user.name, email: user.email })
+  return { user, subscription, welcome: true }
 })

@@ -308,9 +308,10 @@ import {
   Zap,
 } from 'lucide-vue-next'
 import { accessAwareStorage } from '~/utils/accessStorage'
+import { upgradeAvatarUrl } from '~/utils/avatarUrl'
 
-const MAX_AVATAR_DIMENSION = 320
-const AVATAR_QUALITY = 0.82
+const MAX_AVATAR_DIMENSION = 720
+const AVATAR_QUALITY = 0.92
 
 const accessStore = useAccessStore()
 const authStore = useAuthStore()
@@ -359,7 +360,7 @@ watch(
     form.name = user?.name || userStore.profile.name
     form.email = user?.email || userStore.profile.email
     form.bio = user?.bio || userStore.profile.bio
-    form.avatar = user?.avatar || userStore.profile.avatar
+    form.avatar = upgradeAvatarUrl(user?.avatar || userStore.profile.avatar || '')
   },
   { immediate: true, deep: true }
 )
@@ -594,7 +595,11 @@ async function compressAvatar(file: File): Promise<string> {
   canvas.height = height
   const context = canvas.getContext('2d')
   if (!context) return rawDataUrl
+  context.imageSmoothingEnabled = true
+  context.imageSmoothingQuality = 'high'
   context.drawImage(image, 0, 0, width, height)
+  const preferPng = file.type === 'image/png' || file.type === 'image/webp'
+  if (preferPng) return canvas.toDataURL('image/png')
   return canvas.toDataURL('image/jpeg', AVATAR_QUALITY)
 }
 

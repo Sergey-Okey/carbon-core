@@ -1,6 +1,7 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import type { H3Event } from 'h3'
 import { deleteCookie, getCookie, getRequestHeader, getRequestURL, setCookie } from 'h3'
+import { upgradeAvatarUrl } from '~/utils/avatarUrl'
 
 export type OAuthProvider = 'google' | 'yandex'
 export type AuthProvider = OAuthProvider | 'local'
@@ -117,7 +118,13 @@ export async function exchangeOAuthCode(
       name?: string
       picture?: string
     }
-    return normalizeProfile(provider, profile.sub, profile.email, profile.name, profile.picture)
+    return normalizeProfile(
+      provider,
+      profile.sub,
+      profile.email,
+      profile.name,
+      upgradeAvatarUrl(profile.picture || '')
+    )
   }
 
   const response = await fetch('https://login.yandex.ru/info?format=json', {
@@ -131,7 +138,9 @@ export async function exchangeOAuthCode(
     default_avatar_id?: string
   }
   const avatar = profile.default_avatar_id
-    ? `https://avatars.yandex.net/get-yapic/${profile.default_avatar_id}/islands-200`
+    ? upgradeAvatarUrl(
+        `https://avatars.yandex.net/get-yapic/${profile.default_avatar_id}/islands-200`
+      )
     : ''
   return normalizeProfile(
     provider,
