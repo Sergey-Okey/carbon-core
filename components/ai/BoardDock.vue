@@ -66,7 +66,6 @@ onUnmounted(() => {
   );
   --board-island-height: calc(var(--space-12) + 2 * var(--space-2));
   --board-dock-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
-  @include keyboard-gap-fill;
   position: fixed;
   z-index: calc(var(--z-sticky) + 40);
   display: flex;
@@ -109,7 +108,12 @@ onUnmounted(() => {
 }
 
 .board-dock.is-nav {
+  z-index: 0;
   pointer-events: none;
+
+  &::after {
+    content: none;
+  }
 }
 
 .board-dock__swap {

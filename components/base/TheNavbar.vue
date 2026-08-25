@@ -162,7 +162,6 @@ async function handleNavClick(section: NavSection) {
 
   @include mobile {
     @include glass;
-    @include keyboard-gap-fill;
     --board-dock-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
     position: fixed;
     inset-inline-start: 50%;

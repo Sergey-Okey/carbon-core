@@ -114,15 +114,13 @@ test('spacing and typography tokens keep a 4px scale and heading roles', async (
 test('keyboard inset under islands is painted with the page background', async () => {
   const reset = await read('assets/styles/reset.scss')
   const global = await read('assets/styles/global.scss')
-  const mixins = await read('assets/styles/mixins.scss')
   const dock = await read('components/ai/BoardDock.vue')
   const nav = await read('components/base/TheNavbar.vue')
 
   assert.match(reset, /html\s*\{[\s\S]*background-color:\s*var\(--color-bg/)
   assert.match(global, /height:\s*calc\(100lvh \+ 40vh\)/)
-  assert.match(mixins, /@mixin keyboard-gap-fill/)
-  assert.match(dock, /keyboard-gap-fill/)
-  assert.match(nav, /keyboard-gap-fill/)
+  assert.doesNotMatch(dock, /keyboard-gap-fill/)
+  assert.doesNotMatch(nav, /keyboard-gap-fill/)
 })
 
 test('header icons and AI hub stay readable in the light theme', async () => {
