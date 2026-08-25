@@ -33,21 +33,24 @@
           class="notification-panel"
           role="dialog"
           aria-modal="true"
-          aria-label="Уведомления"
+          aria-labelledby="notification-panel-title"
           @click.stop
           @keydown.esc.prevent="closePanel"
         >
           <div class="sheet-handle" aria-hidden="true" />
 
-          <div v-if="totalCount" class="panel-toolbar">
+          <header class="panel-head" :class="{ 'has-clear': totalCount }">
+            <h3 id="notification-panel-title">Уведомления</h3>
             <AppButton
+              v-if="totalCount"
+              class="panel-clear"
               variant="ghost"
               size="sm"
               @click="clearNotificationHistory"
             >
               Очистить всё
             </AppButton>
-          </div>
+          </header>
 
           <div v-if="totalCount" class="history-list" role="list">
             <article
@@ -319,10 +322,26 @@ onBeforeUnmount(() => {
   box-shadow: none;
 }
 
-.panel-toolbar {
-  display: flex;
+.panel-head {
+  display: none;
+  align-items: center;
   justify-content: flex-end;
+  min-width: 0;
   padding: var(--space-2) var(--space-3) 0;
+
+  &.has-clear {
+    display: flex;
+  }
+
+  h3 {
+    display: none;
+    margin: 0;
+    min-width: 0;
+  }
+}
+
+.panel-clear {
+  flex: 0 0 auto;
 }
 
 .history-list {
@@ -520,8 +539,19 @@ onBeforeUnmount(() => {
     grid-template-rows: auto minmax(0, 1fr);
   }
 
-  .panel-toolbar {
-    padding: var(--space-3) var(--space-4) 0;
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-height: var(--space-12);
+    padding: var(--space-3);
+
+    h3 {
+      @include heading-3;
+      @include text-ellipsis;
+      display: block;
+      color: var(--color-text-primary);
+    }
   }
 
   .history-list {

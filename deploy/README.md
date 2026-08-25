@@ -67,24 +67,69 @@ API-ключ — в кабинете smtp.bz → «Мой профиль». Ес
 
 После изменения `.env`: `sudo systemctl restart cof-board`
 
-## OpenRouter (агент)
+## Агент на VPS: Cloudflare Workers AI
 
-OpenRouter — внешний API, не локальная модель. На VPS хранится только ключ.
+С IP SpaceWeb `openrouter.ai` отвечает `403 Access denied by security policy`.
+Прокси через свой Worker тоже не спасает: OpenRouter видит тот же запрещённый клиент.
 
-1. Ключ: https://openrouter.ai/keys
+Рабочий путь — **Workers AI** (OpenAI-совместимый чат). Cloudflare не хостит Gemini Pro
+(тот прайс $0.75 / $3.75 за 1M — платный Google). На Workers AI Google — это **Gemma 4**,
+с дневным бесплатным пулом 10 000 neurons.
+
+1. User API Token Cloudflare с правом Workers AI.
 2. В `/var/www/cof-board/.env`:
 
 ```
 AI_ENGINE=openai
 NUXT_AI_ENGINE=openai
-OPENAI_BASE_URL=https://openrouter.ai/api/v1
-NUXT_OPENAI_BASE_URL=https://openrouter.ai/api/v1
-OPENAI_MODEL=minimax/minimax-m2.7:free
-NUXT_OPENAI_MODEL=minimax/minimax-m2.7:free
-OPENAI_API_KEY=sk-or-v1-...
-NUXT_OPENAI_API_KEY=sk-or-v1-...
+OPENAI_MODEL=@cf/google/gemma-4-26b-a4b-it
+NUXT_OPENAI_MODEL=@cf/google/gemma-4-26b-a4b-it
+OPENAI_API_KEY=<Cloudflare User API Token>
+NUXT_OPENAI_API_KEY=<тот же токен>
+OPENAI_BASE_URL=https://api.cloudflare.com/client/v4/accounts/<account_id>/ai/v1
+NUXT_OPENAI_BASE_URL=https://api.cloudflare.com/client/v4/accounts/<account_id>/ai/v1
+OPENROUTER_PROXY_URL=
 ```
 
 3. `sudo systemctl restart cof-board`
 
-Без ключа агент отвечает ошибкой «OpenRouter is not configured». Локальный планировщик не используется.
+`OPENAI_BASE_URL` важнее `OPENROUTER_PROXY_URL`. Не оставляйте прокси-URL, если база — Workers AI.
+
+## OpenRouter (запасной hop)
+
+OpenRouter — внешний API, не локальная модель. С VPS SpaceWeb прямой `openrouter.ai`
+отвечает `403 Access denied by security policy` (Cloudflare режет IP хостинга, не ключ).
+Бесплатные `:free` модели иногда доступны через Cloudflare Worker, но с этого VPS
+исходящий fetch Worker → OpenRouter тоже может получить 403.
+
+1. Ключ: https://openrouter.ai/keys
+2. Бесплатный аккаунт Cloudflare: https://dash.cloudflare.com/sign-up
+3. С машины, где есть браузер:
+
+```bash
+npx wrangler login
+npx wrangler deploy -c deploy/wrangler.openrouter-proxy.toml
+npx wrangler secret put PROXY_SECRET -c deploy/wrangler.openrouter-proxy.toml
+```
+
+`wrangler deploy` печатает URL вида `https://cof-openrouter-proxy.<subdomain>.workers.dev`.
+Секрет — длинная случайная строка, та же в Worker и на VPS.
+
+4. В `/var/www/cof-board/.env`:
+
+```
+AI_ENGINE=openai
+NUXT_AI_ENGINE=openai
+OPENAI_MODEL=minimax/minimax-m2.7:free
+NUXT_OPENAI_MODEL=minimax/minimax-m2.7:free
+OPENAI_API_KEY=sk-or-v1-...
+NUXT_OPENAI_API_KEY=sk-or-v1-...
+OPENROUTER_PROXY_URL=https://cof-openrouter-proxy.<subdomain>.workers.dev/api/v1
+OPENROUTER_PROXY_SECRET=<тот же секрет, что PROXY_SECRET>
+```
+
+`OPENAI_BASE_URL` не ставить на `openrouter.ai` — иначе запрос снова упрётся в WAF.
+
+5. `sudo systemctl restart cof-board`
+
+Без ключа агент отвечает «OpenRouter is not configured». Если Worker недоступен, код пробует Pollinations как запасной путь.

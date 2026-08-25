@@ -60,12 +60,6 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .board-dock {
-  --board-island-width: min(
-    calc(5 * var(--space-12) + 4 * var(--space-2) + 2 * var(--space-3)),
-    calc(100dvw - 2 * var(--space-8))
-  );
-  --board-island-height: calc(var(--space-12) + 2 * var(--space-2));
-  --board-dock-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
   position: fixed;
   z-index: calc(var(--z-sticky) + 40);
   display: flex;
@@ -73,7 +67,7 @@ onUnmounted(() => {
   align-items: stretch;
   inset-inline-start: 50%;
   inset-inline-end: auto;
-  inset-block-end: var(--board-dock-end);
+  inset-block-end: var(--board-island-end);
   width: var(--board-island-width);
   overflow: visible;
   transform: translateX(-50%);
@@ -82,12 +76,9 @@ onUnmounted(() => {
 }
 
 .board-dock__stage {
+  @include island-shell;
   @include neon-wait-edge;
-  min-width: 0;
   width: 100%;
-  height: var(--board-island-height);
-  min-height: var(--board-island-height);
-  border-radius: var(--radius-full);
   transform: translateY(0) scale(1);
   transform-origin: 50% 100%;
   touch-action: pan-y;
@@ -157,7 +148,7 @@ onUnmounted(() => {
   }
 
   34% {
-    transform: translateY(-12px) scale(1);
+    transform: translateY(calc(-1 * var(--space-3))) scale(1);
   }
 
   50% {
@@ -165,7 +156,7 @@ onUnmounted(() => {
   }
 
   66% {
-    transform: translateY(-8px) scale(1);
+    transform: translateY(calc(-1 * var(--space-2))) scale(1);
   }
 
   82% {

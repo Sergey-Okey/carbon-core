@@ -3,6 +3,7 @@ import type { AiActResponse, AiContext, AiOperation } from '../../types/ai.types
 import { compactAiContext } from '../../utils/ai/context'
 import { parseAiTextResponse } from '../../utils/ai/operations'
 import { detectIntent } from '../../utils/ai/localAgent'
+import { runPollinationsAgent } from '../../utils/ai/pollinations'
 import { AI_PROMPT_EXAMPLES, AI_SYSTEM_PROMPT } from '../../utils/ai/prompt'
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
@@ -13,6 +14,10 @@ const OPENROUTER_FALLBACKS = [
   'nvidia/nemotron-3.5-lightning:free',
 ]
 const CLOUD_TIMEOUT_MS = 25000
+const OPENROUTER_TIMEOUT_MS = 25000
+const OPENROUTER_BLOCKED = 'OPENROUTER_BLOCKED'
+
+type Fetcher = typeof fetch
 
 function mutatesWorkspace(operations: AiOperation[]) {
   return operations.some((item) => item.op !== 'updateSettings')
@@ -30,6 +35,83 @@ function acceptCloudPlan(request: string, cloud: AiActResponse): AiActResponse {
   return cloud
 }
 
+function isPollinationsEngine(engine?: string) {
+  return String(engine || '').toLowerCase() === 'pollinations'
+}
+
+export function isOpenRouterSecurityBlock(status: number, details: string) {
+  if (status !== 403) return false
+  return /access denied by security policy|sorry, you have been blocked/i.test(details)
+}
+
+function isOpenRouterBlockedError(error: unknown) {
+  if (
+    error &&
+    typeof error === 'object' &&
+    (error as { code?: string }).code === OPENROUTER_BLOCKED
+  ) {
+    return true
+  }
+  if (!(error instanceof Error)) return false
+  return (
+    error.name === 'TimeoutError' ||
+    error.name === 'AbortError' ||
+    /aborted due to timeout|fetch failed|ECONNRESET|ETIMEDOUT/i.test(error.message)
+  )
+}
+
+async function runPollinationsCloud(
+  request: string,
+  context: AiContext,
+  options: { fetcher?: Fetcher; siteUrl?: string }
+) {
+  try {
+    return acceptCloudPlan(
+      request,
+      await runPollinationsAgent(request, context, {
+        fetcher: options.fetcher,
+        timeoutMs: CLOUD_TIMEOUT_MS,
+        siteUrl: options.siteUrl,
+      })
+    )
+  } catch (error) {
+    throw createError({
+      statusCode: 502,
+      statusMessage: String((error as Error)?.message || 'AI provider request failed').slice(0, 180),
+    })
+  }
+}
+
+function isOpenRouterHop(baseUrl: string) {
+  const url = String(baseUrl || '').toLowerCase()
+  return (
+    url.includes('openrouter.ai') ||
+    url.includes('or.cof-board.com') ||
+    url.includes('workers.dev') ||
+    url.includes('openrouter-proxy')
+  )
+}
+
+function extractChatContent(payload: {
+  choices?: {
+    message?: {
+      content?: string | Array<{ text?: string; type?: string }>
+      reasoning_content?: string
+    }
+  }[]
+}) {
+  const message = payload.choices?.[0]?.message
+  const raw = message?.content
+  if (typeof raw === 'string' && raw.trim()) return raw
+  if (Array.isArray(raw)) {
+    const text = raw
+      .map((part) => (typeof part === 'string' ? part : String(part?.text || '')))
+      .join('')
+    if (text.trim()) return text
+  }
+  return ''
+}
+
 async function runCloudAgent(input: {
   request: string
   context: AiContext
@@ -37,13 +119,21 @@ async function runCloudAgent(input: {
   model: string
   baseUrl: string
   siteUrl?: string
+  proxySecret?: string
+  fetcher?: Fetcher
 }): Promise<AiActResponse> {
   const endpoint = `${input.baseUrl.replace(/\/$/, '')}/chat/completions`
+  const proxySecret = String(input.proxySecret || '').trim()
+  const viaProxy = Boolean(proxySecret)
+  const viaOpenRouter = isOpenRouterHop(input.baseUrl)
   const headers: Record<string, string> = {
     authorization: `Bearer ${input.apiKey}`,
     'content-type': 'application/json',
   }
-  if (input.baseUrl.includes('openrouter.ai')) {
+  if (viaProxy && viaOpenRouter) {
+    headers['x-cof-proxy-secret'] = proxySecret
+  }
+  if (viaOpenRouter) {
     headers['HTTP-Referer'] = input.siteUrl || 'https://cof-board.com'
     headers['X-Title'] = 'Core of Life'
   }
@@ -62,37 +152,53 @@ async function runCloudAgent(input: {
       },
     ],
   }
-  if (input.baseUrl.includes('openrouter.ai')) {
+  if (viaOpenRouter) {
     body.models = OPENROUTER_FALLBACKS.filter((item) => item !== input.model)
   }
   if (!input.model.includes(':free') && input.model !== 'openrouter/free') {
     body.response_format = { type: 'json_object' }
   }
 
-  const response = await fetch(endpoint, {
+  const fetcher = input.fetcher || fetch
+  const response = await fetcher(endpoint, {
     method: 'POST',
     headers,
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(CLOUD_TIMEOUT_MS),
+    signal: AbortSignal.timeout(OPENROUTER_TIMEOUT_MS),
   })
 
   if (!response.ok) {
     const details = await response.text().catch(() => '')
+    if (isOpenRouterSecurityBlock(response.status, details)) {
+      throw Object.assign(new Error(OPENROUTER_BLOCKED), { code: OPENROUTER_BLOCKED })
+    }
     throw createError({
       statusCode: 502,
       statusMessage: details.slice(0, 180) || 'AI provider request failed',
     })
   }
 
-  const payload = (await response.json()) as {
-    choices?: { message?: { content?: string } }[]
-  }
-  const content = payload.choices?.[0]?.message?.content
+  const payload = (await response.json()) as Parameters<typeof extractChatContent>[0]
+  const content = extractChatContent(payload)
   if (!content) {
     throw createError({ statusCode: 502, statusMessage: 'Empty AI response' })
   }
 
   return parseAiTextResponse(content)
+}
+
+export function resolveOpenRouterProxySecret(configured?: string) {
+  return String(configured || process.env.OPENROUTER_PROXY_SECRET || '').trim()
+}
+
+export function resolveAiBaseUrl(configured?: string) {
+  return String(
+    process.env.NUXT_OPENAI_BASE_URL ||
+      process.env.OPENAI_BASE_URL ||
+      process.env.OPENROUTER_PROXY_URL ||
+      configured ||
+      OPENROUTER_BASE_URL
+  ).trim()
 }
 
 export function resolveAiApiKey(configured?: string) {
@@ -113,7 +219,16 @@ export async function runAiAgent(input: {
   model?: string
   baseUrl?: string
   siteUrl?: string
+  proxySecret?: string
+  fetcher?: Fetcher
 }): Promise<AiActResponse> {
+  if (isPollinationsEngine(input.engine)) {
+    return runPollinationsCloud(input.request, input.context, {
+      fetcher: input.fetcher,
+      siteUrl: input.siteUrl,
+    })
+  }
+
   const apiKey = resolveAiApiKey(input.apiKey)
   if (!apiKey) {
     throw createError({
@@ -122,13 +237,23 @@ export async function runAiAgent(input: {
     })
   }
 
-  const cloud = await runCloudAgent({
-    request: input.request,
-    context: input.context,
-    apiKey,
-    model: input.model || OPENROUTER_MODEL,
-    baseUrl: input.baseUrl || OPENROUTER_BASE_URL,
-    siteUrl: input.siteUrl,
-  })
-  return acceptCloudPlan(input.request, cloud)
+  try {
+    const cloud = await runCloudAgent({
+      request: input.request,
+      context: input.context,
+      apiKey,
+      model: input.model || OPENROUTER_MODEL,
+      baseUrl: resolveAiBaseUrl(input.baseUrl),
+      siteUrl: input.siteUrl,
+      proxySecret: resolveOpenRouterProxySecret(input.proxySecret),
+      fetcher: input.fetcher,
+    })
+    return acceptCloudPlan(input.request, cloud)
+  } catch (error) {
+    if (!isOpenRouterBlockedError(error)) throw error
+    return runPollinationsCloud(input.request, input.context, {
+      fetcher: input.fetcher,
+      siteUrl: input.siteUrl,
+    })
+  }
 }

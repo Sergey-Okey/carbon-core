@@ -258,7 +258,11 @@ function resizeComposer() {
   const el = composerRef.value
   if (!el) return
   el.style.height = 'auto'
-  el.style.height = `${Math.min(el.scrollHeight, 128)}px`
+  const maxHeight = Number.parseFloat(getComputedStyle(el).maxHeight)
+  const cap = Number.isFinite(maxHeight) ? maxHeight : Number.parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue('--space-16')
+  ) * 2
+  el.style.height = `${Math.min(el.scrollHeight, cap)}px`
 }
 
 function isMobileViewport() {
@@ -576,48 +580,34 @@ onUnmounted(() => {
 }
 
 .agent-composer {
-  @include glass;
+  @include island-shell;
   @include neon-wait-edge;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  box-sizing: border-box;
-  min-width: 0;
+  align-items: flex-end;
+  gap: var(--island-gap);
+  height: auto;
   margin: var(--space-3) var(--space-4);
-  height: var(--board-island-height, calc(var(--space-12) + 2 * var(--space-2)));
-  min-height: var(--board-island-height, calc(var(--space-12) + 2 * var(--space-2)));
-  padding-block: var(--space-2);
-  padding-inline: var(--space-3);
-  overflow: visible;
-  border: var(--ui-border);
-  border-radius: var(--radius-full);
-  background-color: var(--island-surface);
-  backdrop-filter: var(--glass-strong-filter);
-  -webkit-backdrop-filter: var(--glass-strong-filter);
-  box-shadow: var(--shadow-xs);
+  width: auto;
 
   :deep(.app-button) {
+    @include island-control;
     flex-shrink: 0;
-    width: var(--space-12);
-    height: var(--space-12);
-    border-radius: var(--radius-full);
   }
 }
 
 .agent-input {
   flex: 1;
   min-width: 0;
-  min-height: var(--control-icon-size);
-  max-height: 8rem;
-  padding: 0 var(--space-3);
+  height: var(--island-item);
+  min-height: var(--island-item);
+  max-height: calc(2 * var(--space-16));
+  padding: 0;
   overflow-y: auto;
   border: 0;
-  border-radius: var(--radius-nested);
   background: transparent;
   color: var(--color-text-primary);
   font: inherit;
   font-size: var(--text-sm);
-  line-height: var(--control-icon-size);
+  line-height: var(--leading-tight);
   resize: none;
 
   @include mobile {
@@ -626,7 +616,6 @@ onUnmounted(() => {
 
   &::placeholder {
     color: var(--color-text-muted);
-    line-height: var(--control-icon-size);
   }
 
   &:focus {
@@ -726,7 +715,7 @@ onUnmounted(() => {
   }
 
   .agent-input {
-    min-height: var(--space-11);
+    min-height: var(--island-item);
   }
 
   .agent-composer {

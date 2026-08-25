@@ -23,7 +23,7 @@
         }"
         @click="openChat(card.hint)"
       >
-        <component :is="card.icon" :size="16" :stroke-width="2" aria-hidden="true" />
+        <component :is="card.icon" aria-hidden="true" />
         <span>{{ card.title }}</span>
       </button>
     </div>
@@ -45,7 +45,7 @@
           :disabled="!canSend"
           aria-label="Отправить"
         >
-          <ArrowUp :size="18" :stroke-width="2.4" />
+          <ArrowUp />
         </button>
       </form>
     </BoardDock>
@@ -205,6 +205,8 @@ function submitDraft() {
 
   svg {
     flex: 0 0 auto;
+    width: var(--space-4);
+    height: var(--space-4);
     color: var(--color-text-primary);
   }
 
@@ -233,40 +235,33 @@ function submitDraft() {
 }
 
 .ai-hub__composer {
-  @include glass;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--island-gap);
   box-sizing: border-box;
   width: 100%;
-  height: var(--board-island-height, calc(var(--space-12) + 2 * var(--space-2)));
-  min-height: var(--board-island-height, calc(var(--space-12) + 2 * var(--space-2)));
-  padding-block: var(--space-2);
-  padding-inline: var(--space-3);
-  border: var(--ui-border);
-  border-radius: var(--radius-full);
-  background-color: var(--island-surface);
-  backdrop-filter: var(--glass-strong-filter);
-  -webkit-backdrop-filter: var(--glass-strong-filter);
-  box-shadow: var(--shadow-xs);
-
-  :global(html.light-theme) & {
-    box-shadow: var(--shadow-sm);
-  }
+  height: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
 }
 
 .ai-hub__send {
+  @include island-control;
   display: inline-grid;
-  flex: 0 0 auto;
   place-items: center;
-  width: var(--space-12);
-  height: var(--space-12);
-  padding: 0;
   border: none;
-  border-radius: var(--radius-full);
   background: var(--color-accent);
   color: var(--color-bg);
   cursor: pointer;
+
+  svg {
+    display: block;
+    width: var(--space-5);
+    height: var(--space-5);
+  }
 
   &:disabled {
     opacity: 0.35;
@@ -282,7 +277,7 @@ function submitDraft() {
 .ai-hub__input {
   flex: 1;
   min-width: 0;
-  height: var(--space-12);
+  height: var(--island-item);
   margin: 0;
   padding: 0;
   border: none;
@@ -291,7 +286,7 @@ function submitDraft() {
   font: inherit;
   font-size: var(--text-sm);
   font-weight: var(--weight-normal);
-  line-height: var(--space-12);
+  line-height: var(--island-item);
   appearance: none;
 
   @include mobile {
@@ -300,7 +295,7 @@ function submitDraft() {
 
   &::placeholder {
     color: var(--color-text-muted);
-    line-height: var(--space-12);
+    line-height: var(--island-item);
   }
 
   &:focus {

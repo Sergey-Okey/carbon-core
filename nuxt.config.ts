@@ -37,7 +37,11 @@ export default defineNuxtConfig({
       process.env.OPENROUTER_API_KEY ||
       '',
     openaiModel: process.env.OPENAI_MODEL || 'minimax/minimax-m2.7:free',
-    openaiBaseUrl: process.env.OPENAI_BASE_URL || 'https://openrouter.ai/api/v1',
+    openaiBaseUrl:
+      process.env.OPENAI_BASE_URL ||
+      process.env.OPENROUTER_PROXY_URL ||
+      'https://openrouter.ai/api/v1',
+    openrouterProxySecret: process.env.OPENROUTER_PROXY_SECRET || '',
     public: {
       webAppUrl: process.env.NUXT_PUBLIC_WEB_APP_URL || '',
     },

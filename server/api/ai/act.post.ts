@@ -1,7 +1,12 @@
 import { createError, readBody } from 'h3'
 import { enforceRateLimit } from '../../utils/rateLimit'
 import { buildAiContext } from '../../../utils/ai/context'
-import { resolveAiApiKey, runAiAgent } from '../../utils/aiLlm'
+import {
+  resolveAiApiKey,
+  resolveAiBaseUrl,
+  resolveOpenRouterProxySecret,
+  runAiAgent,
+} from '../../utils/aiLlm'
 
 function asRequestText(value: unknown) {
   if (typeof value !== 'string') return ''
@@ -26,17 +31,18 @@ export default defineEventHandler(async (event) => {
   return runAiAgent({
     request,
     context,
-    engine: String(config.aiEngine || process.env.NUXT_AI_ENGINE || process.env.AI_ENGINE || 'openai'),
-    apiKey: resolveAiApiKey(config.openaiApiKey),
+    engine: String(process.env.NUXT_AI_ENGINE || process.env.AI_ENGINE || config.aiEngine || 'openai'),
+    apiKey: resolveAiApiKey(
+      process.env.NUXT_OPENAI_API_KEY || process.env.OPENAI_API_KEY || config.openaiApiKey
+    ),
     model: String(
-      config.openaiModel || process.env.NUXT_OPENAI_MODEL || process.env.OPENAI_MODEL || 'minimax/minimax-m2.7:free'
+      process.env.NUXT_OPENAI_MODEL ||
+        process.env.OPENAI_MODEL ||
+        config.openaiModel ||
+        'minimax/minimax-m2.7:free'
     ),
-    baseUrl: String(
-      config.openaiBaseUrl ||
-        process.env.NUXT_OPENAI_BASE_URL ||
-        process.env.OPENAI_BASE_URL ||
-        'https://openrouter.ai/api/v1'
-    ),
+    baseUrl: resolveAiBaseUrl(config.openaiBaseUrl),
     siteUrl: String(config.public.webAppUrl || process.env.NUXT_PUBLIC_WEB_APP_URL || 'https://cof-board.com'),
+    proxySecret: resolveOpenRouterProxySecret(config.openrouterProxySecret),
   })
 })

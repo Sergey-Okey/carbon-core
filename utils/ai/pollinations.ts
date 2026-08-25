@@ -1,18 +1,90 @@
+import { execFile } from 'node:child_process'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { promisify } from 'node:util'
 import type { AiActResponse, AiContext } from '../../types/ai.types.ts'
 import { compactAiContext } from './context.ts'
 import { parseAiTextResponse } from './operations.ts'
 import { AI_PROMPT_EXAMPLES, AI_SYSTEM_PROMPT } from './prompt.ts'
 
+const execFileAsync = promisify(execFile)
+
 export const POLLINATIONS_ORIGIN = 'https://text.pollinations.ai'
 export const POLLINATIONS_OPENAI_URL = `${POLLINATIONS_ORIGIN}/openai`
 export const POLLINATIONS_ANON_MODEL = 'openai-fast'
 export const POLLINATIONS_MAX_URL_LENGTH = 7500
-export const POLLINATIONS_TIMEOUT_MS = 4_000
+export const POLLINATIONS_TIMEOUT_MS = 25_000
+
+export const POLLINATIONS_SITE_URL = 'https://cof-board.com'
 
 type Fetcher = typeof fetch
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function pollinationsBrowserHeaders(siteUrl?: string, extra?: Record<string, string>) {
+  const origin = String(siteUrl || POLLINATIONS_SITE_URL).replace(/\/$/, '')
+  return {
+    'user-agent': 'Mozilla/5.0 (compatible; CoreOfLife/1.0)',
+    origin,
+    referer: `${origin}/`,
+    ...extra,
+  }
+}
+
+async function curlAsResponse(
+  url: string,
+  init: { method: 'GET' | 'POST'; headers: Record<string, string>; body?: string; timeoutMs: number }
+) {
+  const dir = await mkdtemp(join(tmpdir(), 'cof-ai-'))
+  const payloadFile = join(dir, 'payload.json')
+  const outputFile = join(dir, 'output.txt')
+  try {
+    if (init.body) await writeFile(payloadFile, init.body)
+    const args = [
+      '-sS',
+      '-o',
+      outputFile,
+      '-w',
+      '%{http_code}',
+      '--max-time',
+      String(Math.max(3, Math.ceil(init.timeoutMs / 1000))),
+      '-X',
+      init.method,
+    ]
+    for (const [key, value] of Object.entries(init.headers)) {
+      args.push('-H', `${key}: ${value}`)
+    }
+    if (init.body) args.push('--data-binary', `@${payloadFile}`)
+    args.push(url)
+    const { stdout } = await execFileAsync('curl', args, {
+      timeout: init.timeoutMs + 4000,
+      maxBuffer: 1_000_000,
+    })
+    const status = Number(String(stdout).trim() || 0)
+    const text = await readFile(outputFile, 'utf8').catch(() => '')
+    return new Response(text, { status: status || 502 })
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+}
+
+async function pollinationsRequest(
+  url: string,
+  init: { method: 'GET' | 'POST'; headers: Record<string, string>; body?: string; timeoutMs: number },
+  fetcher?: Fetcher
+) {
+  if (fetcher) {
+    return fetcher(url, {
+      method: init.method,
+      headers: init.headers,
+      body: init.body,
+      signal: AbortSignal.timeout(init.timeoutMs),
+    })
+  }
+  return curlAsResponse(url, init)
 }
 
 export function buildPollinationsGetUrl(
@@ -81,31 +153,32 @@ function contentFromOpenAiPayload(payload: unknown) {
 async function runPollinationsPost(
   request: string,
   context: AiContext,
-  options: { model?: string; fetcher?: Fetcher; timeoutMs?: number }
+  options: { model?: string; fetcher?: Fetcher; timeoutMs?: number; siteUrl?: string }
 ) {
   const compact = compactAiContext(context, { tasks: 24, branches: 10, memory: 3 })
-  const fetcher = options.fetcher || fetch
   const timeoutMs = options.timeoutMs ?? POLLINATIONS_TIMEOUT_MS
-  const response = await fetcher(POLLINATIONS_OPENAI_URL, {
-    method: 'POST',
-    headers: {
-      accept: 'application/json, text/plain',
-      'content-type': 'application/json',
-      'user-agent': 'Mozilla/5.0 (compatible; CoreOfLife/1.0)',
+  const response = await pollinationsRequest(
+    POLLINATIONS_OPENAI_URL,
+    {
+      method: 'POST',
+      timeoutMs,
+      headers: pollinationsBrowserHeaders(options.siteUrl, {
+        accept: 'application/json, text/plain',
+        'content-type': 'application/json',
+      }),
+      body: JSON.stringify({
+        model: options.model || POLLINATIONS_ANON_MODEL,
+        messages: [
+          { role: 'system', content: `${AI_SYSTEM_PROMPT}\n${AI_PROMPT_EXAMPLES}` },
+          {
+            role: 'user',
+            content: `Запрос: ${request.slice(0, 2000)}\nКонтекст: ${JSON.stringify(compact)}`,
+          },
+        ],
+      }),
     },
-    body: JSON.stringify({
-      model: options.model || POLLINATIONS_ANON_MODEL,
-      jsonMode: true,
-      messages: [
-        { role: 'system', content: `${AI_SYSTEM_PROMPT}\n${AI_PROMPT_EXAMPLES}` },
-        {
-          role: 'user',
-          content: `Запрос: ${request.slice(0, 2000)}\nКонтекст: ${JSON.stringify(compact)}`,
-        },
-      ],
-    }),
-    signal: AbortSignal.timeout(timeoutMs),
-  })
+    options.fetcher
+  )
   const text = await response.text()
   if (!response.ok || isPollinationsFailurePayload(text)) {
     throw new Error(`Pollinations POST failed (${response.status}): ${text.slice(0, 180) || 'empty'}`)
@@ -122,20 +195,22 @@ async function runPollinationsPost(
 async function runPollinationsGet(
   request: string,
   context: AiContext,
-  options: { model?: string; fetcher?: Fetcher; timeoutMs?: number }
+  options: { model?: string; fetcher?: Fetcher; timeoutMs?: number; siteUrl?: string }
 ) {
   const prompt = buildPollinationsPrompt(request, context)
   const url = buildPollinationsGetUrl(prompt, options.model || POLLINATIONS_ANON_MODEL)
-  const fetcher = options.fetcher || fetch
   const timeoutMs = options.timeoutMs ?? POLLINATIONS_TIMEOUT_MS
-  const response = await fetcher(url, {
-    method: 'GET',
-    headers: {
-      accept: 'text/plain, application/json',
-      'user-agent': 'Mozilla/5.0 (compatible; CoreOfLife/1.0)',
+  const response = await pollinationsRequest(
+    url,
+    {
+      method: 'GET',
+      timeoutMs,
+      headers: pollinationsBrowserHeaders(options.siteUrl, {
+        accept: 'text/plain, application/json',
+      }),
     },
-    signal: AbortSignal.timeout(timeoutMs),
-  })
+    options.fetcher
+  )
   const text = await response.text()
   if (!response.ok || isPollinationsFailurePayload(text)) {
     throw new Error(
@@ -148,7 +223,7 @@ async function runPollinationsGet(
 export async function runPollinationsAgent(
   request: string,
   context: AiContext,
-  options: { model?: string; fetcher?: Fetcher; timeoutMs?: number } = {}
+  options: { model?: string; fetcher?: Fetcher; timeoutMs?: number; siteUrl?: string } = {}
 ): Promise<AiActResponse> {
   try {
     return await runPollinationsPost(request, context, options)

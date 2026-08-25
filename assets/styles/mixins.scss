@@ -61,12 +61,47 @@
 ) {
   --nest-radius: #{$radius};
   --nest-pad: #{$pad};
+  --radius-nested: max(0px, calc(var(--nest-radius) - var(--nest-pad)));
   padding: var(--nest-pad);
   border-radius: var(--nest-radius);
 }
 
 @mixin nest-item {
   border-radius: var(--radius-nested);
+}
+
+/// Bottom board island (nav + composer): one shell, concentric inner controls.
+@mixin island-shell {
+  @include nest-shell(var(--radius-full), var(--island-pad-block));
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  width: var(--board-island-width);
+  height: var(--board-island-height);
+  min-height: var(--board-island-height);
+  padding-block: var(--island-pad-block);
+  padding-inline: var(--island-pad-inline);
+  overflow: visible;
+  border: var(--ui-border);
+  background-color: var(--island-surface);
+  backdrop-filter: var(--glass-strong-filter);
+  -webkit-backdrop-filter: var(--glass-strong-filter);
+  box-shadow: var(--shadow-xs);
+  color: var(--color-text-primary);
+
+  :global(html.light-theme) & {
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+@mixin island-control {
+  @include nest-item;
+  box-sizing: border-box;
+  flex: 0 0 var(--island-item);
+  width: var(--island-item);
+  height: var(--island-item);
+  padding: 0;
 }
 
 /// Outer shell for collapsible sections (stats, filters, habits).

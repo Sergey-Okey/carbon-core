@@ -1,0 +1,9 @@
+name = "cof-openrouter-proxy"
+main = "./openrouter-proxy-worker.js"
+compatibility_date = "2026-08-25"
+account_id = "ddc839249c2e67337081e7167a241400"
+workers_dev = true
+
+[[routes]]
+pattern = "or.cof-board.com/*"
+zone_name = "cof-board.com"
