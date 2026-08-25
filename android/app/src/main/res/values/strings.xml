@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Core of Life</string>
-    <string name="title_activity_main">Core of Life</string>
-    <string name="package_name">app.coreoflife.cof</string>
-    <string name="custom_url_scheme">app.coreoflife.cof</string>
-</resources>

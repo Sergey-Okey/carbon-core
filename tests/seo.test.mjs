@@ -179,13 +179,6 @@ test('app shell keeps Yandex verification and Metrika identifiers', async () => 
   assert.match(app, /mc\.yandex\.ru\/watch\/111913443/)
 })
 
-test('Capacitor packaging keeps stable public app identity', async () => {
-  const capacitor = await read('capacitor.config.ts')
-  assert.match(capacitor, /appId:\s*'app\.coreoflife\.cof'/)
-  assert.match(capacitor, /appName:\s*'Core of Life'/)
-  assert.match(capacitor, /webDir:\s*'\.output\/public'/)
-})
-
 test('every top-level page declares useSeoMeta and errordocs stay noindex', async () => {
   const pageFiles = (await readdir(join(root, 'pages')))
     .filter((name) => name.endsWith('.vue'))

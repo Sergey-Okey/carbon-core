@@ -14,16 +14,10 @@
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "release:check": "node scripts/release-check.mjs",
     "check": "npm run typecheck && npm run build",
-    "android:sync": "node scripts/sync-android.mjs",
-    "android:build": "powershell -ExecutionPolicy Bypass -File scripts/build-android.ps1",
-    "android:bundle": "powershell -ExecutionPolicy Bypass -File scripts/build-android-release.ps1",
     "start": "node .output/server/index.mjs",
     "preview": "node node_modules/nuxt/bin/nuxt.mjs preview"
   },
   "dependencies": {
-    "@capacitor/android": "^7.6.0",
-    "@capacitor/core": "^7.6.0",
-    "@capacitor/haptics": "^7.0.2",
     "@pinia/nuxt": "^0.11.3",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
@@ -42,7 +36,6 @@
     "uuid": "^11.1.1"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.6.0",
     "@types/node": "^20.11.30",
     "@types/pg": "^8.20.0",
     "sass": "^1.99.0",
