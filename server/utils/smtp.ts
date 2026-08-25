@@ -13,6 +13,8 @@ type RuntimeMailConfig = {
   smtpUser?: string
   smtpPassword?: string
   smtpFrom?: string
+  smtpApiKey?: string
+  smtpApiUrl?: string
 }
 
 function getMailConfig() {
@@ -22,18 +24,78 @@ function getMailConfig() {
   const password = config.smtpPassword || process.env.SMTP_PASSWORD || ''
   const from = (config.smtpFrom || process.env.SMTP_FROM || '').trim() || user
   const port = Number(config.smtpPort || process.env.SMTP_PORT || 465)
-  return { host, user, password, from, port }
+  const apiKey = (config.smtpApiKey || process.env.SMTP_API_KEY || '').trim()
+  const apiUrl = (
+    config.smtpApiUrl ||
+    process.env.SMTP_API_URL ||
+    'https://api.smtp.bz/v1/smtp/send'
+  ).trim()
+  return { host, user, password, from, port, apiKey, apiUrl }
 }
 
-export function isMailConfigured() {
+function hasSmtpCredentials() {
   const { host, user, password, from, port } = getMailConfig()
   return Boolean(host && user && password && from && Number.isInteger(port) && port > 0)
 }
 
-export async function sendMail(payload: MailPayload) {
-  const { host, user, password, from, port } = getMailConfig()
+function hasApiCredentials() {
+  const { apiKey, from } = getMailConfig()
+  return Boolean(apiKey && from)
+}
 
-  if (!host || !user || !password || !from) return false
+export function isMailConfigured() {
+  return hasApiCredentials() || hasSmtpCredentials()
+}
+
+export async function sendMail(payload: MailPayload) {
+  const config = getMailConfig()
+  if (!config.from) return false
+
+  // Prefer HTTPS API: many VPS hosts can reach api.smtp.bz:443 while smtp.bz:587 is refused.
+  if (hasApiCredentials()) {
+    return await sendMailViaApi(payload, config)
+  }
+
+  if (!hasSmtpCredentials()) return false
+  return await sendMailViaSmtp(payload, config)
+}
+
+async function sendMailViaApi(
+  payload: MailPayload,
+  config: ReturnType<typeof getMailConfig>
+) {
+  const fromEmail = extractEmail(config.from)
+  const fromName = extractDisplayName(config.from) || 'Core of Life'
+  const form = new FormData()
+  form.set('from', fromEmail)
+  form.set('name', fromName)
+  form.set('subject', payload.subject)
+  form.set('to', payload.to)
+  form.set('text', payload.text)
+  form.set('html', textToHtml(payload.text))
+
+  const response = await fetch(config.apiUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: config.apiKey,
+      accept: 'application/json',
+    },
+    body: form,
+  })
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '')
+    throw new Error(`SMTP API error ${response.status}${detail ? `: ${detail.slice(0, 200)}` : ''}`)
+  }
+
+  return true
+}
+
+async function sendMailViaSmtp(
+  payload: MailPayload,
+  config: ReturnType<typeof getMailConfig>
+) {
+  const { host, user, password, from, port } = config
 
   let client: net.Socket | tls.TLSSocket =
     port === 465 ? tls.connect({ host, port, servername: host }) : net.connect({ host, port })
@@ -103,7 +165,21 @@ export async function sendMail(payload: MailPayload) {
 
 function extractEmail(value: string) {
   const match = value.match(/<([^>]+)>/)
-  return (match?.[1] || value).trim()
+  return (match?.[1] || value).trim().replace(/^"|"$/g, '')
+}
+
+function extractDisplayName(value: string) {
+  const match = value.match(/^\s*"?([^"<]+?)"?\s*</)
+  return match?.[1]?.trim() || ''
+}
+
+function textToHtml(text: string) {
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+  return `<pre style="font-family:sans-serif;white-space:pre-wrap;line-height:1.5">${escaped}</pre>`
 }
 
 function waitForSecureConnect(client: tls.TLSSocket) {
