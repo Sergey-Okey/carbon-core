@@ -10,7 +10,7 @@
       class="brand-stage__canvas"
       aria-hidden="true"
     />
-    <div class="brand-stage__copy">
+    <div v-if="showCopy" class="brand-stage__copy">
       <p class="brand-stage__mark">COF</p>
       <p class="brand-stage__slogan">
         <span class="brand-stage__slogan-ghost" aria-hidden="true">{{
@@ -26,9 +26,16 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
-  slogan: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    slogan?: string
+    showCopy?: boolean
+  }>(),
+  {
+    slogan: '',
+    showCopy: true,
+  }
+)
 
 const stageEl = ref<HTMLElement | null>(null)
 const canvasEl = ref<HTMLCanvasElement | null>(null)
@@ -224,6 +231,7 @@ async function deleteText(speed = 28) {
 }
 
 async function runTypewriter() {
+  if (!props.showCopy) return
   if (reducedMotion) {
     typedSlogan.value = props.slogan
     typeDone.value = true
