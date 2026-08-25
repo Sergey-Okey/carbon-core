@@ -2,6 +2,7 @@ import { readBody } from 'h3'
 import { createEmailVerificationCode, isAuthDatabaseConfigured } from '../../../utils/authStorage'
 import { enforceRateLimit } from '../../../utils/rateLimit'
 import { isMailConfigured, sendMail } from '../../../utils/smtp'
+import { assertHuman } from '../../../utils/turnstile'
 
 export default defineEventHandler(async (event) => {
   enforceRateLimit(event, 'email-verification-resend', 5, 15 * 60 * 1000)
@@ -13,6 +14,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody<Record<string, unknown>>(event)
+  await assertHuman(event, body?.turnstileToken)
   const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
   if (!email.includes('@')) throw createError({ statusCode: 400, statusMessage: 'Email is required' })
 

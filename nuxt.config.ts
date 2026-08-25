@@ -42,8 +42,10 @@ export default defineNuxtConfig({
       process.env.OPENROUTER_PROXY_URL ||
       'https://openrouter.ai/api/v1',
     openrouterProxySecret: process.env.OPENROUTER_PROXY_SECRET || '',
+    turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY || '',
     public: {
       webAppUrl: process.env.NUXT_PUBLIC_WEB_APP_URL || '',
+      turnstileSiteKey: process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY || '',
     },
   },
   routeRules: {

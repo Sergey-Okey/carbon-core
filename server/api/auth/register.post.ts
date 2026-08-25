@@ -2,6 +2,7 @@ import { readBody } from 'h3'
 import { createPendingRegistration, isAuthDatabaseConfigured } from '../../utils/authStorage'
 import { enforceRateLimit } from '../../utils/rateLimit'
 import { isMailConfigured, sendMail } from '../../utils/smtp'
+import { assertHuman } from '../../utils/turnstile'
 import {
   normalizePhone,
   validateEmail,
@@ -20,6 +21,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody<Record<string, unknown>>(event)
+  await assertHuman(event, body?.turnstileToken)
   const email = typeof body?.email === 'string' ? body.email.trim() : ''
   const password = typeof body?.password === 'string' ? body.password : ''
   const name = typeof body?.name === 'string' ? body.name.trim() : ''

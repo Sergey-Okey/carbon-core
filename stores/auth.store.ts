@@ -2,7 +2,11 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { useUserStore } from '~/stores/user.store'
 import { useAccessStore } from '~/stores/access.store'
-import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
+import {
+  getBackendFetchOptions,
+  getBackendUrl,
+  getCaptchaErrorMessage,
+} from '~/utils/backend'
 import { browserLog } from '~/utils/browserLog'
 
 export interface User {
@@ -230,7 +234,8 @@ export const useAuthStore = defineStore(
       name: string,
       mode: AuthMode = 'cloud',
       acceptedTerms = false,
-      phone = ''
+      phone = '',
+      turnstileToken = ''
     ): Promise<{
       success: boolean
       error?: string
@@ -263,6 +268,7 @@ export const useAuthStore = defineStore(
                 phone,
                 acceptedTerms,
                 termsVersion: '2026-06-07',
+                turnstileToken,
               },
               ...getBackendFetchOptions(),
             })
@@ -283,6 +289,8 @@ export const useAuthStore = defineStore(
             })
             return { success: true }
           } catch (error) {
+            const captchaError = getCaptchaErrorMessage(error)
+            if (captchaError) return { success: false, error: captchaError }
             const status = getHttpStatus(error)
             if (status === 409)
               return { success: false, error: 'Этот email уже зарегистрирован' }
@@ -355,7 +363,8 @@ export const useAuthStore = defineStore(
     async function login(
       email: string,
       password: string,
-      mode: AuthMode = 'cloud'
+      mode: AuthMode = 'cloud',
+      turnstileToken = ''
     ): Promise<{ success: boolean; error?: string }> {
       isLoading.value = true
 
@@ -367,7 +376,7 @@ export const useAuthStore = defineStore(
               subscription?: SubscriptionSnapshot
             }>(getBackendUrl('/api/auth/login'), {
               method: 'POST',
-              body: { email, password },
+              body: { email, password, turnstileToken },
               ...getBackendFetchOptions(),
             })
             applyServerUser(response.user, response.subscription)
@@ -378,6 +387,8 @@ export const useAuthStore = defineStore(
             })
             return { success: true }
           } catch (error) {
+            const captchaError = getCaptchaErrorMessage(error)
+            if (captchaError) return { success: false, error: captchaError }
             const status = getHttpStatus(error)
             if (status === 401)
               return { success: false, error: 'Неверный email или пароль' }

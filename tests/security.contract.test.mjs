@@ -90,6 +90,60 @@ test('auth and payment endpoints enforce rate limits', async () => {
   assert.match(files.robokassa, /verifyRobokassaSignature/)
 })
 
+test('spam-prone auth endpoints verify the Turnstile token server side', async () => {
+  const turnstile = await read('server/utils/turnstile.ts')
+  assert.match(
+    turnstile,
+    /https:\/\/challenges\.cloudflare\.com\/turnstile\/v0\/siteverify/
+  )
+  assert.match(turnstile, /secret/)
+  assert.match(turnstile, /remoteip/)
+  assert.match(turnstile, /payload\.success === true/)
+  assert.match(turnstile, /if \(!secret \|\| !getSiteKey\(\)\) return/)
+
+  const guarded = {
+    register: await read('server/api/auth/register.post.ts'),
+    login: await read('server/api/auth/login.post.ts'),
+    resend: await read('server/api/auth/email-verification/resend.post.ts'),
+    resetRequest: await read('server/api/auth/password-reset/request.post.ts'),
+  }
+
+  for (const [name, source] of Object.entries(guarded)) {
+    assert.match(
+      source,
+      /await assertHuman\(event, body\?\.turnstileToken\)/,
+      `${name} missing captcha check`
+    )
+  }
+})
+
+test('turnstile secret stays server side while the site key is public', async () => {
+  const config = await read('nuxt.config.ts')
+  const publicBlock = config.match(/public:\s*\{[\s\S]*?\n\s*\},/)?.[0] || ''
+
+  assert.match(config, /turnstileSecretKey: process\.env\.TURNSTILE_SECRET_KEY/)
+  assert.doesNotMatch(publicBlock, /turnstileSecretKey/)
+  assert.match(publicBlock, /turnstileSiteKey/)
+
+  const widget = await read('components/auth/AuthTurnstile.vue')
+  assert.doesNotMatch(widget, /TURNSTILE_SECRET|turnstileSecretKey/)
+})
+
+test('auth forms send a fresh captcha token with every attempt', async () => {
+  const panel = await read('components/auth/AuthPanel.vue')
+
+  assert.match(panel, /<AuthTurnstile ref="turnstile" v-model="turnstileToken" \/>/)
+  assert.match(panel, /if \(missingCaptcha\(\)\) return/)
+  assert.match(panel, /turnstileToken: turnstileToken\.value/)
+  assert.match(panel, /turnstile\.value\?\.reset\(\)/)
+  assert.match(panel, /refreshCaptcha\(\)/)
+
+  const store = await read('stores/auth.store.ts')
+  assert.match(store, /body: \{ email, password, turnstileToken \}/)
+  assert.match(store, /turnstileToken,/)
+  assert.match(store, /getCaptchaErrorMessage\(error\)/)
+})
+
 test('password hashing and robokassa verification use timing-safe compares', async () => {
   const authStorage = await read('server/utils/authStorage.ts')
   const subscription = await read('server/utils/subscriptionStorage.ts')

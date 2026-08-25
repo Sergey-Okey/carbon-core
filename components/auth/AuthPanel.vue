@@ -89,6 +89,7 @@
             </AppFormField>
             <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
             <p v-if="error" class="error-text">{{ error }}</p>
+            <AuthTurnstile ref="turnstile" v-model="turnstileToken" />
             <AppButton
               type="submit"
               variant="primary"
@@ -161,6 +162,7 @@
             </AppFormField>
             <p v-if="resetMessage" class="success-text">{{ resetMessage }}</p>
             <p v-if="error" class="error-text">{{ error }}</p>
+            <AuthTurnstile ref="turnstile" v-model="turnstileToken" />
             <AppButton
               type="submit"
               variant="primary"
@@ -296,6 +298,8 @@
 
             <p v-if="error" class="error-text">{{ error }}</p>
 
+            <AuthTurnstile ref="turnstile" v-model="turnstileToken" />
+
             <AppButton
               type="submit"
               variant="primary"
@@ -394,7 +398,11 @@ import { useMediaQuery } from '@vueuse/core'
 import { ArrowLeft, Play } from 'lucide-vue-next'
 import { resetDemoData } from '~/utils/accessStorage'
 import { seedDemoWorkspaceIfNeeded } from '~/utils/demoSeed'
-import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
+import {
+  getBackendFetchOptions,
+  getBackendUrl,
+  getCaptchaErrorMessage,
+} from '~/utils/backend'
 import { markWelcomeRegistrationPending } from '~/utils/registrationWelcome'
 
 const props = defineProps<{ mode: 'login' | 'register' }>()
@@ -501,6 +509,23 @@ const resetToken = computed(() => {
   const value = route.query.resetToken
   return typeof value === 'string' ? value : ''
 })
+
+const captchaEnabled = Boolean(useRuntimeConfig().public.turnstileSiteKey)
+const turnstileToken = ref('')
+const turnstile = ref<{ reset: () => void } | null>(null)
+
+// Turnstile tokens are single-use, so every submitted attempt needs a fresh one.
+function refreshCaptcha() {
+  if (!captchaEnabled) return
+  turnstileToken.value = ''
+  turnstile.value?.reset()
+}
+
+function missingCaptcha() {
+  if (!captchaEnabled || turnstileToken.value) return false
+  error.value = 'Подтвердите, что вы не робот'
+  return true
+}
 
 function clearFieldErrors() {
   fieldErrors.name = ''
@@ -749,24 +774,27 @@ async function resendEmailVerification() {
     error.value = 'Укажите email профиля'
     return
   }
+  if (missingCaptcha()) return
 
   try {
     const response = await backendFetch<{ ok: boolean; sent: boolean }>(
       getBackendUrl('/api/auth/email-verification/resend'),
       {
         method: 'POST',
-        body: { email },
+        body: { email, turnstileToken: turnstileToken.value },
         ...getBackendFetchOptions(),
       }
     )
     resetMessage.value = response.sent
       ? 'Новый код отправлен. Проверьте почту.'
       : 'Код уже подтверждён или письмо сейчас не уходит. Попробуйте позже или напишите в поддержку.'
-  } catch {
+  } catch (requestError) {
     error.value =
+      getCaptchaErrorMessage(requestError) ||
       'Не удалось отправить новый код. Попробуйте ещё раз чуть позже.'
   } finally {
     pendingVerification.code = ''
+    refreshCaptcha()
   }
 }
 
@@ -775,6 +803,7 @@ async function requestPasswordReset() {
   resetMessage.value = ''
   fieldErrors.resetEmail = validateEmail(resetEmail.value)
   if (fieldErrors.resetEmail) return
+  if (missingCaptcha()) return
 
   const email = resetEmail.value.trim().toLowerCase()
 
@@ -784,18 +813,20 @@ async function requestPasswordReset() {
       getBackendUrl('/api/auth/password-reset/request'),
       {
         method: 'POST',
-        body: { email },
+        body: { email, turnstileToken: turnstileToken.value },
         ...getBackendFetchOptions(),
       }
     )
     resetMessage.value = response.sent
       ? 'Если профиль найден, письмо для восстановления уже отправлено.'
       : 'Если письмо не придёт в течение нескольких минут, напишите в поддержку.'
-  } catch {
+  } catch (requestError) {
     error.value =
+      getCaptchaErrorMessage(requestError) ||
       'Не удалось отправить письмо. Проверьте email и попробуйте ещё раз.'
   } finally {
     isRequestingReset.value = false
+    refreshCaptcha()
   }
 }
 
@@ -834,6 +865,7 @@ async function submit() {
     error.value = 'Проверьте поля формы'
     return
   }
+  if (missingCaptcha()) return
 
   const wasRegister = isRegister.value
   const result: {
@@ -848,10 +880,17 @@ async function submit() {
         form.name,
         'cloud',
         form.acceptedTerms,
-        normalizePhone(form.phone)
+        normalizePhone(form.phone),
+        turnstileToken.value
       )
-    : await authStore.login(form.email, form.password, 'cloud')
+    : await authStore.login(
+        form.email,
+        form.password,
+        'cloud',
+        turnstileToken.value
+      )
   if (!result.success) {
+    refreshCaptcha()
     error.value = result.error || 'Не удалось выполнить действие'
     if (!wasRegister && error.value.includes('Подтвердите email')) {
       pendingVerification.active = true

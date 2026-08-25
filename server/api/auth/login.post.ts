@@ -3,6 +3,7 @@ import { isAuthDatabaseConfigured, loginAccount } from '../../utils/authStorage'
 import { setOAuthSession } from '../../utils/oauth'
 import { enforceRateLimit } from '../../utils/rateLimit'
 import { getActiveSubscription } from '../../utils/subscriptionStorage'
+import { assertHuman } from '../../utils/turnstile'
 
 export default defineEventHandler(async (event) => {
   enforceRateLimit(event, 'login', 10, 15 * 60 * 1000)
@@ -10,6 +11,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 503, statusMessage: 'Cloud accounts are not configured' })
   }
   const body = await readBody<Record<string, unknown>>(event)
+  await assertHuman(event, body?.turnstileToken)
   const email = typeof body?.email === 'string' ? body.email : ''
   const password = typeof body?.password === 'string' ? body.password : ''
   if (!email || !password) throw createError({ statusCode: 400, statusMessage: 'Email and password are required' })
