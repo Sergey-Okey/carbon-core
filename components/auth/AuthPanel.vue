@@ -694,14 +694,12 @@ function startOAuth(provider: 'google' | 'yandex') {
   }
 
   isStartingOAuth.value = true
-  const params = new URLSearchParams()
-  if (!isRegister.value || form.acceptedTerms) {
-    params.set('acceptedTerms', 'true')
-    params.set('termsVersion', '2026-06-07')
-  }
-  const query = params.toString()
+  const params = new URLSearchParams({
+    acceptedTerms: 'true',
+    termsVersion: '2026-06-07',
+  })
   window.location.assign(
-    getBackendUrl(`/api/auth/${provider}${query ? `?${query}` : ''}`)
+    getBackendUrl(`/api/auth/${provider}?${params.toString()}`)
   )
 }
 
