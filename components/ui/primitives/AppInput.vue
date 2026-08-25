@@ -109,10 +109,11 @@ function handleInput(event: Event) {
 
   &:focus-visible {
     border-color: var(--color-accent);
-    outline: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
-    outline-offset: 1px;
+    outline: none;
     background: var(--color-surface-2);
-    box-shadow: var(--shadow-sm);
+    box-shadow:
+      var(--shadow-sm),
+      0 0 0 2px color-mix(in srgb, var(--color-accent) 28%, transparent);
   }
 
   &:-webkit-autofill,
@@ -123,6 +124,7 @@ function handleInput(event: Event) {
     border-color: var(--ui-border-color);
     box-shadow: 0 0 0 1000px var(--color-surface-1) inset;
     transition: background-color 9999s ease-out;
+    outline: none;
   }
 
   &:disabled,
@@ -137,7 +139,10 @@ function handleInput(event: Event) {
     border-color: var(--color-error);
 
     &:focus-visible {
-      outline-color: color-mix(in srgb, var(--color-error) 40%, transparent);
+      border-color: var(--color-error);
+      box-shadow:
+        var(--shadow-sm),
+        0 0 0 2px color-mix(in srgb, var(--color-error) 28%, transparent);
     }
   }
 }

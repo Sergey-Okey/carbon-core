@@ -100,7 +100,8 @@ const { notifications, removeNotification } = useNotification()
     font-size: var(--text-sm);
     line-height: var(--leading-tight);
     font-weight: var(--weight-medium);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+    @include text-clamp(2);
   }
 
   .toast-action {

@@ -36,7 +36,7 @@
         ref="userMenu"
         :open="isProfileModalOpen"
         :avatar="headerAvatar"
-        @toggle="toggleProfilePanel"
+        @toggle="toggleProfileMenu"
         @open-profile="openProfile"
         @logout="logout"
       />
