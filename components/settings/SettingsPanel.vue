@@ -703,7 +703,7 @@ async function resetAllData() {
   h2 {
     margin: 0;
     color: var(--color-text-primary);
-    font-size: clamp(1.15rem, 1.5vw, 1.35rem);
+    font-size: clamp(var(--text-lg), 1.5vw, var(--text-xl));
     font-weight: var(--weight-bold);
     line-height: 1.2;
     letter-spacing: -0.02em;
@@ -803,7 +803,7 @@ async function resetAllData() {
 
 .row-copy {
   display: grid;
-  gap: 4px;
+  gap: var(--space-1);
   min-width: 0;
   flex: 1 1 auto;
 

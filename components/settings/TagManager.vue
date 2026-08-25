@@ -147,14 +147,14 @@ function usageLabel(id: string) {
 <style scoped lang="scss">
 .tag-manager {
   display: grid;
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .tag-create {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .tag-list {
@@ -165,9 +165,9 @@ function usageLabel(id: string) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: var(--space-4);
   min-height: 62px;
-  padding: 10px 0;
+  padding: var(--space-3) 0;
   border-bottom: var(--ui-border);
 
   &:last-child {
@@ -178,26 +178,26 @@ function usageLabel(id: string) {
 .tag-summary {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   min-width: 0;
 
   div {
     display: grid;
-    gap: 3px;
+    gap: var(--space-1);
     min-width: 0;
   }
 
   strong {
     overflow: hidden;
     color: var(--text);
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   span {
     color: var(--dim);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
   }
 }
 
@@ -213,7 +213,7 @@ function usageLabel(id: string) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
   min-width: 0;
   flex: 1;
 }
@@ -221,7 +221,7 @@ function usageLabel(id: string) {
 .tag-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
 
   button {
     display: inline-grid;

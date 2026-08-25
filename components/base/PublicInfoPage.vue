@@ -35,7 +35,7 @@ defineProps<{ eyebrow: string; title: string; lead: string }>()
   inset: 0;
   z-index: 10;
   min-block-size: 100dvh;
-  padding: clamp(16px, 4vw, 48px);
+  padding: clamp(var(--space-4), 4vw, var(--space-12));
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior-y: contain;
@@ -48,19 +48,19 @@ nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-4);
   max-width: 860px;
   margin-inline: auto;
-  padding-block-end: 24px;
+  padding-block-end: var(--space-6);
   border-bottom: var(--ui-border);
-  font-size: 0.84rem;
+  font-size: var(--text-sm);
   font-weight: 600;
 
   div {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
-    gap: 14px;
+    gap: var(--space-4);
     color: var(--dim);
   }
 
@@ -80,25 +80,25 @@ nav {
   .brand {
     color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 1rem;
+    font-size: var(--text-md);
   }
 }
 
 article {
   max-width: 820px;
   margin-inline: auto;
-  padding-block: clamp(48px, 8vw, 92px);
+  padding-block: clamp(var(--space-12), 8vw, var(--space-16));
 
   header {
-    padding-block-end: clamp(30px, 5vw, 52px);
+    padding-block-end: clamp(var(--space-8), 5vw, calc(var(--space-12) + var(--space-1)));
     border-bottom: var(--ui-border);
   }
 
   :deep(h2) {
-    margin-block: 38px 12px;
+    margin-block: var(--space-10) var(--space-3);
     color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(1.15rem, 3vw, 1.35rem);
+    font-size: clamp(var(--text-lg), 3vw, var(--text-xl));
   }
 
   :deep(p),
@@ -109,8 +109,8 @@ article {
 
   :deep(ul) {
     display: grid;
-    gap: 8px;
-    padding-inline-start: 22px;
+    gap: var(--space-2);
+    padding-inline-start: var(--space-6);
   }
 
   :deep(a) {
@@ -120,7 +120,7 @@ article {
   }
 
   :deep(.document-note) {
-    padding: 14px 16px;
+    padding: var(--space-4) var(--space-4);
     border: var(--ui-border);
     border-radius: var(--border-radius-sm);
     background: color-mix(in srgb, var(--surface) 72%, transparent);
@@ -130,15 +130,15 @@ article {
   :deep(.document-actions) {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-block-start: 18px;
+    gap: var(--space-3);
+    margin-block-start: var(--space-5);
   }
 
   :deep(.document-actions a) {
     min-block-size: 44px;
     display: inline-flex;
     align-items: center;
-    padding-inline: 16px;
+    padding-inline: var(--space-4);
     border: var(--ui-border);
     border-radius: var(--border-radius-sm);
     background: color-mix(in srgb, var(--surface) 72%, transparent);
@@ -153,13 +153,13 @@ article {
 }
 
 .document-content {
-  padding-block-start: 10px;
+  padding-block-start: var(--space-3);
 }
 
 .eyebrow {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
   color: var(--dim);
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -167,26 +167,26 @@ article {
 h1 {
   max-width: 18ch;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(2.2rem, 7vw, 4.4rem);
+  font-size: clamp(var(--text-3xl), 7vw, var(--text-7xl));
   line-height: 1.05;
 }
 
 .lead {
   max-width: 58ch;
-  margin-top: 22px;
-  font-size: 1.05rem;
+  margin-top: var(--space-6);
+  font-size: var(--text-md);
 }
 
 footer {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-4);
   max-width: 860px;
   margin-inline: auto;
-  padding-block: 24px;
+  padding-block: var(--space-6);
   border-top: var(--ui-border);
   color: var(--dim);
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
 
   a {
     color: var(--text);
@@ -195,7 +195,7 @@ footer {
 
 @media (max-width: 640px) {
   .public-page {
-    padding-inline: max(14px, env(safe-area-inset-left, 0px)) max(14px, env(safe-area-inset-right, 0px));
+    padding-inline: max(var(--space-4), env(safe-area-inset-left, 0px)) max(var(--space-4), env(safe-area-inset-right, 0px));
   }
 
   nav {
@@ -204,14 +204,14 @@ footer {
     div {
       display: flex;
       justify-content: flex-start;
-      gap: 12px;
+      gap: var(--space-3);
       overflow-x: auto;
       white-space: nowrap;
     }
   }
 
   article {
-    padding-block: 34px 54px;
+    padding-block: var(--space-9) var(--space-14);
   }
 
   footer {

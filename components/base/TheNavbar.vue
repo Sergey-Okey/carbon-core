@@ -218,8 +218,8 @@ async function handleNavClick(section: NavSection) {
   flex: 0 0 32px;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: var(--space-8);
+  height: var(--space-8);
   border-radius: var(--radius-full);
   color: inherit;
   transition:
@@ -228,18 +228,18 @@ async function handleNavClick(section: NavSection) {
 
   svg {
     display: block;
-    width: 20px;
-    height: 20px;
+    width: var(--space-5);
+    height: var(--space-5);
   }
 
   @include mobile {
-    flex-basis: 34px;
-    width: 34px;
-    height: 34px;
+    flex-basis: var(--control-icon-size);
+    width: var(--control-icon-size);
+    height: var(--control-icon-size);
 
     svg {
-      width: 22px;
-      height: 22px;
+      width: var(--space-6);
+      height: var(--space-6);
     }
   }
 }

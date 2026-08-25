@@ -171,7 +171,7 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
 .dashboard {
   display: flex;
   flex-direction: column;
-  gap: clamp(16px, 2vw, 24px);
+  gap: clamp(var(--space-4), 2vw, var(--space-6));
 
   &:not(.is-board) {
     inline-size: min(100%, 1600px);
@@ -247,7 +247,7 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
 .tasks-dashboard {
   display: flex;
   flex-direction: column;
-  gap: clamp(16px, 2vw, 24px);
+  gap: clamp(var(--space-4), 2vw, var(--space-6));
 }
 
 .tasks-empty-overview {

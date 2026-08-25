@@ -625,7 +625,7 @@ onMounted(() => {
   position: relative;
   display: grid;
   grid-template-rows: 30px auto;
-  gap: 3px;
+  gap: var(--space-1);
   justify-items: center;
   min-width: 0;
   overflow: visible;
@@ -694,7 +694,7 @@ onMounted(() => {
 }
 
 .activity-label {
-  font-size: 0.62rem;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-bold, 700);
   line-height: 1;
   color: var(--color-text-muted);

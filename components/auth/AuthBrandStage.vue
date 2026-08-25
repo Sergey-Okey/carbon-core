@@ -608,7 +608,7 @@ onBeforeUnmount(() => {
 .brand-stage__mark {
   margin: 0;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(5.2rem, 11vw, 8.5rem);
+  font-size: clamp(var(--text-6xl), 11vw, var(--text-8xl));
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 0.96;
@@ -624,7 +624,7 @@ onBeforeUnmount(() => {
   min-width: 0;
   width: 100%;
   font-family: 'Manrope', var(--font-sans);
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   letter-spacing: 0.01em;
   line-height: var(--leading-normal);
@@ -690,7 +690,7 @@ onBeforeUnmount(() => {
   }
 
   .brand-stage__mark {
-    font-size: clamp(4.4rem, 22vw, 6.5rem);
+    font-size: clamp(var(--text-5xl), 22vw, var(--text-8xl));
     -webkit-text-stroke: 0.055em currentColor;
   }
 

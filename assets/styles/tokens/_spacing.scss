@@ -1,4 +1,6 @@
 :root {
+  /* 4px base scale */
+  --space-0: 0px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -11,10 +13,13 @@
   --space-10: 40px;
   --space-11: 44px;
   --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
 
+  /* Controls & panel rhythm (aligned to scale) */
   --control-height-md: 40px;
-  --control-height-sm: 34px;
-  --control-icon-size: 34px;
-  --panel-padding: 18px;
-  --panel-gap: 16px;
+  --control-height-sm: 36px;
+  --control-icon-size: 36px;
+  --panel-padding: var(--space-4);
+  --panel-gap: var(--space-4);
 }

@@ -57,9 +57,9 @@ const isBoardLayout = computed(
 
   @include desktop {
     flex-direction: row;
-    padding-block: 4px 12px;
-    padding-inline: 12px;
-    gap: 12px;
+    padding-block: var(--space-1) var(--space-3);
+    padding-inline: var(--space-3);
+    gap: var(--space-3);
   }
 }
 
@@ -88,7 +88,7 @@ const isBoardLayout = computed(
     inset-block-start: calc(
       var(--app-header-stack) + (100dvh - var(--app-header-stack)) / 2
     );
-    inset-inline-start: 12px;
+    inset-inline-start: var(--space-3);
     z-index: 3000;
     margin: 0;
     transform: translateY(-50%);
@@ -137,20 +137,20 @@ const isBoardLayout = computed(
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
-  padding-block: clamp(14px, 2vw, 20px);
-  padding-inline: clamp(12px, 3vw, 24px);
+  padding-block: clamp(var(--space-4), 2vw, var(--space-5));
+  padding-inline: clamp(var(--space-3), 3vw, var(--space-6));
   scroll-behavior: smooth;
 
   html.compact-ui & {
-    padding: 12px;
+    padding: var(--space-3);
   }
 
   @include desktop {
-    padding-block: 20px;
-    padding-inline: 16px 12px;
+    padding-block: var(--space-5);
+    padding-inline: var(--space-4) var(--space-3);
 
     html.compact-ui & {
-      padding: 14px 8px 14px 12px;
+      padding: var(--space-4) var(--space-2) var(--space-4) var(--space-3);
     }
   }
 
@@ -164,11 +164,11 @@ const isBoardLayout = computed(
     );
     padding-inline-start: max(var(--space-3), env(safe-area-inset-left, 0px));
     padding-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
-    padding-block-end: calc(88px + env(safe-area-inset-bottom, 0px));
+    padding-block-end: calc(var(--space-12) + var(--space-10) + env(safe-area-inset-bottom, 0px));
   }
 
   &::-webkit-scrollbar {
-    width: 6px;
+    width: var(--space-2);
   }
 
   &::-webkit-scrollbar-track {

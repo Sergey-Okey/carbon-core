@@ -175,7 +175,7 @@ function onEnter(cell: HeatCell) {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   grid-auto-flow: row;
-  gap: 4px;
+  gap: var(--space-1);
   flex: 1 1 auto;
   min-height: 0;
   align-content: center;
@@ -248,7 +248,7 @@ function onEnter(cell: HeatCell) {
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: clamp(0.55rem, 1.6vw, 0.72rem);
+  font-size: clamp(var(--text-2xs), 1.6vw, var(--text-xs));
   font-weight: var(--weight-bold);
   font-variant-numeric: tabular-nums;
   pointer-events: none;
@@ -277,9 +277,9 @@ function onEnter(cell: HeatCell) {
 .heatmap__scale {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: var(--space-1);
   color: var(--color-text-muted);
-  font-size: 0.62rem;
+  font-size: var(--text-2xs);
 
   .cell {
     width: 10px;
@@ -302,7 +302,7 @@ function onEnter(cell: HeatCell) {
 
 @media (max-width: 767px) {
   .heatmap__grid {
-    gap: 3px;
+    gap: var(--space-1);
   }
 
   .cell__value {
@@ -327,7 +327,7 @@ function onEnter(cell: HeatCell) {
 
   .heatmap__scale span:first-child,
   .heatmap__scale span:last-child {
-    font-size: 0.7rem;
+    font-size: var(--text-2xs);
   }
 }
 </style>

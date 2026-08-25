@@ -1018,7 +1018,7 @@ onUnmounted(() => {
 }
 .logo {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 2rem;
+  font-size: var(--text-3xl);
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--color-accent);
@@ -1038,7 +1038,7 @@ onUnmounted(() => {
   border-radius: var(--radius-full);
   color: var(--color-text-secondary);
   font-family: 'Manrope', sans-serif;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   font-weight: 500;
   cursor: pointer;
   transition:
@@ -1092,7 +1092,7 @@ onUnmounted(() => {
 }
 .section-label {
   font-family: 'Manrope', sans-serif;
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 4px;
@@ -1101,7 +1101,7 @@ onUnmounted(() => {
 }
 .section-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-size: clamp(var(--text-4xl), 6vw, var(--text-6xl));
   font-weight: 600;
   line-height: 1.15;
   letter-spacing: -0.02em;
@@ -1110,7 +1110,7 @@ onUnmounted(() => {
 }
 .section-text {
   font-family: 'Inter', sans-serif;
-  font-size: clamp(1rem, 4vw, 1.2rem);
+  font-size: clamp(var(--text-md), 4vw, var(--text-lg));
   line-height: 1.7;
   color: var(--color-text-secondary);
   max-width: 700px;
@@ -1133,7 +1133,7 @@ onUnmounted(() => {
 }
 .hero-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(2.2rem, 7vw, 4.8rem);
+  font-size: clamp(var(--text-3xl), 7vw, var(--text-7xl));
   font-weight: 700;
   line-height: 1.1;
   margin-bottom: var(--space-5);
@@ -1143,7 +1143,7 @@ onUnmounted(() => {
 }
 .hero-subtitle {
   font-family: 'Inter', sans-serif;
-  font-size: clamp(1rem, 4vw, 1.25rem);
+  font-size: clamp(var(--text-md), 4vw, var(--text-xl));
   line-height: 1.6;
   color: var(--color-text-secondary);
   margin-bottom: var(--space-7);
@@ -1164,7 +1164,7 @@ onUnmounted(() => {
   border: none;
   border-radius: var(--radius-full);
   font-family: 'Manrope', sans-serif;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -1179,7 +1179,7 @@ onUnmounted(() => {
 }
 
 .cta-button--details {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   animation: details-cta-in 420ms cubic-bezier(0.16, 1, 0.3, 1) 420ms both;
 
   .btn-icon {
@@ -1224,7 +1224,7 @@ onUnmounted(() => {
 .hint-text {
   display: none;
   font-family: 'Manrope', sans-serif;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
   max-width: 34ch;
 }
@@ -1247,7 +1247,7 @@ onUnmounted(() => {
   border: var(--ui-border);
   border-radius: var(--radius-full);
   font-family: 'Manrope', sans-serif;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-accent);
   transition:
     border-color 0.16s ease,
@@ -1279,25 +1279,25 @@ onUnmounted(() => {
 
   .rule-number {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 5rem;
+    font-size: var(--text-6xl);
     font-weight: 700;
     color: var(--color-accent);
     line-height: 1;
 
     @media (max-width: 768px) {
-      font-size: 2.8rem;
+      font-size: var(--text-4xl);
     }
   }
   .rule-label {
     font-family: 'Manrope', sans-serif;
-    font-size: 1rem;
+    font-size: var(--text-md);
     font-weight: 600;
     color: var(--color-text-secondary);
     margin-top: var(--space-2);
     text-transform: uppercase;
 
     @media (max-width: 768px) {
-      font-size: 0.8rem;
+      font-size: var(--text-sm);
       margin-top: 2px;
     }
   }
@@ -1346,7 +1346,7 @@ onUnmounted(() => {
   }
   h3 {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.4rem;
+    font-size: var(--text-2xl);
     margin-bottom: var(--space-3);
     color: var(--color-accent);
   }
@@ -1369,7 +1369,7 @@ onUnmounted(() => {
   background: var(--color-surface-1);
   color: var(--color-accent);
   font-family: 'Manrope', sans-serif;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   font-weight: 600;
 }
 
@@ -1389,14 +1389,14 @@ onUnmounted(() => {
 .donation-btn {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 24px;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-6);
   background: var(--color-surface-1);
   border: var(--ui-border);
   border-radius: var(--border-radius-md);
   color: var(--accent);
   font-family: 'Manrope', sans-serif;
-  font-size: 0.95rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -1419,18 +1419,18 @@ onUnmounted(() => {
 }
 
 .donation-content {
-  margin-top: 14px;
+  margin-top: var(--space-4);
   width: 100%;
   max-width: 900px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .donation-options {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 10px;
+  gap: var(--space-3);
   width: 100%;
 }
 
@@ -1438,8 +1438,8 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 10px;
-  padding: 14px 18px;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
   background: var(--color-surface-1);
   border: var(--ui-border);
   border-radius: var(--border-radius-sm);
@@ -1447,12 +1447,12 @@ onUnmounted(() => {
 
 .network-badge {
   font-family: 'Manrope', sans-serif;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--dim);
-  padding: 4px 10px;
+  padding: var(--space-1) var(--space-3);
   background: color-mix(in srgb, var(--accent) 8%, transparent);
   border-radius: 999px;
   white-space: nowrap;
@@ -1460,7 +1460,7 @@ onUnmounted(() => {
 
 .wallet-code {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   color: var(--accent);
   word-break: break-all;
   user-select: all;
@@ -1469,23 +1469,23 @@ onUnmounted(() => {
 }
 
 .donation-hint {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--dim);
   margin: 0;
 }
 
 .cloudtips-card {
   min-width: 0;
-  padding: 14px 16px;
+  padding: var(--space-4) var(--space-4);
   overflow: hidden;
   background: var(--color-surface-1);
   border: var(--ui-border);
   border-radius: var(--border-radius-sm);
 
   p {
-    margin: 0 0 14px;
+    margin: 0 0 var(--space-4);
     color: var(--dim);
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     line-height: 1.5;
   }
 }
@@ -1494,25 +1494,25 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
   color: var(--dim);
   font-family: 'Manrope', sans-serif;
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
 }
 
 .cloudtips-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-2);
   min-height: 38px;
-  padding: 9px 14px;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--border-radius-sm);
   background: var(--accent);
   color: var(--bg);
   font-family: 'Manrope', sans-serif;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   font-weight: 700;
   text-decoration: none;
   transition:
@@ -1528,21 +1528,21 @@ onUnmounted(() => {
 .contacts {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 20px;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
 
   a {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: var(--space-2);
     min-height: 36px;
-    padding: 8px 12px;
+    padding: var(--space-2) var(--space-3);
     border: var(--ui-border);
     border-radius: var(--border-radius-sm);
     background: var(--color-surface-1);
     color: var(--dim);
     font-family: 'Manrope', sans-serif;
-    font-size: 0.78rem;
+    font-size: var(--text-xs);
     font-weight: 600;
     text-decoration: none;
     transition:
@@ -1569,11 +1569,11 @@ onUnmounted(() => {
   }
   .final-title {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(3rem, 6vw, 4.5rem);
+    font-size: clamp(var(--text-5xl), 6vw, var(--text-7xl));
     margin-bottom: var(--space-5);
   }
   .final-text {
-    font-size: 1.2rem;
+    font-size: var(--text-lg);
     color: var(--color-text-secondary);
     margin-bottom: var(--space-10);
     max-width: 620px;
@@ -1586,14 +1586,14 @@ onUnmounted(() => {
   }
   .cta-button.large {
     padding: var(--space-5) calc(var(--space-12) + var(--space-1));
-    font-size: 1.2rem;
+    font-size: var(--text-lg);
     margin: 0;
   }
   .final-hint {
     max-width: 460px;
-    margin: 20px auto 0;
+    margin: var(--space-5) auto 0;
     color: var(--dim);
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     line-height: 1.5;
     text-align: center;
   }
@@ -1605,40 +1605,40 @@ onUnmounted(() => {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 14px;
+    gap: var(--space-4);
     color: var(--dim);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
   }
 }
 
 @media (max-width: 1024px) {
   .fixed-header {
-    padding-block: calc(env(safe-area-inset-top, 0px) + 14px) 10px;
-    padding-inline: max(20px, env(safe-area-inset-left, 0px))
-      max(20px, env(safe-area-inset-right, 0px));
+    padding-block: calc(env(safe-area-inset-top, 0px) + var(--space-4)) var(--space-3);
+    padding-inline: max(var(--space-5), env(safe-area-inset-left, 0px))
+      max(var(--space-5), env(safe-area-inset-right, 0px));
   }
 
   .logo {
-    font-size: 1.6rem;
+    font-size: var(--text-2xl);
   }
 
   .hero-section {
-    gap: 32px;
+    gap: var(--space-8);
   }
 
   .section {
-    padding-inline: 32px;
+    padding-inline: var(--space-8);
   }
 
   .rule-grid {
-    gap: 28px;
+    gap: var(--space-7);
   }
 
 }
 
 @media (max-width: 768px) {
   .section {
-    padding-inline: 20px;
+    padding-inline: var(--space-5);
   }
 
   .fixed-header {
@@ -1648,7 +1648,7 @@ onUnmounted(() => {
   }
 
   .logo {
-    font-size: 1.2rem;
+    font-size: var(--text-lg);
   }
 
   .beta-badge {
@@ -1657,8 +1657,8 @@ onUnmounted(() => {
 
   .skip-btn {
     min-height: 44px;
-    padding: 7px var(--space-3);
-    font-size: 0.82rem;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
     border-radius: var(--radius-md);
   }
 
@@ -1672,25 +1672,25 @@ onUnmounted(() => {
   }
 
   .section-label {
-    margin-bottom: 12px;
+    margin-bottom: var(--space-3);
     letter-spacing: 0.12em;
-    font-size: 0.72rem;
+    font-size: var(--text-xs);
   }
 
   .section-title {
-    font-size: clamp(1.7rem, 8vw, 2.35rem);
-    margin-bottom: 16px;
+    font-size: clamp(var(--text-2xl), 8vw, var(--text-4xl));
+    margin-bottom: var(--space-4);
   }
 
   .section-text {
-    font-size: 0.98rem;
-    margin-bottom: 26px;
+    font-size: var(--text-md);
+    margin-bottom: var(--space-6);
     line-height: 1.6;
   }
 
   .hero-section {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: var(--space-5);
     justify-content: center;
     align-items: center;
   }
@@ -1700,14 +1700,14 @@ onUnmounted(() => {
   }
 
   .hero-title {
-    font-size: clamp(1.9rem, 10.5vw, 2.8rem);
+    font-size: clamp(var(--text-3xl), 10.5vw, var(--text-4xl));
     line-height: 1.08;
-    margin-bottom: 14px;
+    margin-bottom: var(--space-4);
   }
 
   .hero-subtitle {
-    font-size: 0.98rem;
-    margin-bottom: 20px;
+    font-size: var(--text-md);
+    margin-bottom: var(--space-5);
   }
 
   .hero-cta {
@@ -1718,39 +1718,39 @@ onUnmounted(() => {
   .cta-button {
     width: 100%;
     justify-content: center;
-    padding: 14px 22px;
+    padding: var(--space-4) var(--space-6);
     border-radius: 14px;
-    font-size: 1rem;
+    font-size: var(--text-md);
   }
 
   .hint-text {
-    font-size: 0.82rem;
+    font-size: var(--text-sm);
     max-width: none;
     text-align: center;
   }
 
   .rule-grid {
-    gap: 20px;
+    gap: var(--space-5);
     justify-content: space-around;
   }
 
   .rule-item {
     flex-direction: row;
     align-items: baseline;
-    gap: 6px;
+    gap: var(--space-2);
 
     .rule-number {
-      font-size: 2.8rem;
+      font-size: var(--text-4xl);
     }
     .rule-label {
-      font-size: 0.8rem;
+      font-size: var(--text-sm);
       margin-top: 2px;
     }
   }
 
   .visual-features {
-    gap: 14px;
-    margin: 26px 0;
+    gap: var(--space-4);
+    margin: var(--space-6) 0;
   }
 
   .feature-row {
@@ -1759,8 +1759,8 @@ onUnmounted(() => {
 
   .tools-grid {
     grid-template-columns: 1fr;
-    gap: 14px;
-    margin-top: 24px;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
   }
 
   .tool-card {
@@ -1793,7 +1793,7 @@ onUnmounted(() => {
 
   .contacts {
     width: 100%;
-    gap: 6px;
+    gap: var(--space-2);
 
     a {
       flex: 1 1 auto;
@@ -1813,40 +1813,40 @@ onUnmounted(() => {
     }
 
     .final-title {
-      font-size: clamp(2rem, 10vw, 2.8rem);
+      font-size: clamp(var(--text-3xl), 10vw, var(--text-4xl));
       line-height: 1.08;
       text-align: center;
     }
     .final-text {
       width: min(100%, 34rem);
-      font-size: 1rem;
-      margin-bottom: 24px;
+      font-size: var(--text-md);
+      margin-bottom: var(--space-6);
       text-align: center;
     }
     .final-actions {
       width: 100%;
       flex-direction: column;
       align-items: stretch;
-      gap: 6px;
+      gap: var(--space-2);
     }
     .cta-button.large {
       width: 100%;
-      padding: 16px 20px;
-      font-size: 1rem;
+      padding: var(--space-4) var(--space-5);
+      font-size: var(--text-md);
       margin: 0;
     }
     .final-hint {
       width: min(100%, 34rem);
-      margin-top: 16px;
-      font-size: 0.75rem;
+      margin-top: var(--space-4);
+      font-size: var(--text-xs);
       line-height: 1.45;
       text-align: center;
     }
 
     .final-links {
-      right: 12px;
-      bottom: 18px;
-      left: 12px;
+      right: var(--space-3);
+      bottom: var(--space-5);
+      left: var(--space-3);
     }
   }
 }

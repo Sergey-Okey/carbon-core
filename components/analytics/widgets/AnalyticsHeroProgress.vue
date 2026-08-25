@@ -130,7 +130,7 @@ const hoverDetail = computed(() => {
 
   strong {
     color: var(--color-text-primary);
-    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-size: clamp(var(--text-3xl), 4vw, var(--text-4xl));
     font-weight: var(--weight-bold);
     line-height: 1;
     letter-spacing: -0.04em;
@@ -147,7 +147,7 @@ const hoverDetail = computed(() => {
 .hero__ticks {
   display: flex;
   align-items: stretch;
-  gap: 3px;
+  gap: var(--space-1);
   height: 22px;
 }
 
@@ -192,7 +192,7 @@ const hoverDetail = computed(() => {
 .metric-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-1);
   color: var(--color-text-muted);
   font-size: var(--text-xs);
   cursor: default;
@@ -216,7 +216,7 @@ const hoverDetail = computed(() => {
 
 @media (max-width: 767px) {
   .hero__value strong {
-    font-size: clamp(1.75rem, 8vw, 2.25rem);
+    font-size: clamp(var(--text-2xl), 8vw, var(--text-4xl));
   }
 
   .hero__ticks {

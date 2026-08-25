@@ -533,18 +533,18 @@ const activeTab = ref<'terms' | 'offer' | 'refund'>('terms')
 <style scoped lang="scss">
 .terms-tabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
   border-bottom: var(--ui-border);
-  padding-bottom: 4px;
+  padding-bottom: var(--space-1);
 
   .tab-btn {
-    padding: 8px 16px;
+    padding: var(--space-2) var(--space-4);
     border: none;
     border-radius: var(--border-radius-sm);
     background: transparent;
     color: var(--dim);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -568,10 +568,10 @@ const activeTab = ref<'terms' | 'offer' | 'refund'>('terms')
     z-index: 2;
     display: grid;
     grid-template-columns: 1fr;
-    gap: 6px;
+    gap: var(--space-2);
     margin-inline: -2px;
-    margin-bottom: 18px;
-    padding: 0 0 12px;
+    margin-bottom: var(--space-5);
+    padding: 0 0 var(--space-3);
     border-bottom: var(--ui-border);
     background: color-mix(in srgb, var(--bg) 88%, transparent);
     backdrop-filter: var(--glass-filter);
@@ -580,30 +580,30 @@ const activeTab = ref<'terms' | 'offer' | 'refund'>('terms')
     .tab-btn {
       width: 100%;
       min-height: 42px;
-      padding: 9px 12px;
+      padding: var(--space-2) var(--space-3);
       border: var(--ui-border);
       border-radius: var(--border-radius-pill);
-      font-size: 0.82rem;
+      font-size: var(--text-sm);
       text-align: center;
     }
   }
 }
 
 .document-note {
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
   background: color-mix(in srgb, var(--surface) 70%, transparent);
   border-left: 2px solid var(--accent);
   border-radius: var(--border-radius-sm);
-  margin-bottom: 24px;
-  font-size: 0.9rem;
+  margin-bottom: var(--space-6);
+  font-size: var(--text-sm);
   color: var(--dim);
 }
 
 ul {
-  padding-left: 20px;
-  margin: 8px 0 16px;
+  padding-left: var(--space-5);
+  margin: var(--space-2) 0 var(--space-4);
   li {
-    margin-bottom: 4px;
+    margin-bottom: var(--space-1);
     color: var(--accent);
     line-height: 1.5;
   }
@@ -615,18 +615,18 @@ li {
 }
 
 .document-actions {
-  margin-top: 32px;
+  margin-top: var(--space-8);
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--space-4);
   align-items: center;
 
   a {
     display: inline-flex;
     align-items: center;
-    padding: 8px 16px;
+    padding: var(--space-2) var(--space-4);
     border-radius: var(--border-radius-pill);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     font-weight: 500;
     text-decoration: none;
     transition: all 0.2s;
@@ -653,25 +653,25 @@ li {
 
 @media (max-width: 640px) {
   .document-note {
-    margin-bottom: 18px;
-    padding: 12px 14px;
-    font-size: 0.84rem;
+    margin-bottom: var(--space-5);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-sm);
     line-height: 1.45;
   }
 
   ul {
-    padding-left: 18px;
+    padding-left: var(--space-5);
 
     li {
-      font-size: 0.88rem;
+      font-size: var(--text-sm);
       line-height: 1.5;
     }
   }
 
   .document-actions {
     display: grid;
-    gap: 10px;
-    margin-top: 24px;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
 
     a {
       justify-content: center;
