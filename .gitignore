@@ -17,6 +17,9 @@ lerna-debug.log*
 # Environment
 .env
 .env*.local
+.env.production
+**/.env.production
+deploy/.env.production
 
 # Cache
 *.tsbuildinfo

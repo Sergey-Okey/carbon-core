@@ -50,6 +50,9 @@ sudo bash /var/www/cof-board/app/deploy/remote-ssl.sh
 
 ## SMTP (smtp.bz)
 
+Секреты продакшена живут **только** в `/var/www/cof-board/.env` на VPS.
+Шаблон без секретов: `deploy/.env.production.example`. Файл `.env.production` в git не коммитить.
+
 В `/var/www/cof-board/.env`:
 
 ```

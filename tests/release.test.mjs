@@ -217,3 +217,14 @@ test('new users start with registration instead of login', async () => {
   assert.match(middleware, /if \(hasUsers\) return navigateTo\('\/auth'\)/)
   assert.match(middleware, /hasSeenOnboarding \? '\/register' : '\/onboarding'/)
 })
+
+test('production secrets stay out of the git tree', async () => {
+  const { existsSync } = await import('node:fs')
+  const gitignore = await read('.gitignore')
+  const example = await read('deploy/.env.production.example')
+  assert.equal(existsSync(new URL('../deploy/.env.production', import.meta.url)), false)
+  assert.match(gitignore, /\.env\.production/)
+  assert.match(example, /replace-with-at-least-32-random-characters/)
+  assert.match(example, /replace-me@127\.0\.0\.1/)
+  assert.doesNotMatch(example, /postgresql:\/\/cof:[^r]/)
+})
