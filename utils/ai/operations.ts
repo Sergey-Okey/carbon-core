@@ -41,6 +41,55 @@ const OP_ORDER: Record<AiOpType, number> = {
   deleteBranch: 11,
 }
 
+/** Models name colours instead of writing hex, so the common names are mapped here. */
+const COLOR_NAMES: Record<string, string> = {
+  красный: '#ef4444',
+  алый: '#ef4444',
+  red: '#ef4444',
+  оранжевый: '#f97316',
+  orange: '#f97316',
+  желтый: '#eab308',
+  yellow: '#eab308',
+  зеленый: '#22c55e',
+  салатовый: '#22c55e',
+  green: '#22c55e',
+  бирюзовый: '#14b8a6',
+  teal: '#14b8a6',
+  голубой: '#06b6d4',
+  cyan: '#06b6d4',
+  синий: '#3b82f6',
+  blue: '#3b82f6',
+  фиолетовый: '#8b5cf6',
+  сиреневый: '#8b5cf6',
+  purple: '#8b5cf6',
+  violet: '#8b5cf6',
+  розовый: '#ec4899',
+  pink: '#ec4899',
+  серый: '#64748b',
+  gray: '#64748b',
+  grey: '#64748b',
+}
+
+const TASK_TYPE_ALIASES: Record<string, TaskType> = {
+  habit: 'HABIT',
+  привычка: 'HABIT',
+  ежедневно: 'HABIT',
+  day: 'TASK_DAY',
+  daily: 'TASK_DAY',
+  день: 'TASK_DAY',
+  week: 'TASK_WEEK',
+  weekly: 'TASK_WEEK',
+  неделя: 'TASK_WEEK',
+  month: 'TASK_MONTH',
+  monthly: 'TASK_MONTH',
+  месяц: 'TASK_MONTH',
+  year: 'TASK_YEAR',
+  yearly: 'TASK_YEAR',
+  год: 'TASK_YEAR',
+  purchase: 'PURCHASE',
+  покупка: 'PURCHASE',
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
@@ -77,8 +126,36 @@ function asId(value: unknown) {
   return text
 }
 
+/** Picks the first field the model filled in, so synonyms do not lose the value. */
+function firstOf(...values: unknown[]) {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim()) return value
+  }
+  return undefined
+}
+
 function asTaskType(value: unknown): TaskType | undefined {
-  return AI_TASK_TYPES.find((item) => item === value)
+  const exact = AI_TASK_TYPES.find((item) => item === value)
+  if (exact) return exact
+  const text = asTrimmed(value, 40).toLowerCase().replace(/ё/g, 'е').replace(/[\s-]+/g, '_')
+  if (!text) return undefined
+  const upper = text.toUpperCase()
+  return (
+    AI_TASK_TYPES.find((item) => item === upper) ||
+    TASK_TYPE_ALIASES[text] ||
+    TASK_TYPE_ALIASES[text.replace(/^task_/, '')]
+  )
+}
+
+function asColor(...values: unknown[]) {
+  for (const value of values) {
+    const text = asTrimmed(value, 40).toLowerCase().replace(/ё/g, 'е')
+    if (!text) continue
+    if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/.test(text)) return text
+    const named = COLOR_NAMES[text]
+    if (named) return named
+  }
+  return undefined
 }
 
 function asIcon(value: unknown) {
@@ -95,9 +172,9 @@ function parseOperation(raw: unknown): AiOperation | null {
 
   switch (op) {
     case 'createTask': {
-      const title = asTrimmed(raw.title, 160)
-      const type = asTaskType(raw.type)
-      if (!title || !type) return null
+      const title = asTrimmed(firstOf(raw.title, raw.name), 160)
+      const type = asTaskType(raw.type) || 'TASK_DAY'
+      if (!title) return null
       return {
         op,
         ref: asRef(raw.ref),
@@ -113,12 +190,12 @@ function parseOperation(raw: unknown): AiOperation | null {
       }
     }
     case 'updateTask': {
-      const id = asId(raw.id)
+      const id = asId(firstOf(raw.id, raw.taskId))
       if (!id) return null
       return {
         op,
         id,
-        title: asOptionalString(raw.title, 160),
+        title: asOptionalString(firstOf(raw.title, raw.name), 160),
         description: asOptionalString(raw.description, 800),
         type: asTaskType(raw.type),
         tagNames: asStringArray(raw.tagNames),
@@ -131,11 +208,11 @@ function parseOperation(raw: unknown): AiOperation | null {
     case 'reopenTask':
     case 'deleteTask':
     case 'restoreTask': {
-      const id = asId(raw.id)
+      const id = asId(firstOf(raw.id, raw.taskId))
       return id ? { op, id } : null
     }
     case 'createBranch': {
-      const displayName = asTrimmed(raw.displayName, 120)
+      const displayName = asTrimmed(firstOf(raw.displayName, raw.name, raw.title), 120)
       if (!displayName) return null
       return {
         op,
@@ -143,27 +220,27 @@ function parseOperation(raw: unknown): AiOperation | null {
         displayName,
         description: asOptionalString(raw.description, 800),
         icon: asIcon(raw.icon) || 'target',
-        markerColor: asOptionalString(raw.markerColor, 20),
+        markerColor: asColor(raw.markerColor, raw.color, raw.backgroundColor),
       }
     }
     case 'updateBranch': {
-      const id = asId(raw.id)
+      const id = asId(firstOf(raw.id, raw.branchId))
       if (!id) return null
       return {
         op,
         id,
-        displayName: asOptionalString(raw.displayName, 120),
+        displayName: asOptionalString(firstOf(raw.displayName, raw.name, raw.title), 120),
         description: asOptionalString(raw.description, 800),
         icon: asIcon(raw.icon),
-        markerColor: asOptionalString(raw.markerColor, 20),
+        markerColor: asColor(raw.markerColor, raw.color, raw.backgroundColor),
       }
     }
     case 'deleteBranch': {
-      const id = asId(raw.id)
+      const id = asId(firstOf(raw.id, raw.branchId))
       return id ? { op, id } : null
     }
     case 'createMilestone': {
-      const name = asTrimmed(raw.name, 120)
+      const name = asTrimmed(firstOf(raw.name, raw.title), 120)
       if (!name) return null
       return {
         op,
@@ -171,12 +248,12 @@ function parseOperation(raw: unknown): AiOperation | null {
         name,
         description: asOptionalString(raw.description, 800),
         branchId: asOptionalString(raw.branchId, 80),
-        sourceId: asOptionalString(raw.sourceId, 80),
+        sourceId: asOptionalString(firstOf(raw.sourceId, raw.source, raw.fromId), 80),
         taskIds: asStringArray(raw.taskIds, 20, 80),
       }
     }
     case 'updateMilestone': {
-      const id = asId(raw.id)
+      const id = asId(firstOf(raw.id, raw.milestoneId))
       if (!id) return null
       const status =
         raw.status === 'pending' || raw.status === 'active' || raw.status === 'completed'
@@ -185,64 +262,64 @@ function parseOperation(raw: unknown): AiOperation | null {
       return {
         op,
         id,
-        name: asOptionalString(raw.name, 120),
+        name: asOptionalString(firstOf(raw.name, raw.title), 120),
         description: asOptionalString(raw.description, 800),
         status,
         taskIds: asStringArray(raw.taskIds, 20, 80),
       }
     }
     case 'deleteMilestone': {
-      const id = asId(raw.id)
+      const id = asId(firstOf(raw.id, raw.milestoneId))
       return id ? { op, id } : null
     }
     case 'connectNodes': {
-      const sourceId = asId(raw.sourceId)
-      const targetId = asId(raw.targetId)
+      const sourceId = asId(firstOf(raw.sourceId, raw.source, raw.fromId))
+      const targetId = asId(firstOf(raw.targetId, raw.target, raw.toId))
       return sourceId && targetId ? { op, sourceId, targetId } : null
     }
     case 'disconnectNodes': {
-      const edgeId = asOptionalString(raw.edgeId, 80)
-      const sourceId = asOptionalString(raw.sourceId, 80)
-      const targetId = asOptionalString(raw.targetId, 80)
+      const edgeId = asOptionalString(firstOf(raw.edgeId, raw.id), 80)
+      const sourceId = asOptionalString(firstOf(raw.sourceId, raw.source, raw.fromId), 80)
+      const targetId = asOptionalString(firstOf(raw.targetId, raw.target, raw.toId), 80)
       if (!edgeId && !(sourceId && targetId)) return null
       return { op, edgeId, sourceId, targetId }
     }
     case 'linkTask':
     case 'unlinkTask': {
-      const taskId = asId(raw.taskId)
+      const taskId = asId(firstOf(raw.taskId, raw.id))
       const branchId = asOptionalString(raw.branchId, 80)
       const milestoneId = asOptionalString(raw.milestoneId, 80)
       if (!taskId || (!branchId && !milestoneId)) return null
       return { op, taskId, branchId, milestoneId }
     }
     case 'createTag': {
-      const name = asTrimmed(raw.name, 80)
+      const name = asTrimmed(firstOf(raw.name, raw.title), 80)
       if (!name) return null
       return {
         op,
         ref: asRef(raw.ref),
         name,
-        color: asOptionalString(raw.color, 40),
+        color: asColor(raw.color, raw.markerColor),
         branchId: asOptionalString(raw.branchId, 80),
       }
     }
     case 'updateTag': {
-      const id = asId(raw.id)
+      const id = asId(firstOf(raw.id, raw.tagId))
       if (!id) return null
       return {
         op,
         id,
-        name: asOptionalString(raw.name, 80),
-        color: asOptionalString(raw.color, 40),
+        name: asOptionalString(firstOf(raw.name, raw.title), 80),
+        color: asColor(raw.color, raw.markerColor),
         branchId: asOptionalString(raw.branchId, 80),
       }
     }
     case 'deleteTag': {
-      const id = asId(raw.id)
+      const id = asId(firstOf(raw.id, raw.tagId))
       return id ? { op, id } : null
     }
     case 'createReward': {
-      const title = asTrimmed(raw.title, 120)
+      const title = asTrimmed(firstOf(raw.title, raw.name), 120)
       if (!title) return null
       return {
         op,
@@ -256,12 +333,12 @@ function parseOperation(raw: unknown): AiOperation | null {
       }
     }
     case 'updateReward': {
-      const id = asId(raw.id)
+      const id = asId(firstOf(raw.id, raw.rewardId))
       if (!id) return null
       return {
         op,
         id,
-        title: asOptionalString(raw.title, 120),
+        title: asOptionalString(firstOf(raw.title, raw.name), 120),
         description: asOptionalString(raw.description, 400),
         leaguePoints:
           typeof raw.leaguePoints === 'number'
@@ -270,14 +347,19 @@ function parseOperation(raw: unknown): AiOperation | null {
       }
     }
     case 'deleteReward': {
-      const id = asId(raw.id)
+      const id = asId(firstOf(raw.id, raw.rewardId))
       return id ? { op, id } : null
     }
     case 'updateSettings': {
-      if (!isRecord(raw.values)) return null
+      const source = isRecord(raw.values) ? raw.values : raw
       const values: Record<string, string | number | boolean> = {}
       for (const key of AI_SETTINGS_KEYS) {
-        const value = raw.values[key]
+        const value = source[key]
+        if (key === 'accentColor') {
+          const color = asColor(value)
+          if (color) values[key] = color
+          continue
+        }
         if (typeof value === 'string') values[key] = value.slice(0, 64)
         else if (typeof value === 'number' || typeof value === 'boolean') values[key] = value
       }
@@ -286,7 +368,7 @@ function parseOperation(raw: unknown): AiOperation | null {
     }
     case 'updateProfile': {
       const name = asOptionalString(raw.name, 80)
-      const bio = asOptionalString(raw.bio, 280)
+      const bio = asOptionalString(firstOf(raw.bio, raw.about), 280)
       if (!name && !bio) return null
       return { op, name, bio }
     }

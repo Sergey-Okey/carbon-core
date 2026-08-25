@@ -76,8 +76,15 @@ API-ключ — в кабинете smtp.bz → «Мой профиль». Ес
 Прокси через свой Worker тоже не спасает: OpenRouter видит тот же запрещённый клиент.
 
 Рабочий путь — **Workers AI** (OpenAI-совместимый чат). Cloudflare не хостит Gemini Pro
-(тот прайс $0.75 / $3.75 за 1M — платный Google). На Workers AI Google — это **Gemma 4**,
-с дневным бесплатным пулом 10 000 neurons.
+(тот прайс $0.75 / $3.75 за 1M — платный Google), а на Workers AI есть свой пул моделей
+с дневным бесплатным лимитом 10 000 neurons.
+
+Модель выбрана замером на реальном промпте агента: `@cf/qwen/qwen3-30b-a3b-fp8` даёт
+3–12 с и корректные операции во всех проверенных сценариях. Gemma 4 отвечала верно,
+но 15–31 с — не укладывалась в таймаут. `@cf/openai/gpt-oss-20b` возвращает пустой
+`content`, `@cf/deepseek-ai/deepseek-v4-flash-0731` недоступен на Workers Free.
+Запасные по скорости: `@cf/mistralai/mistral-small-3.1-24b-instruct`,
+`@cf/meta/llama-3.3-70b-instruct-fp8-fast`.
 
 1. User API Token Cloudflare с правом Workers AI.
 2. В `/var/www/cof-board/.env`:
@@ -85,8 +92,8 @@ API-ключ — в кабинете smtp.bz → «Мой профиль». Ес
 ```
 AI_ENGINE=openai
 NUXT_AI_ENGINE=openai
-OPENAI_MODEL=@cf/google/gemma-4-26b-a4b-it
-NUXT_OPENAI_MODEL=@cf/google/gemma-4-26b-a4b-it
+OPENAI_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
+NUXT_OPENAI_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
 OPENAI_API_KEY=<Cloudflare User API Token>
 NUXT_OPENAI_API_KEY=<тот же токен>
 OPENAI_BASE_URL=https://api.cloudflare.com/client/v4/accounts/<account_id>/ai/v1

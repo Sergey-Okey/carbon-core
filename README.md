@@ -49,7 +49,7 @@ readiness with `GET /api/health`.
 Production runs as a Node process on the VPS. See `deploy/README.md`.
 The agent uses an OpenAI-compatible chat API when `OPENAI_API_KEY` is set.
 On the SpaceWeb VPS `openrouter.ai` is WAF-blocked, so production uses
-Cloudflare Workers AI (`@cf/google/gemma-4-26b-a4b-it`). See `deploy/README.md`.
+Cloudflare Workers AI (`@cf/qwen/qwen3-30b-a3b-fp8`). See `deploy/README.md`.
 Without a key the API returns 503.
 
 ## Project Structure

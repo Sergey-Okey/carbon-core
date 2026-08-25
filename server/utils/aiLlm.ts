@@ -13,8 +13,9 @@ const OPENROUTER_FALLBACKS = [
   'z-ai/glm-5.2:free',
   'nvidia/nemotron-3.5-lightning:free',
 ]
-const CLOUD_TIMEOUT_MS = 12000
-const OPENROUTER_TIMEOUT_MS = 12000
+// Board-sized prompts take 3-12 s on the configured model, so the window keeps a margin.
+const CLOUD_TIMEOUT_MS = 22000
+const OPENROUTER_TIMEOUT_MS = 22000
 const OPENROUTER_BLOCKED = 'OPENROUTER_BLOCKED'
 
 type Fetcher = typeof fetch

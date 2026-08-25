@@ -204,6 +204,7 @@ export type AiContextBranch = {
   displayName: string
   description?: string
   icon: string
+  markerColor?: string
   directTaskIds: string[]
   milestones: AiContextMilestone[]
 }

@@ -12,6 +12,22 @@ function resolveId(id: string | undefined, refs: Map<string, string>) {
   return refs.get(id) || id
 }
 
+/**
+ * Stores update entities through Object.assign, so an undefined value would erase
+ * the current one. The agent sends only the fields it wants to change.
+ */
+function definedOnly<T extends Record<string, unknown>>(updates: T) {
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(updates)) {
+    if (value !== undefined) result[key] = value
+  }
+  return result as Partial<T>
+}
+
+function nothingToChange(op: AiOperation['op'], label: string): AiApplyResult {
+  return { op, ok: false, detail: `Не понял, что изменить в ${label}` }
+}
+
 function remember(refs: Map<string, string>, ref: string | undefined, id: string) {
   if (ref) refs.set(ref, id)
 }
@@ -203,11 +219,13 @@ function applyOne(
     }
     case 'updateTag': {
       const id = resolveId(operation.id, refs)
-      const updated = tags.updateTag(id, {
+      const updates = definedOnly({
         name: operation.name,
         color: operation.color,
         branchId: operation.branchId ? resolveId(operation.branchId, refs) : undefined,
-      }, tasks.tasks)
+      })
+      if (!Object.keys(updates).length) return nothingToChange(operation.op, 'теге')
+      const updated = tags.updateTag(id, updates, tasks.tasks)
       return {
         op: operation.op,
         ok: Boolean(updated),
@@ -238,12 +256,14 @@ function applyOne(
       const id = resolveId(operation.id, refs)
       const branch = branches.branches.find((item) => item.id === id)
       if (!branch) return { op: operation.op, ok: false, detail: 'Ветка не найдена' }
-      branches.updateBranch(id, {
+      const updates = definedOnly({
         displayName: operation.displayName,
         description: operation.description,
         icon: operation.icon,
         markerColor: operation.markerColor,
       })
+      if (!Object.keys(updates).length) return nothingToChange(operation.op, 'ветке')
+      branches.updateBranch(id, updates)
       return {
         op: operation.op,
         ok: true,
@@ -287,12 +307,14 @@ function applyOne(
       const id = resolveId(operation.id, refs)
       const found = findMilestone(branches, id)
       if (!found) return { op: operation.op, ok: false, detail: 'Этап не найден' }
-      branches.updateMilestone(id, {
+      const updates = definedOnly({
         name: operation.name,
         description: operation.description,
         status: operation.status,
         taskIds: operation.taskIds?.map((taskId) => resolveId(taskId, refs)),
       })
+      if (!Object.keys(updates).length) return nothingToChange(operation.op, 'этапе')
+      branches.updateMilestone(id, updates)
       return {
         op: operation.op,
         ok: true,
@@ -340,15 +362,18 @@ function applyOne(
       const id = resolveId(operation.id, refs)
       const task = tasks.tasks.find((item) => item.id === id)
       if (!task) return { op: operation.op, ok: false, detail: 'Задача не найдена' }
-      const updates: Partial<Task> = {
+      const updates: Partial<Task> = definedOnly({
         title: operation.title,
         description: operation.description,
         type: operation.type as TaskType | undefined,
         targetDate: operation.targetDate,
         targetTime: operation.targetTime,
-      }
+      })
       if (operation.tagNames) updates.tagIds = resolveTagIds(operation.tagNames, tags, refs)
-      tasks.updateTask(id, updates)
+      if (!Object.keys(updates).length && operation.done === undefined) {
+        return nothingToChange(operation.op, 'задаче')
+      }
+      if (Object.keys(updates).length) tasks.updateTask(id, updates)
       if (operation.done === true && !task.done) tasks.completeTask(id)
       if (operation.done === false && task.done) tasks.reopenTask(id)
       return {
@@ -451,7 +476,7 @@ function applyOne(
       }
     }
     case 'updateReward': {
-      const updated = rewards.updateReward(resolveId(operation.id, refs), {
+      const updates = definedOnly({
         title: operation.title,
         description: operation.description,
         effect:
@@ -459,6 +484,8 @@ function applyOne(
             ? undefined
             : { leaguePoints: operation.leaguePoints },
       })
+      if (!Object.keys(updates).length) return nothingToChange(operation.op, 'награде')
+      const updated = rewards.updateReward(resolveId(operation.id, refs), updates)
       return {
         op: operation.op,
         ok: Boolean(updated),
@@ -474,10 +501,12 @@ function applyOne(
       return { op: operation.op, ok: true, detail: 'Настройки обновлены' }
     }
     case 'updateProfile': {
-      user.updateProfile({
+      const updates = {
         ...(operation.name ? { name: operation.name } : {}),
         ...(operation.bio ? { bio: operation.bio } : {}),
-      })
+      }
+      if (!Object.keys(updates).length) return nothingToChange(operation.op, 'профиле')
+      user.updateProfile(updates)
       return { op: operation.op, ok: true, detail: 'Профиль обновлён' }
     }
     default:

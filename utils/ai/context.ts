@@ -103,6 +103,7 @@ function pickBranch(raw: unknown): AiContextBranch | null {
     displayName,
     description: asString(raw.description, 400) || undefined,
     icon: asString(raw.icon, 40) || 'target',
+    markerColor: asString(raw.markerColor ?? raw.backgroundColor, 20) || undefined,
     directTaskIds: asStringArray(raw.directTaskIds ?? raw.taskIds, 40, 80),
     milestones,
   }
@@ -158,11 +159,13 @@ export function assertNoSecrets(value: unknown, path = 'root') {
 
 export function compactAiContext(
   context: AiContext,
-  limits: { tasks?: number; branches?: number; memory?: number } = {}
+  limits: { tasks?: number; branches?: number; memory?: number; edges?: number } = {}
 ): Record<string, unknown> {
   const taskLimit = limits.tasks ?? 36
   const branchLimit = limits.branches ?? 16
   const memoryLimit = limits.memory ?? 4
+  const edgeLimit = limits.edges ?? 40
+  const visibleBranches = context.branches.slice(0, branchLimit)
   return {
     today: context.today,
     slots: context.slots,
@@ -178,7 +181,11 @@ export function compactAiContext(
       request: item.request.slice(0, 160),
       message: item.message.slice(0, 160),
     })),
-    tags: context.tags.slice(0, 30).map((tag) => ({ id: tag.id, name: tag.name })),
+    tags: context.tags.slice(0, 30).map((tag) => ({
+      id: tag.id,
+      name: tag.name,
+      ...(tag.branchId ? { branchId: tag.branchId } : {}),
+    })),
     rewards: context.rewards.slice(0, 16).map((reward) => ({
       id: reward.id,
       title: reward.title,
@@ -190,14 +197,29 @@ export function compactAiContext(
       done: task.done,
       ...(task.targetDate ? { targetDate: task.targetDate } : {}),
     })),
-    branches: context.branches.slice(0, branchLimit).map((branch) => ({
+    deletedTasks: context.deletedTasks.slice(0, 10).map((task) => ({
+      id: task.id,
+      title: task.title,
+    })),
+    branches: visibleBranches.map((branch) => ({
       id: branch.id,
       displayName: branch.displayName,
+      icon: branch.icon,
+      ...(branch.markerColor ? { markerColor: branch.markerColor } : {}),
+      ...(branch.directTaskIds.length
+        ? { directTaskIds: branch.directTaskIds.slice(0, 12) }
+        : {}),
       milestones: branch.milestones.slice(0, 6).map((milestone) => ({
         id: milestone.id,
         name: milestone.name,
         status: milestone.status,
+        ...(milestone.taskIds.length ? { taskIds: milestone.taskIds.slice(0, 12) } : {}),
       })),
+    })),
+    edges: context.edges.slice(0, edgeLimit).map((edge) => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
     })),
   }
 }

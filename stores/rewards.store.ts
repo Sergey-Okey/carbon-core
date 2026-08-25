@@ -39,6 +39,39 @@ export const useRewardsStore = defineStore(
       }
     }
 
+    function addReward(input: {
+      title: string
+      description?: string
+      effect?: Reward['effect']
+    }) {
+      const reward: Reward = {
+        id: uuidv4(),
+        title: input.title,
+        description: input.description,
+        purchased: false,
+        completed: false,
+        effect: input.effect,
+      }
+      rewards.value = [...rewards.value, reward]
+      return reward
+    }
+
+    function updateReward(id: string, updates: Partial<Omit<Reward, 'id'>>) {
+      const reward = rewards.value.find((item) => item.id === id)
+      if (!reward) return null
+      for (const [key, value] of Object.entries(updates)) {
+        if (value !== undefined) Object.assign(reward, { [key]: value })
+      }
+      return reward
+    }
+
+    function deleteReward(id: string) {
+      const next = rewards.value.filter((item) => item.id !== id)
+      if (next.length === rewards.value.length) return false
+      rewards.value = next
+      return true
+    }
+
     function purchaseReward(id: string) {
       const reward = rewards.value.find((r) => r.id === id)
       if (!reward || reward.purchased) return
@@ -64,7 +97,14 @@ export const useRewardsStore = defineStore(
       initDemoRewardsAfterHydration()
     }
 
-    return { rewards, purchaseReward, confirmPurchase }
+    return {
+      rewards,
+      addReward,
+      updateReward,
+      deleteReward,
+      purchaseReward,
+      confirmPurchase,
+    }
   },
   {
     persist: import.meta.client

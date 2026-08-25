@@ -188,6 +188,69 @@ test('AI parser extracts JSON from model text and compact context drops bulky fi
   assert.equal(JSON.stringify(compact).includes('long text'), false)
 })
 
+test('compact context exposes edges, branch colours, and the trash for the model', () => {
+  const compact = compactAiContext(
+    buildAiContext({
+      today: '2026-08-25',
+      tasks: [{ id: 't1', title: 'Созвон', type: 'TASK_DAY', done: false }],
+      deletedTasks: [{ id: 'd1', title: 'Отчёт', type: 'TASK_DAY' }],
+      branches: [
+        {
+          id: 'b1',
+          displayName: 'Тело',
+          icon: 'heart',
+          markerColor: '#3b82f6',
+          taskIds: ['t1'],
+          milestones: [{ id: 'm1', name: 'Сон', status: 'active', taskIds: ['t1'] }],
+        },
+      ],
+      edges: [{ id: 'e1', source: 'b1', target: 'm1' }],
+      tags: [{ id: 'g1', name: 'здоровье', branchId: 'b1' }],
+    })
+  )
+
+  assert.deepEqual(compact.edges, [{ id: 'e1', source: 'b1', target: 'm1' }])
+  assert.equal(compact.branches[0].markerColor, '#3b82f6')
+  assert.equal(compact.branches[0].icon, 'heart')
+  assert.deepEqual(compact.branches[0].milestones[0].taskIds, ['t1'])
+  assert.deepEqual(compact.deletedTasks, [{ id: 'd1', title: 'Отчёт' }])
+  assert.equal(compact.tags[0].branchId, 'b1')
+})
+
+test('operation parser accepts model wording for colours, ids, and settings', () => {
+  const parsed = parseAiResponse({
+    message: 'Готово',
+    operations: [
+      { op: 'updateBranch', id: 'b1', color: 'красный' },
+      { op: 'updateBranch', branchId: 'b2', name: 'Продукт 2.0' },
+      { op: 'deleteTask', taskId: 't1' },
+      { op: 'disconnectNodes', id: 'e1' },
+      { op: 'connectNodes', source: 'b1', target: 'm1' },
+      { op: 'createTask', name: 'Читать', type: 'habit' },
+      { op: 'updateSettings', themeMode: 'light' },
+    ],
+  })
+  const byOp = (op) => parsed.operations.filter((item) => item.op === op)
+
+  assert.equal(byOp('updateBranch')[0].markerColor, '#ef4444')
+  assert.equal(byOp('updateBranch')[1].displayName, 'Продукт 2.0')
+  assert.equal(byOp('deleteTask')[0].id, 't1')
+  assert.equal(byOp('disconnectNodes')[0].edgeId, 'e1')
+  assert.deepEqual(
+    [byOp('connectNodes')[0].sourceId, byOp('connectNodes')[0].targetId],
+    ['b1', 'm1']
+  )
+  assert.equal(byOp('createTask')[0].type, 'HABIT')
+  assert.equal(byOp('updateSettings')[0].values.themeMode, 'light')
+
+  // A colour the board cannot use must not reach the store as a bogus value.
+  const junk = parseAiResponse({
+    message: 'Готово',
+    operations: [{ op: 'updateBranch', id: 'b1', markerColor: 'ярко-переливающийся' }],
+  })
+  assert.equal(junk.operations[0].markerColor, undefined)
+})
+
 test('chat copy strips fallback notice and turns titles into workspace links', () => {
   assert.equal(
     stripPublicFallbackNotice('Публичная модель недоступна, сработал встроенный агент. Добавил привычку.'),
@@ -355,6 +418,13 @@ test('AI endpoint stays server-side, rate limited, and defaults to OpenRouter', 
   assert.match(apply, /createTask/)
   assert.match(apply, /updateProfile/)
   assert.doesNotMatch(apply, /password/)
+  // Stores assign updates as-is, so undefined must never reach them.
+  assert.match(apply, /definedOnly/)
+  assert.match(apply, /nothingToChange/)
+  const rewardsStore = await read('stores/rewards.store.ts')
+  assert.match(rewardsStore, /function addReward/)
+  assert.match(rewardsStore, /function updateReward/)
+  assert.match(rewardsStore, /function deleteReward/)
   assert.match(llm, /runPollinationsAgent/)
   assert.match(llm, /OPENROUTER_BLOCKED/)
   assert.match(llm, /OPENROUTER_TIMEOUT_MS/)
@@ -368,7 +438,10 @@ test('AI endpoint stays server-side, rate limited, and defaults to OpenRouter', 
   assert.match(llm, /AI_SYSTEM_PROMPT/)
   assert.match(llm, /minimax\/minimax-m2\.7:free/)
   assert.match(prompt, /Нельзя: пароли/)
-  assert.match(prompt, /Не создавай новую ветку/)
+  assert.match(prompt, /Вопрос, приветствие или «что делать сегодня»/)
+  assert.match(prompt, /markerColor/)
+  assert.match(prompt, /disconnectNodes/)
+  assert.match(prompt, /AI_BOARD_ICONS\.join/)
   assert.match(envExample, /AI_ENGINE=openai/)
   assert.match(envExample, /OPENROUTER_PROXY_URL/)
   assert.match(envExample, /OPENROUTER_PROXY_SECRET/)

@@ -540,10 +540,15 @@ export const useBranchesStore = defineStore(
       const branch = branches.value.find((item) => item.id === branchId)
       if (!branch) return
       const { taskIds, ...branchUpdates } = updates
+      const previousColor = branch.markerColor || branch.backgroundColor
       Object.assign(branch, branchUpdates)
       if (taskIds) branch.directTaskIds = [...taskIds]
+      const nextColor = branch.markerColor
       branch.milestones.forEach((milestone) => {
         milestone.icon = branch.icon
+        // Milestones can carry their own colour, so only inherited ones follow the branch.
+        const own = milestone.markerColor || milestone.backgroundColor
+        if (nextColor && (!own || own === previousColor)) milestone.markerColor = nextColor
       })
       normalizeBoard()
     }
