@@ -54,4 +54,12 @@ input,
 select,
 textarea {
   font: inherit;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+  }
 }

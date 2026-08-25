@@ -348,9 +348,10 @@ defineExpose({
     color: var(--color-text-primary);
     border-color: var(--color-accent);
     background: var(--color-surface-2);
-    box-shadow: var(--shadow-sm);
-    outline: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
-    outline-offset: 1px;
+    box-shadow:
+      var(--shadow-sm),
+      0 0 0 2px color-mix(in srgb, var(--color-accent) 28%, transparent);
+    outline: none;
   }
 
   .variant-compact &.focused {

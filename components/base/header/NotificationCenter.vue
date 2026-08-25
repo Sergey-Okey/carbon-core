@@ -54,8 +54,19 @@
               v-for="item in notificationHistory"
               :key="item.id"
               class="history-item"
-              :class="[item.type, { unread: item.read === false }]"
+              :class="[
+                item.type,
+                {
+                  unread: item.read === false,
+                  expanded: expandedId === item.id,
+                },
+              ]"
               role="listitem"
+              tabindex="0"
+              :aria-expanded="expandedId === item.id"
+              @click="toggleExpanded(item.id)"
+              @keydown.enter.prevent="toggleExpanded(item.id)"
+              @keydown.space.prevent="toggleExpanded(item.id)"
             >
               <span class="indicator" aria-hidden="true" />
               <div class="history-copy">
@@ -74,7 +85,7 @@
                 variant="ghost"
                 icon-only
                 aria-label="Удалить уведомление"
-                @click="removeHistoryItem(item.id)"
+                @click.stop="removeHistoryItem(item.id)"
               >
                 <Trash2 :size="16" />
               </AppButton>
@@ -124,6 +135,7 @@ const isOpen = computed({
 })
 const root = ref<HTMLElement | null>(null)
 const panel = ref<HTMLElement | null>(null)
+const expandedId = ref<string | null>(null)
 
 const totalCount = computed(() => notificationHistory.value.length)
 
@@ -212,10 +224,16 @@ function togglePanel() {
   const next = !isOpen.value
   isOpen.value = next
   if (next) markAllRead()
+  else expandedId.value = null
 }
 
 function closePanel() {
   isOpen.value = false
+  expandedId.value = null
+}
+
+function toggleExpanded(id: string) {
+  expandedId.value = expandedId.value === id ? null : id
 }
 
 function handleDocumentClick(event: MouseEvent) {
@@ -322,6 +340,7 @@ onBeforeUnmount(() => {
   gap: var(--space-2);
   padding: var(--space-3);
   border-bottom: var(--ui-border);
+  cursor: pointer;
 
   &:last-child {
     border-bottom: none;
@@ -329,6 +348,26 @@ onBeforeUnmount(() => {
 
   &.unread {
     background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+
+  &.expanded {
+    .history-title {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+    }
+
+    .history-message {
+      -webkit-line-clamp: unset;
+      display: block;
+      overflow: visible;
+      white-space: pre-line;
+    }
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 28%, transparent);
   }
 }
 
@@ -400,7 +439,8 @@ onBeforeUnmount(() => {
   font-weight: var(--weight-medium);
   line-height: 1.45;
   overflow-wrap: break-word;
-  white-space: pre-line;
+  min-width: 0;
+  @include text-clamp(2);
 }
 
 .history-time {
