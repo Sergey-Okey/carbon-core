@@ -303,29 +303,62 @@ export async function upsertOAuthAccount(profile: OAuthProfile, termsVersion = '
   await ensureUsersTable(sql)
 
   const providerId = profile.id.slice(profile.provider.length + 1)
-  const existing = await sql`SELECT id FROM cof_users WHERE id = ${profile.id} LIMIT 1`
-  if (!existing.length && termsVersion !== '2026-06-07') {
+  const email = profile.email.trim().toLowerCase()
+  const byProvider = await sql`
+    SELECT id FROM cof_users
+    WHERE id = ${profile.id}
+       OR (provider = ${profile.provider} AND provider_id = ${providerId})
+    LIMIT 1
+  `
+
+  if (byProvider.length) {
+    const rows = await sql`
+      UPDATE cof_users
+      SET
+        email = ${email},
+        name = ${profile.name},
+        avatar = ${profile.avatar},
+        email_verified_at = COALESCE(email_verified_at, NOW()),
+        updated_at = NOW()
+      WHERE id = ${String(byProvider[0].id)}
+      RETURNING id, email, name, avatar, bio, provider, created_at
+    `
+    return { user: mapAccount(rows[0] as Record<string, unknown>), created: false }
+  }
+
+  // Same email already registered (e.g. local password account) — sign into it instead of failing UNIQUE(email).
+  const byEmail = await sql`
+    SELECT id FROM cof_users WHERE email = ${email} LIMIT 1
+  `
+  if (byEmail.length) {
+    const rows = await sql`
+      UPDATE cof_users
+      SET
+        name = COALESCE(NULLIF(${profile.name}, ''), name),
+        avatar = COALESCE(NULLIF(${profile.avatar}, ''), avatar),
+        email_verified_at = COALESCE(email_verified_at, NOW()),
+        updated_at = NOW()
+      WHERE id = ${String(byEmail[0].id)}
+      RETURNING id, email, name, avatar, bio, provider, created_at
+    `
+    return { user: mapAccount(rows[0] as Record<string, unknown>), created: false }
+  }
+
+  if (termsVersion !== '2026-06-07') {
     throw createError({ statusCode: 403, statusMessage: 'Terms consent is required' })
   }
-  const created = existing.length === 0
+
   const rows = await sql`
     INSERT INTO cof_users (
       id, email, name, avatar, provider, provider_id, terms_accepted_at, terms_version, email_verified_at
     )
     VALUES (
-      ${profile.id}, ${profile.email.toLowerCase()}, ${profile.name}, ${profile.avatar},
+      ${profile.id}, ${email}, ${profile.name}, ${profile.avatar},
       ${profile.provider}, ${providerId}, NOW(), ${termsVersion}, NOW()
     )
-    ON CONFLICT (id)
-    DO UPDATE SET
-      email = EXCLUDED.email,
-      name = EXCLUDED.name,
-      avatar = EXCLUDED.avatar,
-      email_verified_at = COALESCE(cof_users.email_verified_at, NOW()),
-      updated_at = NOW()
     RETURNING id, email, name, avatar, bio, provider, created_at
   `
-  return { user: mapAccount(rows[0]), created }
+  return { user: mapAccount(rows[0] as Record<string, unknown>), created: true }
 }
 
 export async function getAccountById(id: string) {

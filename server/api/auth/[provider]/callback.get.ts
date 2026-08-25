@@ -32,6 +32,7 @@ export default defineEventHandler(async (event) => {
     const welcomeQuery = created ? '&welcome=1' : ''
     return sendRedirect(event, `/?oauth=success&refresh=1${welcomeQuery}`)
   } catch (error) {
+    console.error('[auth] oauth callback failed', provider, error)
     const statusCode =
       typeof error === 'object' && error !== null && 'statusCode' in error
         ? Number((error as { statusCode?: unknown }).statusCode)
@@ -43,7 +44,9 @@ export default defineEventHandler(async (event) => {
           ? 'terms'
           : statusCode === 401
             ? 'provider'
-            : 'failed'
+            : statusCode === 400
+              ? 'invalid'
+              : 'failed'
 
     const targetPath =
       reason === 'subscription' || reason === 'terms' ? '/register' : '/auth'

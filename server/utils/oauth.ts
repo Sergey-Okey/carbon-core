@@ -76,8 +76,18 @@ export function createAuthorizationUrl(event: H3Event, provider: OAuthProvider, 
 export function validateOAuthState(event: H3Event, provider: OAuthProvider, state: string) {
   const expected = getCookie(event, stateCookie)
   deleteCookie(event, stateCookie, cookieOptions(event, 0))
-  const [expectedProvider, expectedState, termsVersion = ''] = expected?.split(':') ?? []
-  if (expectedProvider !== provider || expectedState !== state) {
+  if (!expected) {
+    throw createError({ statusCode: 400, statusMessage: 'Invalid OAuth state' })
+  }
+  const separator = expected.indexOf(':')
+  const second = expected.indexOf(':', separator + 1)
+  if (separator < 0 || second < 0) {
+    throw createError({ statusCode: 400, statusMessage: 'Invalid OAuth state' })
+  }
+  const expectedProvider = expected.slice(0, separator)
+  const expectedState = expected.slice(separator + 1, second)
+  const termsVersion = expected.slice(second + 1)
+  if (expectedProvider !== provider || !expectedState || expectedState !== state) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid OAuth state' })
   }
   return termsVersion === '2026-06-07' ? termsVersion : ''
@@ -133,6 +143,7 @@ export async function exchangeOAuthCode(
   const profile = (await response.json()) as {
     id?: string
     default_email?: string
+    emails?: string[]
     real_name?: string
     display_name?: string
     default_avatar_id?: string
@@ -142,10 +153,14 @@ export async function exchangeOAuthCode(
         `https://avatars.yandex.net/get-yapic/${profile.default_avatar_id}/islands-200`
       )
     : ''
+  const yandexEmail =
+    profile.default_email ||
+    (Array.isArray(profile.emails) ? profile.emails.find((item) => item.includes('@')) : '') ||
+    ''
   return normalizeProfile(
     provider,
     profile.id,
-    profile.default_email,
+    yandexEmail,
     profile.real_name || profile.display_name,
     avatar
   )
