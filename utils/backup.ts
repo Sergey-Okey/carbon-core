@@ -17,6 +17,7 @@ const STORAGE_KEYS = [
   'carbon-tags',
   'carbon-ui',
   'carbon-settings',
+  'carbon-ai',
 ] as const
 
 function safeParse(raw: string | null, fallback: unknown) {

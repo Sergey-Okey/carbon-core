@@ -1,5 +1,3 @@
-const isVercel = Boolean(process.env.VERCEL)
-
 export default defineNuxtConfig({
   compatibilityDate: '2026-04-08',
   devtools: { enabled: process.env.NUXT_DEVTOOLS === 'true' },
@@ -13,10 +11,8 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@vueuse/nuxt',
     '@vueuse/motion',
-    ...(isVercel ? ['@vercel/speed-insights', '@vercel/analytics'] : []),
   ],
   css: ['~/assets/styles/reset.scss', '~/assets/styles/global.scss'],
-  nitro: isVercel ? { preset: 'vercel' } : {},
   runtimeConfig: {
     databaseUrl: process.env.DATABASE_URL || '',
     authSessionSecret: process.env.AUTH_SESSION_SECRET || '',
@@ -34,8 +30,11 @@ export default defineNuxtConfig({
     smtpFrom: process.env.SMTP_FROM || '',
     smtpApiKey: process.env.SMTP_API_KEY || '',
     smtpApiUrl: process.env.SMTP_API_URL || 'https://api.smtp.bz/v1/smtp/send',
+    aiEngine: process.env.AI_ENGINE || 'openai',
+    openaiApiKey: process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY || '',
+    openaiModel: process.env.OPENAI_MODEL || 'minimax/minimax-m2.7:free',
+    openaiBaseUrl: process.env.OPENAI_BASE_URL || 'https://openrouter.ai/api/v1',
     public: {
-      enableVercelAnalytics: isVercel,
       webAppUrl: process.env.NUXT_PUBLIC_WEB_APP_URL || '',
     },
   },
@@ -84,7 +83,7 @@ export default defineNuxtConfig({
         { charset: 'utf-8' },
         {
           name: 'viewport',
-          content: 'width=device-width, initial-scale=1, viewport-fit=cover',
+          content: 'width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content',
         },
         {
           name: 'description',

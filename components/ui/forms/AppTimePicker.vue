@@ -222,7 +222,7 @@ onBeforeUnmount(() => {
   color: var(--color-text-primary);
   font: inherit;
   @include form-control;
-  font-variant-numeric: tabular-nums;
+  height: var(--control-height-md);
   font-variant-numeric: tabular-nums;
   cursor: pointer;
   transition:

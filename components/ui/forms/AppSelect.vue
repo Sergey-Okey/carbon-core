@@ -210,12 +210,12 @@ onBeforeUnmount(() => {
 }
 
 .select-trigger {
+  appearance: none;
   position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-2);
   inline-size: 100%;
-  padding-inline: var(--space-5) calc(var(--space-8) + var(--space-1));
   overflow: hidden;
   border: var(--ui-border);
   border-radius: var(--radius-md);
@@ -224,7 +224,8 @@ onBeforeUnmount(() => {
   color: var(--color-text-primary);
   font: inherit;
   @include form-control;
-  padding-inline: var(--space-5) calc(var(--space-8) + var(--space-1));
+  height: var(--control-height-md);
+  padding-inline: var(--space-4) calc(var(--space-8) + var(--space-1));
   text-align: start;
   cursor: pointer;
   transition:
@@ -232,11 +233,11 @@ onBeforeUnmount(() => {
     background var(--transition-standard),
     box-shadow var(--transition-standard);
 
-  .size-sm & {
+  .app-select.size-sm & {
+    height: var(--control-height-sm);
     min-height: var(--control-height-sm);
-    min-block-size: var(--control-height-sm);
     padding-block: var(--space-2);
-    padding-inline: var(--space-2) var(--space-8);
+    padding-inline: var(--space-3) var(--space-8);
     font-size: var(--text-xs);
   }
 
@@ -370,10 +371,10 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (pointer: coarse), (max-width: 767px) {
-  .select-trigger,
-  .select-option {
-    min-height: var(--space-11);
+@media (pointer: coarse) {
+  .app-select.size-md .select-trigger {
+    height: var(--touch-target);
+    min-height: var(--touch-target);
   }
 }
 

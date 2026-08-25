@@ -30,24 +30,26 @@ const visible = ref(true)
 const fallbackMs = Math.round(BOOT_CYCLE_SEC * BOOT_ORDERED_END * 1000) + 200
 let fallbackTimer = 0
 
+function finishLaunch() {
+  visible.value = false
+  if (!import.meta.client) return
+  document.documentElement.classList.add('launch-ready')
+  document.documentElement.dataset.launchComplete = '1'
+  window.dispatchEvent(new CustomEvent('cof:launch-complete'))
+}
+
 function onOrdered() {
   if (fallbackTimer) {
     window.clearTimeout(fallbackTimer)
     fallbackTimer = 0
   }
-  visible.value = false
-  if (import.meta.client) {
-    window.dispatchEvent(new CustomEvent('cof:launch-complete'))
-  }
+  finishLaunch()
 }
 
 onMounted(() => {
   fallbackTimer = window.setTimeout(() => {
-    visible.value = false
     fallbackTimer = 0
-    if (import.meta.client) {
-      window.dispatchEvent(new CustomEvent('cof:launch-complete'))
-    }
+    finishLaunch()
   }, fallbackMs)
 })
 

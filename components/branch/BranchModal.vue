@@ -61,38 +61,13 @@
       </div>
 
       <AppFormField v-if="branch" label="Задачи ветки">
-        <div class="tasks-section">
-          <button type="button" class="toggle-btn" :class="{ expanded: tasksExpanded }" @click="tasksExpanded = !tasksExpanded">
-            <span>Выбрать задачи ({{ form.taskIds.length }})</span>
-            <ChevronDown :size="16" :class="{ rotated: tasksExpanded }" />
-          </button>
-          <Transition name="expand">
-            <div v-if="tasksExpanded" class="tasks-list">
-              <label
-                v-for="task in availableTasks"
-                :key="task.id"
-                class="task-row"
-                :class="{ selected: form.taskIds.includes(task.id) }"
-                @click.prevent="toggleTask(task.id)"
-              >
-                <ListTodo :size="16" class="task-icon" />
-                <span class="custom-checkbox">
-                  <input type="checkbox" :checked="form.taskIds.includes(task.id)" />
-                  <span class="checkmark"></span>
-                </span>
-                <span class="task-main">
-                  <span class="task-title">{{ task.title }}</span>
-                  <span v-if="task.done" class="task-state done">
-                    Выполнена
-                  </span>
-                </span>
-              </label>
-              <button type="button" class="create-task-btn" @click="showQuickTask = true">
-                <Plus :size="16" /> Создать и привязать задачу
-              </button>
-            </div>
-          </Transition>
-        </div>
+        <BoardTaskPicker
+          v-model="form.taskIds"
+          :tasks="availableTasks"
+          :elsewhere-ids="[...linkedTaskIds]"
+          show-type
+          @create="showQuickTask = true"
+        />
       </AppFormField>
 
     </div>
@@ -132,7 +107,6 @@ import {
   Heart,
   Home,
   Lightbulb,
-  ListTodo,
   Map,
   Plane,
   Rocket,
@@ -141,7 +115,6 @@ import {
   Trophy,
   Users,
   WalletCards,
-  Plus,
 } from 'lucide-vue-next'
 import type { Branch } from '~/types/branch.types'
 import type { TaskFormData } from '~/types/task.types'
@@ -157,7 +130,6 @@ const emit = defineEmits<{
 }>()
 
 const iconsExpanded = ref(false)
-const tasksExpanded = ref(false)
 const nameTouched = ref(false)
 const showQuickTask = ref(false)
 const tasksStore = useTasksStore()
@@ -166,9 +138,8 @@ const linkedTaskIds = computed(() => {
   const ids = new Set<string>()
   for (const branch of branchesStore.branches) {
     const currentBranch = props.branch?.id === branch.id
-    const directIds = branch.directTaskIds || branch.taskIds || []
-    for (const id of directIds) {
-      if (!currentBranch || !form.taskIds.includes(id)) ids.add(id)
+    if (!currentBranch) {
+      for (const id of branch.directTaskIds || branch.taskIds || []) ids.add(id)
     }
     for (const milestone of branch.milestones) {
       for (const id of milestone.taskIds || []) ids.add(id)
@@ -177,13 +148,7 @@ const linkedTaskIds = computed(() => {
   return ids
 })
 const availableTasks = computed(() =>
-  tasksStore.tasks.filter(
-    (task) =>
-      !task.done &&
-      task.type !== 'HABIT' &&
-      task.type !== 'PURCHASE' &&
-      (form.taskIds.includes(task.id) || !linkedTaskIds.value.has(task.id))
-  )
+  tasksStore.tasks.filter((task) => !task.done && task.type !== 'HABIT' && task.type !== 'PURCHASE')
 )
 
 const iconOptions = [
@@ -279,12 +244,6 @@ function handleSubmit() {
   emit('save', { ...form, name: form.name.trim() })
 }
 
-function toggleTask(taskId: string) {
-  const index = form.taskIds.indexOf(taskId)
-  if (index === -1) form.taskIds.push(taskId)
-  else form.taskIds.splice(index, 1)
-}
-
 function handleQuickTask(data: TaskFormData) {
   const task = tasksStore.addTask({
     title: data.title || 'Новая задача',
@@ -297,7 +256,6 @@ function handleQuickTask(data: TaskFormData) {
   })
   if (!task) return
   form.taskIds.push(task.id)
-  tasksExpanded.value = true
   showQuickTask.value = false
 }
 </script>
@@ -336,133 +294,6 @@ function handleQuickTask(data: TaskFormData) {
   gap: var(--space-2);
 }
 
-.tasks-section {
-  display: grid;
-  gap: var(--space-2);
-  padding: 0;
-  border: none;
-  background: transparent;
-}
-
-.tasks-list {
-  display: grid;
-  gap: var(--space-1);
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  max-height: 190px;
-  padding: var(--space-2);
-  box-sizing: border-box;
-  overflow-x: hidden;
-  overflow-y: auto;
-  border: var(--ui-border);
-  border-radius: var(--border-radius-lg);
-  background: var(--glass-surface);
-  backdrop-filter: var(--glass-filter);
-  -webkit-backdrop-filter: var(--glass-filter);
-  box-shadow: 0 14px 34px color-mix(in srgb, var(--bg) 18%, transparent);
-}
-
-.task-row {
-  display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr);
-  align-items: center;
-  gap: var(--space-2);
-  width: 100%;
-  min-width: 0;
-  padding: var(--space-2) var(--space-3);
-  box-sizing: border-box;
-  border-radius: var(--border-radius-md);
-  color: var(--text);
-  font-size: var(--text-sm);
-  cursor: pointer;
-
-  &.selected {
-    background: var(--accent);
-    color: var(--bg);
-
-    .task-icon {
-      color: var(--bg);
-    }
-  }
-}
-
-.custom-checkbox {
-  position: relative;
-  width: var(--control-glyph);
-  height: var(--control-glyph);
-  flex: 0 0 var(--control-glyph);
-
-  input {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-  }
-}
-
-.checkmark {
-  display: block;
-  width: var(--control-glyph);
-  height: var(--control-glyph);
-  border-radius: var(--border-radius-sm);
-  background: var(--glass-surface);
-  transition: background var(--transition-standard);
-
-  input:checked + & {
-    background: var(--accent);
-  }
-}
-
-.empty-list {
-  @include meta-text;
-  padding: var(--space-2);
-  text-align: center;
-}
-
-.toggle-btn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  width: 100%;
-  min-height: var(--control-height-md);
-  padding: 0 var(--space-3);
-  color: var(--text);
-  background: transparent;
-  border: none;
-  border-radius: var(--border-radius-md);
-  cursor: pointer;
-  transition:
-    background 0.16s ease,
-    color 0.16s ease,
-    border-color 0.16s ease;
-
-  svg {
-    flex: 0 0 auto;
-    transition: transform var(--transition-standard);
-  }
-
-  &:hover {
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
-    color: var(--text);
-  }
-
-  &.expanded {
-    border-color: color-mix(in srgb, var(--accent) 24%, var(--ui-border-color));
-    background: color-mix(in srgb, var(--accent) 6%, transparent);
-  }
-
-  .rotated {
-    transform: rotate(180deg);
-  }
-}
-
-.selected-icon {
-  display: inline-flex;
-  align-items: center;
-  color: var(--text);
-}
-
 .icons-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(var(--control-icon-size), 1fr));
@@ -495,37 +326,6 @@ function handleQuickTask(data: TaskFormData) {
 
   .rotated {
     transform: rotate(180deg);
-  }
-}
-
-.task-icon {
-  color: var(--dim);
-}
-
-.task-main {
-  display: grid;
-  gap: var(--space-1);
-  min-width: 0;
-}
-
-.task-title {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.task-state {
-  justify-self: flex-start;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--border-radius-pill);
-  font-size: var(--text-2xs);
-  font-weight: 700;
-  line-height: var(--leading-tight);
-
-  &.done {
-    background: color-mix(in srgb, var(--success) 13%, transparent);
-    color: var(--success);
   }
 }
 
@@ -563,32 +363,6 @@ function handleQuickTask(data: TaskFormData) {
   &.active:hover {
     color: var(--bg);
     background: var(--accent);
-  }
-}
-
-.create-task-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  width: 100%;
-  min-height: var(--space-10);
-  padding: 0 var(--space-3);
-  border: var(--ui-border);
-  border-radius: var(--border-radius-pill);
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
-  color: var(--text);
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    background 0.16s ease,
-    color 0.16s ease,
-    border-color 0.16s ease,
-    transform 0.16s ease;
-
-  &:hover {
-    background: color-mix(in srgb, var(--accent) 10%, transparent);
-    transform: translateY(-1px);
   }
 }
 
@@ -658,34 +432,11 @@ function handleQuickTask(data: TaskFormData) {
     gap: var(--space-2);
   }
 
-  .icons-toggle,
-  .create-task-btn {
+  .icons-toggle {
     width: 100%;
     justify-content: center;
     white-space: normal;
     text-align: center;
-  }
-
-  .tasks-list {
-    max-height: min(300px, 46dvh);
-    padding: var(--space-2);
-    border-radius: var(--border-radius-md);
-  }
-
-  .task-row {
-    grid-template-columns: auto auto minmax(0, 1fr);
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-2);
-  }
-
-  .task-title {
-    white-space: normal;
-    line-height: var(--leading-normal);
-  }
-
-  .task-state {
-    font-size: var(--text-2xs);
   }
 
   .footer-actions {
@@ -696,10 +447,6 @@ function handleQuickTask(data: TaskFormData) {
     :deep(.app-button) {
       width: 100%;
     }
-  }
-
-  .toggle-btn {
-    min-height: var(--space-11);
   }
 
   .icon-option {

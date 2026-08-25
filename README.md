@@ -46,9 +46,9 @@ npm start
 The production server listens on `http://localhost:3000` by default. Verify
 readiness with `GET /api/health`.
 
-For Vercel, connect the repository and add `DATABASE_URL` plus auth/payment
-secrets in project environment variables. The Vercel build uses Nuxt's
-serverless output automatically.
+Production runs as a Node process on the VPS. See `deploy/README.md`.
+The agent uses OpenRouter (`minimax/minimax-m2.7:free`) when `OPENAI_API_KEY` or
+`OPENROUTER_API_KEY` is set on the server.
 
 ## Project Structure
 

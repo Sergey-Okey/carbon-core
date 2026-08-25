@@ -12,30 +12,17 @@
       Демо
     </button>
 
-    <button
-      :class="['action-btn', { 'is-guided-prompt': highlightGuide }]"
-      type="button"
-      aria-label="Открыть обучение"
-      @click="emit('guide')"
-    >
-      <HelpCircle :size="20" />
-    </button>
-
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
-import { HelpCircle } from 'lucide-vue-next'
-
 defineProps<{
   isDemo?: boolean
-  highlightGuide?: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'demo'): void
-  (e: 'guide'): void
 }>()
 </script>
 
@@ -49,6 +36,7 @@ const emit = defineEmits<{
   min-width: 0;
   min-height: var(--space-9);
   flex-wrap: nowrap;
+  color: var(--header-icon, var(--color-text-primary));
 
   @include mobile {
     gap: var(--space-1);
@@ -91,49 +79,9 @@ const emit = defineEmits<{
   }
 }
 
-.action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--control-icon-size);
-  height: var(--control-icon-size);
-  border: none;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition:
-    background var(--transition-standard),
-    color var(--transition-standard);
-
-  @media (hover: hover) and (pointer: fine) {
-    &:hover {
-      background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-      color: var(--color-text-primary);
-    }
-  }
-
-  &:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
-    outline-offset: 2px;
-  }
-
-  @include mobile {
-    width: var(--space-11);
-    height: var(--space-11);
-  }
-}
-
-.action-btn.is-guided-prompt {
-  color: var(--color-text-primary);
-  animation: help-icon-pulse 1.4s ease-in-out infinite;
-}
-
-.action-btn.is-guided-prompt svg {
-  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-accent) 26%, transparent));
-}
-
-.header-quick-actions :deep(.notification-trigger) {
+.header-quick-actions :deep(.notification-trigger),
+.header-quick-actions :deep(.header-agent-trigger),
+.header-quick-actions :deep(.profile-btn) {
   width: var(--control-icon-size);
   height: var(--control-icon-size);
   min-height: var(--control-icon-size);
@@ -141,12 +89,10 @@ const emit = defineEmits<{
   border: none;
   border-radius: var(--radius-md);
   background: transparent;
-  color: var(--color-text-secondary);
 
   &:hover,
   &:focus-visible {
     background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-    color: var(--color-text-primary);
   }
 
   @include mobile {
@@ -156,15 +102,14 @@ const emit = defineEmits<{
   }
 }
 
-@keyframes help-icon-pulse {
-  0%,
-  100% {
-    background: transparent;
-    transform: scale(1);
-  }
-  40% {
-    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
-    transform: scale(1.06);
+.header-quick-actions :deep(.notification-trigger),
+.header-quick-actions :deep(.notification-trigger.variant-ghost),
+.header-quick-actions :deep(.profile-btn) {
+  color: var(--header-icon, var(--color-text-primary));
+
+  &:hover,
+  &:focus-visible {
+    color: var(--header-icon, var(--color-text-primary));
   }
 }
 </style>

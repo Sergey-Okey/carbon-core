@@ -27,6 +27,12 @@
   opacity: 0;
 }
 
+@keyframes neon-wait-spin {
+  to {
+    --neon-angle: 360deg;
+  }
+}
+
 html.no-animations,
 html.no-animations *,
 html.no-animations *::before,
@@ -134,6 +140,7 @@ html {
   min-block-size: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  background-color: var(--color-bg, #121212);
 }
 
 /* Предотвращение мерцания при загрузке */
@@ -143,7 +150,7 @@ body {
   max-width: 100%;
   min-block-size: 100%;
   overflow-x: hidden;
-  background: transparent;
+  background-color: var(--color-bg, #121212);
   color: var(--text);
 }
 
@@ -225,9 +232,16 @@ input[type='checkbox'] {
 
 body::before {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: auto;
   z-index: 0;
-  background: var(--bg);
+  width: 100%;
+  /* lvh stays the large viewport when the keyboard opens; inset:0 would shrink with it. */
+  height: calc(100lvh + 40vh);
+  min-height: calc(100lvh + 40vh);
+  background: var(--bg, var(--color-bg, #121212));
   content: '';
   pointer-events: none;
 }
@@ -249,6 +263,7 @@ body::after {
   min-height: 100%;
   min-height: 100dvh;
   overflow-x: hidden;
+  background-color: var(--color-bg, #121212);
 }
 
 html.compact-ui {
@@ -260,7 +275,7 @@ html.compact-ui body {
 }
 
 html[data-background-mode='glass'] body {
-  background: transparent;
+  background-color: var(--color-bg, #121212);
 }
 
 html[data-background-mode='glass'],
@@ -274,7 +289,7 @@ html[data-background-mode='image'] {
 html.light-theme[data-background-mode='glass'],
 html.light-theme[data-background-mode='image'] {
   --glass-filter: blur(90px) saturate(1.65);
-  --glass-surface: color-mix(in srgb, var(--surface) 42%, transparent);
+  --glass-surface: color-mix(in srgb, var(--surface) 82%, transparent);
   --glass-border: var(--ui-border-color);
   --glass-highlight: color-mix(in srgb, var(--accent) 10%, transparent);
 }
@@ -284,7 +299,7 @@ html[data-background-mode='glass'] body::before {
 }
 
 html[data-background-mode='image'] body {
-  background: transparent;
+  background-color: var(--color-bg, #121212);
 }
 
 html[data-background-mode='image'] body::before {

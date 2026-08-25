@@ -98,7 +98,7 @@ function toggle() {
     background var(--transition-standard),
     border-color var(--transition-standard);
 
-  .size-sm & {
+  .app-switch.size-sm & {
     width: var(--space-10);
     height: var(--space-6);
   }
@@ -125,7 +125,7 @@ function toggle() {
     border-color var(--transition-standard);
   will-change: transform;
 
-  .size-sm & {
+  .app-switch.size-sm & {
     width: var(--space-4);
     height: var(--space-4);
   }
@@ -135,7 +135,7 @@ function toggle() {
     border-color: color-mix(in srgb, var(--color-bg) 84%, var(--color-text-primary) 16%);
   }
 
-  .size-sm.checked & {
+  .app-switch.size-sm.checked & {
     transform: translate(calc(var(--space-10) - var(--space-4) - var(--space-1) * 2), -50%);
   }
 }

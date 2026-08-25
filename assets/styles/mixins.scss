@@ -38,6 +38,22 @@
   color: var(--color-text-primary);
 }
 
+/* Paints the home-indicator / keyboard gap under a bottom island (browser chrome is white). */
+@mixin keyboard-gap-fill {
+  &::after {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    z-index: -1;
+    width: 100vw;
+    height: calc(var(--board-dock-end) + 50dvh);
+    background: var(--color-bg, #121212);
+    content: '';
+    pointer-events: none;
+    transform: translateX(-50%);
+  }
+}
+
 
 @mixin nest-shell(
   $radius: var(--radius-md),
@@ -195,11 +211,16 @@
 }
 
 @mixin form-control {
-  min-height: var(--control-height-lg);
-  padding-block: var(--space-4);
-  padding-inline: var(--space-5);
-  font-size: var(--text-md);
-  line-height: var(--leading-normal);
+  box-sizing: border-box;
+  min-height: var(--control-height-md);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-4);
+  font-size: var(--body-size);
+  line-height: var(--body-leading);
+
+  @include mobile {
+    font-size: 16px;
+  }
 }
 
 @mixin text-ellipsis {
@@ -243,19 +264,69 @@
   }
 }
 
-@mixin text-ellipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
+@mixin neon-wait-edge {
+  --neon-width: 1px;
+  position: relative;
 
-@mixin text-clamp($lines: 2) {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: $lines;
-  overflow: hidden;
-  overflow-wrap: break-word;
-  word-break: normal;
-  min-width: 0;
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    border-radius: inherit;
+    pointer-events: none;
+    box-sizing: border-box;
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-standard);
+    background: conic-gradient(
+      from var(--neon-angle, 0deg),
+      transparent 0%,
+      transparent 58%,
+      color-mix(in srgb, #7ee7ff 18%, transparent) 70%,
+      #7ee7ff 82%,
+      #c4b5fd 91%,
+      #7ee7ff 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  &::before {
+    inset: calc(-1 * var(--neon-width));
+    z-index: 2;
+    padding: var(--neon-width);
+  }
+
+  &::after {
+    inset: calc(-3 * var(--neon-width));
+    z-index: 0;
+    padding: var(--neon-width);
+    filter: blur(3px);
+  }
+
+  &.is-waiting {
+    border-color: transparent;
+  }
+
+  &.is-waiting::before {
+    opacity: 0.95;
+    animation: neon-wait-spin 1.8s linear infinite;
+  }
+
+  &.is-waiting::after {
+    opacity: 0.42;
+    animation: neon-wait-spin 1.8s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &.is-waiting::before,
+    &.is-waiting::after {
+      animation: none;
+    }
+  }
 }

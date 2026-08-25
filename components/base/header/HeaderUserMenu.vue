@@ -110,7 +110,7 @@ defineExpose({ panelRef })
   border: none;
   border-radius: var(--radius-full);
   background: transparent;
-  color: var(--color-text-secondary);
+  color: var(--header-icon, var(--color-text-primary));
   cursor: pointer;
   transition:
     background var(--transition-standard),
@@ -119,7 +119,7 @@ defineExpose({ panelRef })
   @media (hover: hover) and (pointer: fine) {
     &:hover {
       background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-      color: var(--color-text-primary);
+      color: var(--header-icon, var(--color-text-primary));
     }
   }
 

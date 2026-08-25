@@ -1,5 +1,6 @@
 <template>
   <div class="layout" :class="{ 'is-board': isBoardLayout }">
+    <LazyBoardAiGlow v-if="isBoardLayout && launchReady" />
     <TheHeader />
     <div class="layout-content">
       <TheNavbar />
@@ -14,6 +15,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const uiStore = useUIStore()
+const { launchReady } = useLaunchGate()
 const isBoardLayout = computed(
   () => route.path === '/' && uiStore.activeNav === 'board'
 )
@@ -31,6 +33,13 @@ const isBoardLayout = computed(
   --app-main-pad-inline-start: max(var(--space-3), env(safe-area-inset-left, 0px));
   --app-main-pad-inline-end: max(var(--space-3), env(safe-area-inset-right, 0px));
   --app-main-pad-bottom: calc(var(--space-12) + var(--space-10) + env(safe-area-inset-bottom, 0px));
+  --board-island-width: min(
+    calc(5 * var(--space-12) + 4 * var(--space-2) + 2 * var(--space-3)),
+    calc(100dvw - 2 * var(--space-8))
+  );
+  --board-island-height: calc(var(--space-12) + 2 * var(--space-2));
+  --board-dock-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
+  --board-island-end: var(--board-dock-end);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -108,8 +117,10 @@ const isBoardLayout = computed(
   @include mobile {
     .layout-content {
       position: relative;
+      z-index: 1;
       inset: auto;
       overflow: hidden;
+      background: transparent;
     }
 
     .main {
@@ -130,9 +141,35 @@ const isBoardLayout = computed(
       inset-block-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
       transform: translateX(-50%);
       inline-size: fit-content;
-      background-color: color-mix(in srgb, var(--surface) 42%, transparent);
+      background-color: var(--island-surface);
       backdrop-filter: var(--glass-strong-filter);
       -webkit-backdrop-filter: var(--glass-strong-filter);
+    transition:
+      opacity var(--duration-fast) var(--ease-emphasized),
+      transform var(--duration-emphasized) var(--ease-emphasized);
+    }
+
+    :deep(.nav-island.is-dock-composer),
+    :deep(.nav-island.is-dock-nav) {
+      box-sizing: border-box;
+      inset-block-end: var(--board-island-end);
+      inline-size: var(--board-island-width);
+      block-size: var(--board-island-height);
+      min-block-size: var(--board-island-height);
+      transform-origin: 50% 100%;
+    }
+
+    :deep(.nav-island.is-dock-composer) {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-50%) translateY(calc(100% + var(--space-5))) scale(0.96);
+    }
+
+    :deep(.nav-island.is-dock-nav) {
+      z-index: calc(var(--z-sticky) + 50);
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0) scale(1);
     }
   }
 }

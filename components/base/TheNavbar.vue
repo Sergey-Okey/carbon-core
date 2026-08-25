@@ -1,8 +1,17 @@
 <template>
   <nav
+    v-show="launchReady"
     class="nav-island"
-    :class="{ 'is-mobile': isMobile }"
+    :class="{
+      'is-mobile': isMobile,
+      'is-dock-composer': isDockComposer,
+      'is-dock-nav': isDockNav,
+      'is-swipe-hint': showSwipeHint && isDockNav,
+    }"
     aria-label="Основная навигация"
+    @pointerdown="onDockPointerDown"
+    @pointerup="onDockPointerUp"
+    @pointercancel="onDockPointerUp"
   >
     <div class="nav-track">
       <button
@@ -39,8 +48,29 @@ const uiStore = useUIStore()
 const guidedTour = useGuidedTourStore()
 const route = useRoute()
 const router = useRouter()
+const { launchReady } = useLaunchGate()
+const { onPointerDown, onPointerUp, consumeSwipe } = useBoardDockSwipe()
 
-const isMobile = ref(false)
+const isMobile = ref(import.meta.client ? window.innerWidth < 768 : true)
+const showSwipeHint = ref(true)
+let hintTimer = 0
+const isBoard = computed(
+  () => route.path === '/' && uiStore.activeNav === 'board'
+)
+const isDockComposer = computed(
+  () =>
+    isMobile.value &&
+    isBoard.value &&
+    !uiStore.showAiAgent &&
+    uiStore.boardDock === 'composer'
+)
+const isDockNav = computed(
+  () =>
+    isMobile.value &&
+    isBoard.value &&
+    !uiStore.showAiAgent &&
+    uiStore.boardDock === 'nav'
+)
 
 const navItems = computed(() => {
   const boardIcon = isMobile.value ? Sparkles : LayoutGrid
@@ -62,13 +92,40 @@ function checkMobile() {
 onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
+  if (
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+    document.documentElement.classList.contains('no-animations')
+  ) {
+    showSwipeHint.value = false
+    return
+  }
+  hintTimer = window.setTimeout(() => {
+    showSwipeHint.value = false
+  }, 4200)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
+  if (hintTimer) window.clearTimeout(hintTimer)
 })
 
+function onDockPointerDown(event: PointerEvent) {
+  if (!isDockNav.value) return
+  onPointerDown(event)
+}
+
+function onDockPointerUp(event: PointerEvent) {
+  if (!isDockNav.value) return
+  onPointerUp(event)
+}
+
 async function handleNavClick(section: NavSection) {
+  if (consumeSwipe()) return
+  if (isDockNav.value && section === 'board') {
+    uiStore.setBoardDock('composer')
+    return
+  }
+
   uiStore.setActiveNav(section)
   guidedTour.handleAction(`nav:${section}`)
 
@@ -105,22 +162,36 @@ async function handleNavClick(section: NavSection) {
 
   @include mobile {
     @include glass;
+    @include keyboard-gap-fill;
+    --board-dock-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
     position: fixed;
     inset-inline-start: 50%;
     inset-inline-end: auto;
     inset-block-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
     inline-size: fit-content;
     max-inline-size: calc(100dvw - var(--space-8) * 2);
+    box-sizing: border-box;
     padding-block: var(--space-2);
     padding-inline: var(--space-3);
+    overflow: visible;
     transform: translateX(-50%);
     border: var(--ui-border);
-    border-radius: 32px;
-    background-color: color-mix(in srgb, var(--surface) 42%, transparent);
+    border-radius: var(--radius-full);
+    background-color: var(--island-surface);
     backdrop-filter: var(--glass-strong-filter);
     -webkit-backdrop-filter: var(--glass-strong-filter);
-    box-shadow: none;
+    box-shadow: var(--shadow-xs);
     animation: nav-fade-up var(--transition-emphasized) both;
+
+    &.is-dock-composer,
+    &.is-dock-nav {
+      animation: none;
+      touch-action: pan-y;
+    }
+
+    &.is-swipe-hint .nav-track {
+      animation: island-swipe-hint-down 2.2s var(--ease-emphasized) 0.35s both;
+    }
   }
 }
 
@@ -136,7 +207,7 @@ async function handleNavClick(section: NavSection) {
     flex-direction: row;
     justify-content: center;
     gap: var(--space-2);
-    width: auto;
+    width: 100%;
   }
 }
 
@@ -212,8 +283,37 @@ async function handleNavClick(section: NavSection) {
   }
 }
 
+@keyframes island-swipe-hint-down {
+  0%,
+  18%,
+  100% {
+    transform: translateY(0);
+  }
+
+  34% {
+    transform: translateY(10px);
+  }
+
+  50% {
+    transform: translateY(0);
+  }
+
+  66% {
+    transform: translateY(7px);
+  }
+
+  82% {
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .nav-island {
+    animation: none;
+    transition: none;
+  }
+
+  .nav-island.is-swipe-hint .nav-track {
     animation: none;
   }
 }

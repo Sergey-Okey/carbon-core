@@ -39,6 +39,3 @@ Thumbs.db
 
 # Temp tooling
 .codex-git-temp/
-
-# Vercel
-.vercel

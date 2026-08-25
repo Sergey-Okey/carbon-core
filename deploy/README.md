@@ -66,3 +66,25 @@ NUXT_SMTP_API_URL=https://api.smtp.bz/v1/smtp/send
 API-ключ — в кабинете smtp.bz → «Мой профиль». Если задан `NUXT_SMTP_API_KEY`, письма идут по HTTPS.
 
 После изменения `.env`: `sudo systemctl restart cof-board`
+
+## OpenRouter (агент)
+
+OpenRouter — внешний API, не локальная модель. На VPS хранится только ключ.
+
+1. Ключ: https://openrouter.ai/keys
+2. В `/var/www/cof-board/.env`:
+
+```
+AI_ENGINE=openai
+NUXT_AI_ENGINE=openai
+OPENAI_BASE_URL=https://openrouter.ai/api/v1
+NUXT_OPENAI_BASE_URL=https://openrouter.ai/api/v1
+OPENAI_MODEL=minimax/minimax-m2.7:free
+NUXT_OPENAI_MODEL=minimax/minimax-m2.7:free
+OPENAI_API_KEY=sk-or-v1-...
+NUXT_OPENAI_API_KEY=sk-or-v1-...
+```
+
+3. `sudo systemctl restart cof-board`
+
+Без ключа агент отвечает локальным планировщиком.

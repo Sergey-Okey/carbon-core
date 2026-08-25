@@ -1,5 +1,9 @@
 <template>
-  <header ref="headerRoot" class="header">
+  <header
+    ref="headerRoot"
+    class="header"
+    :class="{ 'is-board-ai': isBoardAiHeader }"
+  >
     <HeaderBrand />
 
     <div class="section-title" aria-live="polite">
@@ -8,9 +12,7 @@
 
     <HeaderQuickActions
       :is-demo="accessStore.isDemo"
-      :highlight-guide="shouldHighlightGuideEntry"
       @demo="exitDemoToRegister"
-      @guide="openOnboarding"
     >
       <template #leading>
         <button
@@ -28,6 +30,10 @@
         </button>
       </template>
 
+      <HeaderAgentButton
+        :expanded="uiStore.showAiAgent"
+        @toggle="toggleAiAgent"
+      />
       <NotificationCenter
         :open="activeSheet === 'notifications'"
         @update:open="setNotificationsOpen"
@@ -106,6 +112,7 @@
         </section>
       </Transition>
     </Teleport>
+    <LazyAiAgentPanel v-if="uiStore.showAiAgent" @close="uiStore.closeAiAgent()" />
   </header>
 </template>
 
@@ -128,11 +135,13 @@ const FOCUS_RIB_COUNT = 25
 const authStore = useAuthStore()
 const userStore = useUserStore()
 const uiStore = useUIStore()
-const guidedTour = useGuidedTourStore()
 const accessStore = useAccessStore()
 const route = useRoute()
 const { info } = useNotification()
 const { confirm } = useConfirm()
+const isBoardAiHeader = computed(
+  () => route.path === '/' && uiStore.activeNav === 'board'
+)
 
 async function exitDemoToRegister() {
   const ok = await confirm(
@@ -169,8 +178,11 @@ const sectionTitles: Record<NavSection, string> = {
   settings: 'Настройки',
 }
 
+const isMobileHeader = useMediaQuery('(max-width: 767px)')
+
 const currentSectionTitle = computed(() => {
   if (route.path === '/profile') return 'Профиль'
+  if (isMobileHeader.value && uiStore.activeNav === 'board') return 'Агент'
   return sectionTitles[uiStore.activeNav]
 })
 
@@ -178,9 +190,6 @@ const headerAvatar = computed(() =>
   upgradeAvatarUrl(authStore.currentUser?.avatar || userStore.profile.avatar || '')
 )
 
-const shouldHighlightGuideEntry = computed(
-  () => accessStore.isDemo && !guidedTour.hasStarted && !guidedTour.isCompleted
-)
 const focusPresetSeconds = computed(
   () =>
     ({
@@ -220,16 +229,18 @@ async function openFocus() {
   uiStore.setActiveNav('shop')
 }
 
-async function openOnboarding() {
-  activeSheet.value = 'none'
-  if (route.path !== '/') {
-    await navigateTo('/')
+function toggleAiAgent() {
+  if (uiStore.showAiAgent) {
+    uiStore.closeAiAgent()
+    return
   }
-  guidedTour.start()
+  activeSheet.value = 'none'
+  uiStore.openAiAgent()
 }
 
 function setNotificationsOpen(open: boolean) {
   if (open) {
+    uiStore.closeAiAgent()
     activeSheet.value = 'notifications'
     return
   }
@@ -237,10 +248,12 @@ function setNotificationsOpen(open: boolean) {
 }
 
 function toggleProfileMenu() {
+  uiStore.closeAiAgent()
   activeSheet.value = activeSheet.value === 'profile' ? 'none' : 'profile'
 }
 
 function toggleFocusWidgetPanel() {
+  uiStore.closeAiAgent()
   if (!showFocusWidget.value) {
     activeSheet.value = 'none'
     return
@@ -423,6 +436,7 @@ onBeforeUnmount(() => {
   @include glass;
   overflow: visible;
   background-color: var(--glass-surface);
+  color: var(--color-text-primary);
   box-shadow: none;
   transition:
     background var(--transition-standard),
@@ -448,6 +462,18 @@ onBeforeUnmount(() => {
     backdrop-filter: var(--glass-strong-filter);
     -webkit-backdrop-filter: var(--glass-strong-filter);
     background-color: color-mix(in srgb, var(--surface) 55%, transparent);
+  }
+
+  &.is-board-ai {
+    @include mobile {
+      border: none;
+      border-bottom: none;
+      background-color: transparent;
+      background-image: none;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
   }
 }
 

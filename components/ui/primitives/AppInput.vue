@@ -145,18 +145,24 @@ function handleInput(event: Event) {
   }
 }
 
-.size-md {
-  min-height: var(--control-height-lg);
+.size-md:not(textarea) {
+  height: var(--control-height-md);
+  min-height: var(--control-height-md);
 }
 
-.size-sm {
+.size-sm:not(textarea) {
+  height: var(--control-height-sm);
   min-height: var(--control-height-sm);
   padding-block: var(--space-2);
   padding-inline: var(--space-3);
   font-size: var(--text-xs);
+  @include mobile {
+    font-size: 16px;
+  }
 }
 
 textarea.app-input {
+  height: auto;
   min-height: calc(var(--space-11) * 2);
   padding-block: var(--space-3);
   line-height: var(--leading-normal);
@@ -175,14 +181,10 @@ input[type='search'].app-input {
   }
 }
 
-@media (pointer: coarse), (max-width: 767px) {
-  .app-input.size-md {
-    min-height: var(--control-height-lg);
-    font-size: var(--text-md);
-  }
-
-  .size-sm {
-    min-height: var(--space-11);
+@media (pointer: coarse) {
+  .app-input.size-md:not(textarea) {
+    height: var(--touch-target);
+    min-height: var(--touch-target);
   }
 }
 </style>

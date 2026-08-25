@@ -1,4 +1,5 @@
 :root {
+  color-scheme: dark;
   --color-bg: #121212;
   --color-surface-1: #1e1e1e;
   --color-surface-2: #252525;
@@ -42,20 +43,23 @@
   --glass-strong-border: rgba(255, 255, 255, 0.22);
   --glass-strong-shadow: none;
   --frosted-surface: color-mix(in srgb, var(--surface) 78%, transparent);
+  --island-surface: color-mix(in srgb, var(--surface) 42%, transparent);
+  --header-icon: #ffffff;
   --board-card-surface: var(--color-surface-1);
   --board-details-surface: var(--color-surface-1);
   --board-toolbar-surface: var(--color-surface-1);
 }
 
 .light-theme {
+  color-scheme: light;
   --color-bg: #f5f5f5;
   --color-surface-1: #ffffff;
   --color-surface-2: #f0f0f0;
   --color-surface-3: #e8e8e8;
   --color-border: #4d4d4d;
   --color-text-primary: #2b2b2b;
-  --color-text-secondary: #666666;
-  --color-text-muted: #8a8a8a;
+  --color-text-secondary: #4a4a4a;
+  --color-text-muted: #5c5c5c;
   --color-text-inverse: #f5f5f5;
   --color-accent: #2b2b2b;
   --color-success: #008844;
@@ -67,17 +71,19 @@
   --gold: #b88700;
   --platinum: #9f9f9f;
 
-  --glass-surface: color-mix(in srgb, var(--surface) 42%, transparent);
-  --glass-surface-strong: color-mix(in srgb, var(--surface) 86%, transparent);
-  --ui-border-color: rgba(0, 0, 0, 0.08);
+  --glass-surface: color-mix(in srgb, var(--surface) 82%, transparent);
+  --glass-surface-strong: color-mix(in srgb, var(--surface) 92%, transparent);
+  --ui-border-color: rgba(0, 0, 0, 0.12);
   --ui-border: 1px solid var(--ui-border-color);
   --glass-border: var(--ui-border-color);
   --glass-highlight: transparent;
   --glass-shadow: none;
   --glass-strong-filter: blur(30px) saturate(1.8);
-  --glass-strong-border: rgba(255, 255, 255, 0.22);
+  --glass-strong-border: rgba(0, 0, 0, 0.14);
   --glass-strong-shadow: none;
-  --frosted-surface: color-mix(in srgb, var(--surface) 86%, transparent);
+  --frosted-surface: color-mix(in srgb, var(--surface) 92%, transparent);
+  --island-surface: color-mix(in srgb, var(--surface) 90%, transparent);
+  --header-icon: #2b2b2b;
   --board-card-surface: var(--color-surface-1);
   --board-details-surface: var(--color-surface-1);
   --board-toolbar-surface: var(--color-surface-1);

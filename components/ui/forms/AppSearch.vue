@@ -306,11 +306,11 @@ defineExpose({
     box-shadow var(--transition-standard),
     color var(--transition-standard);
 
-  .size-md & {
+  .app-search-root.size-md & {
     min-height: var(--control-height-md);
   }
 
-  .size-sm & {
+  .app-search-root.size-sm & {
     min-height: var(--control-height-sm);
     padding-inline: var(--space-2);
     gap: var(--space-1);
@@ -385,6 +385,10 @@ defineExpose({
     line-height: var(--leading-tight);
     appearance: none;
     -webkit-appearance: none;
+
+    @include mobile {
+      font-size: 16px;
+    }
 
     &::placeholder {
       color: var(--color-text-muted);
@@ -534,9 +538,8 @@ defineExpose({
 }
 
 @media (pointer: coarse), (max-width: 767px) {
-  .size-md .app-search,
-  .size-sm .app-search {
-    min-height: var(--space-11);
+  .app-search-root.size-md .app-search {
+    min-height: var(--touch-target);
   }
 
   .variant-compact .app-search {

@@ -45,6 +45,7 @@
         <AppSelect
           id="task-tag"
           v-model="tagModel"
+          size="sm"
           :options="tagOptions"
           placeholder="Выберите тег"
         >
@@ -68,6 +69,7 @@
         </div>
         <AppSegmentedControl
           v-model="viewModel"
+          size="sm"
           :options="viewOptions"
           label="Режим задач"
         />

@@ -4,10 +4,7 @@
     class="branch-flow-wrapper"
     :class="{ 'is-auto-layouting': isAutoLayoutAnimating }"
   >
-    <BranchMobileView v-if="isMobile" />
-
     <VueFlow
-      v-else
       :key="flowRenderKey"
       v-model:nodes="nodes"
       v-model:edges="edges"

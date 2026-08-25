@@ -22,6 +22,7 @@ test('access storage keys stay stable for demo/migrate flows', () => {
     'carbon-tags',
     'carbon-ui',
     'carbon-settings',
+    'carbon-ai',
     'carbon-notifications',
   ])
 })

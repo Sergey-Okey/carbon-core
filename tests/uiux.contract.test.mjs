@@ -110,3 +110,43 @@ test('spacing and typography tokens keep a 4px scale and heading roles', async (
   assert.match(reset, /font-size:\s*16px/)
   assert.match(reset, /font-size:\s*var\(--body-size\)/)
 })
+
+test('keyboard inset under islands is painted with the page background', async () => {
+  const reset = await read('assets/styles/reset.scss')
+  const global = await read('assets/styles/global.scss')
+  const mixins = await read('assets/styles/mixins.scss')
+  const dock = await read('components/ai/BoardDock.vue')
+  const nav = await read('components/base/TheNavbar.vue')
+
+  assert.match(reset, /html\s*\{[\s\S]*background-color:\s*var\(--color-bg/)
+  assert.match(global, /height:\s*calc\(100lvh \+ 40vh\)/)
+  assert.match(mixins, /@mixin keyboard-gap-fill/)
+  assert.match(dock, /keyboard-gap-fill/)
+  assert.match(nav, /keyboard-gap-fill/)
+})
+
+test('header icons and AI hub stay readable in the light theme', async () => {
+  const colors = await read('assets/styles/tokens/_colors.scss')
+  const header = await read('components/base/TheHeader.vue')
+  const actions = await read('components/base/header/HeaderQuickActions.vue')
+  const hub = await read('components/ai/AiHub.vue')
+  const glow = await read('components/ai/BoardAiGlow.vue')
+
+  assert.match(header, /color:\s*var\(--color-text-primary\)/)
+  assert.match(actions, /--header-icon,\s*var\(--color-text-primary\)/)
+  assert.match(hub, /\.ai-hub__kicker[\s\S]*color:\s*var\(--color-text-primary\)/)
+  assert.match(hub, /--island-surface/)
+  assert.match(colors, /\.light-theme[\s\S]*--island-surface:\s*color-mix\(in srgb, var\(--surface\) 90%/)
+  assert.match(colors, /\.light-theme[\s\S]*--glass-strong-border:\s*rgba\(0, 0, 0/)
+  assert.match(glow, /html\.light-theme/)
+})
+
+test('select size modifiers do not inherit AppModal size-sm', async () => {
+  const select = await read('components/ui/forms/AppSelect.vue')
+  const search = await read('components/ui/forms/AppSearch.vue')
+
+  assert.match(select, /\.app-select\.size-sm/)
+  assert.doesNotMatch(select, /\n\s+\.size-sm\s+&/)
+  assert.match(search, /\.app-search-root\.size-sm/)
+  assert.doesNotMatch(search, /\n\s+\.size-sm\s+&/)
+})

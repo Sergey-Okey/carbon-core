@@ -45,15 +45,43 @@ export const useUIStore = defineStore(
     const analyticsWidgetOrder = ref<AnalyticsWidgetId[]>([...DEFAULT_ANALYTICS_WIDGET_ORDER])
     const analyticsRangeDays = ref<7 | 14 | 30>(14)
     const pendingNavTarget = ref<NavTarget | null>(null)
+    const showAiAgent = ref(false)
+    const aiDraft = ref('')
+    const boardDock = ref<'composer' | 'nav'>('composer')
 
     function setActiveNav(section: NavSection) {
       activeNav.value = section
+      if (section !== 'board') boardDock.value = 'composer'
+    }
+
+    function setBoardDock(mode: 'composer' | 'nav') {
+      boardDock.value = mode
+    }
+
+    function toggleBoardDock() {
+      boardDock.value = boardDock.value === 'composer' ? 'nav' : 'composer'
+    }
+
+    function openAiAgent(draft = '') {
+      aiDraft.value = draft.trim()
+      showAiAgent.value = true
+    }
+
+    function closeAiAgent() {
+      showAiAgent.value = false
+    }
+
+    function consumeAiDraft() {
+      const draft = aiDraft.value
+      aiDraft.value = ''
+      return draft
     }
 
     function navigateToTarget(target: NavTarget) {
       pendingNavTarget.value = target
       if (target.kind === 'task') {
         activeNav.value = 'tasks'
+        boardDock.value = 'composer'
       } else {
         activeNav.value = 'board'
       }
@@ -102,9 +130,17 @@ export const useUIStore = defineStore(
       analyticsWidgetOrder,
       analyticsRangeDays,
       pendingNavTarget,
+      showAiAgent,
+      aiDraft,
+      boardDock,
       showLabels,
       panelWidth,
       setActiveNav,
+      setBoardDock,
+      toggleBoardDock,
+      openAiAgent,
+      closeAiAgent,
+      consumeAiDraft,
       navigateToTarget,
       clearPendingNavTarget,
       toggleSidebar,
@@ -119,6 +155,7 @@ export const useUIStore = defineStore(
       ? {
           key: 'carbon-ui',
           storage: accessAwareStorage,
+          omit: ['showAiAgent', 'aiDraft', 'boardDock'],
           afterHydrate: (ctx) => {
             const store = ctx.store as ReturnType<typeof useUIStore>
             store.analyticsWidgetOrder = normalizeAnalyticsWidgetOrder(store.analyticsWidgetOrder)

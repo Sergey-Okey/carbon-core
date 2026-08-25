@@ -237,6 +237,7 @@ onUnmounted(() => {
   cursor: pointer;
   font: inherit;
   @include form-control;
+  height: var(--control-height-md);
   transition:
     background var(--transition-standard),
     border-color var(--transition-standard),

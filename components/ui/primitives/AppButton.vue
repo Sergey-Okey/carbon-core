@@ -8,7 +8,7 @@
     :data-disabled="isDisabled ? '' : undefined"
     :data-loading="loading ? '' : undefined"
   >
-    <AppSpinner v-if="loading" size="md" aria-hidden="true" />
+    <AppSpinner v-if="loading" size="md" :shape="spinner" aria-hidden="true" />
     <span class="label" :class="{ 'is-loading-icon': loading && iconOnly }">
       <slot />
     </span>
@@ -24,6 +24,7 @@ const props = withDefaults(
     iconOnly?: boolean
     disabled?: boolean
     loading?: boolean
+    spinner?: 'circle' | 'cube'
   }>(),
   {
     type: 'button',
@@ -32,6 +33,7 @@ const props = withDefaults(
     iconOnly: false,
     disabled: false,
     loading: false,
+    spinner: 'circle',
   }
 )
 

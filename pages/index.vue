@@ -14,7 +14,7 @@
       "
       class="dashboard-section stats"
     >
-      <StatsOverview />
+      <LazyStatsOverview />
     </section>
 
     <section
@@ -25,7 +25,8 @@
         v-if="uiStore.activeNav === 'board'"
         class="nav-view nav-view--board"
       >
-        <BranchFlow />
+        <LazyBranchMobileView v-if="isMobileBoard" />
+        <LazyBranchFlow v-else />
       </div>
 
       <div
@@ -63,7 +64,7 @@
         />
 
         <Teleport to="body">
-          <TaskForm
+          <LazyTaskForm
             v-if="showTaskForm"
             :task="editingTask"
             :default-type="activeTaskType"
@@ -74,14 +75,14 @@
       </div>
 
       <div v-if="uiStore.activeNav === 'shop'">
-        <FocusPanel />
+        <LazyFocusPanel />
       </div>
-      <AnalyticsPanel v-if="uiStore.activeNav === 'analytics'" />
-      <SettingsPanel v-if="uiStore.activeNav === 'settings'" />
+      <LazyAnalyticsPanel v-if="uiStore.activeNav === 'analytics'" />
+      <LazySettingsPanel v-if="uiStore.activeNav === 'settings'" />
       </div>
     </section>
 
-    <GuidedTourOverlay />
+    <LazyGuidedTourOverlay />
   </div>
 </template>
 
@@ -103,6 +104,7 @@ const { saveTask } = useTaskActions()
 const showTaskForm = ref(false)
 const activeTaskType = ref<TaskType>('TASK_DAY')
 const editingTask = ref<Task | undefined>(undefined)
+const isMobileBoard = ref(import.meta.client ? window.innerWidth < 768 : true)
 const {
   taskSearch,
   selectedTagId,
@@ -119,6 +121,19 @@ const {
   visibleCompletedTasks,
   visibleDeletedTasks,
 } = useTaskFilters()
+
+function syncMobileBoard() {
+  isMobileBoard.value = window.innerWidth < 768
+}
+
+onMounted(() => {
+  syncMobileBoard()
+  window.addEventListener('resize', syncMobileBoard)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', syncMobileBoard)
+})
 
 function openTaskCreator(type: TaskType) {
   if (!tasksStore.canAddTask(type)) {
@@ -196,7 +211,7 @@ function handleTaskSave(taskData: Partial<Task> & { createBranch?: boolean }) {
     min-block-size: 0;
     overflow: hidden;
     width: 100%;
-    height: 100dvh;
+    height: 100%;
 
     @include mobile {
       flex: 1;

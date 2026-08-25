@@ -6,13 +6,11 @@
     <ConfirmDialog />
   </NuxtLayout>
   <CustomCursor />
-  <SpeedInsights v-if="enableVercelAnalytics" />
 </template>
 
 <script setup lang="ts">
 import { v4 as uuidv4 } from "uuid";
 import { useDebounceFn } from "@vueuse/core";
-import { SpeedInsights } from "@vercel/speed-insights/vue";
 import { saveAutoBackup } from "~/utils/backup";
 import { getBackendFetchOptions, getBackendUrl } from "~/utils/backend";
 import { browserLog } from "~/utils/browserLog";
@@ -78,7 +76,6 @@ const uiStore = useUIStore();
 const authStore = useAuthStore();
 const accessStore = useAccessStore();
 const syncStatus = useSyncStatus();
-const enableVercelAnalytics = useRuntimeConfig().public.enableVercelAnalytics;
 const syncEndpoint = getBackendUrl("/api/sync");
 const backendFetch = $fetch as unknown as <T = unknown>(
   url: string,

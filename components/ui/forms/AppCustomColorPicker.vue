@@ -254,16 +254,17 @@ function apply() {
 }
 
 .color-trigger {
+  @include nest-shell(var(--radius-md), var(--space-1));
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   width: max-content;
   max-width: 100%;
-  min-height: var(--space-11);
+  height: var(--control-height-md);
+  min-height: var(--control-height-md);
   margin: 0;
-  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+  padding-inline-end: var(--space-3);
   border: var(--ui-border);
-  border-radius: 14px;
   background: var(--color-surface-1);
   color: var(--color-text-primary);
   cursor: pointer;
@@ -308,11 +309,11 @@ function apply() {
 }
 
 .color-preview {
+  @include nest-item;
   display: inline-grid;
   place-items: center;
-  width: var(--space-8);
-  height: var(--space-8);
-  border-radius: 11px;
+  width: var(--space-7);
+  height: var(--space-7);
   background: var(--custom-color);
   color: #fff;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text-primary) 12%, transparent);
@@ -494,7 +495,8 @@ function apply() {
 @include mobile {
   .color-trigger {
     width: 100%;
-    min-height: var(--space-12);
+    height: var(--touch-target);
+    min-height: var(--touch-target);
   }
 
   .palette-row {
