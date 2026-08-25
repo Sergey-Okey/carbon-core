@@ -32,6 +32,8 @@ export default defineNuxtConfig({
     smtpUser: process.env.SMTP_USER || '',
     smtpPassword: process.env.SMTP_PASSWORD || '',
     smtpFrom: process.env.SMTP_FROM || '',
+    smtpApiKey: process.env.SMTP_API_KEY || '',
+    smtpApiUrl: process.env.SMTP_API_URL || 'https://api.smtp.bz/v1/smtp/send',
     public: {
       enableVercelAnalytics: isVercel,
       webAppUrl: process.env.NUXT_PUBLIC_WEB_APP_URL || '',

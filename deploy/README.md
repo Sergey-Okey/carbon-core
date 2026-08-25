@@ -53,11 +53,16 @@ sudo bash /var/www/cof-board/app/deploy/remote-ssl.sh
 В `/var/www/cof-board/.env`:
 
 ```
-NUXT_SMTP_HOST=smtp.bz
-NUXT_SMTP_PORT=587
+NUXT_SMTP_HOST=connect.smtp.bz
+NUXT_SMTP_PORT=2525
 NUXT_SMTP_USER=...
 NUXT_SMTP_PASSWORD=...
 NUXT_SMTP_FROM="Core of Life <no-reply@cof-board.com>"
+# Prefer API when outbound SMTP to smtp.bz is blocked/refused on the VPS:
+NUXT_SMTP_API_KEY=...
+NUXT_SMTP_API_URL=https://api.smtp.bz/v1/smtp/send
 ```
+
+API-ключ — в кабинете smtp.bz → «Мой профиль». Если задан `NUXT_SMTP_API_KEY`, письма идут по HTTPS.
 
 После изменения `.env`: `sudo systemctl restart cof-board`
