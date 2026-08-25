@@ -36,15 +36,6 @@ function getNodeSize(node: Node) {
   return { width: 220, height: 136 }
 }
 
-function handleSide(handle?: string | null): HandleSide | null {
-  if (!handle) return null
-  if (handle.includes('-top-')) return 'top'
-  if (handle.includes('-right-')) return 'right'
-  if (handle.includes('-bottom-')) return 'bottom'
-  if (handle.includes('-left-')) return 'left'
-  return null
-}
-
 function oppositeSide(side: HandleSide): HandleSide {
   if (side === 'top') return 'bottom'
   if (side === 'right') return 'left'
@@ -123,110 +114,18 @@ function collectBranchNetworks(nodes: Node[], edges: Edge[]): Network[] {
   return networks.sort((a, b) => a.branchId.localeCompare(b.branchId))
 }
 
-
-function detectPrimarySide(network: Network, rootId: string): HandleSide {
-  const counts: Record<HandleSide, number> = { top: 0, right: 0, bottom: 0, left: 0 }
-
-  const bumpExit = (edge: Edge) => {
-    const exit =
-      handleSide(edge.sourceHandle) ||
-      (handleSide(edge.targetHandle)
-        ? oppositeSide(handleSide(edge.targetHandle)!)
-        : null)
-    if (exit) counts[exit] += 1
-  }
-
-  network.edges.forEach((edge) => {
-    if (edge.source === rootId) bumpExit(edge)
-  })
-
-  if (Object.values(counts).every((n) => n === 0)) {
-    network.edges.forEach((edge) => bumpExit(edge))
-  }
-
-  const ranked: HandleSide[] = ['right', 'bottom', 'left', 'top']
-  let best: HandleSide = 'right'
-  let bestCount = -1
-  ranked.forEach((side) => {
-    if (counts[side] > bestCount) {
-      best = side
-      bestCount = counts[side]
-    }
-  })
-  return bestCount > 0 ? best : 'right'
-}
-
-
-function edgeExitSide(edge: Edge, fallback: HandleSide): HandleSide {
-  return (
-    handleSide(edge.sourceHandle) ||
-    (handleSide(edge.targetHandle)
-      ? oppositeSide(handleSide(edge.targetHandle)!)
-      : null) ||
-    fallback
-  )
-}
-
-
-function portsFromPositions(
-  source: Node,
-  target: Node
-): { sourceSide: HandleSide; targetSide: HandleSide } {
-  const ss = getNodeSize(source)
-  const ts = getNodeSize(target)
-  const dx = target.position.x + ts.width / 2 - (source.position.x + ss.width / 2)
-  const dy = target.position.y + ts.height / 2 - (source.position.y + ss.height / 2)
-  const sourceSide: HandleSide =
-    Math.abs(dx) >= Math.abs(dy)
-      ? dx >= 0
-        ? 'right'
-        : 'left'
-      : dy >= 0
-        ? 'bottom'
-        : 'top'
-  return { sourceSide, targetSide: oppositeSide(sourceSide) }
-}
-
 function buildAdjacency(network: Network) {
   const outgoing = new Map<string, string[]>()
-  const incoming = new Map<string, string[]>()
 
   network.edges.forEach((edge) => {
     const outs = outgoing.get(edge.source) || []
     outs.push(edge.target)
     outgoing.set(edge.source, outs)
-
-    const ins = incoming.get(edge.target) || []
-    ins.push(edge.source)
-    incoming.set(edge.target, ins)
   })
 
   outgoing.forEach((list, key) => outgoing.set(key, [...new Set(list)].sort()))
-  incoming.forEach((list, key) => incoming.set(key, [...new Set(list)].sort()))
 
-  return { outgoing, incoming }
-}
-
-
-function clusterLanes(values: number[], snapGrid: number, tolerance: number) {
-  const sorted = [...values].sort((a, b) => a - b)
-  const groups: number[][] = []
-  sorted.forEach((value) => {
-    const last = groups[groups.length - 1]
-    if (!last || Math.abs(last[last.length - 1] - value) > tolerance) {
-      groups.push([value])
-    } else {
-      last.push(value)
-    }
-  })
-
-  const remap = new Map<number, number>()
-  groups.forEach((group) => {
-    const mean = group.reduce((sum, value) => sum + value, 0) / group.length
-    const lane = snap(mean, snapGrid)
-    group.forEach((value) => remap.set(value, lane))
-  })
-  return remap
+  return { outgoing }
 }
 
 type LayoutBox = { id: string; x: number; y: number; w: number; h: number }
@@ -240,7 +139,7 @@ function boxesOverlap(a: LayoutBox, b: LayoutBox, gap: number) {
   )
 }
 
-
+/** Lightweight safety net — tidy tree should already avoid overlaps. */
 function resolveNodeOverlaps(
   nodeIds: string[],
   byId: Map<string, Node>,
@@ -264,7 +163,7 @@ function resolveNodeOverlaps(
 
   boxes.sort((a, b) => a.y - b.y || a.x - b.x || a.id.localeCompare(b.id))
 
-  for (let pass = 0; pass < 48; pass++) {
+  for (let pass = 0; pass < 24; pass++) {
     let moved = false
     for (let i = 0; i < boxes.length; i++) {
       for (let j = i + 1; j < boxes.length; j++) {
@@ -273,23 +172,17 @@ function resolveNodeOverlaps(
         if (!boxesOverlap(a, b, gap)) continue
 
         const acx = a.x + a.w / 2
-        const acy = a.y + a.h / 2
         const bcx = b.x + b.w / 2
-        const bcy = b.y + b.h / 2
-        const sameColumn = Math.abs(acx - bcx) <= Math.max(a.w, b.w) * 0.35
-        const sameRow = Math.abs(acy - bcy) <= Math.max(a.h, b.h) * 0.35
-
-        const pushRight = a.x + a.w + gap - b.x
+        const sameColumn = Math.abs(acx - bcx) <= Math.max(a.w, b.w) * 0.4
         const pushDown = a.y + a.h + gap - b.y
+        const pushRight = a.x + a.w + gap - b.x
 
-        if (sameColumn && !sameRow) {
+        if (sameColumn) {
           b.y = a.y + a.h + gap
-        } else if (sameRow && !sameColumn) {
-          b.x = a.x + a.w + gap
-        } else if (pushRight <= pushDown) {
-          b.x += Math.max(0, pushRight)
-        } else {
+        } else if (pushDown <= pushRight) {
           b.y += Math.max(0, pushDown)
+        } else {
+          b.x += Math.max(0, pushRight)
         }
         moved = true
       }
@@ -305,220 +198,140 @@ function resolveNodeOverlaps(
       y: snap(box.y, snapGrid),
     }
   })
-
-
-  for (let pass = 0; pass < 8; pass++) {
-    let moved = false
-    for (let i = 0; i < boxes.length; i++) {
-      const nodeA = byId.get(boxes[i].id)!
-      const sizeA = getNodeSize(nodeA)
-      boxes[i].x = nodeA.position.x
-      boxes[i].y = nodeA.position.y
-      boxes[i].w = sizeA.width
-      boxes[i].h = sizeA.height
-    }
-    for (let i = 0; i < boxes.length; i++) {
-      for (let j = i + 1; j < boxes.length; j++) {
-        if (!boxesOverlap(boxes[i], boxes[j], gap)) continue
-        const a = boxes[i]
-        const b = boxes[j]
-        const pushRight = a.x + a.w + gap - b.x
-        const pushDown = a.y + a.h + gap - b.y
-        if (pushRight <= pushDown) b.x += Math.max(0, pushRight)
-        else b.y += Math.max(0, pushDown)
-        const node = byId.get(b.id)
-        if (node) {
-          node.position = { x: snap(b.x, snapGrid), y: snap(b.y, snapGrid) }
-        }
-        moved = true
-      }
-    }
-    if (!moved) break
-  }
 }
 
+function flowFromDirection(direction: LayoutDirection): HandleSide {
+  return direction === 'TB' ? 'bottom' : 'right'
+}
 
+/**
+ * HubSpot-style tidy tree: forced primary axis, subtree-height spacing,
+ * parent vertically centered on its children stack.
+ */
 function layoutSingleNetwork(
   network: Network,
   byId: Map<string, Node>,
-  options: Required<Pick<LayoutOptions, 'edgeGap' | 'nodeSep' | 'snapGrid'>>
+  options: Required<Pick<LayoutOptions, 'edgeGap' | 'nodeSep' | 'snapGrid'>>,
+  direction: LayoutDirection
 ): HandleSide {
   const { edgeGap, nodeSep, snapGrid } = options
+  const flow = flowFromDirection(direction)
+  const horizontal = flow === 'left' || flow === 'right'
+
   const branchNode =
     byId.get(network.branchId) ||
     network.nodeIds.map((id) => byId.get(id)!).find((node) => node?.type === 'branch-node')
 
-  if (!branchNode) return 'right'
+  if (!branchNode) return flow
 
-  const flow = detectPrimarySide(network, branchNode.id)
   const { outgoing } = buildAdjacency(network)
+  const placed = new Set<string>()
+  const spanCache = new Map<string, number>()
 
+  const treeChildren = (parentId: string, blocked: Set<string>) =>
+    (outgoing.get(parentId) || []).filter((id) => !blocked.has(id) && !placed.has(id))
 
-  const maxWidth = Math.max(
-    ...network.nodeIds.map((id) => getNodeSize(byId.get(id)!).width)
-  )
-  const maxHeight = Math.max(
-    ...network.nodeIds.map((id) => getNodeSize(byId.get(id)!).height)
-  )
-  const layerMainPitchX = maxWidth + edgeGap
-  const layerMainPitchY = maxHeight + edgeGap
-  const crossPitchX = maxWidth + nodeSep
-  const crossPitchY = maxHeight + nodeSep
+  const nodeMainSize = (node: Node) => {
+    const size = getNodeSize(node)
+    return horizontal ? size.height : size.width
+  }
 
-  const edgeByPair = new Map<string, Edge>()
-  network.edges.forEach((edge) => {
-    edgeByPair.set(`${edge.source}->${edge.target}`, edge)
-  })
+  const subtreeSpan = (id: string, ancestors: Set<string>): number => {
+    const cached = spanCache.get(id)
+    if (cached !== undefined) return cached
 
-  branchNode.position = { x: 0, y: 0 }
-  const placed = new Set<string>([branchNode.id])
+    const node = byId.get(id)
+    if (!node) return 0
 
-  const placeChildren = (parentId: string) => {
-    const parent = byId.get(parentId)
-    if (!parent) return
-    const parentSize = getNodeSize(parent)
-    const pcx = parent.position.x + parentSize.width / 2
-    const pcy = parent.position.y + parentSize.height / 2
+    const self = nodeMainSize(node)
+    const next = new Set(ancestors)
+    next.add(id)
+    const kids = (outgoing.get(id) || []).filter((kid) => !next.has(kid))
 
-    const childIds = (outgoing.get(parentId) || []).filter((id) => !placed.has(id))
-    const bySide: Record<HandleSide, string[]> = {
-      top: [],
-      right: [],
-      bottom: [],
-      left: [],
+    let span = self
+    if (kids.length > 0) {
+      const childSpans = kids.map((kid) => subtreeSpan(kid, next))
+      const stacked =
+        childSpans.reduce((sum, value) => sum + value, 0) + nodeSep * (kids.length - 1)
+      span = Math.max(self, stacked)
     }
 
-    childIds.forEach((childId) => {
-      const edge = edgeByPair.get(`${parentId}->${childId}`)
-      const exit = edge ? edgeExitSide(edge, flow) : flow
-      bySide[exit].push(childId)
+    spanCache.set(id, span)
+    return span
+  }
+
+  const placeTree = (
+    id: string,
+    mainOrigin: number,
+    crossCenter: number,
+    ancestors: Set<string>
+  ) => {
+    const node = byId.get(id)
+    if (!node || placed.has(id)) return
+
+    const size = getNodeSize(node)
+    if (horizontal) {
+      node.position = {
+        x: snap(mainOrigin, snapGrid),
+        y: snap(crossCenter - size.height / 2, snapGrid),
+      }
+    } else {
+      node.position = {
+        x: snap(crossCenter - size.width / 2, snapGrid),
+        y: snap(mainOrigin, snapGrid),
+      }
+    }
+    placed.add(id)
+
+    const next = new Set(ancestors)
+    next.add(id)
+    const kids = treeChildren(id, next)
+    if (kids.length === 0) return
+
+    const childSpans = kids.map((kid) => {
+      spanCache.delete(kid)
+      return subtreeSpan(kid, next)
     })
+    const total =
+      childSpans.reduce((sum, value) => sum + value, 0) + nodeSep * (kids.length - 1)
+    let cursor = crossCenter - total / 2
+    const childMain = mainOrigin + (horizontal ? size.width : size.height) + edgeGap
 
-    ;(['right', 'bottom', 'left', 'top'] as HandleSide[]).forEach((side) => {
-      const group = bySide[side]
-      if (group.length === 0) return
-
-      const horizontal = side === 'left' || side === 'right'
-      const crossPitch = horizontal ? crossPitchY : crossPitchX
-      const mainPitch = horizontal ? layerMainPitchX : layerMainPitchY
-      const crossSpan = Math.max(group.length - 1, 0) * crossPitch
-
-      group.forEach((childId, index) => {
-        const child = byId.get(childId)
-        if (!child) return
-        const childSize = getNodeSize(child)
-        const cross = -crossSpan / 2 + index * crossPitch
-
-
-        const mainDistance = horizontal
-          ? parentSize.width / 2 + edgeGap + childSize.width / 2
-          : parentSize.height / 2 + edgeGap + childSize.height / 2
-        const travel = Math.max(mainPitch, mainDistance)
-
-        let cx = pcx
-        let cy = pcy
-        if (side === 'right') {
-          cx = pcx + travel
-          cy = pcy + cross
-        } else if (side === 'left') {
-          cx = pcx - travel
-          cy = pcy + cross
-        } else if (side === 'bottom') {
-          cx = pcx + cross
-          cy = pcy + travel
-        } else {
-          cx = pcx + cross
-          cy = pcy - travel
-        }
-
-        child.position = {
-          x: snap(cx - childSize.width / 2, snapGrid),
-          y: snap(cy - childSize.height / 2, snapGrid),
-        }
-        placed.add(childId)
-      })
-
-      group.forEach((childId) => placeChildren(childId))
+    kids.forEach((kid, index) => {
+      const span = childSpans[index]
+      placeTree(kid, childMain, cursor + span / 2, next)
+      cursor += span + nodeSep
     })
   }
 
-  placeChildren(branchNode.id)
-
+  spanCache.clear()
+  const rootSpan = subtreeSpan(branchNode.id, new Set())
+  placeTree(branchNode.id, 0, rootSpan / 2, new Set())
 
   const orphans = network.nodeIds.filter((id) => !placed.has(id))
   if (orphans.length > 0) {
-    const rootSize = getNodeSize(branchNode)
-    const rcx = branchNode.position.x + rootSize.width / 2
-    const rcy = branchNode.position.y + rootSize.height / 2
-    const horizontal = flow === 'left' || flow === 'right'
-    const crossPitch = horizontal ? crossPitchY : crossPitchX
-    const mainPitch = horizontal ? layerMainPitchX : layerMainPitchY
-    const crossSpan = Math.max(orphans.length - 1, 0) * crossPitch
+    const bounds = getComponentBounds([...placed], byId)
+    const baseMain = Number.isFinite(bounds.maxX)
+      ? (horizontal ? bounds.maxX : bounds.maxY) + edgeGap
+      : edgeGap
+
+    orphans.forEach((id) => {
+      spanCache.delete(id)
+    })
+
+    const orphanSpans = orphans.map((id) => subtreeSpan(id, new Set(placed)))
+    const total =
+      orphanSpans.reduce((sum, value) => sum + value, 0) +
+      nodeSep * Math.max(orphans.length - 1, 0)
+    let cursor =
+      (Number.isFinite(bounds.minY) ? (bounds.minY + bounds.maxY) / 2 : 0) - total / 2
+
     orphans.forEach((id, index) => {
-      const node = byId.get(id)
-      if (!node) return
-      const size = getNodeSize(node)
-      const cross = -crossSpan / 2 + index * crossPitch
-      const travel = horizontal
-        ? rootSize.width / 2 + edgeGap + size.width / 2
-        : rootSize.height / 2 + edgeGap + size.height / 2
-      const distance = Math.max(mainPitch, travel)
-      let cx = rcx
-      let cy = rcy
-      if (flow === 'right') {
-        cx = rcx + distance
-        cy = rcy + cross
-      } else if (flow === 'left') {
-        cx = rcx - distance
-        cy = rcy + cross
-      } else if (flow === 'bottom') {
-        cx = rcx + cross
-        cy = rcy + distance
-      } else {
-        cx = rcx + cross
-        cy = rcy - distance
-      }
-      node.position = {
-        x: snap(cx - size.width / 2, snapGrid),
-        y: snap(cy - size.height / 2, snapGrid),
-      }
-      placed.add(id)
-      placeChildren(id)
+      const span = orphanSpans[index]
+      placeTree(id, baseMain, cursor + span / 2, new Set(placed))
+      cursor += span + nodeSep
     })
   }
-
-
-  const centers = network.nodeIds.map((id) => {
-    const node = byId.get(id)!
-    const size = getNodeSize(node)
-    return {
-      id,
-      cx: node.position.x + size.width / 2,
-      cy: node.position.y + size.height / 2,
-    }
-  })
-  const laneTolerance = Math.min(snapGrid * 0.5, 8)
-  const xLanes = clusterLanes(
-    centers.map((item) => item.cx),
-    snapGrid,
-    laneTolerance
-  )
-  const yLanes = clusterLanes(
-    centers.map((item) => item.cy),
-    snapGrid,
-    laneTolerance
-  )
-  centers.forEach((item) => {
-    const node = byId.get(item.id)
-    if (!node) return
-    const size = getNodeSize(node)
-    const cx = xLanes.get(item.cx) ?? snap(item.cx, snapGrid)
-    const cy = yLanes.get(item.cy) ?? snap(item.cy, snapGrid)
-    node.position = {
-      x: snap(cx - size.width / 2, snapGrid),
-      y: snap(cy - size.height / 2, snapGrid),
-    }
-  })
 
   resolveNodeOverlaps(network.nodeIds, byId, nodeSep, snapGrid)
 
@@ -555,22 +368,26 @@ function packNetworks(
   })
 }
 
+function forcedFlowPorts(flow: HandleSide): { sourceSide: HandleSide; targetSide: HandleSide } {
+  return { sourceSide: flow, targetSide: oppositeSide(flow) }
+}
+
 export function useAutoLayout() {
-  
   function applyNetworkLayout(
     nodes: Node[],
     edges: Edge[],
-    _direction: LayoutDirection = 'LR',
+    direction: LayoutDirection = 'LR',
     options: LayoutOptions = {}
   ): NetworkLayoutResult {
     if (nodes.length === 0) return { nodes: [], edges }
 
     const snapGrid = options.snapGrid || 20
-    const nodeSep = options.nodeSep || 28
-    const edgeGap = options.edgeGap || options.rankSep || 64
-    const componentGap = options.componentGap || 56
+    const nodeSep = options.nodeSep || 48
+    const edgeGap = options.edgeGap || options.rankSep || 96
+    const componentGap = options.componentGap || 72
     const marginX = options.marginX || 80
     const marginY = options.marginY || 80
+    const flow = flowFromDirection(direction)
 
     const layoutedNodes = nodes.map((node) => ({
       ...node,
@@ -584,11 +401,10 @@ export function useAutoLayout() {
     const networks = collectBranchNetworks(layoutedNodes, validEdges)
 
     networks.forEach((network) => {
-      layoutSingleNetwork(network, byId, { edgeGap, nodeSep, snapGrid })
+      layoutSingleNetwork(network, byId, { edgeGap, nodeSep, snapGrid }, direction)
     })
 
     packNetworks(networks, byId, marginX, marginY, componentGap, snapGrid)
-
 
     resolveNodeOverlaps(
       layoutedNodes.map((node) => node.id),
@@ -597,18 +413,13 @@ export function useAutoLayout() {
       snapGrid
     )
 
-    const syncedEdges = validEdges.map((edge) => {
-      const { sourceSide, targetSide } = portsFromPositions(
-        byId.get(edge.source)!,
-        byId.get(edge.target)!
-      )
-      return {
-        ...edge,
-        sourceHandle: sourcePortId(edge.source, sourceSide),
-        targetHandle: targetPortId(edge.target, targetSide),
-        type: edge.type || 'smoothstep',
-      }
-    })
+    const { sourceSide, targetSide } = forcedFlowPorts(flow)
+    const syncedEdges = validEdges.map((edge) => ({
+      ...edge,
+      sourceHandle: sourcePortId(edge.source, sourceSide),
+      targetHandle: targetPortId(edge.target, targetSide),
+      type: edge.type || 'smoothstep',
+    }))
 
     return { nodes: layoutedNodes, edges: syncedEdges }
   }
@@ -622,12 +433,14 @@ export function useAutoLayout() {
     return applyNetworkLayout(nodes, edges, direction, options).nodes
   }
 
-  function syncEdgeHandles(edges: Edge[], byId: Map<string, Node>, _flow: HandleSide = 'right'): Edge[] {
+  function syncEdgeHandles(
+    edges: Edge[],
+    byId: Map<string, Node>,
+    flow: HandleSide = 'right'
+  ): Edge[] {
+    const { sourceSide, targetSide } = forcedFlowPorts(flow)
     return edges.map((edge) => {
-      const source = byId.get(edge.source)
-      const target = byId.get(edge.target)
-      if (!source || !target) return edge
-      const { sourceSide, targetSide } = portsFromPositions(source, target)
+      if (!byId.has(edge.source) || !byId.has(edge.target)) return edge
       return {
         ...edge,
         sourceHandle: sourcePortId(edge.source, sourceSide),
