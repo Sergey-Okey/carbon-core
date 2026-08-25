@@ -17,6 +17,12 @@ import { saveAutoBackup } from "~/utils/backup";
 import { getBackendFetchOptions, getBackendUrl } from "~/utils/backend";
 import { browserLog } from "~/utils/browserLog";
 import { seedDemoWorkspaceIfNeeded } from "~/utils/demoSeed";
+import {
+  consumeWelcomeRegistrationPending,
+  WELCOME_INBOX_MESSAGE,
+  WELCOME_INBOX_TITLE,
+  WELCOME_TOAST_MESSAGE,
+} from "~/utils/registrationWelcome";
 
 useHead({
   meta: [
@@ -211,7 +217,38 @@ onMounted(async () => {
       store.$subscribe(() => syncToCloud(), { detached: true }),
     );
   });
+
+  showWelcomeRegistrationIfNeeded();
 });
+
+function showWelcomeRegistrationIfNeeded() {
+  if (!import.meta.client) return
+  if (!consumeWelcomeRegistrationPending()) return
+
+  const { toast, push } = useNotification()
+  toast({
+    type: "success",
+    message: WELCOME_TOAST_MESSAGE,
+    duration: 7000,
+  })
+  push({
+    type: "success",
+    title: WELCOME_INBOX_TITLE,
+    message: WELCOME_INBOX_MESSAGE,
+    category: "system",
+    toast: false,
+  })
+
+  const route = useRoute()
+  const router = useRouter()
+  if (route.query.welcome || route.query.oauth || route.query.refresh) {
+    const nextQuery = { ...route.query }
+    delete nextQuery.welcome
+    delete nextQuery.oauth
+    delete nextQuery.refresh
+    void router.replace({ path: route.path, query: nextQuery })
+  }
+}
 
 async function pushToCloud() {
   if (accessStore.isDemo) {

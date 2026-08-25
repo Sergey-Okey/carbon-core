@@ -294,7 +294,12 @@ export async function resetAccountPassword(token: string, password: string) {
 
 export async function upsertOAuthAccount(profile: OAuthProfile, termsVersion = '') {
   const sql = getDatabase()
-  if (!sql) return { ...profile, bio: '', createdAt: new Date().toISOString() } satisfies AccountProfile
+  if (!sql) {
+    return {
+      user: { ...profile, bio: '', createdAt: new Date().toISOString() } satisfies AccountProfile,
+      created: true,
+    }
+  }
   await ensureUsersTable(sql)
 
   const providerId = profile.id.slice(profile.provider.length + 1)
@@ -302,6 +307,7 @@ export async function upsertOAuthAccount(profile: OAuthProfile, termsVersion = '
   if (!existing.length && termsVersion !== '2026-06-07') {
     throw createError({ statusCode: 403, statusMessage: 'Terms consent is required' })
   }
+  const created = existing.length === 0
   const rows = await sql`
     INSERT INTO cof_users (
       id, email, name, avatar, provider, provider_id, terms_accepted_at, terms_version, email_verified_at
@@ -319,7 +325,7 @@ export async function upsertOAuthAccount(profile: OAuthProfile, termsVersion = '
       updated_at = NOW()
     RETURNING id, email, name, avatar, bio, provider, created_at
   `
-  return mapAccount(rows[0])
+  return { user: mapAccount(rows[0]), created }
 }
 
 export async function getAccountById(id: string) {

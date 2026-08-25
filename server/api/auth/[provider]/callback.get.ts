@@ -1,11 +1,12 @@
 import { getQuery, getRouterParam, sendRedirect } from 'h3'
+import { sendWelcomeRegistrationMail } from '../../../utils/authMail'
+import { upsertOAuthAccount } from '../../../utils/authStorage'
 import {
   exchangeOAuthCode,
   isOAuthProvider,
   setOAuthSession,
   validateOAuthState,
 } from '../../../utils/oauth'
-import { upsertOAuthAccount } from '../../../utils/authStorage'
 
 export default defineEventHandler(async (event) => {
   const provider = getRouterParam(event, 'provider')
@@ -20,14 +21,16 @@ export default defineEventHandler(async (event) => {
 
   try {
     const termsVersion = validateOAuthState(event, provider, query.state)
-    setOAuthSession(
-      event,
-      await upsertOAuthAccount(
-        await exchangeOAuthCode(event, provider, query.code),
-        termsVersion
-      )
+    const { user, created } = await upsertOAuthAccount(
+      await exchangeOAuthCode(event, provider, query.code),
+      termsVersion
     )
-    return sendRedirect(event, '/?oauth=success&refresh=1')
+    setOAuthSession(event, user)
+    if (created) {
+      void sendWelcomeRegistrationMail({ name: user.name, email: user.email })
+    }
+    const welcomeQuery = created ? '&welcome=1' : ''
+    return sendRedirect(event, `/?oauth=success&refresh=1${welcomeQuery}`)
   } catch (error) {
     const statusCode =
       typeof error === 'object' && error !== null && 'statusCode' in error

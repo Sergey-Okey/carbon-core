@@ -121,6 +121,7 @@ import {
   type FocusPresetKey,
   type FocusTimerSnapshot,
 } from '~/utils/focusTimer'
+import { upgradeAvatarUrl } from '~/utils/avatarUrl'
 
 const FOCUS_RIB_COUNT = 25
 
@@ -173,8 +174,8 @@ const currentSectionTitle = computed(() => {
   return sectionTitles[uiStore.activeNav]
 })
 
-const headerAvatar = computed(
-  () => authStore.currentUser?.avatar || userStore.profile.avatar || ''
+const headerAvatar = computed(() =>
+  upgradeAvatarUrl(authStore.currentUser?.avatar || userStore.profile.avatar || '')
 )
 
 const shouldHighlightGuideEntry = computed(

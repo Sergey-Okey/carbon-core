@@ -399,6 +399,7 @@ import { ArrowLeft, Play } from 'lucide-vue-next'
 import { resetDemoData } from '~/utils/accessStorage'
 import { seedDemoWorkspaceIfNeeded } from '~/utils/demoSeed'
 import { getBackendFetchOptions, getBackendUrl } from '~/utils/backend'
+import { markWelcomeRegistrationPending } from '~/utils/registrationWelcome'
 
 const props = defineProps<{ mode: 'login' | 'register' }>()
 const accessStore = useAccessStore()
@@ -614,6 +615,9 @@ onMounted(() => {
   const oauthSuccess = route.query.oauth === 'success'
 
   if (oauthSuccess) {
+    if (route.query.welcome === '1') {
+      markWelcomeRegistrationPending()
+    }
     void authStore.init({ force: true }).then(() => {
       window.location.assign('/')
     })
@@ -738,6 +742,7 @@ async function confirmEmailVerification() {
   }
 
   accessStore.activateSubscription()
+  markWelcomeRegistrationPending()
   window.location.assign('/')
 }
 
