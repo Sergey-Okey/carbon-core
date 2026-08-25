@@ -17,7 +17,7 @@
         @click="handleNavClick(item.id)"
       >
         <span class="icon-shell">
-          <component :is="item.icon" :size="isMobile ? 20 : 18" />
+          <component :is="item.icon" :size="isMobile ? 22 : 20" />
         </span>
       </button>
     </div>
@@ -91,10 +91,10 @@ async function handleNavClick(section: NavSection) {
 
   @include desktop {
     align-self: center;
-    inline-size: 56px;
+    inline-size: 64px;
     margin-block: 0;
     margin-inline: auto;
-    padding-block: var(--space-2);
+    padding-block: var(--space-3);
     border: var(--ui-border);
   }
 
@@ -106,11 +106,11 @@ async function handleNavClick(section: NavSection) {
     inset-block-end: max(var(--space-3), env(safe-area-inset-bottom, 0px));
     inline-size: fit-content;
     max-inline-size: calc(100dvw - var(--space-8) * 2);
-    padding-block: var(--space-1);
-    padding-inline: var(--space-2);
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
     transform: translateX(-50%);
     border: var(--ui-border);
-    border-radius: 28px;
+    border-radius: 32px;
     background-color: color-mix(in srgb, var(--surface) 42%, transparent);
     backdrop-filter: var(--glass-strong-filter);
     -webkit-backdrop-filter: var(--glass-strong-filter);
@@ -125,12 +125,12 @@ async function handleNavClick(section: NavSection) {
   align-items: center;
   justify-content: center;
   width: 100%;
-  gap: var(--space-2);
+  gap: var(--space-3);
 
   @include mobile {
     flex-direction: row;
     justify-content: center;
-    gap: var(--space-1);
+    gap: var(--space-2);
     width: auto;
   }
 }
@@ -140,9 +140,9 @@ async function handleNavClick(section: NavSection) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--space-10);
-  min-width: var(--space-10);
-  height: var(--space-10);
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
   padding: 0;
   border: none;
   border-radius: var(--radius-full);
@@ -178,9 +178,9 @@ async function handleNavClick(section: NavSection) {
   }
 
   @include mobile {
-    width: var(--space-11);
-    min-width: var(--space-11);
-    height: var(--space-11);
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
   }
 }
 
@@ -215,11 +215,11 @@ async function handleNavClick(section: NavSection) {
 
 .icon-shell {
   display: inline-flex;
-  flex: 0 0 28px;
+  flex: 0 0 32px;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-full);
   color: inherit;
   transition:
@@ -228,8 +228,19 @@ async function handleNavClick(section: NavSection) {
 
   svg {
     display: block;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
+  }
+
+  @include mobile {
+    flex-basis: 34px;
+    width: 34px;
+    height: 34px;
+
+    svg {
+      width: 22px;
+      height: 22px;
+    }
   }
 }
 </style>

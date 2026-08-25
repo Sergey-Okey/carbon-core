@@ -615,7 +615,7 @@ onMounted(() => {
 
   if (oauthSuccess) {
     void authStore.init({ force: true }).then(() => {
-      void router.replace('/')
+      window.location.assign('/')
     })
     return
   }
@@ -738,7 +738,7 @@ async function confirmEmailVerification() {
   }
 
   accessStore.activateSubscription()
-  router.push('/')
+  window.location.assign('/')
 }
 
 async function resendEmailVerification() {
@@ -870,7 +870,7 @@ async function submit() {
     return
   }
   accessStore.activateSubscription()
-  router.push('/')
+  window.location.assign('/')
 }
 </script>
 

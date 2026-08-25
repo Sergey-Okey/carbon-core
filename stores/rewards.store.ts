@@ -11,10 +11,14 @@ export const useRewardsStore = defineStore(
     const rewards = ref<Reward[]>([])
 
     async function initDemoRewardsAfterHydration() {
+      const accessStore = useAccessStore()
+      if (!accessStore.isDemo) return
+
       const DEMO_KEY = 'carbon-rewards-demo-initialized'
       const store = useRewardsStore()
       if (store.$persistedState) await store.$persistedState.isReady
-      if (rewards.value.length === 0 && !localStorage.getItem(DEMO_KEY)) {
+      if (!accessStore.isDemo) return
+      if (rewards.value.length === 0 && !accessAwareStorage.getItem(DEMO_KEY)) {
         rewards.value = [
           {
             id: uuidv4(),
@@ -32,7 +36,7 @@ export const useRewardsStore = defineStore(
             effect: { leaguePoints: 150 },
           },
         ]
-        localStorage.setItem(DEMO_KEY, 'true')
+        accessAwareStorage.setItem(DEMO_KEY, 'true')
       }
     }
 

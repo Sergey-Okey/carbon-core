@@ -38,9 +38,9 @@ useHead({
             if (document.scripts[j].src === r) { return; }
           }
           k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=109905993', 'ym');
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=111913443', 'ym');
 
-        ym(109905993, 'init', {
+        ym(111913443, 'init', {
           ssr: true,
           webvisor: true,
           clickmap: true,
@@ -57,7 +57,7 @@ useHead({
   noscript: [
     {
       key: "yandex-metrika-noscript",
-      innerHTML: `<div><img src="https://mc.yandex.ru/watch/109905993" style="position:absolute; left:-9999px;" alt="" /></div>`,
+      innerHTML: `<div><img src="https://mc.yandex.ru/watch/111913443" style="position:absolute; left:-9999px;" alt="" /></div>`,
     },
   ],
 });
@@ -94,7 +94,7 @@ type SyncResponse = {
   settings?: Partial<typeof settingsStore.$state>;
 };
 
-const userId = useState<string>("user-id", () => {
+const deviceUserId = useState<string>("user-id", () => {
   if (process.client) {
     let id = localStorage.getItem("user-id") ?? "";
     if (!id) {
@@ -107,15 +107,27 @@ const userId = useState<string>("user-id", () => {
   return "server";
 });
 
+const syncUserId = computed(
+  () => authStore.currentUser?.id || deviceUserId.value,
+);
+
+function canSyncToCloud() {
+  return (
+    !accessStore.isDemo &&
+    authStore.isAuthenticated &&
+    authStore.authMode !== "local"
+  );
+}
+
 onMounted(async () => {
   await settingsStore.ready;
-  authStore.init();
+  await authStore.init();
   browserLog.info("app", "Application started", {
     route: window.location.pathname,
     accessMode: accessStore.mode,
   });
 
-  syncStatus.setRetry(() => void syncToCloud());
+  syncStatus.setRetry(() => void pushToCloud());
   window.addEventListener("online", handleOnline);
   window.addEventListener("offline", handleOffline);
   if (!navigator.onLine) syncStatus.setState("offline");
@@ -124,12 +136,36 @@ onMounted(async () => {
     syncStatus.setState("local");
     browserLog.info("sync", "Sync disabled in demo mode");
     await seedDemoWorkspaceIfNeeded();
+  } else if (!canSyncToCloud()) {
+    syncStatus.setState("local");
+    browserLog.info("sync", "Cloud sync idle: local or signed-out session");
   } else
     try {
+      const freshWorkspace =
+        import.meta.client &&
+        sessionStorage.getItem("cof-workspace-fresh") === "1";
+      if (freshWorkspace) {
+        sessionStorage.removeItem("cof-workspace-fresh");
+        // Drop in-memory demo leftovers before cloud hydrate (new account / left demo).
+        tasksStore.$patch({
+          tasks: [],
+          deletedTasks: [],
+          completedTasksHistory: [],
+          completionLog: [],
+        });
+        rewardsStore.$patch({ rewards: [] });
+        tagsStore.$patch({ tags: [] });
+        userStore.$patch({
+          leaguePoints: 0,
+          completedTasksCount: 0,
+        });
+        branchesStore.replaceEdges([]);
+      }
+
       syncStatus.setState("syncing");
       browserLog.info("sync", "Requesting initial sync");
       const data = await backendFetch<SyncResponse>(syncEndpoint, {
-        query: { userId: userId.value },
+        query: { userId: syncUserId.value },
         ...getBackendFetchOptions(),
       });
       if (data.user) userStore.$patch(data.user);
@@ -148,7 +184,8 @@ onMounted(async () => {
         settingsStore.$patch(data.settings);
         settingsStore.applyRuntimeSettings();
       }
-      syncStatus.setState(authStore.authMode === "local" ? "local" : "synced");
+      // Push current workspace so server is not empty after first login.
+      await pushToCloud();
       browserLog.info("sync", "Initial sync completed", {
         mode: authStore.authMode,
       });
@@ -176,15 +213,15 @@ onMounted(async () => {
   });
 });
 
-const syncToCloud = useDebounceFn(async () => {
+async function pushToCloud() {
   if (accessStore.isDemo) {
     syncStatus.setState("local");
     browserLog.info("sync", "Skip sync: demo mode");
     return;
   }
-  if (authStore.authMode === "local") {
+  if (!canSyncToCloud()) {
     syncStatus.setState("local");
-    browserLog.info("sync", "Skip sync: local profile");
+    browserLog.info("sync", "Skip sync: local profile or signed out");
     return;
   }
   if (!navigator.onLine) {
@@ -199,7 +236,7 @@ const syncToCloud = useDebounceFn(async () => {
       method: "POST",
       ...getBackendFetchOptions(),
       body: {
-        userId: userId.value,
+        userId: syncUserId.value,
         user: { ...userStore.$state },
         tasks: { ...tasksStore.$state },
         branches: { ...branchesStore.$state },
@@ -217,7 +254,9 @@ const syncToCloud = useDebounceFn(async () => {
       online: navigator.onLine,
     });
   }
-}, 2000);
+}
+
+const syncToCloud = useDebounceFn(() => void pushToCloud(), 2000);
 
 onUnmounted(() => {
   window.removeEventListener("beforeunload", autoBackupOnUnload);

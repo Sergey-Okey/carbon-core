@@ -28,7 +28,10 @@
         </button>
       </template>
 
-      <NotificationCenter />
+      <NotificationCenter
+        :open="activeSheet === 'notifications'"
+        @update:open="setNotificationsOpen"
+      />
       <HeaderUserMenu
         ref="userMenu"
         :open="isProfileModalOpen"
@@ -137,11 +140,11 @@ async function exitDemoToRegister() {
   if (!ok) return
   accessStore.leaveDemo()
   sessionStorage.clear()
-  await navigateTo('/register')
+  sessionStorage.setItem('cof-workspace-fresh', '1')
+  window.location.assign('/register')
 }
 
-const isProfileModalOpen = ref(false)
-const isFocusWidgetPanelOpen = ref(false)
+const activeSheet = ref<'none' | 'profile' | 'notifications' | 'focus'>('none')
 const headerRoot = ref<HTMLElement | null>(null)
 const userMenu = ref<{ panelRef?: HTMLElement | null } | null>(null)
 const focusWidgetPanel = ref<HTMLElement | null>(null)
@@ -152,6 +155,10 @@ const focusWidget = ref({
   label: 'Фокус',
 })
 let focusWidgetIntervalId: number | null = null
+
+const isProfileModalOpen = computed(() => activeSheet.value === 'profile')
+const isFocusWidgetPanelOpen = computed(() => activeSheet.value === 'focus')
+const anySheetOpen = computed(() => activeSheet.value !== 'none')
 
 const sectionTitles: Record<NavSection, string> = {
   board: 'Доска',
@@ -198,15 +205,14 @@ const focusProgress = computed(() => {
   return Math.min(1, Math.max(0, 1 - focusWidget.value.remainingSeconds / total))
 })
 const focusRibsFilled = computed(() => Math.round(focusProgress.value * FOCUS_RIB_COUNT))
+
 function openProfile() {
-  isProfileModalOpen.value = false
+  activeSheet.value = 'none'
   navigateTo('/profile')
 }
 
 async function openFocus() {
-  isProfileModalOpen.value = false
-  isFocusWidgetPanelOpen.value = false
-  window.dispatchEvent(new CustomEvent('cof:close-notifications'))
+  activeSheet.value = 'none'
   if (route.path !== '/') {
     await navigateTo('/')
   }
@@ -214,32 +220,35 @@ async function openFocus() {
 }
 
 async function openOnboarding() {
-  isProfileModalOpen.value = false
-  window.dispatchEvent(new CustomEvent('cof:close-notifications'))
+  activeSheet.value = 'none'
   if (route.path !== '/') {
     await navigateTo('/')
   }
   guidedTour.start()
 }
 
-function toggleProfilePanel() {
-  isProfileModalOpen.value = !isProfileModalOpen.value
-  if (isProfileModalOpen.value) isFocusWidgetPanelOpen.value = false
-  if (isProfileModalOpen.value) {
-    window.dispatchEvent(new CustomEvent('cof:close-notifications'))
+function setNotificationsOpen(open: boolean) {
+  if (open) {
+    activeSheet.value = 'notifications'
+    return
   }
+  if (activeSheet.value === 'notifications') activeSheet.value = 'none'
+}
+
+function toggleProfileMenu() {
+  activeSheet.value = activeSheet.value === 'profile' ? 'none' : 'profile'
 }
 
 function toggleFocusWidgetPanel() {
-  isProfileModalOpen.value = false
-  isFocusWidgetPanelOpen.value = !isFocusWidgetPanelOpen.value
-  if (isFocusWidgetPanelOpen.value) {
-    window.dispatchEvent(new CustomEvent('cof:close-notifications'))
+  if (!showFocusWidget.value) {
+    activeSheet.value = 'none'
+    return
   }
+  activeSheet.value = activeSheet.value === 'focus' ? 'none' : 'focus'
 }
 
 function logout() {
-  isProfileModalOpen.value = false
+  activeSheet.value = 'none'
   authStore.logout()
   info('Вы вышли из аккаунта')
   navigateTo('/auth')
@@ -249,6 +258,9 @@ function handleDocumentClick(event: MouseEvent) {
   if (import.meta.client && window.matchMedia('(max-width: 767px)').matches) {
     return
   }
+  if (activeSheet.value === 'none' || activeSheet.value === 'notifications') {
+    return
+  }
   const target = event.target as Node
   const profilePanelEl = userMenu.value?.panelRef ?? null
   if (
@@ -256,17 +268,20 @@ function handleDocumentClick(event: MouseEvent) {
     !profilePanelEl?.contains(target) &&
     !focusWidgetPanel.value?.contains(target)
   ) {
-    isProfileModalOpen.value = false
-    isFocusWidgetPanelOpen.value = false
+    activeSheet.value = 'none'
   }
 }
 
-function closeProfilePanel() {
-  isProfileModalOpen.value = false
+function closeProfileMenu() {
+  if (activeSheet.value === 'profile') activeSheet.value = 'none'
 }
 
 function closeFocusWidgetPanel() {
-  isFocusWidgetPanelOpen.value = false
+  if (activeSheet.value === 'focus') activeSheet.value = 'none'
+}
+
+function closeNotificationsSheet() {
+  if (activeSheet.value === 'notifications') activeSheet.value = 'none'
 }
 
 function stopFocusWidgetTicker() {
@@ -369,16 +384,18 @@ onMounted(() => {
   document.addEventListener('click', handleDocumentClick)
   window.addEventListener('cof:close-profile-panel', closeProfilePanel)
   window.addEventListener('cof:close-focus-widget-panel', closeFocusWidgetPanel)
+  window.addEventListener('cof:close-notifications', closeNotificationsSheet)
   window.addEventListener('cof:focus-timer-update', handleFocusTimerUpdate)
   syncFocusWidgetFromStorage()
 })
 
-useHeaderSheet(isFocusWidgetPanelOpen)
+useHeaderSheet(anySheetOpen)
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleDocumentClick)
   window.removeEventListener('cof:close-profile-panel', closeProfilePanel)
   window.removeEventListener('cof:close-focus-widget-panel', closeFocusWidgetPanel)
+  window.removeEventListener('cof:close-notifications', closeNotificationsSheet)
   window.removeEventListener('cof:focus-timer-update', handleFocusTimerUpdate)
   stopFocusWidgetTicker()
 })
@@ -410,6 +427,10 @@ onBeforeUnmount(() => {
     background var(--transition-standard),
     border-color var(--transition-standard),
     opacity var(--transition-standard);
+
+  :global(html.has-header-sheet) & {
+    z-index: calc(var(--z-modal) + 2);
+  }
 
   @include mobile {
     position: fixed;

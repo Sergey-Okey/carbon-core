@@ -196,6 +196,17 @@ export function resetDemoData() {
   clearPersistedDemo()
 }
 
+/** Drop demo workspace instead of copying it into a real account. */
+export function discardDemoWorkspace() {
+  if (!import.meta.client) return
+
+  resetDemoData()
+  for (const key of ACCESS_DATA_KEYS) {
+    localStorage.removeItem(key)
+  }
+  localStorage.removeItem('carbon-rewards-demo-initialized')
+}
+
 function activeStorage(): Storage {
   return readAccessMode() === 'demo' ? demoPersistentStorage : localStorage
 }
