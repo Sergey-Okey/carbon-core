@@ -7,7 +7,7 @@
       :aria-label="triggerTitle"
       :aria-expanded="isOpen"
       aria-haspopup="dialog"
-      @click="togglePanel"
+      @click.stop="togglePanel"
     >
       <Bell :size="20" />
       <span v-if="unreadCount" class="badge" aria-hidden="true">
@@ -109,7 +109,18 @@ const {
   markAllRead,
 } = useNotification()
 
-const isOpen = ref(false)
+const props = defineProps<{
+  open: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:open', value: boolean): void
+}>()
+
+const isOpen = computed({
+  get: () => props.open,
+  set: (value: boolean) => emit('update:open', value),
+})
 const root = ref<HTMLElement | null>(null)
 const panel = ref<HTMLElement | null>(null)
 
@@ -197,12 +208,9 @@ function syncBodyLock(locked: boolean) {
 }
 
 function togglePanel() {
-  isOpen.value = !isOpen.value
-  if (isOpen.value) {
-    markAllRead()
-    window.dispatchEvent(new CustomEvent('cof:close-profile-panel'))
-    window.dispatchEvent(new CustomEvent('cof:close-focus-widget-panel'))
-  }
+  const next = !isOpen.value
+  isOpen.value = next
+  if (next) markAllRead()
 }
 
 function closePanel() {
@@ -225,19 +233,15 @@ watch(isOpen, (open) => {
   syncBodyLock(open)
 })
 
-useHeaderSheet(isOpen)
-
 onMounted(() => {
   document.addEventListener('click', handleDocumentClick)
   document.addEventListener('keydown', handleKeydown)
-  window.addEventListener('cof:close-notifications', closePanel)
 })
 
 onBeforeUnmount(() => {
   syncBodyLock(false)
   document.removeEventListener('click', handleDocumentClick)
   document.removeEventListener('keydown', handleKeydown)
-  window.removeEventListener('cof:close-notifications', closePanel)
 })
 </script>
 

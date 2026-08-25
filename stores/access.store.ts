@@ -2,7 +2,8 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import {
   DEMO_TTL_MS,
-  promoteDemoData,
+  discardDemoWorkspace,
+  readAccessMode,
   readAccessState,
   writeAccessState,
   type AccessMode,
@@ -40,7 +41,14 @@ export const useAccessStore = defineStore('access', () => {
   }
 
   function activateSubscription(subscription: { activatedAt?: string; expiresAt?: string } = {}) {
-    promoteDemoData()
+    const leavingDemo = mode.value === 'demo' || readAccessMode() === 'demo'
+    if (leavingDemo) {
+      discardDemoWorkspace()
+      if (import.meta.client) {
+        sessionStorage.setItem('cof-exit-demo', '1')
+        sessionStorage.setItem('cof-workspace-fresh', '1')
+      }
+    }
     mode.value = 'subscribed'
     activatedAt.value = subscription.activatedAt || activatedAt.value || new Date().toISOString()
     expiresAt.value = subscription.expiresAt || ''
@@ -64,10 +72,14 @@ export const useAccessStore = defineStore('access', () => {
 
   function leaveDemo() {
     if (mode.value !== 'demo') return
+    discardDemoWorkspace()
     mode.value = 'guest'
     activatedAt.value = ''
     expiresAt.value = ''
     persistState()
+    if (import.meta.client) {
+      sessionStorage.setItem('cof-workspace-fresh', '1')
+    }
     browserLog.info('access', 'Демо-режим завершен')
   }
 

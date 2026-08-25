@@ -6,7 +6,7 @@
       aria-label="Открыть меню профиля"
       :aria-expanded="open"
       aria-haspopup="dialog"
-      @click="emit('toggle')"
+      @click.stop="emit('toggle')"
     >
       <div v-if="avatar" class="avatar-small">
         <img :src="avatar" alt="" />
@@ -87,8 +87,6 @@ watch(
   }
 )
 
-useHeaderSheet(toRef(props, 'open'))
-
 onBeforeUnmount(() => {
   syncBodyLock(false)
 })
@@ -137,10 +135,11 @@ defineExpose({ panelRef })
 }
 
 .avatar-small {
-  width: 100%;
-  height: 100%;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
   overflow: hidden;
-  border-radius: inherit;
+  border-radius: var(--radius-full);
 
   img {
     width: 100%;

@@ -8,7 +8,6 @@ export function getBackendUrl(path: string) {
 }
 
 export function getBackendFetchOptions() {
-  return import.meta.client && Capacitor.isNativePlatform()
-    ? { credentials: 'include' as const }
-    : {}
+  // Always send cookies so cloud session reaches /api/sync and /api/auth/*.
+  return { credentials: 'include' as const }
 }

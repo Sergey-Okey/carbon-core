@@ -174,9 +174,9 @@ test('app shell keeps Yandex verification and Metrika identifiers', async () => 
   const app = await read('app.vue')
   assert.match(app, /name:\s*'yandex-verification'/)
   assert.match(app, /14510841d1302b8d/)
-  assert.match(app, /109905993/)
+  assert.match(app, /111913443/)
   assert.match(app, /mc\.yandex\.ru\/metrika/)
-  assert.match(app, /mc\.yandex\.ru\/watch\/109905993/)
+  assert.match(app, /mc\.yandex\.ru\/watch\/111913443/)
 })
 
 test('Capacitor packaging keeps stable public app identity', async () => {

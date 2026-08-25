@@ -1,12 +1,12 @@
 <template>
   <section class="settings" :class="{ 'is-entered': entered }" aria-label="Настройки">
-    <div v-if="accessStore.isDemo" class="demo-banner" style="--enter-i: 0">
-      <div class="demo-banner__copy">
+    <div v-if="accessStore.isDemo" class="demo-note" style="--enter-i: 0">
+      <div class="demo-note__copy">
         <strong>Демо-режим</strong>
         <span>Данные не синхронизируются с сервером</span>
       </div>
-      <AppButton type="button" variant="danger" @click="exitDemoToRegister">
-        Завершить демо
+      <AppButton type="button" variant="secondary" size="sm" @click="exitDemoToRegister">
+        Завершить
       </AppButton>
     </div>
     <div class="settings-bento">
@@ -381,7 +381,8 @@ async function exitDemoToRegister() {
   if (!ok) return
   accessStore.leaveDemo()
   sessionStorage.clear()
-  await router.push('/register')
+  sessionStorage.setItem('cof-workspace-fresh', '1')
+  window.location.assign('/register')
 }
 
 const accentOptions = computed(() =>
@@ -586,16 +587,16 @@ async function resetAllData() {
   min-width: 0;
 }
 
-.demo-banner {
+.demo-note {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
   min-width: 0;
   padding: var(--space-3) var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--color-error) 40%, transparent);
+  border: var(--ui-border);
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  background: var(--color-surface-1);
   opacity: 0;
   transform: translateY(10px);
 
@@ -606,12 +607,13 @@ async function resetAllData() {
     min-width: 0;
 
     strong {
-      color: var(--color-error);
+      color: var(--color-text-primary);
       font-size: var(--text-sm);
+      font-weight: var(--weight-semibold);
     }
 
     span {
-      color: var(--color-text-secondary);
+      color: var(--color-text-muted);
       font-size: var(--text-xs);
       @include text-ellipsis;
     }
@@ -644,7 +646,7 @@ async function resetAllData() {
   transform: translateY(10px);
 }
 
-.settings.is-entered .demo-banner,
+.settings.is-entered .demo-note,
 .settings.is-entered .card {
   animation: settings-panel-in 380ms ease-out both;
   animation-delay: calc(var(--enter-i, 0) * 50ms);
@@ -663,13 +665,13 @@ async function resetAllData() {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .demo-banner,
+  .demo-note,
   .card {
     opacity: 1;
     transform: none;
   }
 
-  .settings.is-entered .demo-banner,
+  .settings.is-entered .demo-note,
   .settings.is-entered .card {
     animation: none;
   }

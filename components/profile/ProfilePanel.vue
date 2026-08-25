@@ -327,7 +327,8 @@ async function exitDemoToRegister() {
   if (!ok) return
   accessStore.leaveDemo()
   sessionStorage.clear()
-  await router.push('/register')
+  sessionStorage.setItem('cof-workspace-fresh', '1')
+  window.location.assign('/register')
 }
 
 const fileInput = ref<HTMLInputElement | null>(null)
