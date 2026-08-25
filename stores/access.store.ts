@@ -9,6 +9,11 @@ import {
   type AccessMode,
 } from '~/utils/accessStorage'
 import { browserLog } from '~/utils/browserLog'
+import { useBranchesStore } from '~/stores/branches.store'
+import { useRewardsStore } from '~/stores/rewards.store'
+import { useTagsStore } from '~/stores/tags.store'
+import { useTasksStore } from '~/stores/tasks.store'
+import { useUserStore } from '~/stores/user.store'
 
 export const SUBSCRIPTION_PRICE = 250
 export const SUBSCRIPTION_PAYMENT_URL = 'https://auth.robokassa.ru/RecurringSubscriptionPage/Subscription/Subscribe?SubscriptionId=f1624c7a-3c92-4c9f-a3a7-0b705f3d37a8'
@@ -40,14 +45,52 @@ export const useAccessStore = defineStore('access', () => {
     browserLog.info('access', 'Демо-режим включен')
   }
 
+  /**
+   * Clear in-memory + persisted workspace BEFORE flipping access mode.
+   * Otherwise pinia-persist rewrites demo tasks into localStorage as soon as
+   * accessAwareStorage starts pointing at the real account storage.
+   */
+  function wipeLocalWorkspace(options: { markFresh?: boolean } = {}) {
+    if (!import.meta.client) return
+
+    try {
+      const tasksStore = useTasksStore()
+      const rewardsStore = useRewardsStore()
+      const tagsStore = useTagsStore()
+      const userStore = useUserStore()
+      const branchesStore = useBranchesStore()
+
+      tasksStore.$patch({
+        tasks: [],
+        deletedTasks: [],
+        completedTasksHistory: [],
+        completionLog: [],
+      })
+      rewardsStore.$patch({ rewards: [] })
+      tagsStore.$patch({ tags: [] })
+      userStore.$patch({
+        leaguePoints: 0,
+        completedTasksCount: 0,
+      })
+      branchesStore.replaceEdges([])
+    } catch (error) {
+      browserLog.warn('access', 'Не удалось очистить workspace в памяти', {
+        message: error instanceof Error ? error.message : String(error),
+      })
+    }
+
+    discardDemoWorkspace()
+
+    if (options.markFresh !== false) {
+      sessionStorage.setItem('cof-exit-demo', '1')
+      sessionStorage.setItem('cof-workspace-fresh', '1')
+    }
+  }
+
   function activateSubscription(subscription: { activatedAt?: string; expiresAt?: string } = {}) {
     const leavingDemo = mode.value === 'demo' || readAccessMode() === 'demo'
     if (leavingDemo) {
-      discardDemoWorkspace()
-      if (import.meta.client) {
-        sessionStorage.setItem('cof-exit-demo', '1')
-        sessionStorage.setItem('cof-workspace-fresh', '1')
-      }
+      wipeLocalWorkspace()
     }
     mode.value = 'subscribed'
     activatedAt.value = subscription.activatedAt || activatedAt.value || new Date().toISOString()
@@ -72,14 +115,11 @@ export const useAccessStore = defineStore('access', () => {
 
   function leaveDemo() {
     if (mode.value !== 'demo') return
-    discardDemoWorkspace()
+    wipeLocalWorkspace()
     mode.value = 'guest'
     activatedAt.value = ''
     expiresAt.value = ''
     persistState()
-    if (import.meta.client) {
-      sessionStorage.setItem('cof-workspace-fresh', '1')
-    }
     browserLog.info('access', 'Демо-режим завершен')
   }
 
@@ -94,5 +134,6 @@ export const useAccessStore = defineStore('access', () => {
     activateSubscription,
     syncSubscription,
     leaveDemo,
+    wipeLocalWorkspace,
   }
 })
