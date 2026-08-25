@@ -23,7 +23,10 @@ export default defineEventHandler(async (event) => {
   >
   const request = asRequestText(body.request)
   if (request.length < 2) {
-    throw createError({ statusCode: 400, statusMessage: 'Request is required' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Напишите чуть подробнее — хотя бы пару слов.',
+    })
   }
 
   const context = buildAiContext(body.context)

@@ -6,6 +6,7 @@ import {
   linksFromQuotedTitles,
   mergeAiLinks,
   stripPublicFallbackNotice,
+  userFacingAiError,
 } from '~/utils/ai/chat'
 import type { AiActResponse, AiApplyResult, AiEntityRef } from '~/types/ai.types'
 import { useAiStore } from '~/stores/ai.store'
@@ -22,12 +23,6 @@ function getHttpStatus(error: unknown) {
   )
 }
 
-function getHttpMessage(error: unknown) {
-  if (typeof error !== 'object' || error === null) return ''
-  const candidate = error as { statusMessage?: unknown; message?: unknown }
-  return String(candidate.statusMessage || candidate.message || '')
-}
-
 export function useAiAgent() {
   const tasksStore = useTasksStore()
   const branchesStore = useBranchesStore()
@@ -36,7 +31,6 @@ export function useAiAgent() {
   const settingsStore = useSettingsStore()
   const userStore = useUserStore()
   const aiStore = useAiStore()
-  const { error } = useNotification()
   const pending = computed(() => aiStore.pending)
   const lastResults = ref<AiApplyResult[]>([])
   const liveRequest = ref('')
@@ -126,17 +120,7 @@ export function useAiAgent() {
       liveRequest.value = ''
       return true
     } catch (err) {
-      const status = getHttpStatus(err)
-      if (status === 429) {
-        liveError.value = 'Слишком много запросов. Подождите немного.'
-      } else if (status === 503) {
-        liveError.value = 'Агент не настроен. Нужен ключ OpenRouter на сервере.'
-      } else if (status === 502) {
-        liveError.value = 'OpenRouter не ответил. Попробуйте ещё раз.'
-      } else {
-        liveError.value = getHttpMessage(err) || 'Не получилось выполнить запрос.'
-      }
-      error(liveError.value)
+      liveError.value = userFacingAiError(getHttpStatus(err))
       return false
     } finally {
       aiStore.setPending(false)

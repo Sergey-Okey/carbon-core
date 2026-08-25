@@ -14,7 +14,7 @@ export const POLLINATIONS_ORIGIN = 'https://text.pollinations.ai'
 export const POLLINATIONS_OPENAI_URL = `${POLLINATIONS_ORIGIN}/openai`
 export const POLLINATIONS_ANON_MODEL = 'openai-fast'
 export const POLLINATIONS_MAX_URL_LENGTH = 7500
-export const POLLINATIONS_TIMEOUT_MS = 25_000
+export const POLLINATIONS_TIMEOUT_MS = 12_000
 
 export const POLLINATIONS_SITE_URL = 'https://cof-board.com'
 

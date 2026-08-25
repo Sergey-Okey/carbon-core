@@ -50,10 +50,10 @@ function getStorageErrorMessage(error: unknown): string {
     error instanceof DOMException &&
     (error.name === 'QuotaExceededError' || error.code === 22)
   ) {
-    return 'Недостаточно места в localStorage. Уменьшите размер аватара или очистите старые данные.'
+    return 'Не хватает места на устройстве. Уменьшите фото профиля.'
   }
 
-  return 'Ошибка локального сохранения'
+  return 'Не получилось сохранить данные на устройстве'
 }
 
 function getHttpStatus(error: unknown) {
@@ -301,7 +301,7 @@ export const useAuthStore = defineStore(
             return {
               success: false,
               error:
-                'Облачная регистрация временно недоступна. Проверьте почтовый сервис или попробуйте позже',
+                'Регистрация временно недоступна. Попробуйте позже',
             }
           }
 

@@ -84,7 +84,11 @@
 
         <div v-if="pending" class="agent-row assistant">
           <div class="agent-bubble is-waiting" aria-label="Агент печатает">
-            <p class="agent-text">...</p>
+            <span class="agent-typing" aria-hidden="true">
+              <i></i>
+              <i></i>
+              <i></i>
+            </span>
           </div>
         </div>
 
@@ -102,7 +106,6 @@
             class="agent-input"
             rows="1"
             maxlength="2000"
-            :disabled="pending"
             placeholder="Сообщение агенту"
             aria-label="Сообщение агенту"
             @keydown.enter.exact.prevent="submit"
@@ -307,10 +310,12 @@ function openLink(link: AiEntityRef) {
 async function submit() {
   if (!canSubmit.value) return
   const text = request.value
+  request.value = ''
+  nextTick(resizeComposer)
   shouldStream.value = true
   const ok = await ask(text)
-  if (ok) {
-    request.value = ''
+  if (!ok && !request.value.trim()) {
+    request.value = text
     nextTick(resizeComposer)
   }
 }
@@ -519,13 +524,18 @@ onUnmounted(() => {
 
 .agent-bubble {
   @include nest-shell(var(--radius-lg), var(--space-3));
+  width: fit-content;
   max-width: min(100%, 420px);
   min-width: 0;
   background: var(--color-surface-2);
-  color: var(--color-text-primary);
+  color: #f4f4f4;
 
   &.failed {
     background: color-mix(in srgb, var(--color-error) 10%, var(--color-surface-2));
+  }
+
+  :global(html.light-theme) & {
+    color: var(--color-text-primary);
   }
 }
 
@@ -535,11 +545,56 @@ onUnmounted(() => {
 
 .agent-text {
   margin: 0;
+  min-width: 0;
   font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
   line-height: var(--leading-normal);
   text-align: start;
   overflow-wrap: break-word;
+  word-break: normal;
   white-space: pre-wrap;
+}
+
+.agent-typing {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--space-5);
+}
+
+.agent-typing i {
+  display: block;
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-full);
+  background: #fff;
+  animation: agent-typing 1.1s ease-in-out infinite;
+
+  :global(html.light-theme) & {
+    background: var(--color-text-primary);
+  }
+
+  &:nth-child(2) {
+    animation-delay: 0.16s;
+  }
+
+  &:nth-child(3) {
+    animation-delay: 0.32s;
+  }
+}
+
+@keyframes agent-typing {
+  0%,
+  80%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(calc(-1 * var(--space-1)));
+  }
 }
 
 .agent-links {
@@ -595,39 +650,26 @@ onUnmounted(() => {
 }
 
 .agent-input {
+  @include island-field;
   flex: 1;
-  min-width: 0;
   height: var(--island-item);
   min-height: var(--island-item);
   max-height: calc(2 * var(--space-16));
-  padding: 0;
+  overflow-x: hidden;
   overflow-y: auto;
-  border: 0;
-  background: transparent;
-  color: var(--color-text-primary);
-  font: inherit;
-  font-size: var(--text-sm);
-  line-height: var(--leading-tight);
   resize: none;
 
   @include mobile {
     font-size: 16px;
   }
-
-  &::placeholder {
-    color: var(--color-text-muted);
-  }
-
-  &:focus {
-    outline: none;
-  }
-
-  &:disabled {
-    opacity: 0.6;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .agent-typing i {
+    animation: none;
+    opacity: 0.7;
+  }
+
   .agent-widget-enter-active,
   .agent-widget-leave-active,
   .sheet-backdrop-enter-active,

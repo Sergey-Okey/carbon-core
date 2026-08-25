@@ -2,7 +2,7 @@ import { createError } from 'h3'
 import type { AiActResponse, AiContext, AiOperation } from '../../types/ai.types'
 import { compactAiContext } from '../../utils/ai/context'
 import { parseAiTextResponse } from '../../utils/ai/operations'
-import { detectIntent } from '../../utils/ai/localAgent'
+import { detectIntent, runLocalAgent } from '../../utils/ai/localAgent'
 import { runPollinationsAgent } from '../../utils/ai/pollinations'
 import { AI_PROMPT_EXAMPLES, AI_SYSTEM_PROMPT } from '../../utils/ai/prompt'
 
@@ -13,8 +13,8 @@ const OPENROUTER_FALLBACKS = [
   'z-ai/glm-5.2:free',
   'nvidia/nemotron-3.5-lightning:free',
 ]
-const CLOUD_TIMEOUT_MS = 25000
-const OPENROUTER_TIMEOUT_MS = 25000
+const CLOUD_TIMEOUT_MS = 12000
+const OPENROUTER_TIMEOUT_MS = 12000
 const OPENROUTER_BLOCKED = 'OPENROUTER_BLOCKED'
 
 type Fetcher = typeof fetch
@@ -74,10 +74,10 @@ async function runPollinationsCloud(
         siteUrl: options.siteUrl,
       })
     )
-  } catch (error) {
+  } catch {
     throw createError({
       statusCode: 502,
-      statusMessage: String((error as Error)?.message || 'AI provider request failed').slice(0, 180),
+      statusMessage: 'Не получилось ответить. Попробуйте ещё раз.',
     })
   }
 }
@@ -174,14 +174,17 @@ async function runCloudAgent(input: {
     }
     throw createError({
       statusCode: 502,
-      statusMessage: details.slice(0, 180) || 'AI provider request failed',
+      statusMessage: 'Не получилось ответить. Попробуйте ещё раз.',
     })
   }
 
   const payload = (await response.json()) as Parameters<typeof extractChatContent>[0]
   const content = extractChatContent(payload)
   if (!content) {
-    throw createError({ statusCode: 502, statusMessage: 'Empty AI response' })
+    throw createError({
+      statusCode: 502,
+      statusMessage: 'Не получилось ответить. Попробуйте ещё раз.',
+    })
   }
 
   return parseAiTextResponse(content)
@@ -222,19 +225,25 @@ export async function runAiAgent(input: {
   proxySecret?: string
   fetcher?: Fetcher
 }): Promise<AiActResponse> {
+  const intent = detectIntent(input.request)
+  if (intent.kind === 'help') {
+    return runLocalAgent(input.request, input.context)
+  }
+
   if (isPollinationsEngine(input.engine)) {
-    return runPollinationsCloud(input.request, input.context, {
-      fetcher: input.fetcher,
-      siteUrl: input.siteUrl,
-    })
+    try {
+      return await runPollinationsCloud(input.request, input.context, {
+        fetcher: input.fetcher,
+        siteUrl: input.siteUrl,
+      })
+    } catch {
+      return runLocalAgent(input.request, input.context)
+    }
   }
 
   const apiKey = resolveAiApiKey(input.apiKey)
   if (!apiKey) {
-    throw createError({
-      statusCode: 503,
-      statusMessage: 'OpenRouter is not configured',
-    })
+    return runLocalAgent(input.request, input.context)
   }
 
   try {
@@ -250,10 +259,16 @@ export async function runAiAgent(input: {
     })
     return acceptCloudPlan(input.request, cloud)
   } catch (error) {
-    if (!isOpenRouterBlockedError(error)) throw error
-    return runPollinationsCloud(input.request, input.context, {
-      fetcher: input.fetcher,
-      siteUrl: input.siteUrl,
-    })
+    if (isOpenRouterBlockedError(error)) {
+      try {
+        return await runPollinationsCloud(input.request, input.context, {
+          fetcher: input.fetcher,
+          siteUrl: input.siteUrl,
+        })
+      } catch {
+        return runLocalAgent(input.request, input.context)
+      }
+    }
+    return runLocalAgent(input.request, input.context)
   }
 }

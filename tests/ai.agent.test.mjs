@@ -24,6 +24,7 @@ import {
   linksFromApplyResults,
   linksFromQuotedTitles,
   stripPublicFallbackNotice,
+  userFacingAiError,
 } from '../utils/ai/chat.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -192,6 +193,13 @@ test('chat copy strips fallback notice and turns titles into workspace links', (
     stripPublicFallbackNotice('Публичная модель недоступна, сработал встроенный агент. Добавил привычку.'),
     'Добавил привычку.'
   )
+  assert.equal(
+    stripPublicFallbackNotice('OpenRouter is not configured. Добавил привычку.'),
+    'Добавил привычку.'
+  )
+  assert.equal(userFacingAiError(429), 'Слишком много запросов подряд. Подождите минуту и попробуйте снова.')
+  assert.equal(userFacingAiError(502), 'Не получилось ответить. Попробуйте ещё раз.')
+  assert.doesNotMatch(userFacingAiError(503), /OpenRouter|ключ|Pollinations|API/)
   const links = linksFromQuotedTitles('Сегодня: «Написать пост» и этап «Старт»', {
     tasks: [{ id: 't1', title: 'Написать пост' }],
     branches: [{ id: 'b1', displayName: 'Канал', milestones: [{ id: 'm1', name: 'Старт' }] }],
@@ -281,9 +289,9 @@ test('AI endpoint stays server-side, rate limited, and defaults to OpenRouter', 
   assert.doesNotMatch(panel, /Pollinations|OpenRouter|облачная модель|Запрос/)
   assert.doesNotMatch(panel, /v-html/)
   const agent = await read('composables/useAiAgent.ts')
-  assert.doesNotMatch(agent, /runLocalAgent/)
-  assert.match(agent, /status === 503/)
-  assert.match(agent, /status === 502/)
+  assert.doesNotMatch(agent, /OpenRouter|Pollinations|ключ OpenRouter|getHttpMessage/)
+  assert.match(agent, /userFacingAiError/)
+  assert.doesNotMatch(agent, /useNotification/)
   const hub = await read('components/ai/AiHub.vue')
   const header = await read('components/base/TheHeader.vue')
   const mobileBoard = await read('components/branch/BranchMobileView.vue')
@@ -299,7 +307,7 @@ test('AI endpoint stays server-side, rate limited, and defaults to OpenRouter', 
   assert.match(glow, /useDeviceTilt/)
   assert.match(glow, /--glow-scale/)
   assert.match(glow, /118dvh/)
-  assert.match(glow, /#7ee7ff/)
+  assert.match(glow, /color-mix\(in srgb, #fff/)
   assert.match(glow, /html\.light-theme/)
   assert.doesNotMatch(glow, /--bronze|--gold|--glow-core/)
   assert.match(hub, /hub-enter/)
@@ -316,7 +324,10 @@ test('AI endpoint stays server-side, rate limited, and defaults to OpenRouter', 
   assert.match(dock, /translateY\(calc\(100%/)
   assert.match(panel, /is-waiting/)
   assert.match(panel, /neon-wait-edge/)
+  assert.match(panel, /agent-typing/)
   assert.match(await read('assets/styles/mixins.scss'), /--neon-width: 1px/)
+  assert.match(await read('assets/styles/mixins.scss'), /--neon-edge, #fff/)
+  assert.doesNotMatch(await read('assets/styles/mixins.scss'), /#c4b5fd|#7ee7ff/)
   const index = await read('pages/index.vue')
   const tilt = await read('composables/useDeviceTilt.ts')
   const flow = await read('components/branch/BranchFlow.vue')
@@ -349,9 +360,11 @@ test('AI endpoint stays server-side, rate limited, and defaults to OpenRouter', 
   assert.match(llm, /OPENROUTER_TIMEOUT_MS/)
   assert.match(llm, /access denied by security policy/)
   assert.match(llm, /isPollinationsEngine/)
-  assert.doesNotMatch(llm, /runLocalAgent/)
+  assert.match(llm, /runLocalAgent/)
   assert.match(llm, /detectIntent/)
-  assert.match(llm, /OpenRouter is not configured/)
+  assert.match(llm, /intent\.kind === 'help'/)
+  assert.doesNotMatch(llm, /OpenRouter is not configured/)
+  assert.doesNotMatch(llm, /AI provider request failed|Empty AI response/)
   assert.match(llm, /AI_SYSTEM_PROMPT/)
   assert.match(llm, /minimax\/minimax-m2\.7:free/)
   assert.match(prompt, /Нельзя: пароли/)

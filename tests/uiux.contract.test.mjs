@@ -143,8 +143,15 @@ test('header icons and AI hub stay readable in the light theme', async () => {
   assert.match(actions, /--header-icon|color-text-primary/)
   assert.match(hub, /\.ai-hub__kicker[\s\S]*color:\s*var\(--color-text-primary\)/)
   assert.match(hub, /ai-hub__composer/)
+  assert.match(hub, /@include island-field/)
   assert.match(await read('components/ai/BoardDock.vue'), /@include island-shell/)
   assert.match(await read('assets/styles/mixins.scss'), /@mixin island-shell/)
+  assert.match(await read('assets/styles/mixins.scss'), /@mixin island-field/)
+  assert.match(await read('assets/styles/mixins.scss'), /caret-color:\s*#fff/)
+  assert.match(
+    await read('assets/styles/mixins.scss'),
+    /padding-block:\s*max\(0px, calc\(\(var\(--island-item\) - 1em \* var\(--leading-tight\)\) \/ 2\)\)/
+  )
   assert.match(await read('assets/styles/tokens/_spacing.scss'), /--board-island-height:/)
   assert.match(colors, /\.light-theme[\s\S]*--island-surface:\s*color-mix\(in srgb, var\(--surface\) 90%/)
   assert.match(colors, /\.light-theme[\s\S]*--glass-strong-border:\s*rgba\(0, 0, 0/)

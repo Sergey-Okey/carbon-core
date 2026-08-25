@@ -104,6 +104,38 @@
   padding: 0;
 }
 
+@mixin island-field {
+  box-sizing: border-box;
+  min-width: 0;
+  padding-block: max(0px, calc((var(--island-item) - 1em * var(--leading-tight)) / 2));
+  padding-inline: var(--space-2);
+  border: 0;
+  background: transparent;
+  color: #fff;
+  caret-color: #fff;
+  font: inherit;
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+  appearance: none;
+  color-scheme: dark;
+
+  :global(html.light-theme) & {
+    color: var(--color-text-primary);
+    caret-color: var(--color-text-primary);
+    color-scheme: light;
+  }
+
+  &::placeholder {
+    color: var(--color-text-muted);
+    font-weight: var(--weight-normal);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
 /// Outer shell for collapsible sections (stats, filters, habits).
 @mixin collapse-panel($pad: var(--space-2)) {
   @include surface-panel;
@@ -316,10 +348,9 @@
       from var(--neon-angle, 0deg),
       transparent 0%,
       transparent 58%,
-      color-mix(in srgb, #7ee7ff 18%, transparent) 70%,
-      #7ee7ff 82%,
-      #c4b5fd 91%,
-      #7ee7ff 100%
+      color-mix(in srgb, var(--neon-edge, #fff) 22%, transparent) 70%,
+      var(--neon-edge, #fff) 86%,
+      var(--neon-edge, #fff) 100%
     );
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
@@ -342,6 +373,10 @@
     z-index: 0;
     padding: var(--neon-width);
     filter: blur(3px);
+  }
+
+  :global(html.light-theme) & {
+    --neon-edge: #1a1a1a;
   }
 
   &.is-waiting {

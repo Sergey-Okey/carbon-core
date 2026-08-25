@@ -82,23 +82,23 @@ const glowStyle = computed(() => {
     background:
       radial-gradient(
         ellipse 150% 100% at var(--glow-x, 50%) var(--glow-y, -4%),
-        color-mix(in srgb, #7ee7ff 52%, transparent),
+        color-mix(in srgb, #fff 42%, transparent),
         transparent 58%
       ),
       radial-gradient(
         ellipse 70% 80% at var(--glow-left, 10%) 6%,
-        color-mix(in srgb, #c4b5fd 36%, transparent),
+        color-mix(in srgb, #fff 22%, transparent),
         transparent 62%
       ),
       radial-gradient(
         ellipse 72% 82% at var(--glow-right, 90%) 10%,
-        color-mix(in srgb, #67e8f9 34%, transparent),
+        color-mix(in srgb, #fff 20%, transparent),
         transparent 64%
       ),
       linear-gradient(
         180deg,
-        color-mix(in srgb, #7ee7ff 22%, transparent),
-        color-mix(in srgb, #a78bfa 12%, transparent) 28%,
+        color-mix(in srgb, #fff 16%, transparent),
+        color-mix(in srgb, #fff 8%, transparent) 28%,
         transparent 72%
       );
     mask-image: linear-gradient(to bottom, #000 0%, #000 62%, transparent 100%);
@@ -117,23 +117,23 @@ const glowStyle = computed(() => {
     background:
       radial-gradient(
         ellipse 150% 100% at var(--glow-x, 50%) var(--glow-y, -4%),
-        color-mix(in srgb, #38bdf8 18%, transparent),
+        color-mix(in srgb, #111 16%, transparent),
         transparent 58%
       ),
       radial-gradient(
         ellipse 70% 80% at var(--glow-left, 10%) 6%,
-        color-mix(in srgb, #a78bfa 14%, transparent),
+        color-mix(in srgb, #111 10%, transparent),
         transparent 62%
       ),
       radial-gradient(
         ellipse 72% 82% at var(--glow-right, 90%) 10%,
-        color-mix(in srgb, #22d3ee 14%, transparent),
+        color-mix(in srgb, #111 10%, transparent),
         transparent 64%
       ),
       linear-gradient(
         180deg,
-        color-mix(in srgb, #38bdf8 10%, transparent),
-        color-mix(in srgb, #a78bfa 8%, transparent) 28%,
+        color-mix(in srgb, #111 8%, transparent),
+        color-mix(in srgb, #111 5%, transparent) 28%,
         transparent 72%
       );
   }

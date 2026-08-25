@@ -1,9 +1,16 @@
 import type { AiApplyResult, AiEntityRef } from '../../types/ai.types.ts'
 
-const FALLBACK_NOTICE = /^Публичная модель недоступна, сработал встроенный агент\.\s*/u
+const FALLBACK_NOTICE =
+  /^(Публичная модель недоступна, сработал встроенный агент\.|OpenRouter[^.]*\.|Pollinations[^.]*\.)\s*/iu
 
 export function stripPublicFallbackNotice(message: string) {
   return message.replace(FALLBACK_NOTICE, '').trim()
+}
+
+export function userFacingAiError(status = 0) {
+  if (status === 429) return 'Слишком много запросов подряд. Подождите минуту и попробуйте снова.'
+  if (status === 400) return 'Напишите чуть подробнее — хотя бы пару слов.'
+  return 'Не получилось ответить. Попробуйте ещё раз.'
 }
 
 export function linksFromApplyResults(results: AiApplyResult[]): AiEntityRef[] {

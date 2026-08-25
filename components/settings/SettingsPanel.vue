@@ -517,7 +517,7 @@ function exportData() {
     success('Данные экспортированы')
   } catch (err) {
     console.error(err)
-    notifyError('Ошибка экспорта')
+    notifyError('Не получилось сохранить файл')
   }
 }
 
@@ -537,7 +537,7 @@ function importData() {
       setTimeout(() => window.location.reload(), 1000)
     } catch (err) {
       console.error(err)
-      notifyError('Ошибка импорта')
+      notifyError('Не получилось открыть этот файл')
     }
   }
   input.click()
@@ -556,7 +556,7 @@ function restoreAutoBackup() {
     setTimeout(() => window.location.reload(), 1000)
   } catch (err) {
     console.error(err)
-    notifyError('Ошибка восстановления')
+    notifyError('Не получилось восстановить данные')
   }
 }
 

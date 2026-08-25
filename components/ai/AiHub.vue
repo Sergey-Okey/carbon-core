@@ -275,31 +275,12 @@ function submitDraft() {
 }
 
 .ai-hub__input {
+  @include island-field;
   flex: 1;
-  min-width: 0;
   height: var(--island-item);
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--color-text-primary);
-  font: inherit;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-normal);
-  line-height: var(--island-item);
-  appearance: none;
 
   @include mobile {
     font-size: 16px;
-  }
-
-  &::placeholder {
-    color: var(--color-text-muted);
-    line-height: var(--island-item);
-  }
-
-  &:focus {
-    outline: none;
   }
 }
 
